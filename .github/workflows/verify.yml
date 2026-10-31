@@ -27,6 +27,19 @@ jobs:
       - run: python3 scripts/check-publication.py
       - name: Prepare pinned native resources
         run: python3 scripts/setup-resources.py
+      - name: Diagnose local model startup
+        run: |
+          src-tauri/resources/engine/llama-server -m src-tauri/resources/models/embeddinggemma-300M-Q8_0.gguf --api-key test --embedding --pooling mean --host 127.0.0.1 --port 18543 -c 2048 -b 2048 -ub 2048 -np 1 -ngl 99 > "$RUNNER_TEMP/ariane-engine.log" 2>&1 &
+          engine_pid=$!
+          for i in $(seq 1 60); do
+            if curl --silent --fail http://127.0.0.1:18543/health >/dev/null; then kill "$engine_pid"; wait "$engine_pid" || true; cat "$RUNNER_TEMP/ariane-engine.log"; exit 0; fi
+            if ! kill -0 "$engine_pid" 2>/dev/null; then wait "$engine_pid" || true; cat "$RUNNER_TEMP/ariane-engine.log"; exit 1; fi
+            sleep 1
+          done
+          kill "$engine_pid" || true
+          wait "$engine_pid" || true
+          cat "$RUNNER_TEMP/ariane-engine.log"
+          exit 1
       - run: npm run verify
       - name: Build local app (ad hoc, no publication)
         run: npm run tauri build -- --bundles app
