@@ -6,7 +6,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: verify-${{ github.workflow }}-${{ github.ref }}
+  # Let each commit finish verification even when another push arrives.
+  group: verify-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: true
 jobs:
   macos:
