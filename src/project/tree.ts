@@ -1,5 +1,5 @@
 import type { Section } from '../app/types';
-export function ordered(sections: Section[], parent: string | null = null): Section[] {
+export function childrenByParent(sections: Section[]): Map<string | null, Section[]> {
   const children = new Map<string | null, Section[]>();
   for (const section of sections) {
     const siblings = children.get(section.parent);
@@ -7,6 +7,10 @@ export function ordered(sections: Section[], parent: string | null = null): Sect
     else children.set(section.parent, [section]);
   }
   for (const siblings of children.values()) siblings.sort((a, b) => a.position - b.position);
+  return children;
+}
+export function ordered(sections: Section[], parent: string | null = null): Section[] {
+  const children = childrenByParent(sections);
   const result: Section[] = [],
     seen = new Set<string>();
   const stack = [...(children.get(parent) ?? [])].reverse();
@@ -32,14 +36,14 @@ export function scenesFor(
   const all = continuous || !active ? ordered(sections) : descendants(sections, active);
   return all.filter((s) => s.kind === 'scene');
 }
-export function sectionPath(sections: Section[], selected: Section | undefined): string[] {
+export function sectionPath(sections: Section[], selected: Section | undefined): Section[] {
   const byId = new Map(sections.map((section) => [section.id, section]));
   const seen = new Set<string>();
-  const path: string[] = [];
+  const path: Section[] = [];
   let current = selected;
   while (current && !seen.has(current.id)) {
     seen.add(current.id);
-    path.unshift(current.title || 'Sans titre');
+    path.unshift(current);
     current = current.parent ? byId.get(current.parent) : undefined;
   }
   return path;

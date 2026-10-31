@@ -23,15 +23,7 @@ export function PathMenu({
     : selected?.kind === 'scene'
       ? selected.parent
       : selected?.id || null;
-  const byId = new Map(project.sections.map((section) => [section.id, section]));
-  const path: Section[] = [];
-  const seen = new Set<string>();
-  let current = continuous ? undefined : selected;
-  while (current && !seen.has(current.id)) {
-    seen.add(current.id);
-    path.unshift(current);
-    current = current.parent ? byId.get(current.parent) : undefined;
-  }
+  const path = continuous ? [] : sectionPath(project.sections, selected);
   function nodes(): React.ReactNode {
     return path.map((section, depth) => (
       <button
@@ -76,7 +68,7 @@ export function PathMenu({
       >
         {[
           project.name,
-          ...(continuous ? ['Manuscrit entier'] : sectionPath(project.sections, selected)),
+          ...(continuous ? ['Manuscrit entier'] : path.map((section) => section.title || 'Sans titre')),
         ].join(' / ')}
       </button>
       <div className="path-popover" id="path-tree" aria-hidden={!open} inert={!open}>

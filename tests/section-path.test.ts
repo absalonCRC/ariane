@@ -34,11 +34,11 @@ describe('section path', () => {
     const a = section('a', 'Partie', null),
       b = section('b', 'Chapitre', 'a'),
       c = section('c', 'Scène', 'b');
-    expect(sectionPath([a, b, c], c)).toEqual(['Partie', 'Chapitre', 'Scène']);
+    expect(sectionPath([a, b, c], c)).toEqual([a, b, c]);
   });
   it('terminates if data contains a cycle', () => {
     const a = section('a', 'A', 'b'),
       b = section('b', 'B', 'a');
-    expect(sectionPath([a, b], a)).toEqual(['B', 'A']);
+    expect(sectionPath([a, b], a)).toEqual([b, a]);
   });
 });

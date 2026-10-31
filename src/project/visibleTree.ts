@@ -1,12 +1,7 @@
 import type { Section } from '../app/types';
+import { childrenByParent } from './tree';
 export function visibleTree(sections: Section[], collapsed: ReadonlySet<string>) {
-  const children = new Map<string | null, Section[]>();
-  for (const section of sections) {
-    const siblings = children.get(section.parent);
-    if (siblings) siblings.push(section);
-    else children.set(section.parent, [section]);
-  }
-  for (const siblings of children.values()) siblings.sort((a, b) => a.position - b.position);
+  const children = childrenByParent(sections);
   const stack = (children.get(null) ?? []).map((section) => ({ section, depth: 0 })).reverse();
   const rows: { section: Section; depth: number }[] = [],
     seen = new Set<string>();
