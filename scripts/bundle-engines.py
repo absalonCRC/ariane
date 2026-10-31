@@ -65,7 +65,7 @@ def bundle(root=ROOT):
                 for member in source.getmembers():
                     name = Path(member.name).name
                     parts = Path(member.name).parts
-                    wanted = ("lib" in parts and name.endswith(".dylib")) or ("bin" in parts and name in executables)
+                    wanted = ("lib" in parts and name.endswith(".dylib")) or ("libexec" in parts and name.startswith("libggml-") and name.endswith(".so")) or ("bin" in parts and name in executables)
                     if wanted and member.issym():
                         aliases[name] = Path(member.linkname).name
                     elif wanted and member.isfile():
@@ -118,7 +118,10 @@ def bundle(root=ROOT):
             subprocess.run(["codesign", "--force", "--sign", "-", str(destination)], check=True, capture_output=True)
             return name
 
-        for name in sorted(executables):
+        backends = sorted(name for name in entries if name.startswith("libggml-") and name.endswith(".so"))
+        if not backends or not any(name.startswith("libggml-cpu-") for name in backends):
+            raise RuntimeError("Pinned ggml archive does not contain CPU backends")
+        for name in sorted(executables) + backends:
             copy(name)
     (notices / "provenance.json").write_text(json.dumps(lock, indent=2) + "\n")
     return sorted(copied)

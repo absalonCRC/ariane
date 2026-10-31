@@ -44,6 +44,7 @@
       "resources/engine/memory.py",
       "resources/engine/checksums.json",
       "resources/engine/*.dylib",
+      "resources/engine/*.so",
       "resources/models/embeddinggemma-300M-Q8_0.gguf",
       "resources/notices/**/*",
       "resources/styles/**/*",

@@ -46,7 +46,7 @@ class Downloads(unittest.TestCase):
             (root / 'resources.lock.json').write_text(json.dumps({'model': {'name': 'test.gguf', 'sha256': bundler.digest(model)}}))
             lock = root / 'native-dependencies.lock.json'
             lock.write_text('{}')
-            names = ['llama-server', 'pandoc', 'typst', 'pdf-text', 'memory.py']
+            names = ['llama-server', 'pandoc', 'typst', 'pdf-text', 'memory.py', 'libggml-cpu-test.so']
             for name in names:
                 (engine / name).write_bytes(name.encode())
             (engine / 'checksums.json').write_text(json.dumps({'native_lock_sha256': bundler.digest(lock), 'files': {name: bundler.digest(engine / name) for name in names}}))

@@ -17,6 +17,8 @@ files = native["files"]
 required = {"llama-server", "pandoc", "typst", "pdf-text", "memory.py"}
 if not required.issubset(files) or any(Path(name).name != name for name in files):
     raise SystemExit("Invalid native resource manifest")
+if not any(name.startswith("libggml-cpu-") and name.endswith(".so") for name in files):
+    raise SystemExit("Missing ggml CPU backend")
 expected.update({"engine/" + name: checksum for name, checksum in files.items()})
 errors = []
 for name, checksum in expected.items():
