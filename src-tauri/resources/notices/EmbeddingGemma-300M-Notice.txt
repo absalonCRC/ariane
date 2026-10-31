@@ -1,0 +1,4 @@
+Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms
+
+EmbeddingGemma 300M weights are subject to the use restrictions in section 3.2 of those Terms and the Gemma Prohibited Use Policy: https://ai.google.dev/gemma/prohibited_use_policy
+The full Terms are included in EmbeddingGemma-300M-TERMS.txt. These conditions apply to the bundled model; they do not relicense the Ariane source code.

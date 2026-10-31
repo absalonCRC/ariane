@@ -1,0 +1,18 @@
+Ariane
+Copyright (C) 2026 Axel de Saint-Germain
+
+The original Ariane source code is free software: you can redistribute it
+and/or modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation, version 3 of the License only.
+
+Ariane is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+Ariane. If not, see <https://www.gnu.org/licenses/>.
+
+SPDX-License-Identifier: GPL-3.0-only
+
+Third-party components, fonts, citation styles and model weights retain their
+own licenses and terms. See THIRD_PARTY.md and src-tauri/resources/notices/.

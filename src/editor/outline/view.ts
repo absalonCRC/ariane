@@ -1,0 +1,367 @@
+import { Prec, RangeSetBuilder } from '@codemirror/state';
+import {
+  Decoration,
+  EditorView,
+  GutterMarker,
+  ViewPlugin,
+  gutter,
+  keymap,
+  type DecorationSet,
+  type ViewUpdate,
+} from '@codemirror/view';
+import type { OutlineEditor, OutlineEntry, OutlineSession } from './state';
+
+export function outlinePresentation(outline: OutlineEditor) {
+  let activeDrag: { id: string; cancel: () => void } | null = null;
+  function activate(view: EditorView, id: string) {
+    const session = view.state.field(outline.field);
+    if (session.nodes.some((n) => n.parent === id)) outline.toggleFold(view, id);
+    else {
+      const node = session.nodes.find((n) => n.id === id);
+      if (node) view.dispatch({ selection: { anchor: node.from } });
+    }
+    view.focus();
+  }
+  function beginDrag(view: EditorView, id: string, event: PointerEvent) {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    activeDrag?.cancel();
+    const start = { x: event.clientX, y: event.clientY },
+      win = view.dom.ownerDocument.defaultView!;
+    let moving = false,
+      destination: ReturnType<typeof dropTarget> = null;
+    const cleanup = () => {
+      win.removeEventListener('pointermove', move, true);
+      win.removeEventListener('pointerup', up, true);
+      win.removeEventListener('pointercancel', cancel, true);
+      win.removeEventListener('keydown', key, true);
+      activeDrag = null;
+      clearDrop(view);
+    };
+    const cancel = () => cleanup();
+    const key = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        cleanup();
+      }
+    };
+    const move = (e: PointerEvent) => {
+      if (e.pointerId !== event.pointerId) return;
+      if (!moving && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 4) return;
+      moving = true;
+      e.preventDefault();
+      e.stopPropagation();
+      view.dom.dataset.outlineDragging = 'true';
+      destination = showDrop(view, e.clientX, e.clientY);
+    };
+    const up = (e: PointerEvent) => {
+      if (e.pointerId !== event.pointerId) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const target = moving ? (dropTarget(view, e.clientX, e.clientY) ?? destination) : null;
+      cleanup();
+      if (moving) {
+        if (target) outline.relocate(view, id, target.node.id, target.where);
+        view.focus();
+      } else activate(view, id);
+    };
+    win.addEventListener('pointermove', move, true);
+    win.addEventListener('pointerup', up, true);
+    win.addEventListener('pointercancel', cancel, true);
+    win.addEventListener('keydown', key, true);
+    activeDrag = { id, cancel };
+  }
+  const hidden = (state: EditorView['state']) => {
+    const { nodes, folded } = state.field(outline.field);
+    const ranges: { from: number; to: number; count: number }[] = [];
+    if (!folded.size) return ranges;
+    for (const node of nodes)
+      if (folded.has(node.id)) {
+        const branch = outline.subtree(nodes, node.id);
+        if (branch.length < 2) continue;
+        const last = nodes.indexOf(branch.at(-1)!);
+        const span = state.field(outline.sectionField).find((s) => s.id === node.section)!;
+        const to = nodes[last + 1]?.section === node.section ? nodes[last + 1].from : span.to;
+        const from = branch[1].from;
+        if (to > from && !ranges.some((r) => r.from <= from && r.to >= to))
+          ranges.push({ from, to, count: branch.length - 1 });
+      }
+    return ranges;
+  };
+  let foldSession: OutlineSession | undefined;
+  let foldSpans: unknown;
+  let foldDecorations = Decoration.none;
+  const folds = (state: EditorView['state']) => {
+    const session = state.field(outline.field),
+      spans = state.field(outline.sectionField);
+    if (session === foldSession && spans === foldSpans) return foldDecorations;
+    foldSession = session;
+    foldSpans = spans;
+    foldDecorations = Decoration.set(
+      hidden(state).map((r) =>
+        Decoration.replace({ block: true, inclusive: false }).range(r.from, r.to),
+      ),
+      true,
+    );
+    return foldDecorations;
+  };
+  class PassageMarker extends GutterMarker {
+    constructor(
+      readonly node: OutlineEntry,
+      readonly children: boolean,
+      readonly folded: boolean,
+      readonly active: boolean,
+      readonly depth: number,
+      readonly lineHeight: number,
+    ) {
+      super();
+    }
+    eq(other: PassageMarker) {
+      return (
+        this.node.id === other.node.id &&
+        this.children === other.children &&
+        this.folded === other.folded &&
+        this.active === other.active &&
+        this.depth === other.depth &&
+        this.lineHeight === other.lineHeight
+      );
+    }
+    toDOM(view: EditorView) {
+      const button = document.createElement('button');
+      button.className =
+        'outline-handle' +
+        (this.children ? ' outline-parent' : '') +
+        (this.children && this.folded ? ' outline-collapsed' : '') +
+        (this.active ? ' outline-current' : '');
+      button.type = 'button';
+      button.dataset.outlineHandle = this.node.id;
+      button.style.setProperty('--outline-depth', String(this.depth));
+      button.style.setProperty('--outline-line-height', this.lineHeight + 'px');
+      button.tabIndex = this.active ? 0 : -1;
+      button.setAttribute(
+        'aria-label',
+        this.children
+          ? this.folded
+            ? 'Déplier le passage'
+            : 'Replier le passage'
+          : 'Déplacer le passage',
+      );
+      if (this.children) button.setAttribute('aria-expanded', String(!this.folded));
+      button.dataset.state = this.children ? (this.folded ? 'replié' : 'déplié') : 'passage';
+      button.title = this.children
+        ? 'Glisser pour déplacer · cliquer pour replier ou déplier'
+        : 'Glisser pour déplacer le passage';
+      button.draggable = false;
+      button.addEventListener('pointerdown', (event) => beginDrag(view, this.node.id, event));
+      button.addEventListener('click', (event) => {
+        if (event.detail === 0) activate(view, this.node.id);
+      });
+      return button;
+    }
+  }
+  const paint = ViewPlugin.fromClass(
+    class {
+      decorations: DecorationSet;
+      constructor(view: EditorView) {
+        this.decorations = this.build(view);
+        this.align(view);
+      }
+      destroy() {
+        activeDrag?.cancel();
+      }
+      update(update: ViewUpdate) {
+        if (
+          update.docChanged ||
+          update.viewportChanged ||
+          update.startState.field(outline.field) !== update.state.field(outline.field)
+        )
+          this.decorations = this.build(update.view);
+        if (
+          update.docChanged ||
+          update.selectionSet ||
+          update.viewportChanged ||
+          update.geometryChanged ||
+          update.startState.field(outline.field) !== update.state.field(outline.field)
+        )
+          this.align(update.view);
+      }
+      align(view: EditorView) {
+        view.requestMeasure({
+          key: this,
+          read: () => {
+            const nodes = outline.index(view.state).byId;
+            return Array.from(
+              view.dom.querySelectorAll<HTMLElement>('[data-outline-handle]'),
+            ).flatMap((button) => {
+              const node = nodes.get(button.dataset.outlineHandle!);
+              const caret = node ? view.coordsAtPos(node.from) : null;
+              if (!caret || !button.parentElement) return [];
+              const gutter = button.parentElement.getBoundingClientRect();
+              return [
+                {
+                  button,
+                  height: caret.bottom - caret.top,
+                  top: caret.top - gutter.top,
+                  left: caret.left - gutter.left - 32,
+                },
+              ];
+            });
+          },
+          write: (items) => {
+            for (const { button, height, top, left } of items) {
+              button.style.height = height + 'px';
+              button.style.marginTop = top + 'px';
+              button.style.transform = `translateX(${left}px)`;
+            }
+          },
+        });
+      }
+      build(view: EditorView) {
+        const { byId, depths } = outline.index(view.state);
+        const builder = new RangeSetBuilder<Decoration>();
+        for (const range of view.visibleRanges) {
+          const last = view.state.doc.lineAt(range.to).number;
+          for (let number = view.state.doc.lineAt(range.from).number; number <= last; number++) {
+            const line = view.state.doc.line(number);
+            const node = outline.entryAt(view.state, line.from);
+            if (!node || !byId.has(node.id)) continue;
+            const depth = depths.get(node.id) ?? 0;
+            builder.add(
+              line.from,
+              line.from,
+              Decoration.line({
+                class: 'outline-line',
+                attributes: {
+                  style: `--outline-depth:${depth}`,
+                  'data-outline-id': node.id,
+                  ...(line.from === node.from ? { 'data-outline-start': 'true' } : {}),
+                },
+              }),
+            );
+          }
+        }
+        return builder.finish();
+      }
+    },
+    { decorations: (plugin) => plugin.decorations },
+  );
+  function clearDrop(view: EditorView) {
+    delete view.dom.dataset.outlineDragging;
+    view.dom
+      .querySelectorAll('[data-outline-drop]')
+      .forEach((el) => el.removeAttribute('data-outline-drop'));
+  }
+  function dropTarget(view: EditorView, x: number, y: number) {
+    const pos = view.posAtCoords({
+      x: Math.max(x, view.contentDOM.getBoundingClientRect().left + 1),
+      y,
+    });
+    if (pos === null) return null;
+    const node = outline.entryAt(view.state, pos),
+      box = view.coordsAtPos(node.from);
+    if (!box) return null;
+    const where: 'before' | 'after' | 'inside' =
+      x > box.left + 22 ? 'inside' : y < (box.top + box.bottom) / 2 ? 'before' : 'after';
+    return { node, where };
+  }
+  function showDrop(view: EditorView, x: number, y: number) {
+    view.dom
+      .querySelectorAll('[data-outline-drop]')
+      .forEach((el) => el.removeAttribute('data-outline-drop'));
+    const target = dropTarget(view, x, y);
+    if (target) {
+      const lines = Array.from(view.dom.querySelectorAll<HTMLElement>('[data-outline-id]')).filter(
+        (el) => el.dataset.outlineId === target.node.id,
+      );
+      (target.where === 'after' ? lines.at(-1) : lines[0])?.setAttribute(
+        'data-outline-drop',
+        target.where,
+      );
+    }
+    const box = view.scrollDOM.getBoundingClientRect();
+    if (y < box.top + 36) view.scrollDOM.scrollTop -= 12;
+    else if (y > box.bottom - 36) view.scrollDOM.scrollTop += 12;
+    return target;
+  }
+  return [
+    Prec.highest(
+      keymap.of([
+        {
+          key: 'Enter',
+          run: (view) => !view.composing && outline.enter(view),
+          shift: (view) => !view.composing && outline.softBreak(view),
+        },
+        { key: 'Tab', run: outline.indent, shift: outline.outdent },
+        { key: 'Backspace', run: outline.backspace },
+        { key: 'Alt-ArrowUp', run: (view) => outline.move(view, -1) },
+        { key: 'Alt-ArrowDown', run: (view) => outline.move(view, 1) },
+        {
+          key: 'Mod-Alt-ArrowLeft',
+          run: (view) =>
+            view.state.field(outline.field).folded.has(outline.entryAt(view.state).id) ||
+            outline.toggleFold(view),
+        },
+        {
+          key: 'Mod-Alt-ArrowRight',
+          run: (view) =>
+            !view.state.field(outline.field).folded.has(outline.entryAt(view.state).id) ||
+            outline.toggleFold(view),
+        },
+      ]),
+    ),
+    paint,
+    EditorView.decorations.compute([outline.field, outline.sectionField], folds),
+    EditorView.atomicRanges.of((view) => folds(view.state)),
+    EditorView.domEventHandlers({
+      mousemove(event, view) {
+        if (view.dom.dataset.outlineDragging) return false;
+        view.dom.querySelectorAll<HTMLElement>('[data-outline-handle]').forEach((button) => {
+          const box = button.getBoundingClientRect();
+          const near =
+            event.clientX >= box.left - 4 &&
+            event.clientX <= box.right + 4 &&
+            event.clientY >= box.top &&
+            event.clientY <= box.bottom;
+          button.classList.toggle('outline-hover', near);
+        });
+        return false;
+      },
+      mouseleave(_event, view) {
+        view.dom
+          .querySelectorAll('.outline-hover')
+          .forEach((button) => button.classList.remove('outline-hover'));
+        return false;
+      },
+      keydown(event, view) {
+        if (event.key === 'Escape' && view.dom.dataset.outlineDragging) {
+          clearDrop(view);
+          return true;
+        }
+        return false;
+      },
+    }),
+    gutter({
+      class: 'cm-outline-gutter',
+      lineMarker(view, line) {
+        const node = outline.entryAt(view.state, line.from);
+        if (!node || node.from !== line.from) return null;
+        const session = view.state.field(outline.field);
+        const { depths, parents } = outline.index(view.state);
+        return new PassageMarker(
+          node,
+          parents.has(node.id),
+          session.folded.has(node.id),
+          outline.entryAt(view.state).id === node.id,
+          depths.get(node.id) ?? 0,
+          view.defaultLineHeight,
+        );
+      },
+      lineMarkerChange: (u) =>
+        u.selectionSet ||
+        u.geometryChanged ||
+        u.startState.field(outline.field) !== u.state.field(outline.field),
+    }),
+  ];
+}

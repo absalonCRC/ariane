@@ -1,0 +1,34 @@
+name: Verify alpha
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  macos:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Install Rust
+        run: rustup toolchain install 1.95.0 --profile minimal --component clippy
+      - run: npm ci
+      - run: python3 scripts/check-publication.py
+      - name: Prepare pinned native resources
+        run: python3 scripts/setup-resources.py
+      - run: npm run verify
+      - name: Build local app (ad hoc, no publication)
+        run: npm run tauri build -- --bundles app
+      - name: Check bundled resources
+        run: python3 scripts/verify-resources.py src-tauri/target/release/bundle/macos/Ariane.app/Contents/Resources/resources

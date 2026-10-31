@@ -1,0 +1,247 @@
+import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
+import { request } from '../app/client';
+import type { Workspace } from '../app/useWorkspace';
+import type { Source } from '../app/types';
+import type { MemoryController, MemoryEntity, MemoryPassage } from './useMemory';
+
+interface EntityDetail extends MemoryEntity {
+  passages: MemoryPassage[];
+  fields: { name: string; value: string; section: string; node: string | null; quote: string }[];
+  timeline: {
+    date: string;
+    expression?: string;
+    approximate?: boolean;
+    text: string;
+    section: string;
+    node: string | null;
+    quote: string;
+  }[];
+}
+export function MemoryReader({
+  memory,
+  workspace,
+}: {
+  memory: MemoryController;
+  workspace: Workspace;
+}) {
+  const [entity, setEntity] = useState<EntityDetail | null>(null);
+  const [entities, setEntities] = useState<MemoryEntity[]>([]);
+  const [error, setError] = useState('');
+  const view = memory.view;
+  const path = workspace.p?.path;
+  useEffect(() => {
+    let alive = true;
+    setEntity(null);
+    setEntities([]);
+    setError('');
+    if (view?.kind === 'entity')
+      void request<EntityDetail>('memoryEntity', { projectPath: path, id: view.id })
+        .then((value) => {
+          if (alive) setEntity(value);
+        })
+        .catch((e) => {
+          if (alive) setError(String(e));
+        });
+    if (view?.kind === 'list')
+      void request<MemoryEntity[]>('memoryList', { projectPath: path })
+        .then((value) => {
+          if (alive) setEntities(value);
+        })
+        .catch((e) => {
+          if (alive) setError(String(e));
+        });
+    return () => {
+      alive = false;
+    };
+  }, [view, path]);
+  if (!view) return null;
+  const locate = (p: { section: string; node: string | null; quote?: string }) => {
+    memory.close();
+    void workspace.locatePassage(p.section, p.node, p.quote ?? '');
+  };
+  async function readSource(
+    id: string,
+    page: number | null,
+    fingerprint?: string,
+    excerpt?: string,
+  ) {
+    try {
+      const source = await request<Source>('memorySource', {
+        id,
+        fingerprint: fingerprint ?? null,
+      });
+      if (workspace.doc.ref.current?.path !== path) return;
+      if (fingerprint && source.fingerprint !== fingerprint)
+        throw new Error('Cette source a changé. Le rapprochement sera recalculé.');
+      memory.close();
+      workspace.setReader({ ...source, page, ...(excerpt ? { selectedExcerpt: excerpt } : {}) });
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+  return (
+    <aside className="reader memory-reader" aria-label="Mémoire du manuscrit">
+      <div className="panel-top">
+        <span>{view.kind === 'resume' ? 'REPRENDRE LE FIL' : 'DEPUIS VOTRE TEXTE'}</span>
+        <button className="icon-button" aria-label="Fermer la mémoire" onClick={memory.close}>
+          <X size={16} />
+        </button>
+      </div>
+      {error && <p className="error-text">{error}</p>}
+      {view.kind === 'list' && (
+        <>
+          <h2>Au fil du manuscrit</h2>
+          <p className="hint">
+            Les fiches se constituent à partir de vos passages, sans modifier vos sources.
+          </p>
+          {entities.map((e) => (
+            <button
+              className="search-result"
+              key={e.id}
+              onClick={() => memory.open({ kind: 'entity', id: e.id })}
+            >
+              <strong>{e.title}</strong>
+              <small>{e.passageCount} passage(s)</small>
+            </button>
+          ))}
+          {!entities.length && (
+            <p className="hint">
+              Les noms et les lieux reconnus apparaîtront ici après une pause d’écriture.
+            </p>
+          )}
+          {memory.error && (
+            <p className="hint">
+              L’analyse locale est momentanément indisponible. Les informations déjà enregistrées
+              restent accessibles.
+            </p>
+          )}
+        </>
+      )}
+      {view.kind === 'entity' && entity && (
+        <>
+          <h2>{entity.title}</h2>
+          <p className="hint">
+            Informations dérivées du manuscrit · chaque passage reste la référence.
+          </p>
+          {!!entity.fields.length && (
+            <dl className="enrichment-fields">
+              {entity.fields.map((f, i) => (
+                <div key={i}>
+                  <dt>{f.name}</dt>
+                  <dd>
+                    <button className="source-link" onClick={() => locate(f)}>
+                      {f.value}
+                    </button>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {!!entity.timeline.length && (
+            <details open>
+              <summary>Repères dans le temps</summary>
+              {entity.timeline.map((t, i) => (
+                <button className="memory-date" key={i} onClick={() => locate(t)}>
+                  <span>
+                    {t.approximate ? 'Vers ' : ''}
+                    {t.date}
+                  </span>
+                  <span>{t.text}</span>
+                </button>
+              ))}
+            </details>
+          )}
+          <section className="enrichment">
+            <h3>Passages liés</h3>
+            {entity.passages.map((p, i) => (
+              <article className="enrichment-passage" key={i}>
+                <blockquote>{p.quote}</blockquote>
+                <button className="source-link" onClick={() => locate(p)}>
+                  Rejoindre le passage
+                </button>
+              </article>
+            ))}
+          </section>
+        </>
+      )}
+      {view.kind === 'recall' && (
+        <>
+          <h2>Dans votre manuscrit</h2>
+          <blockquote>{view.passage.quote}</blockquote>
+          <button onClick={() => locate(view.passage)}>Rejoindre le passage</button>
+          <button onClick={() => void memory.dismiss()}>Masquer ce rapprochement</button>
+        </>
+      )}
+      {view.kind === 'evidence' && (
+        <>
+          <h2>{view.evidence.title}</h2>
+          <p className="hint">
+            Passage à confronter à votre texte. Ce rapprochement ne constitue pas une confirmation.
+          </p>
+          <blockquote>{view.evidence.quote}</blockquote>
+          {view.evidence.page && <p className="hint">Page {view.evidence.page}</p>}
+          <button
+            onClick={() =>
+              void readSource(
+                view.evidence.sourceId,
+                view.evidence.page,
+                view.evidence.fingerprint,
+                view.evidence.quote,
+              )
+            }
+          >
+            Lire dans la source
+          </button>
+          <button onClick={() => void memory.dismiss()}>Masquer ce rapprochement</button>
+        </>
+      )}
+      {view.kind === 'resume' && (
+        <>
+          <h2>Reprendre le fil</h2>
+          {memory.resume?.section ? (
+            <>
+              <button className="search-result" onClick={() => locate(memory.resume!)}>
+                <strong>Dernier passage travaillé</strong>
+                <small>
+                  {workspace.p?.sections.find((s) => s.id === memory.resume?.section)?.title}
+                </small>
+              </button>
+              {memory.resume.sourceId && (
+                <button
+                  className="search-result"
+                  onClick={() =>
+                    void readSource(memory.resume!.sourceId!, memory.resume!.sourcePage ?? null)
+                  }
+                >
+                  <strong>Dernière source consultée</strong>
+                </button>
+              )}
+              {memory.resume.recent
+                .filter(
+                  (p) => p.section !== memory.resume?.section || p.node !== memory.resume?.node,
+                )
+                .slice(0, 1)
+                .map((p) => (
+                  <button
+                    className="search-result"
+                    key={p.section + p.node}
+                    onClick={() => locate(p)}
+                  >
+                    <strong>
+                      {workspace.p?.sections.find((s) => s.id === p.section)?.title ??
+                        'Passage précédent'}
+                    </strong>
+                  </button>
+                ))}
+            </>
+          ) : (
+            <p className="hint">
+              Le contexte de cette session sera conservé pendant votre travail.
+            </p>
+          )}
+        </>
+      )}
+    </aside>
+  );
+}

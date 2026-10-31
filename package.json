@@ -1,0 +1,54 @@
+{
+  "name": "ariane",
+  "version": "0.1.0-alpha.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 1420",
+    "tauri": "tauri",
+    "check": "tsc -b",
+    "test": "vitest run",
+    "format": "prettier --write src tests scripts",
+    "verify": "npm run verify:resources && npm run test:packaging && npm run build && npm test && cargo test --locked --manifest-path src-tauri/Cargo.toml && cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
+    "setup:resources": "python3 scripts/setup-resources.py",
+    "verify:resources": "python3 scripts/verify-resources.py",
+    "test:packaging": "python3 -m unittest discover -s scripts/tests -v"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6",
+    "@codemirror/lang-markdown": "^6",
+    "@codemirror/language": "^6",
+    "@codemirror/search": "^6",
+    "@codemirror/state": "^6",
+    "@codemirror/view": "^6",
+    "@fontsource/eb-garamond": "^5",
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2",
+    "diff": "^8",
+    "lucide-react": "^0.468",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-markdown": "^10",
+    "remark-gfm": "^4"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "@types/diff": "^7",
+    "@types/node": "^24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5",
+    "jsdom": "^30.1.3",
+    "prettier": "^3",
+    "typescript": "~5.9.0",
+    "vite": "^7",
+    "vitest": "^5.0.5"
+  },
+  "license": "GPL-3.0-only",
+  "author": "Axel de Saint-Germain",
+  "engines": {
+    "node": ">=24"
+  }
+}

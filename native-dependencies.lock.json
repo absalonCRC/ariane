@@ -1,0 +1,132 @@
+{
+  "platform": "arm64_tahoe",
+  "minimum_macos": "26.0",
+  "packages": [
+    {
+      "name": "llama.cpp",
+      "version": "0.8.0",
+      "license": "MIT",
+      "bottle": {
+        "cellar": ":any",
+        "url": "https://ghcr.io/v2/homebrew/core/llama.cpp/blobs/sha256:77389709b4c66599a6f59ce55abce6761f18d03333031b9437fbc9e48f61420c",
+        "sha256": "77389709b4c66599a6f59ce55abce6761f18d03333031b9437fbc9e48f61420c"
+      },
+      "source": {
+        "url": "https://github.com/ggml-org/llama.cpp.git",
+        "tag": "v0.8.0",
+        "revision": "8642541b255bfb5dc39cd351a178be09013a55d6",
+        "using": null,
+        "checksum": null
+      },
+      "formula_revision": "f2826c60049cdfe477f2e6238cab60dc0678fadb"
+    },
+    {
+      "name": "pandoc",
+      "version": "3.13",
+      "license": "GPL-2.0-or-later",
+      "bottle": {
+        "cellar": ":any",
+        "url": "https://ghcr.io/v2/homebrew/core/pandoc/blobs/sha256:5c21c92a5357bedc2696c04244d1e6dde5c8de24c0c984225eb946c48d1c6b24",
+        "sha256": "5c21c92a5357bedc2696c04244d1e6dde5c8de24c0c984225eb946c48d1c6b24"
+      },
+      "source": {
+        "url": "https://github.com/jgm/pandoc/archive/refs/tags/3.13.tar.gz",
+        "tag": null,
+        "revision": null,
+        "using": null,
+        "checksum": "fbf6044766b0c9be5ccbf18ffe657124449e8563a177d85662ecb6f031f9c308"
+      },
+      "formula_revision": "f2826c60049cdfe477f2e6238cab60dc0678fadb"
+    },
+    {
+      "name": "typst",
+      "version": "0.15.1",
+      "license": "Apache-2.0",
+      "bottle": {
+        "cellar": ":any_skip_relocation",
+        "url": "https://ghcr.io/v2/homebrew/core/typst/blobs/sha256:37bfa441d1641d246e8663d742f940811688b7cd56b50b29a6177928ed949beb",
+        "sha256": "37bfa441d1641d246e8663d742f940811688b7cd56b50b29a6177928ed949beb"
+      },
+      "source": {
+        "url": "https://github.com/typst/typst/archive/refs/tags/v0.15.1.tar.gz",
+        "tag": null,
+        "revision": null,
+        "using": null,
+        "checksum": "c07909e01a2a6941e52c9b616e48c209c755eed416d62bcf5583c37a4aca01a3"
+      },
+      "formula_revision": "f2826c60049cdfe477f2e6238cab60dc0678fadb"
+    },
+    {
+      "name": "ggml",
+      "version": "0.28.0",
+      "license": "MIT",
+      "bottle": {
+        "cellar": "/opt/homebrew/Cellar",
+        "url": "https://ghcr.io/v2/homebrew/core/ggml/blobs/sha256:2ecc724f544bbdc1fdfc7c6857d8187f1b1355e4179801a324c07f0fc14eebfb",
+        "sha256": "2ecc724f544bbdc1fdfc7c6857d8187f1b1355e4179801a324c07f0fc14eebfb"
+      },
+      "source": {
+        "url": "https://github.com/ggml-org/ggml/archive/refs/tags/v0.28.0.tar.gz",
+        "tag": null,
+        "revision": null,
+        "using": null,
+        "checksum": "296a3533da2c6eaaac610008722572eb002a0f3b1aceb45b86a34f31ff4766c9"
+      },
+      "formula_revision": "f2826c60049cdfe477f2e6238cab60dc0678fadb"
+    },
+    {
+      "name": "libomp",
+      "version": "23.1.4",
+      "license": "MIT",
+      "bottle": {
+        "cellar": ":any",
+        "url": "https://ghcr.io/v2/homebrew/core/libomp/blobs/sha256:b8060c0ffebc3393ea26e0b9e0b94bcc34ad1667e967aa2d60532759e54e250d",
+        "sha256": "b8060c0ffebc3393ea26e0b9e0b94bcc34ad1667e967aa2d60532759e54e250d"
+      },
+      "source": {
+        "url": "https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.4/llvm-project-23.1.4.src.tar.xz",
+        "tag": null,
+        "revision": null,
+        "using": null,
+        "checksum": "819ecf7351f1a66f76b2d701d8942faaf5faeb324cb90c9d5b090de142434bb2"
+      },
+      "formula_revision": "f2826c60049cdfe477f2e6238cab60dc0678fadb"
+    },
+    {
+      "name": "openssl@4",
+      "version": "4.1.0",
+      "license": "Apache-2.0",
+      "bottle": {
+        "cellar": "/opt/homebrew/Cellar",
+        "url": "https://ghcr.io/v2/homebrew/core/openssl/4/blobs/sha256:382f63e829b116d5fb9a2b186147e489631b5bbbb06ac0089f795a3fed1085c4",
+        "sha256": "382f63e829b116d5fb9a2b186147e489631b5bbbb06ac0089f795a3fed1085c4"
+      },
+      "source": {
+        "url": "https://github.com/openssl/openssl/releases/download/openssl-4.1.0/openssl-4.1.0.tar.gz",
+        "tag": null,
+        "revision": null,
+        "using": null,
+        "checksum": "50c17baf54cb008f6ce42d50deb4b28050a1aad711636cabd4b241c7e90cc2fd"
+      },
+      "formula_revision": "f2826c60049cdfe477f2e6238cab60dc0678fadb"
+    },
+    {
+      "name": "gmp",
+      "version": "6.3.0",
+      "license": "LGPL-3.0-or-later OR GPL-2.0-or-later",
+      "bottle": {
+        "cellar": ":any",
+        "url": "https://ghcr.io/v2/homebrew/core/gmp/blobs/sha256:fa46330de5d003bd9294ae042c8f4ae0a51bcb8c57de2c94c073ff4a7ffa10c3",
+        "sha256": "fa46330de5d003bd9294ae042c8f4ae0a51bcb8c57de2c94c073ff4a7ffa10c3"
+      },
+      "source": {
+        "url": "https://ftpmirror.gnu.org/gmp/gmp-6.3.0.tar.xz",
+        "tag": null,
+        "revision": null,
+        "using": null,
+        "checksum": "a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898"
+      },
+      "formula_revision": "f2826c60049cdfe477f2e6238cab60dc0678fadb"
+    }
+  ]
+}
