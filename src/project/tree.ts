@@ -32,10 +32,6 @@ export function scenesFor(
   const all = continuous || !active ? ordered(sections) : descendants(sections, active);
   return all.filter((s) => s.kind === 'scene');
 }
-export function countWords(s: string) {
-  return s.trim().match(/\S+/gu)?.length || 0;
-}
-
 export function sectionPath(sections: Section[], selected: Section | undefined): string[] {
   const byId = new Map(sections.map((section) => [section.id, section]));
   const seen = new Set<string>();
