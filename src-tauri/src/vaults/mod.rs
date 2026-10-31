@@ -390,10 +390,12 @@ mod tests {
         let temp = tempfile::tempdir().unwrap();
         let project = temp.path().join("project");
         crate::project::create(&project, "Sources").unwrap();
-        let fixture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../fixtures/vault")
-            .canonicalize()
-            .unwrap();
+        let fixture = temp.path().join("vault");
+        fs::create_dir_all(fixture.join("Personnes")).unwrap();
+        fs::create_dir_all(fixture.join("Lieux")).unwrap();
+        fs::write(fixture.join("Personnes/Pierre Plantard.md"), "---\ntype: Personne\naliases: [Pierre]\n---\n# Pierre Plantard\nUne personne.\n").unwrap();
+        fs::write(fixture.join("Personnes/Pierre Perret.md"), "---\ntype: Personne\naliases: [Pierre]\n---\n# Pierre Perret\nUne autre personne.\n").unwrap();
+        fs::write(fixture.join("Lieux/Ville.md"), "---\ntype: Lieu\n---\n# Ville\nLes souvenirs et les villes.\n").unwrap();
         connect(&project, &fixture).unwrap();
         let indexpath = temp.path().join("index.sqlite");
         let resources = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources");
