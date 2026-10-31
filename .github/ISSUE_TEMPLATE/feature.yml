@@ -1,0 +1,22 @@
+name: Proposer une amélioration
+description: Partager un besoin ou une idée pour Ariane.
+title: "[Idée] "
+labels: []
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Quel besoin rencontres-tu ?
+      description: Décris ton contexte d’écriture et ce qui te manque aujourd’hui.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Quelle amélioration imagines-tu ?
+      description: Une piste, un exemple ou une façon de faire actuelle suffisent.
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexte supplémentaire
+      description: Ajoute tout élément utile sans partager de données personnelles.

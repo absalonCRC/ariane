@@ -1,0 +1,41 @@
+name: Signaler un bug
+description: Décrire un problème reproductible dans Ariane.
+title: "[Bug] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: Merci de prendre le temps de signaler ce problème. Utilise un projet de démonstration et retire toute donnée personnelle de tes captures ou journaux.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Que se passe-t-il ?
+      description: Décris le problème et ce que tu attendais.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Comment reproduire le problème ?
+      placeholder: "1. Ouvrir…\n2. Cliquer sur…\n3. Observer…"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version d’Ariane ou commit
+      placeholder: "0.1.0-alpha.1"
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Version de macOS et type de Mac
+      placeholder: "macOS 26, Mac Apple Silicon"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexte supplémentaire
+      description: Capture, message d’erreur ou détail utile, sans manuscrit, vault, clé ou donnée personnelle.

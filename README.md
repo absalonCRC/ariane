@@ -1,24 +1,68 @@
-# Ariane
+<div align="center">
+  <img src="src/assets/ariane-wordmark-literary.svg" alt="Ariane" width="250">
+  <p><strong>Un lieu pour écrire. Des sources à portée de pensée.</strong></p>
+  <p>Un éditeur Markdown local pour les textes longs, conçu pour macOS.</p>
+  <p>
+    <a href="#découvrir-ariane">Découvrir Ariane</a> ·
+    <a href="#essayer-lalpha">Essayer l’alpha</a> ·
+    <a href="#contribuer">Contribuer</a>
+  </p>
+  <p><a href="https://github.com/absalonCRC/ariane/actions/workflows/verify.yml"><img src="https://github.com/absalonCRC/ariane/actions/workflows/verify.yml/badge.svg" alt="État de la vérification GitHub Actions"></a> <a href="LICENSE"><img src="https://img.shields.io/badge/licence-GPL--3.0--only-343434" alt="Licence GPL-3.0-only"></a> <img src="https://img.shields.io/badge/macOS-26%2B%20%7C%20Apple%20Silicon-343434" alt="macOS 26 et ultérieur, Apple Silicon"></p>
+</div>
 
-Éditeur Markdown local pour macOS, conçu pour écrire des textes longs et retrouver ses sources sans quitter le manuscrit.
+---
 
-**0.1.0-alpha.1 — version expérimentale, macOS 26 ou ultérieur, Apple Silicon uniquement.** Les sources sont disponibles sur GitHub ; aucun paquet notarifié n’est encore proposé.
+Vous écrivez un chapitre, un essai ou un article. Une personne, un lieu ou une idée apparaît dans votre texte : Ariane peut retrouver la fiche correspondante dans vos sources et vous la proposer dans la marge. Vous consultez le contexte, insérez une citation si elle vous est utile, puis revenez à votre phrase.
 
-## Ce que permet cette alpha
+Ariane réunit l’espace d’écriture, la structure du manuscrit et les documents de recherche dans une application locale. Le texte reste au centre ; les outils apparaissent quand vous en avez besoin.
 
-- Écrire dans une colonne épurée, organiser scènes et passages hiérarchiques, utiliser les modes de concentration.
-- Sauvegarder localement, retrouver des versions et conserver des copies en cas de conflit avec un fichier externe.
-- Connecter des vaults Obsidian en lecture seule ou créer un vault propre au projet.
-- Retrouver des sources dans la marge, insérer des citations et exporter en Markdown, PDF, Word ou EPUB.
-- Retrouver des passages proches avec EmbeddingGemma. La détection d’entités, la dictée et la révision locales nécessitent des installations supplémentaires facultatives.
+![Espace d’écriture Ariane : un manuscrit et des sources signalées dans la marge](docs/media/ecriture.png)
 
-Les suggestions restent à relire. Aucun service cloud ni compte utilisateur n’est nécessaire pour écrire. L’installation des dépendances et des modèles nécessite Internet ; leur traitement s’effectue ensuite localement.
+*Capture d’une version de développement, avec un projet et des notes de démonstration. L’interface de l’alpha peut différer.*
 
-## Construire et lancer
+## Découvrir Ariane
 
-Prérequis : Mac Apple Silicon sous macOS 26+, outils de ligne de commande Xcode, Node.js 24 ou ultérieur, Rust/Cargo 1.95.0 et Python 3.11 ou ultérieur. Prévoir plusieurs Go libres pour la compilation. Homebrew n’est pas nécessaire à la préparation des moteurs.
+### Écrire sans perdre le fil
 
-Dans le dossier des sources :
+La page d’écriture privilégie la lecture et la concentration. Organisez votre projet en dossiers, chapitres et scènes ; structurez les passages à l’intérieur d’une scène, déplacez leurs branches et repliez ce qui ne vous sert pas pour le moment. Les modes de concentration et le défilement « machine à écrire » accompagnent votre façon de travailler.
+
+### Garder ses recherches près du texte
+
+Reliez un vault Obsidian existant en lecture seule, ou créez un vault propre à votre projet. Ariane repère dans le manuscrit les personnes, lieux et autres notes correspondantes, puis les présente dans la marge. Ouvrez une fiche pour consulter son contexte ou citer une source, sans quitter l’écriture.
+
+<details>
+<summary>Voir un exemple de fiche source</summary>
+<br>
+
+![Fiche source ouverte à côté du manuscrit](docs/media/source.png)
+
+*Capture de développement avec une note de démonstration.*
+</details>
+
+### Construire un manuscrit dans la durée
+
+Retrouvez des versions de votre texte, comparez-les et restaurez un état antérieur. Ariane conserve le projet localement dans une base SQLite et des fichiers Markdown lisibles ; en cas de modification externe, elle signale le conflit et conserve une copie de récupération. Exportez votre travail en **Markdown, PDF, Word ou EPUB**, avec vos citations.
+
+### Retrouver et réviser, à votre rythme
+
+La recherche locale peut suggérer des passages proches et aider à retrouver le contexte d’un manuscrit. Des modules facultatifs ajoutent la détection d’entités, la dictée et la révision locales. Les suggestions sont à examiner : aucune correction n’est appliquée sans votre choix.
+
+## Pour qui ?
+
+Ariane s’adresse aux personnes qui écrivent des textes longs et s’appuient sur des notes : roman, récit documenté, essai, mémoire ou recherche. Elle peut aussi servir à écrire simplement, sans connecter de vault ni installer les modules facultatifs.
+
+**Pas de compte ni de service cloud pour écrire.** Le manuscrit et son traitement restent sur le Mac. Les moteurs et modèles sont téléchargés lors de leur installation ; une connexion Internet est donc nécessaire à cette étape. Les vaults externes connectés restent en lecture seule.
+
+## Essayer l’alpha
+
+**Ariane 0.1.0-alpha.1 est une version expérimentale, destinée aux Mac Apple Silicon sous macOS 26 ou ultérieur.** Elle n’est pas encore proposée sous forme d’application notarifiée prête à télécharger. Les personnes à l’aise avec les outils de développement peuvent la construire depuis les sources.
+
+[Voir la prérelease et ses sources](https://github.com/absalonCRC/ariane/releases/tag/v0.1.0-alpha.1) · [Guide de construction détaillé](docs/building.md)
+
+<details>
+<summary>Construire l’application depuis les sources</summary>
+
+Prérequis : Mac Apple Silicon sous macOS 26+, outils de ligne de commande Xcode, Node.js 24+, Rust/Cargo 1.95.0 et Python 3.11+. Prévoir plusieurs Go pour les ressources et la compilation. Homebrew n’est pas nécessaire à la préparation des moteurs.
 
 ```sh
 npm ci
@@ -28,15 +72,14 @@ npm run tauri build -- --bundles app
 open src-tauri/target/release/bundle/macos/Ariane.app
 ```
 
-La préparation télécharge les moteurs natifs à versions et empreintes figées, ainsi qu’EmbeddingGemma 300M Q8 (environ 334 Mo). Ses [conditions Gemma](https://ai.google.dev/gemma/terms) s’appliquent au modèle. Le paquet construit localement porte une signature ad hoc, sans notarisation Apple.
+La préparation télécharge les moteurs natifs verrouillés et EmbeddingGemma 300M Q8 (environ 334 Mo). Les [conditions Gemma](https://ai.google.dev/gemma/terms) s’appliquent au modèle. Le paquet construit localement est signé ad hoc et n’est pas notarifié.
 
-Pour développer : `npm run tauri dev`. `npm run dev` ouvre seulement l’aperçu navigateur, avec des données simulées dans le stockage du navigateur : ce n’est pas une connexion aux fichiers du Mac.
+Pour développer, utilisez `npm run tauri dev`. `npm run dev` lance un aperçu navigateur avec des données simulées ; il ne donne pas accès aux fichiers natifs.
+</details>
 
-Voir les [instructions de construction](docs/building.md), le [guide d’utilisation](docs/usage.md) et l’[architecture](docs/architecture.md).
+### Modules facultatifs
 
-## Modules facultatifs
-
-Ces commandes s’exécutent depuis les sources, avec Python et [uv](https://docs.astral.sh/uv/getting-started/installation/) disponibles. Les modèles sont installés dans les données locales d’Ariane, séparément du manuscrit.
+Depuis les sources, avec Python et [uv](https://docs.astral.sh/uv/getting-started/installation/) installés :
 
 ```sh
 python3 scripts/setup-memory.py    # Entités du manuscrit : GLiNER
@@ -44,18 +87,21 @@ python3 scripts/setup-voice.py     # Dictée : Parakeet et Spokenly Cleanup
 python3 scripts/setup-revision.py  # Révision : LanguageTool et SalamandraTA
 ```
 
-L’écriture, la sauvegarde et les exports n’exigent pas ces modules. EmbeddingGemma, livré avec le paquet, fournit la recherche sémantique ; E5 n’est plus utilisé par l’installateur actif. Les modules facultatifs restent expérimentaux et ne sont pas tous exécutés par la suite de tests standard.
+Ces modules sont installés dans les données locales d’Ariane. Ils ne sont pas nécessaires pour écrire, sauvegarder ou exporter et restent expérimentaux. La recherche sémantique de base utilise EmbeddingGemma ; l’installateur actif n’utilise plus E5.
 
-## Données et limites
+## Avant de commencer
 
-Les projets contiennent une base SQLite et des miroirs Markdown. Sauvegarder **le dossier du projet entier**, application fermée, avant de tester une nouvelle alpha. L’historique intégré ne remplace pas une sauvegarde indépendante. Les vaults externes connectés sont lus sans modification ; les fiches créées par Ariane sont placées dans le vault propre au projet.
+- Sauvegardez **le dossier entier du projet**, application fermée. L’historique intégré ne remplace pas une sauvegarde indépendante.
+- L’alpha ne propose pas de synchronisation distante, d’OCR, ni de version Windows, Linux ou Mac Intel.
+- Les arrêts forcés à chaque étape d’écriture, le manque d’espace disque et tous les rendus Word ne sont pas encore entièrement qualifiés.
+- Les exports PDF, Word et EPUB acceptent les images locales au projet ; les ressources distantes, liens symboliques sortants et fragments HTML/TeX/Typst bruts sont refusés. L’export Markdown conserve le texte.
 
-Cette alpha ne propose ni synchronisation distante, ni OCR, ni version Windows/Linux/Intel. Les arrêts forcés à chaque étape d’écriture, le manque d’espace disque et les rendus dans toutes les versions de Word ne sont pas intégralement qualifiés. Aucune promesse de pertinence ou de performance universelle n’est faite.
+Pour aller plus loin : [guide d’utilisation](docs/usage.md) · [architecture](docs/architecture.md) · [journal des changements](CHANGELOG.md).
 
-## Contribuer et licence
+## Contribuer
 
-Voir [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md) et le [journal des changements](CHANGELOG.md).
+Les retours sur les parcours d’écriture, les bugs reproductibles et les contributions au code sont les bienvenus. [Signalez un problème ou proposez une idée](https://github.com/absalonCRC/ariane/issues/new/choose). Consultez [CONTRIBUTING.md](CONTRIBUTING.md) pour préparer un exemple sans données personnelles, et [SECURITY.md](SECURITY.md) pour signaler une vulnérabilité en privé.
 
-Copyright © 2026 Axel de Saint-Germain. Le code original d’Ariane est distribué sous **GNU GPL version 3 uniquement**, SPDX `GPL-3.0-only` ; voir [LICENSE](LICENSE) et [COPYRIGHT](COPYRIGHT). Les bibliothèques, polices, styles et modèles conservent leurs licences et conditions propres, détaillées dans [THIRD_PARTY.md](THIRD_PARTY.md).
+## Licence
 
-Les exports PDF, Word et EPUB acceptent les images locales au projet. Les ressources distantes, liens symboliques sortant du projet et fragments HTML/TeX/Typst bruts sont refusés. L’export Markdown conserve le texte.
+Copyright © 2026 Axel de Saint-Germain. Le code original d’Ariane est distribué sous **GNU GPL version 3 uniquement** ([LICENSE](LICENSE), [COPYRIGHT](COPYRIGHT)). Les bibliothèques, polices, styles et modèles conservent leurs licences et conditions propres : voir [THIRD_PARTY.md](THIRD_PARTY.md).

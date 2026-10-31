@@ -40,3 +40,7 @@ src-tauri/icons/*
 src/assets/*
 !src/assets/ariane-logo.svg
 !src/assets/ariane-wordmark-literary.svg
+# Screenshots selected for the public project presentation.
+!docs/media/
+!docs/media/ecriture.png
+!docs/media/source.png
