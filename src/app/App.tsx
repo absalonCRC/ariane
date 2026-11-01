@@ -120,6 +120,9 @@ export function App() {
     setGroupOpen,
     ready,
     setNewSection,
+    createPage,
+    focusTitleId,
+    setFocusTitleId,
     menu,
     setMenu,
     newProject,
@@ -269,7 +272,7 @@ export function App() {
           selected={selected}
           continuous={doc.settings.continuous}
           onSelect={(id) => void select(id)}
-          onAdd={(parent) => setNewSection({ parent, kind: 'scene' })}
+          onAdd={(parent) => void createPage(parent)}
         />
       </div>
       <Presence kind="sidebar">
@@ -283,7 +286,7 @@ export function App() {
               setBinder(false);
             }}
             onClose={() => setBinder(false)}
-            onAdd={(parent, kind) => setNewSection({ parent, kind })}
+            onAdd={(parent, kind) => kind === 'scene' ? void createPage(parent) : setNewSection({ parent, kind })}
             onMove={(...args) => void move(...args)}
             onRename={async (id, title) => {
               try {
@@ -319,8 +322,12 @@ export function App() {
           }
         >
           <DocumentTitle
+            key={doc.settings.continuous ? p.path : selected?.id}
             title={doc.settings.continuous ? p.name : selected?.title || ''}
             readOnly={doc.settings.continuous}
+            autoFocus={!!selected && !doc.settings.continuous && focusTitleId === selected.id}
+            onAutoFocus={() => setFocusTitleId(null)}
+            onEnter={() => editor.current?.focus()}
             onCommit={(title) => {
               if (selected) void update({ ...selected, title }).catch(fail);
             }}
@@ -350,7 +357,7 @@ export function App() {
           {!scenes.length && (
             <button
               className="add-first-scene"
-              onClick={() => setNewSection({ parent: active, kind: 'scene' })}
+              onClick={() => void createPage(active)}
             >
               Ajouter une scène à cette section
             </button>
@@ -645,7 +652,7 @@ export function App() {
             commands={
               workspace.palette === 'sections'
                 ? ordered(p.sections).map((section) => ({
-                    label: section.title,
+                    label: section.title || 'Sans titre',
                     detail:
                       section.kind === 'scene'
                         ? 'Scène'

@@ -176,8 +176,8 @@ export function Binder(p: Props) {
           className="disclose"
           aria-label={
             s.kind === 'scene'
-              ? 'Sélectionner ' + s.title
-              : (collapsed.has(s.id) ? 'Déplier ' : 'Replier ') + s.title
+              ? 'Sélectionner ' + (s.title || 'Sans titre')
+              : (collapsed.has(s.id) ? 'Déplier ' : 'Replier ') + (s.title || 'Sans titre')
           }
           aria-expanded={s.kind === 'scene' ? undefined : !collapsed.has(s.id)}
           onClick={() =>
@@ -225,7 +225,7 @@ export function Binder(p: Props) {
             aria-current={p.active === s.id ? 'page' : undefined}
             onClick={() => p.onSelect(s.id)}
           >
-            {s.title}
+            {s.title || 'Sans titre'}
           </button>
         )}
         {s.kind !== 'scene' && (

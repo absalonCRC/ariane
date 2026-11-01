@@ -38,6 +38,9 @@ export function useWorkspace() {
     kind: Section['kind'];
   } | null>(null);
   const [newTitle, setNewTitle] = useState('');
+  const [focusTitleId, setFocusTitleId] = useState<string | null>(null);
+  const creatingPage = useRef(false);
+  const metadataQueue = useRef<Promise<void>>(Promise.resolve());
   const [menu, setMenu] = useState(false);
   const [newProject, setNewProject] = useState(false);
   const [viewport, setViewport] = useState<VisibleText | null>(null);
@@ -239,7 +242,7 @@ export function useWorkspace() {
         { label: 'Lire le manuscrit entier', action: () => void select(active || '', true) },
         {
           label: 'Ajouter une scène',
-          action: () => setNewSection({ parent: selected?.parent || null, kind: 'scene' }),
+          action: () => void createPage(selected?.parent || null),
         },
         {
           label: 'Créer un projet',
@@ -297,6 +300,30 @@ export function useWorkspace() {
       window.removeEventListener('keydown', escape);
     };
   }, [doc.flush]);
+  async function createPage(parent: string | null) {
+    const project = doc.ref.current;
+    if (!project || creatingPage.current) return;
+    creatingPage.current = true;
+    try {
+      await doc.flush();
+      await metadataQueue.current;
+      if (doc.ref.current?.path !== project.path) return;
+      const ids = new Set(doc.ref.current.sections.map((section) => section.id));
+      const sections = await request<Section[]>('add', { parent, kind: 'scene', title: '' });
+      if (doc.ref.current?.path !== project.path) return;
+      const added = sections.find((section) => !ids.has(section.id));
+      doc.replaceSections(sections);
+      if (added) {
+        doc.configure({ active: added.id, continuous: false, cursor: 0 });
+        setBinder(false);
+        setFocusTitleId(added.id);
+      }
+    } catch (e) {
+      fail(e);
+    } finally {
+      creatingPage.current = false;
+    }
+  }
   async function add() {
     if (!newSection || !newTitle.trim()) return;
     try {
@@ -354,9 +381,16 @@ export function useWorkspace() {
       fail(e);
     }
   }
-  async function update(section: Section) {
-    await doc.flush();
-    doc.replaceSections(await request('update', { section }), false);
+  function update(section: Section) {
+    const path = doc.ref.current?.path;
+    const task = metadataQueue.current.catch(() => {}).then(async () => {
+      if (doc.ref.current?.path !== path) return;
+      await doc.flush();
+      const sections = await request<Section[]>('update', { section });
+      if (doc.ref.current?.path === path) doc.replaceSections(sections, false);
+    });
+    metadataQueue.current = task.catch(() => {});
+    return task;
   }
   async function apply(id: string, text: string, revision: number) {
     await doc.flush();
@@ -426,6 +460,8 @@ export function useWorkspace() {
     setRecovery,
     newSection,
     setNewSection,
+    focusTitleId,
+    setFocusTitleId,
     newTitle,
     setNewTitle,
     menu,
@@ -444,6 +480,7 @@ export function useWorkspace() {
     select,
     onVisible,
     commands,
+    createPage,
     add,
     move,
     cite,

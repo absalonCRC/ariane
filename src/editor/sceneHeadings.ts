@@ -22,7 +22,7 @@ export function sceneHeadings(field: StateField<Span[]>) {
       state
         .field(field)
         .map((s) =>
-          Decoration.widget({ widget: new Heading(s.title), block: true, side: -1 }).range(s.from),
+          Decoration.widget({ widget: new Heading(s.title || 'Sans titre'), block: true, side: -1 }).range(s.from),
         ),
     ),
   );
