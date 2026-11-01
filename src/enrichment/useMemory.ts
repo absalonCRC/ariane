@@ -1,3 +1,4 @@
+import type { PanelOrigin } from '../components/useSharedPanel';
 import { useEffect, useRef, useState } from 'react';
 import { native, request } from '../app/client';
 import type { Workspace } from '../app/useWorkspace';
@@ -61,6 +62,7 @@ export function useMemory(workspace: Workspace) {
   const { doc, editor, p } = workspace;
   const [result, setResult] = useState<MemoryResult | null>(null);
   const [anchor, setAnchor] = useState<MemoryPosition | null>(null);
+  const [origin, setOrigin] = useState<PanelOrigin | null>(null);
   const [view, setView] = useState<MemoryView | null>(null);
   const [resume, setResume] = useState<SessionContext | null>(null);
   const [showResume, setShowResume] = useState(false);
@@ -122,6 +124,7 @@ export function useMemory(workspace: Workspace) {
     setResult(null);
     setAnchor(null);
     setView(null);
+    setOrigin(null);
     setResume(null);
     setShowResume(false);
     setError('');
@@ -316,7 +319,8 @@ export function useMemory(workspace: Workspace) {
     return () => window.removeEventListener('blur', blur);
   }, []);
 
-  function open(value: MemoryView) {
+  function open(value: MemoryView, sourceOrigin?: PanelOrigin) {
+    setOrigin(sourceOrigin ?? null);
     workspace.setCard(null);
     workspace.setReader(null);
     workspace.setSearch(null);
@@ -343,8 +347,9 @@ export function useMemory(workspace: Workspace) {
     anchor,
     top,
     view,
+    origin,
     open,
-    close: () => setView(null),
+    close: () => { setView(null); setOrigin(null); },
     resume,
     showResume,
     error: error || entityError,

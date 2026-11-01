@@ -1,7 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Presence, usePresenceValue } from '../components/Presence';
+import { panelOrigin } from '../components/useSharedPanel';
+import { SelectionToolbar, type SelectionAnchor } from '../components/SelectionToolbar';
 import { WritingCounter } from '../components/WritingCounter';
 import { DepthControl } from '../components/DepthControl';
-import { ChevronRight, MoreHorizontal, Pause } from 'lucide-react';
+import { ChevronRight, MoreHorizontal, Pause, Copy, ArrowUpRight } from 'lucide-react';
 import { Palette } from './Palette';
 import { request } from './client';
 import { Welcome } from './Welcome';
@@ -22,14 +25,18 @@ import type { Source } from './types';
 import { countVaultNotes } from '../sources/countNotes';
 import { VoiceButton } from '../voice/VoiceButton';
 import { Settings } from './Settings';
+import { useContextMenu } from '../components/ContextMenu';
+import { sourceContext } from '../sources/contextMenu';
 import { ArianeWordmark } from '../components/ArianeWordmark';
 export function App() {
+  const openMenu = useContextMenu();
   const workspace = useWorkspace();
   const memory = useMemory(workspace);
   useEffect(() => {
     if (import.meta.env.VITE_PERFORMANCE === '1')
       void import('../performance/native').then(({ attach }) => attach(workspace, memory));
   });
+  const [textSelection, setTextSelection] = useState<SelectionAnchor | null>(null);
   const [lines, setLines] = useState(1);
   const [characters, setCharacters] = useState(0);
   const [voiceOpen, setVoiceOpen] = useState(false);
@@ -134,15 +141,22 @@ export function App() {
     update,
     groups,
   } = workspace;
+  const sourcePresence = usePresenceValue(groups.length ? groups : null);
   useEffect(() => {
     let alive = true;
     setAssociated(new Set());
     if (p && active && !doc.settings.continuous) {
-      void request<Source[]>('links', { section: active }).then((links) => {
-        if (alive) setAssociated(new Set(links.map((source) => source.id)));
-      }).catch(() => { /* Association status is unknown when links cannot be loaded. */ });
+      void request<Source[]>('links', { section: active })
+        .then((links) => {
+          if (alive) setAssociated(new Set(links.map((source) => source.id)));
+        })
+        .catch(() => {
+          /* Association status is unknown when links cannot be loaded. */
+        });
     }
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [p?.path, active, doc.settings.continuous, associationVersion]);
   if (!ready) return <div className="boot" aria-label="Ouverture du projet" />;
   if (!p || newProject)
@@ -157,12 +171,39 @@ export function App() {
         <WorkspaceNotices workspace={workspace} />
       </>
     );
-  const contextTop = memory.top === null ? null : Math.max(memory.top, ...groups.map((g) => g.top + Math.min(g.sources.length, 2) * 54 + 36));
-  const contextVisible = contextTop !== null && contextTop + 80 < (workspace.marginBounds?.bottom ?? 0);
+  const contextTop =
+    memory.top === null
+      ? null
+      : Math.max(memory.top, ...groups.map((g) => g.top + Math.min(g.sources.length, 2) * 54 + 36));
+  const recallSection =
+    memory.suggestion?.kind === 'recall' ? memory.suggestion.passage.section : null;
+  const suggestionExcerpt =
+    memory.suggestion?.kind === 'recall'
+      ? memory.suggestion.passage.quote
+      : memory.suggestion?.kind === 'evidence'
+        ? memory.suggestion.evidence.quote
+        : '';
+  const suggestionTitle =
+    memory.suggestion?.kind === 'recall'
+      ? p.sections.find((section) => section.id === recallSection)?.title || 'Dans votre manuscrit'
+      : memory.suggestion?.kind === 'evidence'
+        ? memory.suggestion.evidence.title
+        : memory.result?.entities[0]?.title || 'Fiche du manuscrit';
+  const railLeft = workspace.marginBounds
+    ? Math.max(workspace.marginBounds.right + 32, innerWidth - 215)
+    : 0;
+  const railWidth = Math.max(0, Math.min(190, innerWidth - railLeft - 25));
+  const railVisible = !!workspace.marginBounds && railWidth >= 150;
+  const contextVisible =
+    railVisible &&
+    contextTop !== null &&
+    contextTop + (suggestionExcerpt ? 125 : 80) < (workspace.marginBounds?.bottom ?? 0);
   return (
     <div
       className={
-        'app ' + (doc.settings.font === 'mono' ? 'mono ' : '') + (reader || memory.view ? 'with-reader' : '')
+        'app ' +
+        (doc.settings.font === 'mono' ? 'mono ' : '') +
+        (reader || (memory.view && !memory.origin) ? 'with-reader' : '')
       }
     >
       {!binder && (
@@ -231,21 +272,39 @@ export function App() {
           onAdd={(parent) => setNewSection({ parent, kind: 'scene' })}
         />
       </div>
-      {binder && (
-        <Binder
-          project={p}
-          active={active}
-          onSelect={(id) => void select(id)}
-          onSurface={(s) => {
-            setSurface(s);
-            setBinder(false);
-          }}
-          onClose={() => setBinder(false)}
-          onAdd={(parent, kind) => setNewSection({ parent, kind })}
-          onMove={(...args) => void move(...args)}
-          onContinuous={() => void select(active || '', true)}
-        />
-      )}
+      <Presence kind="sidebar">
+        {binder && (
+          <Binder
+            project={p}
+            active={active}
+            onSelect={(id) => void select(id)}
+            onSurface={(s) => {
+              setSurface(s);
+              setBinder(false);
+            }}
+            onClose={() => setBinder(false)}
+            onAdd={(parent, kind) => setNewSection({ parent, kind })}
+            onMove={(...args) => void move(...args)}
+            onRename={async (id, title) => {
+              try {
+                await doc.flush();
+                const section = doc.ref.current?.sections.find((section) => section.id === id);
+                if (section) await update({ ...section, title });
+              } catch (error) {
+                fail(error);
+              }
+            }}
+            onPrepare={async (id) => {
+              await select(id);
+              if (doc.settingsRef.current.active === id) {
+                setSurface('prepare');
+                setBinder(false);
+              }
+            }}
+            onContinuous={() => void select(active || '', true)}
+          />
+        )}
+      </Presence>
       <main
         className={
           'writing-layout' +
@@ -271,6 +330,8 @@ export function App() {
             sections={scenes}
             generation={doc.generation}
             settings={doc.settings}
+            onSelection={setTextSelection}
+            onSearchSources={(text) => setSearch(text)}
             onChange={doc.edit}
             onDraftChange={doc.editDraft}
             onVisible={onVisible}
@@ -296,88 +357,237 @@ export function App() {
           )}
         </div>
       </main>
-      {words > 0 && !(reader || memory.view || search !== null) && (
-        <div className="source-margin" aria-label="Sources dans la marge" style={workspace.marginBounds ? {
-          left: workspace.marginBounds.right + 24,
-          clipPath: `inset(${Math.max(0, workspace.marginBounds.top)}px 0 ${Math.max(0, innerHeight - workspace.marginBounds.bottom)}px 0)`,
-        } : { visibility: 'hidden' }}>
-          {groups.map((g) => (
-            <div className="source-group" data-anchor-line={g.id} data-expanded={groupOpen === g.id} key={g.id} style={{ top: g.top }}>
-              {g.sources.slice(0, groupOpen === g.id ? g.sources.length : 2).map((s) => (
-                <button
-                  className="source-label"
-                  key={s.id}
-                  onClick={() => setCard({ source: s, top: g.top })}
-                >
-                  <span>{s.title}</span>
-                  <small>
-                    {s.kind} · {associated.has(s.id) ? 'associée à cette section' : s.score === 100 ? 'mention détectée' : s.score === 80 || s.score === 40 ? 'lien entre sources' : 'suggestion'}
-                  </small>
-                </button>
-              ))}
-              {g.sources.length > 2 && (
-                <button
-                  className="more-sources"
-                  aria-expanded={groupOpen === g.id}
-                  aria-label={groupOpen === g.id ? 'Réduire les sources' : `Afficher les ${g.sources.length - 2} autres sources`}
-                  onClick={() => setGroupOpen(groupOpen === g.id ? null : g.id)}
-                >
-                  {groupOpen === g.id ? 'Réduire' : '+' + (g.sources.length - 2)}
-                </button>
+      <SelectionToolbar
+        anchor={textSelection}
+        onFormat={(format) => editor.current?.format(format)}
+      />
+      {words > 0 &&
+        railVisible &&
+        !(reader || (memory.view && !memory.origin) || search !== null) && (
+          <div
+            className="source-margin"
+            aria-label="Sources dans la marge"
+            data-phase={sourcePresence.exiting ? 'exit' : 'open'}
+            inert={sourcePresence.exiting}
+            aria-hidden={sourcePresence.exiting || undefined}
+            style={
+              workspace.marginBounds
+                ? {
+                    left: railLeft,
+                    width: railWidth,
+                    clipPath: `inset(${Math.max(0, workspace.marginBounds.top)}px 0 ${Math.max(0, innerHeight - workspace.marginBounds.bottom)}px 0)`,
+                  }
+                : { visibility: 'hidden' }
+            }
+          >
+            {(sourcePresence.value ?? []).map((g) => (
+              <div
+                className="source-group"
+                data-anchor-line={g.id}
+                data-expanded={groupOpen === g.id}
+                key={g.id}
+                style={{ top: g.top }}
+              >
+                {g.sources.slice(0, groupOpen === g.id ? g.sources.length : 2).map((s) => (
+                  <button
+                    className="source-label"
+                    key={s.id}
+                    onContextMenu={(event) =>
+                      openMenu(
+                        event,
+                        sourceContext(s, {
+                          onRead: () => read(s),
+                          onCite: (quote) => cite(s, quote),
+                        }),
+                      )
+                    }
+                    data-expanded={card?.source.id === s.id}
+                    onClick={(event) => {
+                      setSurface('none');
+                      setCard({
+                        source: s,
+                        top: g.top,
+                        origin: panelOrigin(event.currentTarget, s.title),
+                      });
+                    }}
+                  >
+                    <span>{s.title}</span>
+                    <small>
+                      {s.kind} ·{' '}
+                      {associated.has(s.id)
+                        ? 'associée à cette section'
+                        : s.score === 100
+                          ? 'mention détectée'
+                          : s.score === 80 || s.score === 40
+                            ? 'lien entre sources'
+                            : 'suggestion'}
+                    </small>
+                  </button>
+                ))}
+                {g.sources.length > 2 && (
+                  <button
+                    className="more-sources"
+                    aria-expanded={groupOpen === g.id}
+                    aria-label={
+                      groupOpen === g.id
+                        ? 'Réduire les sources'
+                        : `Afficher les ${g.sources.length - 2} autres sources`
+                    }
+                    onClick={() => setGroupOpen(groupOpen === g.id ? null : g.id)}
+                  >
+                    {groupOpen === g.id ? 'Réduire' : '+' + (g.sources.length - 2)}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      <Presence kind="content">
+        {memory.showResume && !memory.view && !reader && (
+          <button className="memory-resume" onClick={() => memory.open({ kind: 'resume' })}>
+            Reprendre le fil
+          </button>
+        )}
+      </Presence>
+      <Presence kind="anchored">
+        {memory.suggestion &&
+          contextVisible &&
+          doc.settings.focus === 'none' &&
+          !memory.view &&
+          !reader &&
+          !card &&
+          search === null && (
+            <button
+              onContextMenu={(event) => {
+                const suggestion = memory.suggestion!;
+                openMenu(event, {
+                  title: suggestion.kind === 'entity' ? 'Fiche du manuscrit' : 'Passage suggéré',
+                  groups: [
+                    [
+                      {
+                        label: suggestion.kind === 'entity' ? 'Ouvrir la fiche' : 'Voir le passage',
+                        icon: ArrowUpRight,
+                        run: () => {
+                          setSurface('none');
+                          memory.open(suggestion);
+                        },
+                      },
+                      ...(suggestionExcerpt && typeof navigator.clipboard?.writeText === 'function'
+                        ? [
+                            {
+                              label: 'Copier l’extrait',
+                              icon: Copy,
+                              run: () => navigator.clipboard.writeText(suggestionExcerpt),
+                            },
+                          ]
+                        : []),
+                    ],
+                  ],
+                });
+              }}
+              className="source-label memory-context"
+              style={{ top: contextTop!, left: railLeft, width: railWidth }}
+              onClick={(event) => {
+                setSurface('none');
+                memory.open(memory.suggestion!, panelOrigin(event.currentTarget, suggestionTitle));
+              }}
+            >
+              <span>{suggestionTitle}</span>
+              <small>
+                {memory.suggestion.kind === 'entity'
+                  ? 'Depuis votre texte'
+                  : memory.suggestion.kind === 'evidence'
+                    ? 'Passage à confronter'
+                    : 'Dans votre manuscrit'}
+              </small>
+              {suggestionExcerpt && (
+                <span className="suggestion-excerpt">
+                  {suggestionExcerpt.replace(/\s+/g, ' ').trim()}
+                </span>
               )}
-            </div>
-          ))}
-        </div>
-      )}
-      {memory.showResume && !memory.view && !reader && <button className="memory-resume" onClick={() => memory.open({ kind: 'resume' })}>Reprendre le fil</button>}
-      {memory.suggestion && contextVisible && doc.settings.focus === 'none' && !memory.view && !reader && !card && search === null && (
-        <button className="source-label memory-context" style={{ top: contextTop!, left: (workspace.marginBounds?.right ?? 0) + 24 }}
-          onClick={() => memory.open(memory.suggestion!)}>
-          <span>{memory.suggestion.kind === 'recall' ? 'Dans votre manuscrit' : memory.suggestion.kind === 'evidence' ? memory.suggestion.evidence.title : memory.result?.entities[0]?.title}</span>
-          <small>{memory.suggestion.kind === 'entity' ? 'Depuis votre texte' : memory.suggestion.kind === 'evidence' ? 'Passage à confronter' : 'Un passage à retrouver'}</small>
-        </button>
-      )}
-      <MemoryReader memory={memory} workspace={workspace} />
-      {card && (
-        <SourceCard
-          source={card.source}
-          citationStyle={doc.settings.citationStyle}
-          onRegister={(s, t) => workspace.registerCitation(s, t).catch(fail)}
-          top={card.top}
-          onClose={() => setCard(null)}
-          onRead={() => void read(card.source)}
-          onAssociate={() =>
-            void request('associate', { section: active, id: card.source.id, payload: card.source })
-              .then(() => {
-                setCard(null);
-                setAssociationVersion((version) => version + 1);
-                setSurface('prepare');
+            </button>
+          )}
+      </Presence>
+      <MemoryReader
+        memory={memory}
+        workspace={workspace}
+        projectMenuOpen={menu}
+        writingMenuOpen={surface === 'settings'}
+      />
+      <Presence kind="anchored">
+        {card && (
+          <SourceCard
+            key={card.source.id}
+            origin={card.origin}
+            source={card.source}
+            citationStyle={doc.settings.citationStyle}
+            onRegister={(s, t) => workspace.registerCitation(s, t).catch(fail)}
+            top={card.top}
+            onClose={() => setCard(null)}
+            onRead={() => void read(card.source)}
+            onAssociate={() =>
+              void request('associate', {
+                section: active,
+                id: card.source.id,
+                payload: card.source,
               })
-              .catch(fail)
-          }
-          onCite={(s, t) => void cite(s, t)}
-        />
-      )}
-      {reader && <Reader source={reader} onClose={() => setReader(null)} projectPath={p.path}
-        onChange={(source) => { if (doc.ref.current?.path === p.path) { setReader((current) => current?.id === source.id ? source : current); workspace.refreshEnrichment(); } }}
-        onRead={(id) => void request<Source>('source', { id }).then((source) => { if (doc.ref.current?.path === p.path) setReader(source); }).catch(fail)}
-        onLocate={(section, node, quote) => void workspace.locatePassage(section, node, quote)} />}{' '}
-      {search !== null && (
-        <SourceSearch
-          initial={search}
-          onClose={() => setSearch(null)}
-          onSelect={(s) => void read(s)}
-        />
-      )}
+                .then(() => {
+                  setCard(null);
+                  setAssociationVersion((version) => version + 1);
+                  setSurface('prepare');
+                })
+                .catch(fail)
+            }
+            onCite={(s, t) => void cite(s, t)}
+          />
+        )}
+      </Presence>
+      <Presence>
+        {reader && (
+          <Reader
+            source={reader}
+            onCite={(quote) => cite(reader, quote)}
+            onClose={() => setReader(null)}
+            projectPath={p.path}
+            onChange={(source) => {
+              if (doc.ref.current?.path === p.path) {
+                setReader((current) => (current?.id === source.id ? source : current));
+                workspace.refreshEnrichment();
+              }
+            }}
+            onRead={(id) =>
+              void request<Source>('source', { id })
+                .then((source) => {
+                  if (doc.ref.current?.path === p.path) setReader(source);
+                })
+                .catch(fail)
+            }
+            onLocate={(section, node, quote) => void workspace.locatePassage(section, node, quote)}
+          />
+        )}
+      </Presence>{' '}
+      <Presence>
+        {search !== null && (
+          <SourceSearch
+            initial={search}
+            onClose={() => setSearch(null)}
+            onSelect={(s) => void read(s)}
+          />
+        )}
+      </Presence>
       <footer className="statusbar">
         <div className="save-state" role="status">
-          {doc.status === 'saving'
-            ? 'Enregistrement…'
-            : doc.status === 'error'
-              ? 'Modifications non enregistrées'
-              : doc.status === 'editing'
-                ? 'Modifications en cours'
-                : ''}
+          <Presence kind="content">
+            {doc.status !== 'saved' && (
+              <span className="state-label" key={doc.status}>
+                {doc.status === 'saving'
+                  ? 'Enregistrement…'
+                  : doc.status === 'error'
+                    ? 'Modifications non enregistrées'
+                    : 'Modifications en cours'}
+              </span>
+            )}
+          </Presence>
         </div>
         <div
           className="bottom-controls"
@@ -444,7 +654,11 @@ export function App() {
                           : 'Dossier',
                     action: () => void select(section.id),
                   }))
-                : [...commands, { label: 'Reprendre le fil', action: () => memory.open({ kind: 'resume' }) }, { label: 'Fiches du manuscrit', action: () => memory.open({ kind: 'list' }) }].filter(
+                : [
+                    ...commands,
+                    { label: 'Reprendre le fil', action: () => memory.open({ kind: 'resume' }) },
+                    { label: 'Fiches du manuscrit', action: () => memory.open({ kind: 'list' }) },
+                  ].filter(
                     (command) =>
                       !['Rechercher dans les sources', 'Sources du projet'].includes(command.label),
                   )
@@ -478,17 +692,17 @@ export function App() {
             onClick={() => {
               setPalette(null);
               setVoiceOpen(false);
+              setCard(null);
+              if (memory.origin) memory.close();
               setSurface(surface === 'settings' ? 'none' : 'settings');
             }}
           >
             Aa
           </button>
           <Settings
-            enrichmentError={workspace.enrichmentError}
             open={surface === 'settings'}
             value={doc.settings}
             onChange={doc.configure}
-            editor={editor}
             canFormat={scenes.length > 0}
             onFormat={(format) => editor.current?.format(format)}
             onClose={() => {
@@ -498,18 +712,20 @@ export function App() {
           />
         </div>
       </footer>
-      {progress && (
-        <div className="index-strip">
-          <progress max={progress.total} value={progress.done} />
-          <span>
-            Préparation des sources · {progress.done} / {progress.total}
-          </span>
-          <button onClick={() => void request('cancelIndex')}>
-            <Pause size={11} />
-            Suspendre
-          </button>
-        </div>
-      )}
+      <Presence kind="notice">
+        {progress && (
+          <div className="index-strip">
+            <progress max={progress.total} value={progress.done} />
+            <span>
+              Préparation des sources · {progress.done} / {progress.total}
+            </span>
+            <button onClick={() => void request('cancelIndex')}>
+              <Pause size={11} />
+              Suspendre
+            </button>
+          </div>
+        )}
+      </Presence>
       <WorkspaceNotices workspace={workspace} />
       <WorkspaceDialogs workspace={workspace} onMemory={() => memory.open({ kind: 'list' })} />
     </div>

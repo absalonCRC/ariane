@@ -61,28 +61,33 @@ export function SourceSearch({
         />
       </div>
       <p className="hint">Sources du projet · Recherche locale</p>
-      {busy ? (
-        <p className="empty-state">Recherche…</p>
-      ) : error ? (
-        <p className="error-text">{error}</p>
-      ) : results.length ? (
-        results.map((s) => (
-          <button className="search-result" key={s.id} onClick={() => onSelect(s)}>
-            <strong>{s.title}</strong>
-            <small>
-              {s.kind} · {s.path}
-              {s.page && ' · p. ' + s.page}
-            </small>
-            <p>{s.text.slice(0, 240)}</p>
-          </button>
-        ))
-      ) : (
-        <p className="empty-state">
-          {query
-            ? 'Aucune source correspondante. Essayez d’autres mots ou élargissez les dossiers sélectionnés.'
-            : 'Retrouvez un passage de vos notes ou PDF.'}
-        </p>
-      )}
+      <div
+        className="state-content"
+        key={busy ? 'busy' : error ? 'error' : results.length ? 'results' : 'empty'}
+      >
+        {busy ? (
+          <p className="empty-state">Recherche…</p>
+        ) : error ? (
+          <p className="error-text">{error}</p>
+        ) : results.length ? (
+          results.map((s) => (
+            <button className="search-result" key={s.id} onClick={() => onSelect(s)}>
+              <strong>{s.title}</strong>
+              <small>
+                {s.kind} · {s.path}
+                {s.page && ' · p. ' + s.page}
+              </small>
+              <p>{s.text.slice(0, 240)}</p>
+            </button>
+          ))
+        ) : (
+          <p className="empty-state">
+            {query
+              ? 'Aucune source correspondante. Essayez d’autres mots ou élargissez les dossiers sélectionnés.'
+              : 'Retrouvez un passage de vos notes ou PDF.'}
+          </p>
+        )}
+      </div>
     </aside>
   );
 }

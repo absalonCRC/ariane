@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useContextMenu, type MenuAction } from '../components/ContextMenu';
 import { visibleTree } from './visibleTree';
 import {
-  ChevronDown,
   ChevronRight,
+  ChevronDown,
   ChevronLeft,
   FileText,
   Folder,
@@ -10,6 +11,9 @@ import {
   BookOpen,
   History,
   Library,
+  Settings,
+  Pencil,
+  Copy,
 } from 'lucide-react';
 import type { Project, Section, Surface } from '../app/types';
 interface Props {
@@ -21,8 +25,14 @@ interface Props {
   onAdd: (parent: string | null, kind: Section['kind']) => void;
   onMove: (id: string, target: string, inside: boolean) => void;
   onContinuous: () => void;
+  onRename?: (id: string, title: string) => Promise<void>;
+  onPrepare?: (id: string) => unknown;
 }
 export function Binder(p: Props) {
+  const openMenu = useContextMenu();
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const renameCancelled = useRef(false);
   const [collapsed, setCollapsed] = useState(new Set<string>());
   const [drag, setDrag] = useState<string | null>(null);
   const nav = useRef<HTMLElement>(null);
@@ -71,12 +81,75 @@ export function Binder(p: Props) {
       else row?.querySelector<HTMLButtonElement>('.tree-title')?.focus();
     });
   };
+  const commitRename = () => {
+    const id = renaming,
+      title = name.trim();
+    setRenaming(null);
+    if (id && title && !renameCancelled.current) void p.onRename?.(id, title);
+  };
   function row(index: number) {
     const { section: s, depth } = rows[index];
     return (
       <div
         key={s.id}
         data-row-index={index}
+        onContextMenu={(event) => {
+          if ((event.target as HTMLElement).closest('input')) return;
+          const actions: MenuAction[] = [
+            { label: 'Ouvrir', icon: FileText, run: () => p.onSelect(s.id) },
+          ];
+          if (p.onRename)
+            actions.push({
+              label: 'Renommer',
+              icon: Pencil,
+              run: () => {
+                renameCancelled.current = false;
+                setName(s.title);
+                setRenaming(s.id);
+              },
+            });
+          if (p.onPrepare)
+            actions.push({ label: 'Préparer cette section', run: () => p.onPrepare!(s.id) });
+          if (s.kind !== 'scene' && p.project.sections.some((child) => child.parent === s.id))
+            actions.push({
+              label: collapsed.has(s.id) ? 'Déplier' : 'Replier',
+              icon: collapsed.has(s.id) ? ChevronRight : ChevronDown,
+              run: () =>
+                setCollapsed((old) => {
+                  const next = new Set(old);
+                  if (next.has(s.id)) next.delete(s.id);
+                  else next.add(s.id);
+                  return next;
+                }),
+            });
+          openMenu(event, {
+            title: s.title,
+            detail: { scene: 'Scène', chapter: 'Chapitre', folder: 'Dossier' }[s.kind],
+            groups: [
+              actions,
+              s.kind !== 'scene'
+                ? [
+                    {
+                      label: 'Ajouter une scène ici',
+                      icon: Plus,
+                      run: () => p.onAdd(s.id, 'scene'),
+                    },
+                    { label: 'Ajouter un chapitre ici', run: () => p.onAdd(s.id, 'chapter') },
+                    { label: 'Ajouter un dossier ici', run: () => p.onAdd(s.id, 'folder') },
+                  ]
+                : [],
+              typeof navigator.clipboard?.writeText === 'function'
+                ? [
+                    {
+                      label: 'Copier le titre',
+                      icon: Copy,
+                      run: () => navigator.clipboard.writeText(s.title),
+                    },
+                  ]
+                : [],
+            ],
+          });
+        }}
         onFocus={() => setFocused(s.id)}
         className={'tree-row ' + (p.active === s.id ? 'selected' : '')}
         style={{
@@ -119,22 +192,42 @@ export function Binder(p: Props) {
           }
         >
           {s.kind !== 'scene' ? (
-            collapsed.has(s.id) ? (
-              <ChevronRight size={12} />
-            ) : (
-              <ChevronDown size={12} />
-            )
+            <ChevronRight size={12} style={{ rotate: collapsed.has(s.id) ? '0deg' : '90deg' }} />
           ) : (
             <FileText size={12} />
           )}
         </button>
-        <button
-          className="tree-title"
-          aria-current={p.active === s.id ? 'page' : undefined}
-          onClick={() => p.onSelect(s.id)}
-        >
-          {s.title}
-        </button>
+        {renaming === s.id ? (
+          <input
+            className="tree-rename"
+            aria-label="Nouveau titre"
+            autoFocus
+            value={name}
+            onFocus={(event) => event.currentTarget.select()}
+            onChange={(event) => setName(event.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(event) => {
+              event.stopPropagation();
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                commitRename();
+              }
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                renameCancelled.current = true;
+                setRenaming(null);
+              }
+            }}
+          />
+        ) : (
+          <button
+            className="tree-title"
+            aria-current={p.active === s.id ? 'page' : undefined}
+            onClick={() => p.onSelect(s.id)}
+          >
+            {s.title}
+          </button>
+        )}
         {s.kind !== 'scene' && (
           <button
             className="row-add"
@@ -148,7 +241,24 @@ export function Binder(p: Props) {
     );
   }
   return (
-    <aside id="project-sidebar" className="binder" aria-label="Classeur du projet">
+    <aside
+      id="project-sidebar"
+      className="binder"
+      aria-label="Classeur du projet"
+      onContextMenu={(event) => {
+        if ((event.target as HTMLElement).closest('button, input, .tree-row')) return;
+        openMenu(event, {
+          title: 'Classeur',
+          groups: [
+            [
+              { label: 'Ajouter une scène', icon: Plus, run: () => p.onAdd(null, 'scene') },
+              { label: 'Ajouter un chapitre', run: () => p.onAdd(null, 'chapter') },
+              { label: 'Ajouter un dossier', run: () => p.onAdd(null, 'folder') },
+            ],
+          ],
+        });
+      }}
+    >
       <button
         className="binder-edge-trigger"
         aria-label="Replier la sidebar"
@@ -237,6 +347,10 @@ export function Binder(p: Props) {
         <button onClick={() => p.onSurface('projects')}>
           <BookOpen size={16} />
           Projets
+        </button>
+        <button onClick={() => p.onSurface('preferences')}>
+          <Settings size={16} />
+          Paramètres
         </button>
       </div>
     </aside>

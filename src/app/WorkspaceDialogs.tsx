@@ -1,3 +1,4 @@
+import { Presence } from '../components/Presence';
 import { lazy, Suspense } from 'react';
 import type { Workspace } from './useWorkspace';
 import { request, native, browserProjects } from './client';
@@ -6,9 +7,16 @@ const Library = lazy(() => import('../sources/Library').then((m) => ({ default: 
 import { Preparation } from '../project/Preparation';
 const History = lazy(() => import('../history/History').then((m) => ({ default: m.History })));
 const Export = lazy(() => import('../export/Export').then((m) => ({ default: m.Export })));
+import { Preferences } from './Preferences';
 import { Welcome } from './Welcome';
 import { Dialog } from '../components/Dialog';
-export function WorkspaceDialogs({ workspace, onMemory }: { workspace: Workspace; onMemory?: () => void }) {
+export function WorkspaceDialogs({
+  workspace,
+  onMemory,
+}: {
+  workspace: Workspace;
+  onMemory?: () => void;
+}) {
   const {
     surface,
     doc,
@@ -32,113 +40,142 @@ export function WorkspaceDialogs({ workspace, onMemory }: { workspace: Workspace
   if (!p) return null;
   return (
     <Suspense fallback={<div className="notice recovery">Ouverture…</div>}>
-      {surface === 'sources' && (
-        <Library
-          onMemory={onMemory ? () => { close(); onMemory(); } : undefined}
-          onClose={close}
-          onError={fail}
-          onRefresh={() => setSourceVersion((v) => v + 1)}
-          onIndexProgress={setProgress}
-          onBusy={(v) => {
-            if (!v) setProgress(null);
-          }}
-        />
-      )}
-      {surface === 'prepare' && selected && (
-        <Preparation key={selected.id} section={selected} onClose={close} onSave={update} />
-      )}
-      {surface === 'history' && (
-        <History
-          project={p}
-          active={active}
-          onClose={close}
-          flush={doc.flush}
-          onRestore={activate}
-          onApply={apply}
-          onError={fail}
-        />
-      )}
-      {surface === 'export' && (
-        <Export
-          project={p}
-          active={active}
-          flush={doc.flush}
-          onClose={close}
-          job={workspace.exportJob}
-        />
-      )}
-      {surface === 'projects' && (
-        <Dialog title="Vos projets" onClose={close}>
-          <button
-            onClick={() => {
-              close();
-              void doc.flush().then(() => setNewProject(true));
+      <Presence>
+        {surface === 'preferences' && (
+          <Preferences
+            value={doc.settings}
+            onChange={doc.configure}
+            onClose={close}
+            enrichmentError={workspace.enrichmentError}
+          />
+        )}
+      </Presence>
+      <Presence>
+        {surface === 'sources' && (
+          <Library
+            onMemory={
+              onMemory
+                ? () => {
+                    close();
+                    onMemory();
+                  }
+                : undefined
+            }
+            onClose={close}
+            onError={fail}
+            onRefresh={() => setSourceVersion((v) => v + 1)}
+            onIndexProgress={setProgress}
+            onBusy={(v) => {
+              if (!v) setProgress(null);
             }}
-          >
-            Créer un projet
-          </button>
-          {native ? (
-            <Welcome
-              onOpen={(p) => {
-                activate(p);
+          />
+        )}
+      </Presence>
+      <Presence>
+        {surface === 'prepare' && selected && (
+          <Preparation key={selected.id} section={selected} onClose={close} onSave={update} />
+        )}
+      </Presence>
+      <Presence>
+        {surface === 'history' && (
+          <History
+            project={p}
+            active={active}
+            onClose={close}
+            flush={doc.flush}
+            onRestore={activate}
+            onApply={apply}
+            onError={fail}
+          />
+        )}
+      </Presence>
+      <Presence>
+        {surface === 'export' && (
+          <Export
+            project={p}
+            active={active}
+            flush={doc.flush}
+            onClose={close}
+            job={workspace.exportJob}
+          />
+        )}
+      </Presence>
+      <Presence>
+        {surface === 'projects' && (
+          <Dialog title="Vos projets" onClose={close}>
+            <button
+              onClick={() => {
                 close();
+                void doc.flush().then(() => setNewProject(true));
               }}
-              onError={fail}
-            />
-          ) : (
-            browserProjects().map((p) => (
-              <button
-                className="project-list-item"
-                key={p.path}
-                onClick={() =>
-                  void doc
-                    .flush()
-                    .then(() => request<Project>('open', { path: p.path }))
-                    .then((p) => {
-                      activate(p);
-                      close();
-                    })
-                    .catch(fail)
-                }
-              >
-                {p.name}
-              </button>
-            ))
-          )}
-        </Dialog>
-      )}
-      {newSection && (
-        <Dialog
-          title={
-            'Ajouter ' +
-            { scene: 'une scène', chapter: 'un chapitre', folder: 'un dossier' }[newSection.kind]
-          }
-          onClose={() => setNewSection(null)}
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void add();
-            }}
-          >
-            <label>
-              Titre
-              <input
-                autoFocus
-                required
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
+            >
+              Créer un projet
+            </button>
+            {native ? (
+              <Welcome
+                onOpen={(p) => {
+                  activate(p);
+                  close();
+                }}
+                onError={fail}
               />
-            </label>
-            <div className="dialog-actions">
-              <button type="button" onClick={() => setNewSection(null)}>
-                Annuler
-              </button>
-              <button className="primary">Ajouter</button>
-            </div>
-          </form>
-        </Dialog>
-      )}
+            ) : (
+              browserProjects().map((p) => (
+                <button
+                  className="project-list-item"
+                  key={p.path}
+                  onClick={() =>
+                    void doc
+                      .flush()
+                      .then(() => request<Project>('open', { path: p.path }))
+                      .then((p) => {
+                        activate(p);
+                        close();
+                      })
+                      .catch(fail)
+                  }
+                >
+                  {p.name}
+                </button>
+              ))
+            )}
+          </Dialog>
+        )}
+      </Presence>
+      <Presence>
+        {newSection && (
+          <Dialog
+            title={
+              'Ajouter ' +
+              { scene: 'une scène', chapter: 'un chapitre', folder: 'un dossier' }[newSection.kind]
+            }
+            onClose={() => setNewSection(null)}
+          >
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void add();
+              }}
+            >
+              <label>
+                Titre
+                <input
+                  autoFocus
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                />
+              </label>
+              <div className="dialog-actions">
+                <button type="button" onClick={() => setNewSection(null)}>
+                  Annuler
+                </button>
+                <button className="primary">Ajouter</button>
+              </div>
+            </form>
+          </Dialog>
+        )}
+      </Presence>
     </Suspense>
   );
 }

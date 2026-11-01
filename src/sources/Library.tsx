@@ -1,3 +1,5 @@
+import { AnimatedDetails } from '../components/AnimatedDetails';
+import { Presence } from '../components/Presence';
 import { useEffect, useState } from 'react';
 import { Plus, RefreshCw, FolderOpen, Pause, X } from 'lucide-react';
 import { open } from '@tauri-apps/plugin-dialog';
@@ -70,8 +72,11 @@ export function Library({
   }, [onIndexProgress]);
   async function connect() {
     try {
-      if (!native) throw new Error('Connectez vos vaults depuis l’application macOS.');
-      const path = await open({ directory: true, title: 'Choisir un vault Obsidian' });
+      if (!native) throw new Error('Connectez vos dossiers de sources depuis l’application macOS.');
+      const path = await open({
+        directory: true,
+        title: 'Choisir un dossier de sources (vault Obsidian)',
+      });
       if (typeof path === 'string') {
         setVaults(await request('connectVault', { path }));
         void index();
@@ -137,15 +142,19 @@ export function Library({
   }, []);
   return (
     <Dialog title="Sources du projet" onClose={onClose} wide>
-      {onMemory && native && <button className="memory-library" onClick={onMemory}>Fiches issues du manuscrit</button>}
+      {onMemory && native && (
+        <button className="memory-library" onClick={onMemory}>
+          Fiches issues du manuscrit
+        </button>
+      )}
       <div className="library-toolbar">
         <button onClick={connect}>
           <Plus size={14} />
-          Ajouter un vault
+          Ajouter un dossier de sources
         </button>
         {!owned && (
           <button disabled={busy} onClick={() => void createVault()}>
-            <Plus size={14} /> Créer mon vault
+            <Plus size={14} /> Créer mon dossier de sources
           </button>
         )}
         {owned && (
@@ -164,50 +173,52 @@ export function Library({
           </button>
         )}
       </div>
-      {adding && owned && (
-        <form
-          className="new-vault-entity"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void createEntity();
-          }}
-        >
-          <label>
-            Type
-            <select value={entityKind} onChange={(e) => setEntityKind(e.target.value)}>
-              <option value="personne">Personne</option>
-              <option value="lieu">Lieu</option>
-              <option value="organisation">Organisation</option>
-              <option value="evenement">Événement</option>
-              <option value="concept">Concept</option>
-              <option value="croyance">Croyance ou tradition</option>
-              <option value="oeuvre">Œuvre</option>
-              <option value="document">Document ou source</option>
-              <option value="objet">Objet</option>
-            </select>
-          </label>
-          <label>
-            Nom
-            <input required value={entityName} onChange={(e) => setEntityName(e.target.value)} />
-          </label>
-          <label>
-            Description
-            <textarea
-              rows={2}
-              value={entityDescription}
-              onChange={(e) => setEntityDescription(e.target.value)}
-            />
-          </label>
-          <div className="dialog-actions">
-            <button type="button" onClick={() => setAdding(false)}>
-              Annuler
-            </button>
-            <button className="primary" disabled={busy || !entityName.trim()}>
-              Créer la fiche
-            </button>
-          </div>
-        </form>
-      )}
+      <Presence kind="content">
+        {adding && owned && (
+          <form
+            className="new-vault-entity"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void createEntity();
+            }}
+          >
+            <label>
+              Type
+              <select value={entityKind} onChange={(e) => setEntityKind(e.target.value)}>
+                <option value="personne">Personne</option>
+                <option value="lieu">Lieu</option>
+                <option value="organisation">Organisation</option>
+                <option value="evenement">Événement</option>
+                <option value="concept">Concept</option>
+                <option value="croyance">Croyance ou tradition</option>
+                <option value="oeuvre">Œuvre</option>
+                <option value="document">Document ou source</option>
+                <option value="objet">Objet</option>
+              </select>
+            </label>
+            <label>
+              Nom
+              <input required value={entityName} onChange={(e) => setEntityName(e.target.value)} />
+            </label>
+            <label>
+              Description
+              <textarea
+                rows={2}
+                value={entityDescription}
+                onChange={(e) => setEntityDescription(e.target.value)}
+              />
+            </label>
+            <div className="dialog-actions">
+              <button type="button" onClick={() => setAdding(false)}>
+                Annuler
+              </button>
+              <button className="primary" disabled={busy || !entityName.trim()}>
+                Créer la fiche
+              </button>
+            </div>
+          </form>
+        )}
+      </Presence>
       {vaults.length ? (
         vaults.map((v) => (
           <div className="vault" key={v.id}>
@@ -216,7 +227,7 @@ export function Library({
               <strong>{v.name}</strong>
               <small>
                 {v.available
-                  ? `${v.count} document${v.count === 1 ? '' : 's'} · ${v.owned ? 'Vault Ariane' : 'Lecture seule'}`
+                  ? `${v.count} document${v.count === 1 ? '' : 's'} · ${v.owned ? 'Dossier Ariane' : 'Lecture seule'}`
                   : 'Dossier introuvable'}
               </small>
               {!v.owned && (
@@ -234,13 +245,16 @@ export function Library({
                 </button>
               )}
             </div>
-            <p className="source-path">{v.path}</p>
+            <AnimatedDetails className="source-details" summary={<>Emplacement du dossier</>}>
+              <p className="source-path">{v.path}</p>
+            </AnimatedDetails>
             <label>
-              Périmètre <small>— dossiers ou fichiers, un par ligne ; vide = tout le vault</small>
+              Dossiers inclus <small>— dossiers ou fichiers, un par ligne</small>
               <textarea
                 rows={2}
                 value={scopes[v.id] ?? v.scope.join('\n')}
-                placeholder="Personnes&#10;Lieux"
+                aria-label={'Dossiers inclus dans ' + v.name}
+                placeholder="Tous les dossiers"
                 onChange={(e) => setScopes({ ...scopes, [v.id]: e.target.value })}
                 onBlur={(e) => {
                   void request('vaultScope', {
@@ -259,18 +273,22 @@ export function Library({
         ))
       ) : (
         <Empty>
-          Ajoutez un vault, ou glissez son dossier depuis le Finder. Le projet reste indépendant de
-          ses sources.
+          Ajoutez un dossier de sources (vault), ou glissez-le depuis le Finder. Le projet reste
+          indépendant de ses sources.
         </Empty>
       )}
       <p className="hint">
-        {!native &&
-          'Aperçu navigateur : les fiches sont enregistrées dans ce navigateur, sans créer de fichiers. '}
-        {available
-          ? 'EmbeddingGemma 300M · Q8 · Recherche locale multilingue'
-          : 'Moteur sémantique non disponible dans cet environnement.'}{' '}
-        · Markdown et PDF textuels. Les images restent consultables sans OCR.
+        Markdown et PDF textuels. Les images restent consultables sans reconnaissance du texte.
       </p>
+      <AnimatedDetails className="source-details" summary={<>Détails de la recherche locale</>}>
+        <p className="hint">
+          {!native &&
+            'Aperçu navigateur : les fiches sont enregistrées dans ce navigateur, sans créer de fichiers. '}
+          {available
+            ? 'EmbeddingGemma 300M · Q8 · Recherche locale multilingue'
+            : 'Moteur sémantique non disponible dans cet environnement.'}
+        </p>
+      </AnimatedDetails>
       {report.length > 0 && (
         <div className="index-report">
           {report.slice(0, 12).map((r, i) => (

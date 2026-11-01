@@ -1,3 +1,4 @@
+import { Presence } from '../components/Presence';
 import { useEffect, useState } from 'react';
 import { diffArrays, diffWordsWithSpace } from 'diff';
 import { request } from '../app/client';
@@ -161,15 +162,17 @@ export function History(p: Props) {
             );
           })}
         </div>
-        {confirm && (
-          <div className="inline-confirm">
-            <p>Revenir à « {confirm.name} » ? L’état actuel sera conservé dans l’historique.</p>
-            <button onClick={() => setConfirm(null)}>Annuler</button>
-            <button className="primary" disabled={busy} onClick={() => void restore(confirm)}>
-              Restaurer
-            </button>
-          </div>
-        )}
+        <Presence kind="content">
+          {confirm && (
+            <div className="inline-confirm">
+              <p>Revenir à « {confirm.name} » ? L’état actuel sera conservé dans l’historique.</p>
+              <button onClick={() => setConfirm(null)}>Annuler</button>
+              <button className="primary" disabled={busy} onClick={() => void restore(confirm)}>
+                Restaurer
+              </button>
+            </div>
+          )}
+        </Presence>
       </Dialog>
     );
   return (

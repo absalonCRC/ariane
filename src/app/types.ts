@@ -99,7 +99,7 @@ export interface TextPatch {
 }
 export type SaveState = 'saved' | 'editing' | 'saving' | 'error';
 export type Surface =
-  'none' | 'settings' | 'sources' | 'history' | 'prepare' | 'export' | 'projects';
+  'none' | 'settings' | 'preferences' | 'sources' | 'history' | 'prepare' | 'export' | 'projects';
 
 export interface Enrichment {
   fields: { field: string; value: string; target: string | null; evidence: string[]; status: 'derived' | 'confirmed' | 'conflict' }[];

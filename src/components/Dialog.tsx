@@ -14,8 +14,16 @@ export function Dialog({ title, onClose, children, wide }: Props) {
     const d = ref.current!;
     d.show();
     const escape = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape' || event.defaultPrevented || !d.open) return;
-      const dialogs = document.querySelectorAll('dialog[open]');
+      if (
+        event.key !== 'Escape' ||
+        event.defaultPrevented ||
+        !d.open ||
+        d.closest('[data-phase="exit"]')
+      )
+        return;
+      const dialogs = [...document.querySelectorAll('dialog[open]')].filter(
+        (dialog) => !dialog.closest('[data-phase="exit"]'),
+      );
       if (dialogs[dialogs.length - 1] !== d) return;
       event.preventDefault();
       event.stopPropagation();
@@ -35,7 +43,9 @@ export function Dialog({ title, onClose, children, wide }: Props) {
           <X size={16} />
         </button>
       </div>
-      {children}
+      <div className="state-content" key={title}>
+        {children}
+      </div>
     </dialog>
   );
 }

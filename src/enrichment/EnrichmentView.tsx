@@ -1,3 +1,4 @@
+import { AnimatedDetails } from '../components/AnimatedDetails';
 import { useState } from 'react';
 import { request } from '../app/client';
 import type { Source } from '../app/types';
@@ -67,11 +68,15 @@ export function EnrichmentView({
           ))}
         </dl>
       )}
-      <details open={data.passages.length <= 3}>
-        <summary>
-          {data.passages.length} instance{data.passages.length > 1 ? 's' : ''} liée
-          {data.passages.length > 1 ? 's' : ''}
-        </summary>
+      <AnimatedDetails
+        open={data.passages.length <= 3}
+        summary={
+          <>
+            {data.passages.length} instance{data.passages.length > 1 ? 's' : ''} liée
+            {data.passages.length > 1 ? 's' : ''}
+          </>
+        }
+      >
         {data.passages.map((p) => (
           <article key={p.id} className="enrichment-passage">
             <button className="source-link" onClick={() => onLocate(p.section, p.node, p.quote)}>
@@ -102,7 +107,7 @@ export function EnrichmentView({
             </button>
           </article>
         ))}
-      </details>
+      </AnimatedDetails>
       {data.ignored > 0 && (
         <button disabled={busy} onClick={() => void ignore(null)}>
           Rétablir les instances masquées ({data.ignored})
