@@ -37,9 +37,12 @@ __pycache__/
 src-tauri/icons/*
 !src-tauri/icons/icon.icns
 !src-tauri/icons/icon.png
+!src-tauri/icons/ariane-source.png
 src/assets/*
 !src/assets/ariane-logo.svg
 !src/assets/ariane-wordmark-literary.svg
+!src/assets/ariane-wordmark-lowercase-v1.png
+!src/assets/ariane-wordmark-lowercase.png
 # Screenshots selected for the public project presentation.
 !docs/media/
 !docs/media/ecriture.png

@@ -5,6 +5,7 @@ import { history, defaultKeymap, historyKeymap, isolateHistory } from '@codemirr
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { liveMarkdown } from './markdown';
+import { focusTableCell } from './liveTables';
 import { compose, sectionMapping, type Span } from './composite';
 import type { Outline, Section, Settings } from '../app/types';
 import { outlineEditor, type OutlineEditor } from './outline/state';
@@ -134,7 +135,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
         ...formatMarkdown(v.state, format, spans.current),
         annotations: isolateHistory.of('full'),
       });
-      v.focus();
+      if (format !== 'table' || !focusTableCell(v, v.state.selection.main.from)) v.focus();
     },
     revealNode: (id) =>
       view.current && outlineRef.current ? outlineRef.current.reveal(view.current, id) : false,

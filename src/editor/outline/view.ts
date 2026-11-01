@@ -11,6 +11,7 @@ import {
   type ViewUpdate,
 } from '@codemirror/view';
 import type { OutlineEditor, OutlineEntry, OutlineSession } from './state';
+import { tableHiddenRanges } from '../liveTables';
 
 export function outlinePresentation(outline: OutlineEditor) {
   let activeDrag: { id: string; cancel: () => void } | null = null;
@@ -287,6 +288,7 @@ export function outlinePresentation(outline: OutlineEditor) {
     return target;
   }
   return [
+    tableHiddenRanges.of(hidden),
     Prec.highest(
       keymap.of([
         {

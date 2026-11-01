@@ -226,9 +226,9 @@
 .menu-trigger::before {
   content: '';
   position: absolute;
-  top: 29px;
-  width: 14px;
-  height: 14px;
+  top: 22px;
+  width: 18px;
+  height: 18px;
   background: #f2f2f2;
   opacity: 0;
   pointer-events: none;
@@ -240,8 +240,8 @@
 }
 .menu-trigger::before {
   right: 100%;
-  -webkit-mask-image: radial-gradient(circle at 0 0, transparent 13px, black 13.5px);
-  mask-image: radial-gradient(circle at 0 0, transparent 13px, black 13.5px);
+  -webkit-mask-image: radial-gradient(circle at 0 0, transparent 17px, black 17.5px);
+  mask-image: radial-gradient(circle at 0 0, transparent 17px, black 17.5px);
 }
 .menu-control[data-open='true'] .menu-trigger::before {
   opacity: 1;
@@ -426,6 +426,77 @@
 .cm-line {
   padding: 0 !important;
   transition: color 0.18s;
+}
+.markdown-table-preview {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0.5em 0 0.8em;
+  cursor: text;
+  user-select: none;
+}
+.markdown-table-preview-quoted {
+  border-left: 2px solid #dedede;
+  padding-left: 1em;
+}
+.markdown-table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 0.25em;
+  opacity: 0;
+  transition: opacity var(--motion-fast) ease;
+}
+.markdown-table-preview:hover .markdown-table-actions,
+.markdown-table-preview:focus-within .markdown-table-actions {
+  opacity: 1;
+}
+.markdown-table-actions button {
+  padding: 4px 7px;
+  font: 11px var(--ui);
+  color: #666;
+}
+.markdown-table-preview input.markdown-table-cell-input {
+  width: 100%;
+  min-width: 4em;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  user-select: text;
+}
+.markdown-table-preview :is(td, th):focus-visible,
+.markdown-table-preview :is(td, th):focus-within {
+  outline: 2px solid #999;
+  outline-offset: -2px;
+}
+.markdown-table-preview table,
+.read-prose table {
+  border-collapse: collapse;
+  font-size: 0.8em;
+  line-height: 1.4;
+}
+.markdown-table-preview th,
+.markdown-table-preview td,
+.read-prose th,
+.read-prose td {
+  border: 1px solid #dedede;
+  padding: 0.35em 0.65em;
+  min-width: 4em;
+  vertical-align: top;
+}
+.markdown-table-preview th,
+.read-prose th {
+  background: #f7f7f7;
+  font-weight: 600;
+}
+.read-prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
 }
 .cm-line.outline-line {
   position: relative;
@@ -643,6 +714,10 @@
 .depth-control[data-open='true'] {
   background: #f2f2f2;
 }
+.statusbar:has(.settings-control[data-open='true']) .depth-control[data-open='true'] {
+  width: calc(var(--writing-panel-width) - 68px + var(--writing-panel-right));
+  justify-content: space-between;
+}
 .depth-label {
   flex: 0 0 auto;
   width: auto;
@@ -701,6 +776,12 @@
     .depth-control,
   .statusbar:has(.bottom-panel[data-open='true']) .depth-control[data-open='true'] {
     bottom: 95px;
+  }
+  .statusbar:has(.settings-control[data-open='true']):not(:has(.bottom-panel[data-open='true'])):not(:has(.writing-counter[data-open='true'])) .depth-control[data-open='true'] {
+    bottom: 11px;
+  }
+  .statusbar:has(.settings-control[data-open='true']):has(.depth-control[data-open='true']):not(:has(.bottom-panel[data-open='true'])):not(:has(.writing-counter[data-open='true'])) .bottom-controls {
+    left: min(50%, calc(100% - var(--writing-panel-right) - var(--writing-panel-width) - 110px));
   }
 }
 input[type='range'] {
@@ -795,9 +876,9 @@ input[type='range'] {
 .settings-trigger::before {
   content: '';
   position: absolute;
-  top: -11px;
-  width: 14px;
-  height: 14px;
+  top: -8px;
+  width: 18px;
+  height: 18px;
   background: #f2f2f2;
   opacity: 0;
   pointer-events: none;
@@ -809,8 +890,8 @@ input[type='range'] {
 }
 .settings-trigger::before {
   right: 100%;
-  -webkit-mask-image: radial-gradient(circle at 0 100%, transparent 13px, black 13.5px);
-  mask-image: radial-gradient(circle at 0 100%, transparent 13px, black 13.5px);
+  -webkit-mask-image: radial-gradient(circle at 0 100%, transparent 17px, black 17.5px);
+  mask-image: radial-gradient(circle at 0 100%, transparent 17px, black 17.5px);
 }
 .settings-control[data-open='true'] .settings-trigger::before {
   opacity: 1;

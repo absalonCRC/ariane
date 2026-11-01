@@ -8,6 +8,7 @@ import {
   type ViewUpdate,
 } from '@codemirror/view';
 import { RangeSetBuilder } from '@codemirror/state';
+import { liveTables } from './liveTables';
 const delimiters = new Set([
   'HeaderMark',
   'EmphasisMark',
@@ -52,7 +53,7 @@ class FootnoteMarker extends WidgetType {
     return marker;
   }
 }
-export const liveMarkdown = ViewPlugin.fromClass(
+const inlineMarkdown = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
     constructor(view: EditorView) {
@@ -128,3 +129,4 @@ export const liveMarkdown = ViewPlugin.fromClass(
   },
   { decorations: (v) => v.decorations },
 );
+export const liveMarkdown = [inlineMarkdown, liveTables];

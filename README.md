@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="src/assets/ariane-wordmark-literary.svg" alt="Ariane" width="250">
+  <img src="src/assets/ariane-wordmark-lowercase.png" alt="ariane" width="250">
   <p><strong>Un lieu pour écrire. Des sources à portée de pensée.</strong></p>
   <p>Un éditeur Markdown local pour les textes longs, conçu pour macOS.</p>
   <p>
