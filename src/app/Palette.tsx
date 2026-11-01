@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import type { ManuscriptMatch } from './projectSearch';
 import { Search } from 'lucide-react';
 import { useExitPresence } from '../components/useExitPresence';
 export interface Command {
@@ -17,6 +18,10 @@ export function Palette({
   searchScope,
   onTextSearch,
   onNextMatch,
+  initialQuery = '',
+  matches,
+  matchTotal = 0,
+  onMatch,
   panel,
   retainContent = false,
 }: {
@@ -29,6 +34,10 @@ export function Palette({
   searchScope: string;
   onTextSearch: (query: string) => void;
   onNextMatch: (query: string, backwards: boolean) => void;
+  initialQuery?: string;
+  matches?: ManuscriptMatch[];
+  matchTotal?: number;
+  onMatch?: (hit: ManuscriptMatch) => void;
   panel: HTMLElement | null;
   retainContent?: boolean;
 }) {
@@ -39,7 +48,9 @@ export function Palette({
   useLayoutEffect(() => {
     if (!open) return;
     setSelected(0);
-    setQuery(!textSearch && !sections ? '/' : '');
+    const initial = !textSearch && !sections ? '/' : sections ? '' : initialQuery;
+    setQuery(initial);
+    onTextSearch(initial);
     const previouslyFocused = document.activeElement;
     input.current?.focus();
     // Wait for the shared panel to become visible and interactive.
@@ -47,7 +58,7 @@ export function Palette({
       if (document.activeElement === previouslyFocused) input.current?.focus();
     }, 100);
     return () => window.clearTimeout(timer);
-  }, [open, sections, textSearch, searchScope]);
+  }, [open, sections, textSearch, searchScope, initialQuery]);
   const commandSearch = !sections && query.startsWith('/');
   const searchTerm = (commandSearch ? query.slice(1) : query).trim().toLocaleLowerCase();
   const filtered =
@@ -73,7 +84,7 @@ export function Palette({
     >
       <button
         className="icon-button header-search-trigger"
-        aria-label={open ? 'Fermer la recherche' : 'Rechercher dans le texte'}
+        aria-label={open ? 'Fermer la recherche' : 'Rechercher dans les textes et les vaults'}
         aria-expanded={open}
         aria-controls="bottom-writing-panel"
         onClick={() => (open ? onClose() : onOpen())}
@@ -87,27 +98,55 @@ export function Palette({
             <input
               ref={input}
               aria-label={
-                sections ? 'Rechercher une section' : 'Rechercher dans le texte ou les commandes'
+                sections ? 'Rechercher une section' : 'Rechercher dans les textes et les vaults'
               }
-              placeholder={sections ? 'Rechercher une section…' : 'Rechercher dans le texte…'}
+              placeholder={
+                sections ? 'Rechercher une section…' : 'Rechercher dans les textes et les vaults…'
+              }
               value={query}
               onChange={(event) => {
                 setQuery(event.target.value);
                 setSelected(0);
-                if (!sections)
-                  onTextSearch(event.target.value.startsWith('/') ? '' : event.target.value);
+                if (!sections) onTextSearch(event.target.value);
               }}
-              role={commandSearch || sections ? 'combobox' : undefined}
-              aria-expanded={commandSearch || (sections && !!searchTerm) ? true : undefined}
-              aria-controls={commandSearch || sections ? 'palette-results' : undefined}
-              aria-activedescendant={filtered[selected] ? `palette-result-${selected}` : undefined}
+              role="combobox"
+              aria-expanded={commandSearch || !!searchTerm}
+              aria-controls={commandSearch || sections ? 'palette-results' : 'manuscript-results'}
+              aria-activedescendant={
+                filtered[selected]
+                  ? `palette-result-${selected}`
+                  : !commandSearch && !sections && matches?.[selected]
+                    ? `manuscript-result-${selected}`
+                    : undefined
+              }
               onKeyDown={(event) => {
-                if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && filtered.length) {
+                if (
+                  !sections &&
+                  !commandSearch &&
+                  matches?.length &&
+                  (event.key === 'ArrowDown' || event.key === 'ArrowUp')
+                ) {
                   event.preventDefault();
-                  setSelected((current) => (current + (event.key === 'ArrowDown' ? 1 : -1) + filtered.length) % filtered.length);
+                  setSelected(
+                    (current) =>
+                      (current + (event.key === 'ArrowDown' ? 1 : -1) + matches.length) %
+                      matches.length,
+                  );
+                } else if (
+                  (event.key === 'ArrowDown' || event.key === 'ArrowUp') &&
+                  filtered.length
+                ) {
+                  event.preventDefault();
+                  setSelected(
+                    (current) =>
+                      (current + (event.key === 'ArrowDown' ? 1 : -1) + filtered.length) %
+                      filtered.length,
+                  );
                 } else if (event.key === 'Enter' && !sections && !commandSearch) {
                   event.preventDefault();
-                  onNextMatch(query, event.shiftKey);
+                  if (matches?.length && onMatch)
+                    onMatch(matches[Math.min(selected, matches.length - 1)]);
+                  else onNextMatch(query, event.shiftKey);
                 } else if (event.key === 'Enter' && filtered[selected]) {
                   event.preventDefault();
                   run(filtered[selected]);
@@ -115,7 +154,12 @@ export function Palette({
               }}
             />
             {(commandSearch || (sections && !!searchTerm)) && (
-              <div id="palette-results" className="header-search-results" role="listbox" aria-label="Résultats de recherche">
+              <div
+                id="palette-results"
+                className="header-search-results"
+                role="listbox"
+                aria-label="Résultats de recherche"
+              >
                 {filtered.length ? (
                   filtered.map((command, index) => (
                     <button
@@ -135,7 +179,40 @@ export function Palette({
                 )}
               </div>
             )}
-            <span className="sr-only" aria-live="polite">{filtered[selected] ? `${selected + 1} sur ${filtered.length} : ${filtered[selected].label}` : ''}</span>
+            {!sections && !commandSearch && !!searchTerm && matches && (
+              <div className="manuscript-search-results">
+                <small role="status">
+                  {matchTotal
+                    ? `${matchTotal} résultat${matchTotal > 1 ? 's' : ''} dans les textes`
+                    : 'Aucun passage dans les textes'}
+                  {matchTotal > matches.length
+                    ? ` · ${matches.length} affichés, précisez la recherche`
+                    : ''}
+                </small>
+                <div id="manuscript-results" role="listbox" aria-label="Passages du projet">
+                  {matches.map((hit, index) => (
+                    <button
+                      role="option"
+                      aria-selected={selected === index}
+                      id={`manuscript-result-${index}`}
+                      key={hit.key}
+                      className="manuscript-search-result"
+                      data-selected={selected === index}
+                      onMouseEnter={() => setSelected(index)}
+                      onClick={() => onMatch?.(hit)}
+                    >
+                      <strong>{hit.title}</strong>
+                      <span>{hit.excerpt}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <span className="sr-only" aria-live="polite">
+              {filtered[selected]
+                ? `${selected + 1} sur ${filtered.length} : ${filtered[selected].label}`
+                : ''}
+            </span>
           </div>,
           panel,
         )}

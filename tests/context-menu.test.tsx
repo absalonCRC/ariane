@@ -218,7 +218,7 @@ describe('comportement du menu', () => {
       window.removeEventListener('keydown', escape);
     }
   });
-  it('targets an inactive binder row and keeps adding actions out of a scene menu', async () => {
+  it('targets an inactive binder row and offers insertion after a scene', async () => {
     const rename = vi.fn(async () => {}),
       select = vi.fn(),
       add = vi.fn();
@@ -256,7 +256,7 @@ describe('comportement du menu', () => {
     expect(menu.textContent).not.toContain('Ajouter une scène ici');
     await act(async () =>
       [...menu.querySelectorAll('button')]
-        .find((button) => button.textContent === 'Renommer')!
+        .find((button) => button.textContent?.startsWith('Renommer'))!
         .click(),
     );
     const input = host.querySelector<HTMLInputElement>('.tree-rename')!;

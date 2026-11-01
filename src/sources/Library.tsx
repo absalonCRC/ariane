@@ -1,6 +1,6 @@
 import { AnimatedDetails } from '../components/AnimatedDetails';
 import { Presence } from '../components/Presence';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Plus, RefreshCw, FolderOpen, Pause, X } from 'lucide-react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { listen } from '@tauri-apps/api/event';
@@ -13,7 +13,25 @@ export interface IndexProgress {
   file: string;
   semantic: boolean;
 }
+function LibraryFrame({
+  embedded,
+  onClose,
+  children,
+}: {
+  embedded?: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  return embedded ? (
+    <div className="embedded-library">{children}</div>
+  ) : (
+    <Dialog title="Sources du projet" onClose={onClose} wide>
+      {children}
+    </Dialog>
+  );
+}
 export function Library({
+  embedded,
   onClose,
   onError,
   onRefresh,
@@ -21,6 +39,7 @@ export function Library({
   onBusy,
   onMemory,
 }: {
+  embedded?: boolean;
   onClose: () => void;
   onError: (e: unknown) => void;
   onRefresh: () => void;
@@ -141,7 +160,7 @@ export function Library({
     };
   }, []);
   return (
-    <Dialog title="Sources du projet" onClose={onClose} wide>
+    <LibraryFrame embedded={embedded} onClose={onClose}>
       {onMemory && native && (
         <button className="memory-library" onClick={onMemory}>
           Fiches issues du manuscrit
@@ -296,6 +315,6 @@ export function Library({
           ))}
         </div>
       )}
-    </Dialog>
+    </LibraryFrame>
   );
 }

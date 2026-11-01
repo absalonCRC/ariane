@@ -46,7 +46,7 @@ pub fn descendants(all: &[Section], id: &str) -> Vec<Section> {
 }
 pub fn capture(root: &Path, name: &str, scope: Option<String>) -> Result<Version> {
     let c = project::database(root)?;
-    let all = project::sections(&c)?;
+    let all = project::all_sections(&c)?;
     let sections = scope
         .as_ref()
         .map_or(all.clone(), |id| descendants(&all, id));
@@ -159,7 +159,7 @@ pub fn restore(root: &Path, id: &str) -> Result<Project> {
         })
         .app()?;
     let snapshot = unpack(&payload)?;
-    let before = project::sections(&c)?;
+    let before = project::all_sections(&c)?;
     let affected = if let Some(scope) = &v.scope {
         descendants(&before, scope)
     } else {
@@ -181,7 +181,7 @@ pub fn restore(root: &Path, id: &str) -> Result<Project> {
             .find(|old| old.id == s.id)
             .map_or(s.revision, |old| old.revision)
             + 1;
-        tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,mirror,outline) VALUES(?,?,?,?,?,?,?,?,?,?,'',?)",params![s.id,s.parent,s.title,s.kind,s.position,s.text,rev,s.synopsis,s.status,s.goal,s.outline.as_ref().map(serde_json::to_string).transpose().app()?]).app()?;
+        tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,mirror,outline,role,trashed,included) VALUES(?,?,?,?,?,?,?,?,?,?,'',?,?,?,?)",params![s.id,s.parent,s.title,s.kind,s.position,s.text,rev,s.synopsis,s.status,s.goal,s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included]).app()?;
     }
     if v.scope.is_none() {
         tx.execute("DELETE FROM citations", []).app()?;
@@ -205,6 +205,7 @@ pub fn restore(root: &Path, id: &str) -> Result<Project> {
         )
         .app()?;
     }
+    tx.execute("DELETE FROM structure_history", []).app()?;
     tx.commit().app()?;
     project::load(root)
 }

@@ -24,6 +24,7 @@ import { sectionDraft, type SectionDraft } from '../project/draft';
 import { DocumentCounts } from './counts';
 import { highlightTextMatch, textSearchHighlight } from './textSearch';
 import { formatMarkdown, type MarkdownFormat } from './formatMarkdown';
+import { prepareCitationInsertion } from './citationInsertion';
 import { reviewTarget, type ReviewTarget } from './reviewTarget';
 export interface VisibleText {
   cursor?: number;
@@ -43,9 +44,12 @@ export interface EditorHandle {
   selection: () => string;
   cursor: () => number;
   prepareInsertion: () => (text: string) => boolean;
+  prepareCitation: () => (text: string) => boolean;
+  passage: () => { section: string; from: number; to: number; text: string } | null;
   revealNode: (id: string) => boolean;
   findText: (query: string, direction?: 'next' | 'previous') => void;
   clearTextSearch: () => void;
+  revealMatch: (section: string, from: number | null, query: string) => boolean;
   format: (format: MarkdownFormat) => void;
   reviewTarget: () => ReviewTarget | null;
   structure: (command: 'indent' | 'outdent' | 'up' | 'down' | 'fold') => void;
@@ -53,6 +57,7 @@ export interface EditorHandle {
 interface Props {
   sections: Section[];
   generation: number;
+  readOnly?: boolean;
   settings: Settings;
   onChange: (changes: Map<string, string>, outlines?: Map<string, Outline>) => void;
   onDraftChange?: (drafts: Map<string, SectionDraft>) => void;
@@ -142,6 +147,17 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     findText: (query, direction) => {
       if (view.current) highlightTextMatch(view.current, query, direction);
     },
+    revealMatch(section, from, query) {
+      const v = view.current, outline = outlineRef.current;
+      const span = spans.current.find(s => s.id === section);
+      if (!v || !span) return false;
+      const position = Math.min(span.to, span.from + (from ?? 0));
+      const node = outline ? [...v.state.field(outline.field).nodes].reverse().find(n => n.section === section && n.from <= position) : null;
+      if (node && outline) outline.reveal(v, node.id);
+      v.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: 'center' }) });
+      highlightTextMatch(v, from === null ? '' : query, 'current', true);
+      return true;
+    },
     clearTextSearch: () => {
       if (view.current) highlightTextMatch(view.current, '', 'current', true);
     },
@@ -154,6 +170,17 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     cursor: () => view.current?.state.selection.main.head || 0,
     reviewTarget: () =>
       view.current ? reviewTarget(view.current, spans.current, () => view.current) : null,
+    passage() {
+      const v = view.current;
+      if (!v) return null;
+      const selection = v.state.selection.main;
+      const span = spans.current.find(s => selection.from >= s.from && selection.to <= s.to);
+      return span ? { section: span.id, from: selection.from - span.from, to: selection.to - span.from,
+        text: v.state.sliceDoc(selection.from, selection.to) } : null;
+    },
+    prepareCitation() {
+      return view.current ? prepareCitationInsertion(view.current, spans.current, () => view.current) : () => false;
+    },
     prepareInsertion() {
       const v = view.current;
       if (!v) return () => false;
@@ -276,6 +303,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       selection: { anchor: Math.min(latest.current.settings.cursor, data.text.length) },
       extensions: [
         history(),
+        EditorState.transactionFilter.of(tr => tr.docChanged && latest.current.readOnly ? [] : tr),
         mapping.extensions,
         outline.extensions,
         outlinePresentation(outline),
@@ -371,12 +399,8 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
               e.preventDefault();
               const pos =
                 v.posAtCoords({ x: e.clientX, y: e.clientY }) ?? v.state.selection.main.head;
-              v.dispatch({
-                changes: {
-                  from: pos,
-                  insert: e.dataTransfer.getData('application/x-ariane-citation'),
-                },
-              });
+              prepareCitationInsertion(v, spans.current, () => view.current, { from: pos, to: pos })(
+                e.dataTransfer.getData('application/x-ariane-citation'));
               return true;
             }
             return false;
@@ -475,6 +499,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     v.dispatch({
       effects: options.current.reconfigure([
         diagnostics,
+        EditorState.readOnly.of(!!props.readOnly),
         ...(mode === 'sentence'
           ? [sentenceFocus()]
           : mode === 'paragraph'
@@ -487,6 +512,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     if (props.settings.revision) paintRevision(v);
     else v.dom.querySelectorAll('[data-remark]').forEach((e) => e.removeAttribute('data-remark'));
   }, [
+    props.readOnly,
     props.settings.focus,
     props.settings.revision,
     props.settings.language,

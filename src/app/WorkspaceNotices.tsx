@@ -19,6 +19,28 @@ export function WorkspaceNotices({ workspace }: { workspace: Workspace }) {
   return (
     <>
       <Presence kind="notice">
+        {workspace.libraryNotice && !error && !recovery && (
+          <div className="notice library-notice" role="status">
+            <span>{workspace.libraryNotice.message}</span>
+            {workspace.libraryNotice.undo && doc.project?.canUndoStructure && (
+              <button
+                disabled={workspace.libraryBusy}
+                onClick={() => void workspace.operate({ action: 'undo' })}
+              >
+                Annuler
+              </button>
+            )}
+            <button
+              className="icon-button"
+              aria-label="Fermer le message de rangement"
+              onClick={() => workspace.setLibraryNotice(null)}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+      </Presence>
+      <Presence kind="notice">
         {surface !== 'export' && exportJob.state !== 'ready' && (
           <div className="notice recovery" role="status">
             <span>

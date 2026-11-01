@@ -109,7 +109,7 @@ export function useProject(onError: (e: unknown) => void) {
     },
     [onError],
   );
-  const replaceSections = useCallback((sections: Section[], reset = true) => {
+  const replaceSections = useCallback((sections: Section[], reset = true, canUndoStructure?: boolean) => {
     if (ref.current) {
       if (!reset) {
         sections = sections.map((s) => {
@@ -119,7 +119,7 @@ export function useProject(onError: (e: unknown) => void) {
             : s;
         });
       }
-      ref.current = { ...ref.current, sections };
+      ref.current = { ...ref.current, sections, canUndoStructure: canUndoStructure ?? ref.current.canUndoStructure };
       sectionIndex.current = new Map(sections.map(section => [section.id, section]));
       setProject(ref.current);
       if (reset) setGeneration((x) => x + 1);

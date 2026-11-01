@@ -54,7 +54,8 @@ export function Export({
             </label>
             <p className="hint">
               Titres, texte Markdown et notes de bas de page seront assemblés dans l’ordre du
-              classeur.
+              projet. Les textes exclus sont omis du manuscrit entier ; l’export de la section
+              actuelle les conserve.
             </p>
             <div className="dialog-actions">
               <button onClick={onClose}>Annuler</button>

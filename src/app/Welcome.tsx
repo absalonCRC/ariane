@@ -1,156 +1,80 @@
+import { ProjectCatalog } from '../project/ProjectCatalog';
 import { Presence } from '../components/Presence';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog } from '../components/Dialog';
 import { open } from '@tauri-apps/plugin-dialog';
-import { native, request, browserProjects } from './client';
+import { native, request } from './client';
 import type { Project } from './types';
 import { ArianeWordmark } from '../components/ArianeWordmark';
-export function Welcome({
-  onOpen,
-  onError,
-}: {
+
+export function Welcome({ onOpen, onError }: {
   onOpen: (p: Project) => void;
   onError: (e: unknown) => void;
 }) {
-  const [creating, setCreating] = useState(false);
+  const [screen, setScreen] = useState<'none' | 'create' | 'open'>('none');
   const [name, setName] = useState('');
   const [busy, setBusy] = useState(false);
-  const [vaultMode, setVaultMode] = useState<'own' | 'existing'>('own');
-  const [vaultPath, setVaultPath] = useState('');
-  async function chooseVault() {
+  const menuAction = useRef<(id: string) => void>(() => {});
+  menuAction.current = id => {
+    if (id === 'open-project') setScreen('open');
+  };
+  useEffect(() => {
     if (!native) return;
-    try {
-      const chosen = await open({ directory: true, title: 'Choisir un vault Obsidian' });
-      if (typeof chosen === 'string') setVaultPath(chosen);
-    } catch (e) {
-      onError(e);
-    }
-  }
+    let disposed = false, stop: (() => void) | undefined;
+    void import('@tauri-apps/api/event')
+      .then(({listen}) => listen<string>('app-command', e => menuAction.current(e.payload)))
+      .then(unlisten => { if (disposed) unlisten(); else stop = unlisten; })
+      .catch(onError);
+    return () => { disposed = true; stop?.(); };
+  }, []);
   async function create() {
     setBusy(true);
     try {
       let path = 'browser:' + crypto.randomUUID();
       if (native) {
-        const folder = await open({
-          directory: true,
-          title: 'Choisir le dossier parent du projet',
-        });
+        const folder = await open({ directory: true, title: 'Enregistrer le projet dans…' });
         if (typeof folder !== 'string') return;
         path = folder + '/' + name.trim().replace(/[/:\\]/g, '-');
       }
-      const project = await request<Project>('create', {
-        path,
-        name: name.trim(),
-        vaultPath: vaultMode === 'existing' ? vaultPath : null,
-      });
+      const project = await request<Project>('create', { path, name: name.trim(), vaultPath: null });
       onOpen(project);
-      if (native && vaultMode === 'existing') void request('index').catch(onError);
-      setCreating(false);
-    } catch (e) {
-      onError(e);
-    } finally {
-      setBusy(false);
-    }
+      setScreen('none');
+    } catch (e) { onError(e); } finally { setBusy(false); }
   }
-  async function existing() {
+  async function openProject(path: string) {
+    setBusy(true);
+    try { onOpen(await request<Project>('open', { path })); setScreen('none'); }
+    catch (e) { onError(e); } finally { setBusy(false); }
+  }
+  async function chooseFolder() {
     try {
-      if (!native) {
-        const p = browserProjects()[0];
-        if (!p) throw new Error('Aucun projet enregistré dans ce navigateur.');
-        onOpen(await request('open', { path: p.path }));
-        return;
-      }
       const path = await open({ directory: true, title: 'Ouvrir un projet Ariane' });
-      if (typeof path === 'string') onOpen(await request('open', { path }));
-    } catch (e) {
-      onError(e);
-    }
+      if (typeof path === 'string') await openProject(path);
+    } catch (e) { onError(e); }
   }
-  return (
-    <div className="welcome">
-      <ArianeWordmark />
-      <div className="window-title" data-tauri-drag-region aria-hidden="true" />
-      <h1>Un espace pour écrire.</h1>
-      <div>
-        <button onClick={() => setCreating(true)}>Créer un projet</button>
-        <button onClick={() => void existing()}>Ouvrir un projet</button>
-      </div>
-      <p>Tout reste sur ce Mac.</p>
-      <Presence>
-        {creating && (
-          <Dialog title="Nouveau projet" onClose={() => setCreating(false)}>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                void create();
-              }}
-            >
-              <label>
-                Nom du projet
-                <input
-                  autoFocus
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Le titre de votre projet"
-                />
-              </label>
-              <p className="hint">
-                Un dossier indépendant contiendra votre manuscrit et ses versions.
-              </p>
-              <fieldset className="vault-choice">
-                <legend>Sources</legend>
-                <label>
-                  <input
-                    type="radio"
-                    name="vault"
-                    checked={vaultMode === 'own'}
-                    onChange={() => setVaultMode('own')}
-                  />{' '}
-                  Créer un vault Ariane
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="vault"
-                    checked={vaultMode === 'existing'}
-                    disabled={!native}
-                    onChange={() => setVaultMode('existing')}
-                  />{' '}
-                  Utiliser un vault Obsidian existant
-                </label>
-                {vaultMode === 'existing' && (
-                  <div>
-                    <button type="button" onClick={() => void chooseVault()}>
-                      Choisir le vault
-                    </button>
-                    <p className="hint">
-                      {vaultPath || 'Lecture seule : les notes existantes restent inchangées.'}
-                    </p>
-                  </div>
-                )}
-                {!native && (
-                  <p className="hint">
-                    Dans cet aperçu, le vault est simulé dans le navigateur. Les dossiers et la
-                    connexion à Obsidian sont disponibles dans l’application Mac.
-                  </p>
-                )}
-              </fieldset>
-              <div className="dialog-actions">
-                <button type="button" onClick={() => setCreating(false)}>
-                  Annuler
-                </button>
-                <button
-                  className="primary"
-                  disabled={!name.trim() || busy || (vaultMode === 'existing' && !vaultPath)}
-                >
-                  Créer le projet
-                </button>
-              </div>
-            </form>
-          </Dialog>
-        )}
-      </Presence>
+  return <div className="welcome">
+    <ArianeWordmark />
+    <div className="window-title" data-tauri-drag-region aria-hidden="true" />
+    <h1>Un espace pour écrire.</h1>
+    <div>
+      <button onClick={() => setScreen('create')}>Créer un projet</button>
+      <button onClick={() => setScreen('open')}>Ouvrir un projet</button>
     </div>
-  );
+    <p>Tout reste sur ce Mac.</p>
+    <Presence>
+      {screen === 'create' && <Dialog title="Nouveau projet" onClose={() => { if (!busy) setScreen('none'); }}>
+        <form onSubmit={e => { e.preventDefault(); void create(); }}>
+          <label>Nom du projet<input autoFocus required value={name} onChange={e => setName(e.target.value)} placeholder="Le titre de votre projet" /></label>
+          <div className="dialog-actions">
+            <button type="button" disabled={busy} onClick={() => setScreen('none')}>Annuler</button>
+            <button className="primary" disabled={!name.trim() || busy}>Créer le projet</button>
+          </div>
+        </form>
+      </Dialog>}
+      {screen === 'open' && <Dialog title="Ouvrir un projet" onClose={() => { if (!busy) setScreen('none'); }}>
+        {native && <button disabled={busy} onClick={() => void chooseFolder()}>Choisir un dossier…</button>}
+        <ProjectCatalog onOpen={path => { if (!busy) void openProject(path); }} onError={onError} />
+      </Dialog>}
+    </Presence>
+  </div>;
 }

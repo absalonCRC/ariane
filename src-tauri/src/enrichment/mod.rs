@@ -266,7 +266,7 @@ pub fn decorate(root: &Path, index: &Path, sources: &mut [Source]) -> Result<()>
         .iter()
         .map(|(id, s)| Ok((id.clone(), node_views(s)?)))
         .collect::<Result<_>>()?;
-    let mut q = c.prepare("SELECT e.payload,s.title,e.hash,i.id IS NOT NULL FROM enrichment_evidence e JOIN sections s ON s.id=e.section LEFT JOIN enrichment_ignored i ON i.id=e.id WHERE e.source=? AND e.fingerprint=? ORDER BY s.position,e.id").app()?;
+    let mut q = c.prepare("SELECT e.payload,s.title,e.hash,i.id IS NOT NULL FROM enrichment_evidence e JOIN sections s ON s.id=e.section LEFT JOIN enrichment_ignored i ON i.id=e.id WHERE s.trashed=0 AND e.source=? AND e.fingerprint=? ORDER BY s.position,e.id").app()?;
     for source in sources {
         if !allowed.contains(&source.id) {
             continue;

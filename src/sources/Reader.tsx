@@ -1,3 +1,6 @@
+import { SourceOccurrences } from './SourceOccurrences';
+import type { SourceOccurrence } from './occurrences';
+import type { Section } from '../app/types';
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -9,6 +12,9 @@ import { selectedSourceText, sourceContext } from './contextMenu';
 import { EnrichmentView } from '../enrichment/EnrichmentView';
 export function Reader({
   source: s,
+  sections = [],
+  contentVersion,
+  onOccurrence,
   onClose,
   projectPath,
   onChange,
@@ -17,6 +23,9 @@ export function Reader({
   onCite,
 }: {
   source: Source;
+  sections?: Section[];
+  contentVersion?: string;
+  onOccurrence?: (hit: SourceOccurrence) => void;
   onClose: () => void;
   projectPath: string;
   onChange: (source: Source) => void;
@@ -90,6 +99,15 @@ export function Reader({
               </div>
             ))}
           </dl>
+        )}
+        {onOccurrence && (
+          <SourceOccurrences
+            key={s.id}
+            source={s}
+            sections={sections}
+            contentVersion={contentVersion}
+            onLocate={onOccurrence}
+          />
         )}
         <EnrichmentView
           key={s.id}

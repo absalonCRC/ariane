@@ -34,7 +34,9 @@ export function scenesFor(
   continuous: boolean,
 ): Section[] {
   const all = continuous || !active ? ordered(sections) : descendants(sections, active);
-  return all.filter((s) => s.kind === 'scene');
+  return all.filter(
+    (s) => s.kind === 'scene' && !s.trashed && (!continuous || s.included !== false),
+  );
 }
 export function sectionPath(sections: Section[], selected: Section | undefined): Section[] {
   const byId = new Map(sections.map((section) => [section.id, section]));
@@ -47,4 +49,45 @@ export function sectionPath(sections: Section[], selected: Section | undefined):
     current = current.parent ? byId.get(current.parent) : undefined;
   }
   return path;
+}
+
+export function hasChapterAncestor(sections: Section[], parent: string | null): boolean {
+  const byId = new Map(sections.map((s) => [s.id, s]));
+  const seen = new Set<string>();
+  while (parent && !seen.has(parent)) {
+    seen.add(parent);
+    const current = byId.get(parent);
+    if (current?.kind === 'chapter') return true;
+    parent = current?.parent ?? null;
+  }
+  return false;
+}
+
+export function canMoveToParent(
+  sections: Section[],
+  ids: string[],
+  parent: string | null,
+): boolean {
+  const branch = ids.flatMap((id) => descendants(sections, id));
+  if (
+    parent &&
+    (!sections.some((s) => s.id === parent && s.kind !== 'scene' && !s.trashed) ||
+      branch.some((s) => s.id === parent))
+  )
+    return false;
+  return !branch.some((s) => s.kind === 'chapter') || !hasChapterAncestor(sections, parent);
+}
+
+export function manuscriptSections(sections: Section[]): Section[] {
+  const byId = new Map(sections.map((s) => [s.id, s]));
+  const included = new Set<string>();
+  for (const s of sections) {
+    if (s.kind !== 'scene' || s.trashed || s.included === false) continue;
+    let node: Section | undefined = s;
+    while (node && !included.has(node.id)) {
+      included.add(node.id);
+      node = node.parent ? byId.get(node.parent) : undefined;
+    }
+  }
+  return ordered(sections).filter((s) => included.has(s.id) && !s.trashed);
 }

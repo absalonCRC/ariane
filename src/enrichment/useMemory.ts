@@ -169,7 +169,7 @@ export function useMemory(workspace: Workspace) {
   }, [workspace.reader?.id, workspace.reader?.page]);
 
   useEffect(() => {
-    if (doc.status !== 'saved' || recording) {
+    if (doc.status !== 'saved' || recording || workspace.searching) {
       activity(true);
       return;
     }
@@ -310,6 +310,7 @@ export function useMemory(workspace: Workspace) {
     workspace.viewport?.cursor,
     workspace.active,
     recording,
+    workspace.searching,
     refresh,
   ]);
 

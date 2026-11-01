@@ -1,7 +1,7 @@
 import { usePresenceValue } from './Presence';
 import { useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Bold, Italic, Strikethrough, Link2, Quote } from 'lucide-react';
+import { Bold, Italic, Strikethrough, Link2, Quote, MessageSquare } from 'lucide-react';
 import type { MarkdownFormat } from '../editor/formatMarkdown';
 import { useContextMenuOpen } from './ContextMenu';
 
@@ -20,10 +20,11 @@ const actions = [
 
 export function SelectionToolbar({
   anchor,
-  onFormat,
+  onFormat, onAnnotate,
 }: {
   anchor: SelectionAnchor | null;
   onFormat: (format: MarkdownFormat) => void;
+  onAnnotate?: () => void;
 }) {
   const menuOpen = useContextMenuOpen();
   const ref = useRef<HTMLDivElement>(null);
@@ -69,6 +70,7 @@ export function SelectionToolbar({
         }
       }}
     >
+      {onAnnotate && <button type="button" aria-label="Annoter la sélection" title="Annoter la sélection" onClick={onAnnotate}><MessageSquare size={15} strokeWidth={1.6} /></button>}
       {actions.map(([format, label, Icon]) => (
         <button
           key={format}

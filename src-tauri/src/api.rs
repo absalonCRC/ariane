@@ -41,6 +41,16 @@ pub struct AppState {
 )]
 pub enum Request {
     Bootstrap,
+    Annotations { project_path: String },
+    AddAnnotation { project_path: String, section: String, revision: i64, from: usize, to: usize, note: String },
+    UpdateAnnotation { project_path: String, id: String, revision: i64, note: String, done: bool },
+    ImportPreview { source: String },
+    ImportIntoProject { source: String, project_path: String },
+    ManuscriptOperation { project_path: String, operation: project::manuscript::Operation },
+    Projects,
+    ProjectCatalog { path: String, pinned: bool, archived: bool },
+    LibraryOperation { operation: project::library::Operation },
+    BrowseSources { query: String, vault: Option<String>, kind: Option<String>, folder: Option<String>, offset: usize },
     Create {
         path: String,
         name: String,
@@ -56,6 +66,7 @@ pub enum Request {
         parent: Option<String>,
         title: String,
         kind: String,
+        role: Option<String>,
     },
     Update {
         section: Section,
@@ -178,7 +189,9 @@ fn activate(state: &AppState, path: &Path) -> Result<Project> {
     if !path.join("ariane.sqlite").is_file() {
         return Err("Ce dossier ne contient pas de projet Ariane.".into());
     }
+    let path = &path.canonicalize().app()?;
     let p = project::load(path)?;
+    project::catalog::remember(&state.data, path, &p.name)?;
     let mut current = state.current.lock().map_err(|e| e.to_string())?;
     let mut session = tempfile::NamedTempFile::new_in(&state.data).app()?;
     use std::io::Write;
@@ -198,6 +211,9 @@ pub fn handle(
 ) -> Result<serde_json::Value> {
     let index = state.data.join("sources.sqlite");
     match request {
+        Request::ImportPreview { source } => json(crate::import::preview(&state.resources, Path::new(&source))?),
+        Request::Projects => json(project::catalog::list(&state.data)?),
+        Request::ProjectCatalog { path, pinned, archived } => json(project::catalog::update(&state.data, &path, pinned, archived)?),
         Request::MemoryActivity { active } => { state.memory_activity.writing(active); Ok(json!(true)) }
         Request::MemoryStatus => Ok(json!({"available":Engine::available(&state.resources), "entitiesAvailable":EntityEngine::available(&state.data, &state.resources)})),
         Request::Bootstrap => {
@@ -205,8 +221,9 @@ pub fn handle(
             if let Ok(text) = std::fs::read_to_string(path) {
                 if let Ok(v) = serde_json::from_str::<serde_json::Value>(&text) {
                     if let Some(path) = v["path"].as_str() {
-                        let path = Path::new(path);
-                        let project = project::load(path)?;
+                        let path = Path::new(path).canonicalize().app()?;
+                        let project = project::load(&path)?;
+                        project::catalog::remember(&state.data, &path, &project.name)?;
                         *state.current.lock().map_err(|e| e.to_string())? = Some(path.to_owned());
                         return json(project);
                     }
@@ -260,6 +277,29 @@ pub fn handle(
         other => {
             let root = root(state)?;
             match other {
+                Request::Annotations { project_path } => {
+                    if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
+                    json(project::annotations::list(&root)?)
+                }
+                Request::AddAnnotation { project_path, section, revision, from, to, note } => {
+                    if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
+                    json(project::annotations::create(&root, &section, revision, from, to, &note)?)
+                }
+                Request::UpdateAnnotation { project_path, id, revision, note, done } => {
+                    if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
+                    json(project::annotations::update(&root, &id, revision, &note, done)?)
+                }
+                Request::ManuscriptOperation { project_path, operation } => {
+                    if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
+                    json(project::manuscript::apply(&root, operation)?)
+                }
+                Request::ImportIntoProject { source, project_path } => {
+                    if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
+                    let report = crate::import::import_into(&root, &state.resources, Path::new(&source))?;
+                    Ok(json!({"project":project::load(&root)?,"report":report}))
+                }
+                Request::LibraryOperation { operation } => json(project::library::apply(&root, operation)?),
+                Request::BrowseSources { query, vault, kind, folder, offset } => json(vaults::browse(&root, &index, &query, vault.as_deref(), kind.as_deref(), folder.as_deref(), offset)?),
                 Request::MemoryQueue { project_path, section, node, revision, depth, semantic } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     let Ok(_job) = state.memory_job.try_lock() else { return Ok(json!({"busy":true})); };
@@ -360,11 +400,7 @@ pub fn handle(
                         .map(|s| json!({"id":s.id,"revision":s.revision}))
                         .collect::<Vec<_>>()))
                 }
-                Request::Add {
-                    parent,
-                    title,
-                    kind,
-                } => json(project::add(&root, parent, &title, &kind)?),
+                Request::Add { parent, title, kind, role } => json(project::library::apply(&root, project::library::Operation { action: "add".into(), ids: vec![], target: parent, placement: None, role, title: Some(title), kind: Some(kind), included: None })?.sections),
                 Request::Update { section } => json(project::update(&root, &section)?),
                 Request::Reorder { ids, id, parent } => {
                     json(project::reorder(&root, &ids, &id, parent)?)
@@ -548,6 +584,12 @@ mod tests {
     use super::*;
 
     #[test]
+    fn withdrawn_requests_are_not_dispatched() {
+        for kind in ["replaceTexts", "importProject"] {
+            assert!(serde_json::from_value::<Request>(json!({"type":kind,"source":"/tmp/a","path":"/tmp/b","projectPath":"/tmp/b","patches":[]})).is_err());
+        }
+    }
+    #[test]
     fn failed_session_write_does_not_switch_the_active_project() {
         let temp = tempfile::tempdir().unwrap();
         let old = temp.path().join("old");
@@ -568,8 +610,8 @@ mod tests {
         assert_eq!(*state.current.lock().unwrap(), Some(old));
         std::fs::remove_dir(state.data.join("session.json")).unwrap();
         assert_eq!(activate(&state, &next).unwrap().name, "Next");
-        assert_eq!(*state.current.lock().unwrap(), Some(next.clone()));
+        assert_eq!(*state.current.lock().unwrap(), Some(next.canonicalize().unwrap()));
         let session: serde_json::Value = serde_json::from_slice(&std::fs::read(state.data.join("session.json")).unwrap()).unwrap();
-        assert_eq!(session["path"], next.to_string_lossy().as_ref());
+        assert_eq!(session["path"], next.canonicalize().unwrap().to_string_lossy().as_ref());
     }
 }

@@ -1,18 +1,27 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Presence, usePresenceValue } from '../components/Presence';
 import { panelOrigin } from '../components/useSharedPanel';
 import { SelectionToolbar, type SelectionAnchor } from '../components/SelectionToolbar';
 import { WritingCounter } from '../components/WritingCounter';
 import { DepthControl } from '../components/DepthControl';
-import { ChevronRight, MoreHorizontal, Pause, Copy, ArrowUpRight } from 'lucide-react';
+import {
+  ChevronRight,
+  MoreHorizontal,
+  Pause,
+  Copy,
+  ArrowUpRight,
+  GitCompareArrows,
+} from 'lucide-react';
 import { Palette } from './Palette';
-import { request } from './client';
+import { request, native } from './client';
 import { Welcome } from './Welcome';
+import { Annotations } from '../project/AnnotationMargin';
 import { Binder } from '../project/Binder';
+import { trackSidebarPointer } from '../project/sidebarPointer';
 import { Editor } from '../editor/Editor';
 import { SourceCard } from '../sources/SourceCard';
 import { Reader } from '../sources/Reader';
-import { SourceSearch } from '../sources/Search';
+import { SearchMargin } from '../sources/SearchMargin';
 import { DocumentTitle } from '../components/DocumentTitle';
 import { ordered } from '../project/tree';
 import { PathMenu } from '../project/PathMenu';
@@ -28,6 +37,7 @@ import { Settings } from './Settings';
 import { useContextMenu } from '../components/ContextMenu';
 import { sourceContext } from '../sources/contextMenu';
 import { ArianeWordmark } from '../components/ArianeWordmark';
+const History = lazy(() => import('../history/History').then((m) => ({ default: m.History })));
 export function App() {
   const openMenu = useContextMenu();
   const workspace = useWorkspace();
@@ -44,6 +54,7 @@ export function App() {
   const [associationVersion, setAssociationVersion] = useState(0);
   const [panelNode, setPanelNode] = useState<HTMLDivElement | null>(null);
   const settingsTrigger = useRef<HTMLButtonElement>(null);
+  const [versionToolsHost, setVersionToolsHost] = useState<HTMLDivElement | null>(null);
   const panelMode = workspace.palette ? 'search' : voiceOpen ? 'voice' : 'none';
   const previousPanel = useRef<typeof panelMode>('none');
   const lastPanel = useRef<'search' | 'voice'>('search');
@@ -92,6 +103,8 @@ export function App() {
   useEffect(() => {
     if (workspace.palette) {
       setVoiceOpen(false);
+      memory.close();
+      if (!workspace.historyMode) workspace.setBinder(false);
       if (workspace.surface === 'settings') workspace.setSurface('none');
     }
   }, [workspace.palette]);
@@ -113,16 +126,13 @@ export function App() {
     setCard,
     reader,
     setReader,
-    search,
+    searching,
     setSearch,
     progress,
     groupOpen,
     setGroupOpen,
     ready,
-    setNewSection,
     createPage,
-    focusTitleId,
-    setFocusTitleId,
     menu,
     setMenu,
     newProject,
@@ -198,7 +208,7 @@ export function App() {
   const railWidth = Math.max(0, Math.min(190, innerWidth - railLeft - 25));
   const railVisible = !!workspace.marginBounds && railWidth >= 150;
   const contextVisible =
-    railVisible &&
+    !workspace.annotationsOpen && railVisible &&
     contextTop !== null &&
     contextTop + (suggestionExcerpt ? 125 : 80) < (workspace.marginBounds?.bottom ?? 0);
   return (
@@ -206,7 +216,9 @@ export function App() {
       className={
         'app ' +
         (doc.settings.font === 'mono' ? 'mono ' : '') +
-        (reader || (memory.view && !memory.origin) ? 'with-reader' : '')
+        (reader || (memory.view && !memory.origin) ? 'with-reader ' : '') +
+        (searching ? 'searching-project ' : '') +
+        (workspace.historyMode ? 'versions-mode' : '')
       }
     >
       {!binder && (
@@ -217,11 +229,12 @@ export function App() {
           aria-controls="project-sidebar"
           aria-expanded={false}
           onClick={() => setBinder(true)}
+          onPointerMove={trackSidebarPointer}
         >
           <ChevronRight size={17} strokeWidth={1.5} aria-hidden="true" />
         </button>
       )}
-      <header className="app-header">
+      <header className="app-header" inert={workspace.libraryBusy}>
         <ArianeWordmark />
         <div className="header-right">
           <div className="menu-control" data-open={menu}>
@@ -272,21 +285,45 @@ export function App() {
           selected={selected}
           continuous={doc.settings.continuous}
           onSelect={(id) => void select(id)}
-          onAdd={(parent) => void createPage(parent)}
+          onAdd={(parent) =>
+            void createPage(parent, doc.settings.continuous ? 'manuscript' : selected?.role)
+          }
         />
       </div>
       <Presence kind="sidebar">
         {binder && (
           <Binder
+            key={p.path}
+            dark={workspace.appearance.dark}
+            onToggleTheme={() =>
+              workspace.appearance.change(workspace.appearance.dark ? 'light' : 'dark')
+            }
+            onOperation={workspace.operate}
+            onConfigure={doc.configure}
+            onReadSource={read}
+            onOpenProject={workspace.openProject}
+            onError={fail}
+            sourceVersion={workspace.sourceVersion}
+            busy={workspace.libraryBusy}
             project={p}
             active={active}
+            reveal={workspace.revealInBinder}
+            onRevealed={() => workspace.setRevealInBinder(0)}
             onSelect={(id) => void select(id)}
             onSurface={(s) => {
               setSurface(s);
-              setBinder(false);
+              if (s !== 'history' && s !== 'preferences') setBinder(false);
             }}
             onClose={() => setBinder(false)}
-            onAdd={(parent, kind) => kind === 'scene' ? void createPage(parent) : setNewSection({ parent, kind })}
+            onAdd={workspace.startCreation}
+            creation={workspace.newSection}
+            creationTitle={workspace.newTitle}
+            onCreationTitle={workspace.setNewTitle}
+            onConfirmCreation={workspace.add}
+            onCancelCreation={() => {
+              workspace.setNewSection(null);
+              workspace.setNewTitle('');
+            }}
             onMove={(...args) => void move(...args)}
             onRename={async (id, title) => {
               try {
@@ -309,14 +346,19 @@ export function App() {
         )}
       </Presence>
       <main
+        inert={workspace.libraryBusy}
+        aria-busy={workspace.libraryBusy}
         className={
           'writing-layout' +
           (doc.settings.typewriter ? ' typewriter' : '') +
-          (binder ? ' sidebar-open' : '')
+          (binder ? ' sidebar-open' : '') +
+          (workspace.historyMode ? ' history-layout' : '')
         }
       >
         <div
           className="manuscript-column"
+          hidden={workspace.historyMode}
+          inert={workspace.historyMode}
           style={
             { '--typewriter-line-half': `${doc.settings.fontSize * 0.75}px` } as React.CSSProperties
           }
@@ -325,17 +367,19 @@ export function App() {
             key={doc.settings.continuous ? p.path : selected?.id}
             title={doc.settings.continuous ? p.name : selected?.title || ''}
             readOnly={doc.settings.continuous}
-            autoFocus={!!selected && !doc.settings.continuous && focusTitleId === selected.id}
-            onAutoFocus={() => setFocusTitleId(null)}
             onEnter={() => editor.current?.focus()}
             onCommit={(title) => {
               if (selected) void update({ ...selected, title }).catch(fail);
             }}
           />
+          {!doc.settings.continuous && selected?.included === false && (
+            <p className="working-text-label">Texte de travail · Hors manuscrit</p>
+          )}
           <Editor
             ref={editor}
             sections={scenes}
             generation={doc.generation}
+            readOnly={workspace.libraryBusy}
             settings={doc.settings}
             onSelection={setTextSelection}
             onSearchSources={(text) => setSearch(text)}
@@ -354,23 +398,61 @@ export function App() {
               workspace.setSources((current) => (current.length ? [] : current));
             }}
           />
-          {!scenes.length && (
-            <button
-              className="add-first-scene"
-              onClick={() => void createPage(active)}
-            >
-              Ajouter une scène à cette section
-            </button>
-          )}
+          {!scenes.length &&
+            (doc.settings.continuous ? (
+              <div className="empty-manuscript">
+                <p>Aucun texte inclus dans le manuscrit.</p>
+                <button
+                  onClick={() => {
+                    setBinder(true);
+                    workspace.setRevealInBinder((v) => v + 1);
+                  }}
+                >
+                  Choisir les textes dans la bibliothèque
+                </button>
+              </div>
+            ) : (
+              <button className="add-first-scene" onClick={() => void createPage(active)}>
+                Ajouter une scène à cette section
+              </button>
+            ))}
         </div>
+        {workspace.historyMode && (
+          <Suspense fallback={<p className="history-empty">Ouverture des versions…</p>}>
+            <History
+              key={p.path}
+              project={p}
+              active={active}
+              flush={doc.flush}
+              onClose={() => {
+                workspace.setHistoryMode(false);
+                setSurface('none');
+              }}
+              toolsHost={versionToolsHost}
+              toolsOpen={surface === 'settings'}
+              onCloseTools={() => {
+                setSurface('none');
+                settingsTrigger.current?.focus();
+              }}
+              onRestore={activate}
+              onApply={workspace.apply}
+              onError={fail}
+              onSelectText={(id) => void select(id)}
+            />
+          </Suspense>
+        )}
       </main>
       <SelectionToolbar
-        anchor={textSelection}
+        anchor={searching || workspace.historyMode ? null : textSelection}
         onFormat={(format) => editor.current?.format(format)}
+        onAnnotate={native ? workspace.openAnnotations : undefined}
       />
-      {words > 0 &&
+      {workspace.annotationsOpen && !workspace.historyMode && <Annotations key={p.path} workspace={workspace}
+        left={railVisible ? railLeft : Math.max(12, innerWidth - 290)} width={railVisible ? railWidth : 270} />}
+      {!workspace.annotationsOpen && !workspace.historyMode &&
+        words > 0 &&
         railVisible &&
-        !(reader || (memory.view && !memory.origin) || search !== null) && (
+        !(reader || (memory.view && !memory.origin) || searching) && (
           <div
             className="source-margin"
             aria-label="Sources dans la marge"
@@ -450,20 +532,21 @@ export function App() {
           </div>
         )}
       <Presence kind="content">
-        {memory.showResume && !memory.view && !reader && (
+        {!workspace.historyMode && memory.showResume && !memory.view && !reader && !searching && (
           <button className="memory-resume" onClick={() => memory.open({ kind: 'resume' })}>
             Reprendre le fil
           </button>
         )}
       </Presence>
       <Presence kind="anchored">
-        {memory.suggestion &&
+        {!workspace.historyMode &&
+          memory.suggestion &&
           contextVisible &&
           doc.settings.focus === 'none' &&
           !memory.view &&
           !reader &&
           !card &&
-          search === null && (
+          !searching && (
             <button
               onContextMenu={(event) => {
                 const suggestion = memory.suggestion!;
@@ -527,6 +610,9 @@ export function App() {
             key={card.source.id}
             origin={card.origin}
             source={card.source}
+            sections={p.sections}
+            contentVersion={`${doc.status}:${doc.generation}`}
+            onOccurrence={(hit) => void workspace.locateSourceMatch(hit, hit.matched)}
             citationStyle={doc.settings.citationStyle}
             onRegister={(s, t) => workspace.registerCitation(s, t).catch(fail)}
             top={card.top}
@@ -553,6 +639,9 @@ export function App() {
         {reader && (
           <Reader
             source={reader}
+            sections={p.sections}
+            contentVersion={`${doc.status}:${doc.generation}`}
+            onOccurrence={(hit) => void workspace.locateSourceMatch(hit, hit.matched)}
             onCite={(quote) => cite(reader, quote)}
             onClose={() => setReader(null)}
             projectPath={p.path}
@@ -573,15 +662,21 @@ export function App() {
           />
         )}
       </Presence>{' '}
-      <Presence>
-        {search !== null && (
-          <SourceSearch
-            initial={search}
-            onClose={() => setSearch(null)}
-            onSelect={(s) => void read(s)}
-          />
-        )}
-      </Presence>
+      {searching && !reader && !(memory.view && !memory.origin) && (
+        <SearchMargin
+          sources={workspace.unifiedSearch.sources}
+          busy={workspace.unifiedSearch.busy}
+          error={workspace.unifiedSearch.error}
+          onOpen={(source, element) => {
+            setSurface('none');
+            setCard({
+              source,
+              top: element.getBoundingClientRect().top,
+              origin: panelOrigin(element, source.title),
+            });
+          }}
+        />
+      )}
       <footer className="statusbar">
         <div className="save-state" role="status">
           <Presence kind="content">
@@ -612,6 +707,7 @@ export function App() {
             open={voiceOpen && !workspace.palette}
             onOpen={() => {
               setPalette(null);
+              workspace.setHistoryMode(false);
               if (surface === 'settings') setSurface('none');
               setVoiceOpen(true);
             }}
@@ -621,8 +717,16 @@ export function App() {
             words={words}
             characters={characters}
             lines={lines}
-            notes={countVaultNotes(workspace.sources)}
-            notesStatus={workspace.sourceStatus}
+            notes={countVaultNotes(searching ? workspace.unifiedSearch.sources : workspace.sources)}
+            notesStatus={
+              searching
+                ? workspace.unifiedSearch.busy
+                  ? 'loading'
+                  : workspace.unifiedSearch.error
+                    ? 'error'
+                    : 'ready'
+                : workspace.sourceStatus
+            }
             mode={doc.settings.countMode}
             onChange={(countMode) => {
               doc.configure({ countMode });
@@ -633,8 +737,16 @@ export function App() {
             open={!!workspace.palette}
             sections={workspace.palette === 'sections'}
             textSearch={workspace.palette === 'text'}
-            searchScope={doc.generation + ':' + scenes.map((scene) => scene.id).join(':')}
-            onTextSearch={(query) => editor.current?.findText(query)}
+            searchScope={p.path}
+            initialQuery={workspace.initialSearch}
+            matches={workspace.unifiedSearch.manuscript.items}
+            matchTotal={workspace.unifiedSearch.manuscript.total}
+            onMatch={(hit) => void workspace.locateMatch(hit)}
+            onTextSearch={(query) => {
+              workspace.setSearchQuery(query);
+              setCard(null);
+              editor.current?.clearTextSearch();
+            }}
             onNextMatch={(query, backwards) =>
               editor.current?.findText(query, backwards ? 'previous' : 'next')
             }
@@ -643,10 +755,11 @@ export function App() {
             onOpen={() => {
               setVoiceOpen(false);
               if (surface === 'settings') setSurface('none');
-              setPalette('text');
+              setSearch('');
             }}
             onClose={() => {
-              setPalette(null);
+              setSearch(null);
+              setCard(null);
               editor.current?.focus();
             }}
             commands={
@@ -658,7 +771,7 @@ export function App() {
                         ? 'Scène'
                         : section.kind === 'chapter'
                           ? 'Chapitre'
-                          : 'Dossier',
+                          : 'Section',
                     action: () => void select(section.id),
                   }))
                 : [
@@ -693,9 +806,9 @@ export function App() {
           <button
             ref={settingsTrigger}
             className="settings-trigger"
-            aria-label="Réglages d’écriture"
+            aria-label={workspace.historyMode ? 'Outils des versions' : 'Réglages d’écriture'}
             aria-expanded={surface === 'settings'}
-            aria-controls="writing-settings"
+            aria-controls={workspace.historyMode ? 'version-settings' : 'writing-settings'}
             onClick={() => {
               setPalette(null);
               setVoiceOpen(false);
@@ -704,19 +817,23 @@ export function App() {
               setSurface(surface === 'settings' ? 'none' : 'settings');
             }}
           >
-            Aa
+            {workspace.historyMode ? <GitCompareArrows size={16} aria-hidden="true" /> : 'Aa'}
           </button>
-          <Settings
-            open={surface === 'settings'}
-            value={doc.settings}
-            onChange={doc.configure}
-            canFormat={scenes.length > 0}
-            onFormat={(format) => editor.current?.format(format)}
-            onClose={() => {
-              setSurface('none');
-              settingsTrigger.current?.focus();
-            }}
-          />
+          {workspace.historyMode ? (
+            <div ref={setVersionToolsHost} />
+          ) : (
+            <Settings
+              open={surface === 'settings'}
+              value={doc.settings}
+              onChange={doc.configure}
+              canFormat={scenes.length > 0}
+              onFormat={(format) => editor.current?.format(format)}
+              onClose={() => {
+                setSurface('none');
+                settingsTrigger.current?.focus();
+              }}
+            />
+          )}
         </div>
       </footer>
       <Presence kind="notice">

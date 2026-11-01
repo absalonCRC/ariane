@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+pub fn default_included() -> bool { true }
+pub fn manuscript_role() -> String { "manuscript".into() }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Section {
@@ -14,6 +16,12 @@ pub struct Section {
     pub synopsis: String,
     pub status: String,
     pub goal: i64,
+    #[serde(default = "manuscript_role")]
+    pub role: String,
+    #[serde(default)]
+    pub trashed: bool,
+    #[serde(default = "default_included")]
+    pub included: bool,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -23,6 +31,10 @@ pub struct Project {
     pub sections: Vec<Section>,
     pub settings: serde_json::Value,
     pub recovered: bool,
+    #[serde(default)]
+    pub trash: Vec<Section>,
+    #[serde(default)]
+    pub can_undo_structure: bool,
     #[serde(default)]
     pub conflicts: Vec<String>,
 }

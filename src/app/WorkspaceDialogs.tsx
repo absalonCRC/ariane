@@ -1,14 +1,15 @@
+import { ImportProject } from '../project/ImportProject';
+import { ManuscriptDialog } from '../project/ManuscriptDialog';
 import { Presence } from '../components/Presence';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useCallback } from 'react';
 import type { Workspace } from './useWorkspace';
-import { request, native, browserProjects } from './client';
-import type { Project } from './types';
+import { open } from '@tauri-apps/plugin-dialog';
+import { native } from './client';
+import { ProjectCatalog } from '../project/ProjectCatalog';
 const Library = lazy(() => import('../sources/Library').then((m) => ({ default: m.Library })));
 import { Preparation } from '../project/Preparation';
-const History = lazy(() => import('../history/History').then((m) => ({ default: m.History })));
 const Export = lazy(() => import('../export/Export').then((m) => ({ default: m.Export })));
 import { Preferences } from './Preferences';
-import { Welcome } from './Welcome';
 import { Dialog } from '../components/Dialog';
 export function WorkspaceDialogs({
   workspace,
@@ -17,6 +18,8 @@ export function WorkspaceDialogs({
   workspace: Workspace;
   onMemory?: () => void;
 }) {
+  const [settingsError, setSettingsError] = useState('');
+  const settingsFail = useCallback((e: unknown) => setSettingsError(String(e)), []);
   const {
     surface,
     doc,
@@ -28,21 +31,40 @@ export function WorkspaceDialogs({
     update,
     p,
     active,
-    activate,
-    apply,
     setNewProject,
-    newSection,
-    setNewSection,
-    newTitle,
-    setNewTitle,
-    add,
   } = workspace;
   if (!p) return null;
   return (
     <Suspense fallback={<div className="notice recovery">Ouverture…</div>}>
+      {surface === 'import' && <ImportProject projectPath={p.path} onClose={close} onOpen={workspace.activate} beforeImport={doc.flush} />}
+      {surface === 'manuscript' && workspace.manuscriptSelection && <ManuscriptDialog workspace={workspace} />}
       <Presence>
         {surface === 'preferences' && (
           <Preferences
+            project={p}
+            theme={workspace.appearance.theme}
+            onTheme={workspace.appearance.change}
+            onExport={() => workspace.setSurface('export')}
+            onHistory={() => workspace.setSurface('history')}
+            sources={
+              <>
+                {settingsError && (
+                  <p role="alert" className="error-text">
+                    {settingsError}
+                  </p>
+                )}
+                <Library
+                  embedded
+                  onClose={close}
+                  onError={settingsFail}
+                  onRefresh={() => setSourceVersion((v) => v + 1)}
+                  onIndexProgress={setProgress}
+                  onBusy={(v) => {
+                    if (!v) setProgress(null);
+                  }}
+                />
+              </>
+            }
             value={doc.settings}
             onChange={doc.configure}
             onClose={close}
@@ -77,19 +99,6 @@ export function WorkspaceDialogs({
         )}
       </Presence>
       <Presence>
-        {surface === 'history' && (
-          <History
-            project={p}
-            active={active}
-            onClose={close}
-            flush={doc.flush}
-            onRestore={activate}
-            onApply={apply}
-            onError={fail}
-          />
-        )}
-      </Presence>
-      <Presence>
         {surface === 'export' && (
           <Export
             project={p}
@@ -111,68 +120,21 @@ export function WorkspaceDialogs({
             >
               Créer un projet
             </button>
-            {native ? (
-              <Welcome
-                onOpen={(p) => {
-                  activate(p);
-                  close();
-                }}
-                onError={fail}
-              />
-            ) : (
-              browserProjects().map((p) => (
-                <button
-                  className="project-list-item"
-                  key={p.path}
-                  onClick={() =>
-                    void doc
-                      .flush()
-                      .then(() => request<Project>('open', { path: p.path }))
-                      .then((p) => {
-                        activate(p);
-                        close();
-                      })
-                      .catch(fail)
+            {native && (
+              <button
+                onClick={async () => {
+                  try {
+                    const path = await open({ directory: true, title: 'Ouvrir un projet Ariane' });
+                    if (typeof path === 'string') await workspace.openProject(path);
+                  } catch (e) {
+                    fail(e);
                   }
-                >
-                  {p.name}
-                </button>
-              ))
+                }}
+              >
+                Ouvrir un dossier…
+              </button>
             )}
-          </Dialog>
-        )}
-      </Presence>
-      <Presence>
-        {newSection && (
-          <Dialog
-            title={
-              'Ajouter ' +
-              { scene: 'une scène', chapter: 'un chapitre', folder: 'un dossier' }[newSection.kind]
-            }
-            onClose={() => setNewSection(null)}
-          >
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                void add();
-              }}
-            >
-              <label>
-                Titre
-                <input
-                  autoFocus
-                  required
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                />
-              </label>
-              <div className="dialog-actions">
-                <button type="button" onClick={() => setNewSection(null)}>
-                  Annuler
-                </button>
-                <button className="primary">Ajouter</button>
-              </div>
-            </form>
+            <ProjectCatalog onOpen={workspace.openProject} onError={fail} />
           </Dialog>
         )}
       </Presence>
