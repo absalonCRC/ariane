@@ -105,7 +105,9 @@ export function VoiceButton({
   const [phase, setPhase] = useState<Phase>('idle');
   const activityCallback = useRef(onActivity);
   activityCallback.current = onActivity;
-  useEffect(() => { activityCallback.current?.(phase !== 'idle'); }, [phase]);
+  useEffect(() => {
+    activityCallback.current?.(phase !== 'idle');
+  }, [phase]);
   useEffect(() => () => activityCallback.current?.(false), []);
   const [message, setMessage] = useState('');
   const [pending, setPending] = useState('');
@@ -362,8 +364,7 @@ export function VoiceButton({
       else if (current.insertionBlocked)
         setMessage('Le texte a changé pendant la dictée. Copiez la transcription ci-dessous.');
       else if (current.mode === 'continuous') onClose();
-      else if (current.parts.some((part) => part.result?.text?.trim()))
-        onClose();
+      else if (current.parts.some((part) => part.result?.text?.trim())) onClose();
       setPhase('idle');
     }
     finishing.current = false;
@@ -509,7 +510,12 @@ export function VoiceButton({
       {panel &&
         present &&
         createPortal(
-          <div className={'voice-content' + (pending ? ' voice-pending' : '')} data-visible={open} role="status">
+          <div
+            key={phase}
+            className={'voice-content' + (pending ? ' voice-pending' : '')}
+            data-visible={open}
+            role="status"
+          >
             {phase === 'preparing' ? (
               'Préparation…'
             ) : phase === 'recording' ? (

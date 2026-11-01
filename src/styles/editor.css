@@ -251,8 +251,10 @@
   position: absolute;
   top: 40px;
   right: 0;
-  width: max-content;
-  max-width: min(280px, calc(100vw - 48px));
+  width: var(--writing-panel-width);
+  max-width: none;
+  max-height: var(--resume-height-limit, none);
+  overflow-y: auto;
   transform-origin: right top;
   animation: none;
   opacity: 0;
@@ -347,14 +349,20 @@
 .writing-layout {
   height: calc(100vh - 55px);
   overflow: hidden;
-  padding-top: clamp(110px, 18vh, 225px);
+  padding-top: 55px;
 }
 .manuscript-column {
   width: min(750px, calc(100vw - 440px));
   margin-inline: auto;
   height: 100%;
   position: relative;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding-left: 32px;
+  padding-right: 32px;
+  padding-top: max(0px, calc(clamp(110px, 18vh, 225px) - 55px));
 }
+.manuscript-column::-webkit-scrollbar { display: none; }
 .writing-layout.sidebar-open {
   margin-left: var(--sidebar-width);
 }
@@ -378,7 +386,7 @@
   background: transparent !important;
 }
 .editor-host {
-  height: calc(100% - 85px);
+  height: auto;
   --writing-font: var(--literary);
 }
 .mono .editor-host,
@@ -393,7 +401,7 @@
   --writing-size: 18px;
 }
 .cm-editor {
-  height: 100%;
+  height: auto;
   outline: none !important;
   font-family: var(--writing-font) !important;
   font-size: var(--writing-size);
@@ -403,14 +411,14 @@
 }
 .cm-scroller {
   font-family: inherit !important;
-  overflow: auto !important;
+  overflow: visible !important;
   scrollbar-width: none;
 }
 .cm-scroller::-webkit-scrollbar {
   display: none;
 }
 .cm-content {
-  padding: 0 0 50vh !important;
+  padding: 4px 0 50vh !important;
   caret-color: #2697f8;
   min-height: 100%;
   tab-size: 4;
@@ -744,7 +752,7 @@ input[type='range'] {
 }
 .settings-control {
   position: absolute;
-  right: 25px;
+  right: var(--writing-panel-right);
   bottom: 11px;
   width: 32px;
   height: 32px;
@@ -813,7 +821,7 @@ input[type='range'] {
   top: auto;
   right: 0;
   bottom: 40px;
-  width: min(310px, calc(100vw - 48px));
+  width: var(--writing-panel-width);
   max-height: none;
   overflow: visible;
   padding: 18px;
@@ -1030,7 +1038,7 @@ input[type='range'] {
 }
 @media (max-width: 800px) {
   .writing-layout {
-    padding-top: 110px;
+    padding-top: 55px;
   }
   .manuscript-column {
     width: calc(100vw - 80px);
@@ -1085,21 +1093,9 @@ input[type='range'] {
   padding-top: 55px;
 }
 .typewriter .manuscript-column {
-  height: 100%;
-}
-.typewriter .document-title {
-  position: absolute;
-  top: max(0px, calc(var(--typewriter-center, 40vh) - var(--typewriter-line-half, 17.25px) - 85px));
-  left: 0;
-  z-index: 2;
-  margin-bottom: 0;
-  transform: translateY(var(--typewriter-title-offset, 0px));
-}
-.typewriter .editor-host {
-  height: 100%;
+  padding-top: max(0px, calc(var(--typewriter-center, 40vh) - var(--typewriter-line-half, 17.25px) - 89px));
 }
 .cm-editor[data-typewriter='true'] .cm-content {
-  padding-top: max(0px, calc(var(--typewriter-center, 40vh) - 0.75em)) !important;
   padding-bottom: max(
     0px,
     calc(var(--typewriter-height, 80vh) - var(--typewriter-center, 40vh) - 0.75em)
@@ -1625,17 +1621,34 @@ input[type='range'] {
 @media (max-width: 1100px) { .manuscript-column { width: min(750px, calc(100% - 80px)); } }
 @media (prefers-reduced-motion: reduce) { .cm-line { transition: none; } }
 
-/* Reserve the same right-hand gutter with or without the binder. Its position
-   follows the editor's measured edge instead of an independent viewport formula. */
-.writing-layout { padding-right: clamp(140px, 16vw, 224px); }
+/* Center the writing sheet; annotations occupy the rail at the right edge. */
+.writing-layout { padding-right: 0; }
+.writing-layout.sidebar-open { padding-right: var(--sidebar-width); }
+@media (max-width: 1100px) { .writing-layout.sidebar-open { padding-right: 0; } }
 .writing-layout .manuscript-column { width: min(750px, calc(100% - 64px)); }
 .with-reader .writing-layout { padding-right: 0; }
 .source-margin {
   display: block;
   bottom: 0;
-  width: calc(clamp(140px, 16vw, 224px) - 24px);
+  width: 190px;
 }
-.source-label { height: 54px; min-height: 54px; margin-bottom: 0; width: 100%; }
+.source-label { max-width: 100%; height: 54px; min-height: 54px; margin-bottom: 0; width: 100%; }
 .source-label > span { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .source-label small { line-height: 14px; }
 .more-sources { height: 24px; }
+
+/* Suggestions include enough of the passage to judge the proposed connection. */
+.memory-context.source-label { height: auto; min-height: 54px; max-width: 190px; }
+.memory-context .suggestion-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  overflow: hidden;
+  margin-top: 7px;
+  font: 14px/1.45 var(--literary);
+  color: #626262;
+}
+.settings-control .settings { max-height: min(calc(100vh - 110px), var(--resume-height-limit, 100vh)); overflow-y: auto; }
+
+.source-label[data-expanded="true"] { visibility: hidden; }

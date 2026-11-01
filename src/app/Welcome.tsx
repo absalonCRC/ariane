@@ -1,3 +1,4 @@
+import { Presence } from '../components/Presence';
 import { useState } from 'react';
 import { Dialog } from '../components/Dialog';
 import { open } from '@tauri-apps/plugin-dialog';
@@ -75,79 +76,81 @@ export function Welcome({
         <button onClick={() => void existing()}>Ouvrir un projet</button>
       </div>
       <p>Tout reste sur ce Mac.</p>
-      {creating && (
-        <Dialog title="Nouveau projet" onClose={() => setCreating(false)}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void create();
-            }}
-          >
-            <label>
-              Nom du projet
-              <input
-                autoFocus
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Le titre de votre projet"
-              />
-            </label>
-            <p className="hint">
-              Un dossier indépendant contiendra votre manuscrit et ses versions.
-            </p>
-            <fieldset className="vault-choice">
-              <legend>Sources</legend>
+      <Presence>
+        {creating && (
+          <Dialog title="Nouveau projet" onClose={() => setCreating(false)}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void create();
+              }}
+            >
               <label>
+                Nom du projet
                 <input
-                  type="radio"
-                  name="vault"
-                  checked={vaultMode === 'own'}
-                  onChange={() => setVaultMode('own')}
-                />{' '}
-                Créer un vault Ariane
+                  autoFocus
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Le titre de votre projet"
+                />
               </label>
-              <label>
-                <input
-                  type="radio"
-                  name="vault"
-                  checked={vaultMode === 'existing'}
-                  disabled={!native}
-                  onChange={() => setVaultMode('existing')}
-                />{' '}
-                Utiliser un vault Obsidian existant
-              </label>
-              {vaultMode === 'existing' && (
-                <div>
-                  <button type="button" onClick={() => void chooseVault()}>
-                    Choisir le vault
-                  </button>
+              <p className="hint">
+                Un dossier indépendant contiendra votre manuscrit et ses versions.
+              </p>
+              <fieldset className="vault-choice">
+                <legend>Sources</legend>
+                <label>
+                  <input
+                    type="radio"
+                    name="vault"
+                    checked={vaultMode === 'own'}
+                    onChange={() => setVaultMode('own')}
+                  />{' '}
+                  Créer un vault Ariane
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="vault"
+                    checked={vaultMode === 'existing'}
+                    disabled={!native}
+                    onChange={() => setVaultMode('existing')}
+                  />{' '}
+                  Utiliser un vault Obsidian existant
+                </label>
+                {vaultMode === 'existing' && (
+                  <div>
+                    <button type="button" onClick={() => void chooseVault()}>
+                      Choisir le vault
+                    </button>
+                    <p className="hint">
+                      {vaultPath || 'Lecture seule : les notes existantes restent inchangées.'}
+                    </p>
+                  </div>
+                )}
+                {!native && (
                   <p className="hint">
-                    {vaultPath || 'Lecture seule : les notes existantes restent inchangées.'}
+                    Dans cet aperçu, le vault est simulé dans le navigateur. Les dossiers et la
+                    connexion à Obsidian sont disponibles dans l’application Mac.
                   </p>
-                </div>
-              )}
-              {!native && (
-                <p className="hint">
-                  Dans cet aperçu, le vault est simulé dans le navigateur. Les dossiers et la
-                  connexion à Obsidian sont disponibles dans l’application Mac.
-                </p>
-              )}
-            </fieldset>
-            <div className="dialog-actions">
-              <button type="button" onClick={() => setCreating(false)}>
-                Annuler
-              </button>
-              <button
-                className="primary"
-                disabled={!name.trim() || busy || (vaultMode === 'existing' && !vaultPath)}
-              >
-                Créer le projet
-              </button>
-            </div>
-          </form>
-        </Dialog>
-      )}
+                )}
+              </fieldset>
+              <div className="dialog-actions">
+                <button type="button" onClick={() => setCreating(false)}>
+                  Annuler
+                </button>
+                <button
+                  className="primary"
+                  disabled={!name.trim() || busy || (vaultMode === 'existing' && !vaultPath)}
+                >
+                  Créer le projet
+                </button>
+              </div>
+            </form>
+          </Dialog>
+        )}
+      </Presence>
     </div>
   );
 }

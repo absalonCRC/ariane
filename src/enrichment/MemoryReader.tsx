@@ -1,4 +1,8 @@
-import { useEffect, useState } from 'react';
+import { AnimatedDetails } from '../components/AnimatedDetails';
+import { usePresenceValue } from '../components/Presence';
+import { useSharedPanel } from '../components/useSharedPanel';
+import { useResumeLayout } from './useResumeLayout';
+import { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { request } from '../app/client';
 import type { Workspace } from '../app/useWorkspace';
@@ -21,14 +25,28 @@ interface EntityDetail extends MemoryEntity {
 export function MemoryReader({
   memory,
   workspace,
+  projectMenuOpen = false,
+  writingMenuOpen = false,
 }: {
   memory: MemoryController;
   workspace: Workspace;
+  projectMenuOpen?: boolean;
+  writingMenuOpen?: boolean;
 }) {
   const [entity, setEntity] = useState<EntityDetail | null>(null);
   const [entities, setEntities] = useState<MemoryEntity[]>([]);
   const [error, setError] = useState('');
-  const view = memory.view;
+  const shown = usePresenceValue(
+    useMemo(
+      () => (memory.view ? { view: memory.view, origin: memory.origin } : null),
+      [memory.view, memory.origin],
+    ),
+  );
+  const view = shown.value?.view ?? null;
+  const origin = shown.value?.origin;
+  const floating = !!origin;
+  const panel = useSharedPanel(origin, floating && view ? view.kind : null, memory.close);
+  useResumeLayout(panel, view?.kind === 'resume', projectMenuOpen, writingMenuOpen);
   const path = workspace.p?.path;
   useEffect(() => {
     let alive = true;
@@ -81,7 +99,21 @@ export function MemoryReader({
     }
   }
   return (
-    <aside className="reader memory-reader" aria-label="Mémoire du manuscrit">
+    <aside
+      ref={panel}
+      className={'reader memory-reader motion-surface' + (floating ? ' shared-panel' : '')}
+      data-phase={shown.exiting ? 'exit' : 'open'}
+      inert={shown.exiting}
+      aria-hidden={shown.exiting || undefined}
+      aria-label="Mémoire du manuscrit"
+      data-view={view.kind}
+      data-partitioned={view.kind === 'resume' && (projectMenuOpen || writingMenuOpen)}
+    >
+      {floating && (
+        <div className="shared-panel-label" aria-hidden="true">
+          {origin?.label}
+        </div>
+      )}
       <div className="panel-top">
         <span>{view.kind === 'resume' ? 'REPRENDRE LE FIL' : 'DEPUIS VOTRE TEXTE'}</span>
         <button className="icon-button" aria-label="Fermer la mémoire" onClick={memory.close}>
@@ -139,8 +171,7 @@ export function MemoryReader({
             </dl>
           )}
           {!!entity.timeline.length && (
-            <details open>
-              <summary>Repères dans le temps</summary>
+            <AnimatedDetails open summary={<>Repères dans le temps</>}>
               {entity.timeline.map((t, i) => (
                 <button className="memory-date" key={i} onClick={() => locate(t)}>
                   <span>
@@ -150,7 +181,7 @@ export function MemoryReader({
                   <span>{t.text}</span>
                 </button>
               ))}
-            </details>
+            </AnimatedDetails>
           )}
           <section className="enrichment">
             <h3>Passages liés</h3>
@@ -197,8 +228,8 @@ export function MemoryReader({
         </>
       )}
       {view.kind === 'resume' && (
-        <>
-          <h2>Reprendre le fil</h2>
+        <div className="resume-content">
+          <h2 aria-hidden={projectMenuOpen || writingMenuOpen}>Reprendre le fil</h2>
           {memory.resume?.section ? (
             <>
               <button className="search-result" onClick={() => locate(memory.resume!)}>
@@ -240,7 +271,7 @@ export function MemoryReader({
               Le contexte de cette session sera conservé pendant votre travail.
             </p>
           )}
-        </>
+        </div>
       )}
     </aside>
   );

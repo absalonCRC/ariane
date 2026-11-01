@@ -1,3 +1,4 @@
+import { documentScroller } from '../scrolling';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
 import {
   Decoration,
@@ -280,9 +281,9 @@ export function outlinePresentation(outline: OutlineEditor) {
         target.where,
       );
     }
-    const box = view.scrollDOM.getBoundingClientRect();
-    if (y < box.top + 36) view.scrollDOM.scrollTop -= 12;
-    else if (y > box.bottom - 36) view.scrollDOM.scrollTop += 12;
+    const box = documentScroller(view).getBoundingClientRect();
+    if (y < box.top + 36) documentScroller(view).scrollTop -= 12;
+    else if (y > box.bottom - 36) documentScroller(view).scrollTop += 12;
     return target;
   }
   return [

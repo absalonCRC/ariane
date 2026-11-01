@@ -1,3 +1,4 @@
+import type { PanelOrigin } from '../components/useSharedPanel';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { request, native } from './client';
 import type { Project, Source, Surface, Section } from './types';
@@ -21,7 +22,7 @@ export function useWorkspace() {
   const [words, setWords] = useState(0);
   const [sources, setSources] = useState<Source[]>([]);
   const [sourceStatus, setSourceStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [card, setCard] = useState<{ source: Source; top: number } | null>(null);
+  const [card, setCard] = useState<{ source: Source; top: number; origin?: PanelOrigin } | null>(null);
   const [reader, setReader] = useState<Source | null>(null);
   const [search, setSearch] = useState<string | null>(null);
   const [progress, setProgress] = useState<IndexProgress | null>(null);
@@ -229,6 +230,7 @@ export function useWorkspace() {
         { label: 'Créer une variante / Voir les versions', action: () => setSurface('history') },
         { label: 'Exporter le manuscrit', detail: '⌘ ⇧ E', action: () => setSurface('export') },
         { label: 'Réglages d’écriture', action: () => setSurface('settings') },
+        { label: 'Paramètres', action: () => setSurface('preferences') },
         { label: 'Indenter le passage', detail: 'Tab', action: () => editor.current?.structure('indent') },
         { label: 'Désindenter le passage', detail: '⇧ Tab', action: () => editor.current?.structure('outdent') },
         { label: 'Monter la branche', detail: '⌥ ↑', action: () => editor.current?.structure('up') },

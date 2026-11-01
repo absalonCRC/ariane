@@ -12,6 +12,10 @@ import { outlinePresentation } from './outline/view';
 import { prepareTextInsertion } from './insertion';
 import { analyze } from '../revision/diagnostics';
 import { sentenceFocus, paragraphFocus } from './focus';
+import type { SelectionAnchor } from '../components/SelectionToolbar';
+import { useContextMenu } from '../components/ContextMenu';
+import { editorContext } from './contextMenu';
+import { documentScroller, documentBounds } from './scrolling';
 import { typewriterScrolling } from './typewriter';
 import { sceneHeadings } from './sceneHeadings';
 import { smoothCaret } from './smoothCaret';
@@ -57,8 +61,13 @@ interface Props {
   onLines?: (lines: number) => void;
   onCursor: (cursor: number) => void;
   onTyping: () => void;
+  onSearchSources?: (text: string) => void;
+  onSelection?: (anchor: SelectionAnchor | null) => void;
 }
 export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref) {
+  const openMenu = useContextMenu();
+  const menuRef = useRef(openMenu);
+  menuRef.current = openMenu;
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
   const latest = useRef(props);
@@ -85,7 +94,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       const from = node ? v.state.field(outline.field).nodes.find((n) => n.section === section && n.id === node)?.from : spans.current.find((s) => s.id === section)?.from;
       if (from === undefined) return null;
       const top = v.coordsAtPos(from)?.top;
-      const bounds = v.scrollDOM.getBoundingClientRect();
+      const bounds = documentBounds(v);
       return top !== undefined && top >= bounds.top && top < bounds.bottom - 35 ? top : null;
     },
     restoreContext(context) {
@@ -174,8 +183,28 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     outlineRef.current = outline;
     let sampled: VisibleText | null = null;
     let geometryFrame = 0;
+    const selectionMeasureKey = {};
+    const selectionGeometry = () => {
+      const v = view.current;
+      if (!v) return;
+      v.requestMeasure({ key: selectionMeasureKey,
+        read: (): SelectionAnchor | null => {
+          const selection = v.state.selection.main;
+          const active = document.activeElement;
+          if (selection.empty || v.state.readOnly || v.composing ||
+            (!v.hasFocus && !(active instanceof HTMLElement && active.closest('.selection-toolbar'))) ||
+            !spans.current.some((span) => selection.from >= span.from && selection.to <= span.to)) return null;
+          const first = v.coordsAtPos(selection.from), last = v.coordsAtPos(selection.to, -1);
+          const box = documentBounds(v);
+          if (!first || first.top < box.top || first.top >= box.bottom - 30) return null;
+          return { top: first.top, bottom: first.bottom,
+            left: last && Math.abs(first.top - last.top) < 2 ? (first.left + last.right) / 2 : (box.left + box.right) / 2 };
+        },
+        write: (anchor) => latest.current.onSelection?.(anchor),
+      });
+    };
     const bounds = (v: EditorView) => {
-      const rect = v.scrollDOM.getBoundingClientRect();
+      const rect = documentBounds(v);
       return { top: rect.top, bottom: rect.bottom, right: rect.right };
     };
     // Move existing anchors immediately; source detection remains debounced.
@@ -202,6 +231,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       const v = view.current;
       if (!v || v.composing) return;
       const { from, to } = v.viewport;
+      const viewportBounds = documentBounds(v);
       // A wrapped Markdown paragraph can be enormous; source lookup stays bounded.
       const sampleFrom = v.visibleRanges[0]?.from ?? from;
       const sampleTo = Math.min(v.visibleRanges.at(-1)?.to ?? to, sampleFrom + 8000);
@@ -216,8 +246,8 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
         const coords = v.coordsAtPos(start);
         if (
           coords &&
-          coords.top >= v.dom.getBoundingClientRect().top - 10 &&
-          coords.top < window.innerHeight - 65
+          coords.top >= viewportBounds.top - 10 &&
+          coords.top < viewportBounds.bottom - 10
         )
           paragraphs.push({ line: n, text, top: coords.top, from: start });
       }
@@ -304,9 +334,32 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
             schedule();
           }
           if (u.geometryChanged && !u.docChanged) geometry();
+          if (u.selectionSet || u.docChanged || u.geometryChanged || u.focusChanged) selectionGeometry();
           if (u.selectionSet) latest.current.onCursor(u.state.selection.main.head);
         }),
         EditorView.domEventHandlers({
+          mousedown: (event) => {
+            // The context handler decides whether to preserve or move the selection.
+            if (event.button === 2 || (event.button === 0 && event.ctrlKey)) {
+              event.preventDefault();
+              return true;
+            }
+            return false;
+          },
+          contextmenu: (event, currentView) => {
+            const handle = (event.target as HTMLElement).closest<HTMLElement>('[data-outline-handle]');
+            const node = handle && currentView.state.field(outline.field).nodes.find((node) => node.id === handle.dataset.outlineHandle);
+            const position = node ? node.from : (event.clientX || event.clientY) ? currentView.posAtCoords({ x: event.clientX, y: event.clientY }) : null;
+            const selected = currentView.state.selection.main;
+            if (position !== null && (selected.empty || position < selected.from || position > selected.to))
+              currentView.dispatch({ selection: { anchor: position }, userEvent: 'select.context' });
+            else currentView.dispatch({ userEvent: 'select.context' });
+            const coords = currentView.coordsAtPos(currentView.state.selection.main.head);
+            menuRef.current({ clientX: event.clientX || coords?.left || 0, clientY: event.clientY || coords?.bottom || 0,
+              currentTarget: currentView.contentDOM, preventDefault: () => event.preventDefault(), stopPropagation: () => event.stopPropagation() },
+              editorContext(currentView, outline, spans.current, () => view.current, latest.current.onSearchSources));
+            return event.defaultPrevented;
+          },
           scroll: () => {
             geometry();
             schedule();
@@ -337,7 +390,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     let frame = 0;
     let width = v.scrollDOM.clientWidth;
     const rememberAnchor = () => {
-      const bounds = v.scrollDOM.getBoundingClientRect();
+      const bounds = documentBounds(v);
       const pos = v.posAtCoords({
         x: bounds.left + Math.min(60, bounds.width / 2),
         y: bounds.top + 8,
@@ -367,17 +420,21 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
                 const pos = Math.min(previous.pos, v.state.doc.length);
                 const coords = v.coordsAtPos(pos);
                 return coords
-                  ? coords.top - v.scrollDOM.getBoundingClientRect().top - previous.offset
+                  ? coords.top - documentBounds(v).top - previous.offset
                   : 0;
               },
               write: (delta) => {
-                if (delta) v.scrollDOM.scrollTop += delta;
+                if (delta) documentScroller(v).scrollTop += delta;
                 rememberLater();
               },
             });
           });
     observer?.observe(v.scrollDOM);
-    v.scrollDOM.addEventListener('scroll', rememberLater, { passive: true });
+    const scroller = documentScroller(v);
+    const scrolled = () => { rememberLater(); geometry(); schedule(); selectionGeometry(); };
+    scroller.addEventListener('scroll', scrolled, { passive: true });
+    const resized = () => { geometry(); selectionGeometry(); };
+    window.addEventListener('resize', resized);
     rememberLater();
     counter.update(
       data.spans.map((span) => ({ id: span.id, text: data.text.slice(span.from, span.to) })),
@@ -390,9 +447,11 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     return () => {
       if (notifyTimer.current) clearTimeout(notifyTimer.current);
       if (wordTimer.current) clearTimeout(wordTimer.current);
+      latest.current.onSelection?.(null);
       counter.destroy();
       observer?.disconnect();
-      v.scrollDOM.removeEventListener('scroll', rememberLater);
+      scroller.removeEventListener('scroll', scrolled);
+      window.removeEventListener('resize', resized);
       cancelAnimationFrame(frame);
       cancelAnimationFrame(geometryFrame);
       v.destroy();

@@ -1,0 +1,72 @@
+/* Calm, short feedback around the writing sheet. Geometry tied to the text never eases. */
+.motion-presence { display: contents; }
+.motion-presence[data-phase='open'] > *,
+.motion-surface:not(.shared-panel),
+.context-menu,
+.selection-toolbar { animation: ariane-enter var(--motion-standard) var(--motion-ease) both; }
+.motion-presence[data-motion='sidebar'][data-phase='open'] > * { animation-name: ariane-sidebar-enter; }
+.motion-presence[data-motion='anchored'][data-phase='open'] > * { animation: none; }
+.motion-presence[data-motion='anchored'][data-phase='open'] > .memory-context,
+.source-group { animation: ariane-fade-in var(--motion-standard) var(--motion-ease) both; }
+.motion-presence[data-phase='exit'] > *,
+.motion-surface[data-phase='exit'],
+.context-menu[data-phase='exit'],
+.selection-toolbar[data-phase='exit'] {
+  animation: ariane-exit var(--motion-exit) ease-in both;
+  pointer-events: none;
+}
+.motion-presence[data-motion='sidebar'][data-phase='exit'] > * { animation-name: ariane-sidebar-exit; }
+.motion-presence[data-motion='anchored'][data-phase='exit'] > *,
+.motion-surface.shared-panel[data-phase='exit'],
+.source-margin[data-phase='exit'] { animation: ariane-fade-out var(--motion-exit) ease-in both; }
+.state-content,
+.state-label,
+.empty-state,
+.inline-confirm,
+.index-report,
+.new-vault-entity,
+.enrichment-fields,
+.enrichment-passage,
+.export-result,
+.error-text { animation: ariane-fade-in var(--motion-standard) var(--motion-ease) both; }
+.state-label { display: inline-block; }
+button {
+  transition: background-color var(--motion-fast) ease-out, color var(--motion-fast) ease-out,
+    border-color var(--motion-fast) ease-out, box-shadow var(--motion-fast) ease-out,
+    opacity var(--motion-fast) ease-out;
+}
+input:not([type='range']), textarea, select {
+  transition: border-color var(--motion-fast) ease-out, box-shadow var(--motion-fast) ease-out,
+    background-color var(--motion-fast) ease-out;
+}
+.tree-row { transition: top var(--motion-standard) var(--motion-ease), background-color var(--motion-fast) ease-out, box-shadow var(--motion-fast) ease-out; }
+.tree-row .row-add { transition: opacity var(--motion-fast) ease-out, background-color var(--motion-fast) ease-out; }
+.tree-row .disclose svg { transition: rotate var(--motion-standard) var(--motion-ease); }
+.outline-handle,
+.outline-handle::before { transition: opacity var(--motion-fast) ease-out, color var(--motion-fast) ease-out, background-color var(--motion-fast) ease-out, border-radius var(--motion-fast) ease-out, box-shadow var(--motion-fast) ease-out; }
+.segmented button,
+.counter-choice,
+.compare-row,
+.search-result,
+.project-list-item { transition: background-color var(--motion-fast) ease-out, color var(--motion-fast) ease-out, box-shadow var(--motion-fast) ease-out; }
+.goal-track i { transition: width var(--motion-standard) var(--motion-ease); }
+.reader.memory-reader[data-view='resume'] { transition: top 260ms var(--motion-ease), bottom 260ms var(--motion-ease); }
+.resume-content h2 { transition: margin 260ms var(--motion-ease), max-height 260ms var(--motion-ease), opacity var(--motion-fast) ease; }
+.resume-content .search-result { transition: padding 260ms var(--motion-ease), background-color var(--motion-fast) ease; }
+.resume-content .search-result strong { transition: font-size 260ms var(--motion-ease); }
+.animated-details summary { transition: color var(--motion-fast) ease-out; }
+.animated-details[open] .details-content { animation: ariane-fade-in var(--motion-standard) var(--motion-ease); }
+@keyframes ariane-enter { from { opacity: 0; translate: 0 5px; } to { opacity: 1; translate: 0 0; } }
+@keyframes ariane-exit { from { opacity: 1; translate: 0 0; } to { opacity: 0; translate: 0 3px; } }
+@keyframes ariane-sidebar-enter { from { opacity: 0; translate: -14px 0; } to { opacity: 1; translate: 0 0; } }
+@keyframes ariane-sidebar-exit { from { opacity: 1; translate: 0 0; } to { opacity: 0; translate: -10px 0; } }
+@keyframes ariane-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ariane-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+.welcome { animation: ariane-fade-in var(--motion-standard) var(--motion-ease) both; }
+.index-strip progress::-webkit-progress-value { transition: width var(--motion-standard) var(--motion-ease); }
+.boot::after { content: ''; position: absolute; left: calc(50% - 36px); top: 50%; width: 72px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #eee, #999, #eee); background-size: 200% 100%; animation: progress 1800ms linear infinite; }
+@media (prefers-reduced-motion: reduce) { .boot::after { animation: none; } }

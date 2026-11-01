@@ -12,6 +12,13 @@
   --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --writing-size: 23px;
   --sidebar-width: 285px;
+  --motion-fast: 120ms;
+  --motion-standard: 200ms;
+  --motion-exit: 160ms;
+  --motion-ease: cubic-bezier(0.22, 0.75, 0.2, 1);
+  --writing-panel-right: 25px;
+  --writing-panel-bottom: 51px;
+  --writing-panel-width: min(310px, calc(100vw - 48px));
 }
 * {
   box-sizing: border-box;

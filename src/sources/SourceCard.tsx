@@ -1,10 +1,13 @@
+import { useSharedPanel, type PanelOrigin } from '../components/useSharedPanel';
 import { X, Quote, ArrowUpRight, Link2 } from 'lucide-react';
+import { useContextMenu } from '../components/ContextMenu';
+import { sourceContext, sourceExcerpt } from './contextMenu';
 import type { Source } from '../app/types';
 import { composeCitation } from './citations';
 import type { Settings } from '../app/types';
 export function SourceCard({
   source: s,
-  top,
+  origin,
   onClose,
   onRead,
   onCite,
@@ -13,7 +16,8 @@ export function SourceCard({
   citationStyle,
 }: {
   source: Source;
-  top: number;
+  top?: number;
+  origin?: PanelOrigin;
   onClose: () => void;
   onRead: () => void;
   onCite: (s: Source, text: string) => void;
@@ -21,14 +25,12 @@ export function SourceCard({
   onRegister: (s: Source, text: string) => Promise<void>;
   citationStyle: Settings['citationStyle'];
 }) {
+  const panel = useSharedPanel(origin, s.id, onClose);
+  const openMenu = useContextMenu();
   const fields = Object.entries(s.fields || {})
     .filter(([k, v]) => !['tags', 'aliases', 'alias', 'title', 'nom', 'type'].includes(k.toLocaleLowerCase()) && v !== null && v !== '' && (!Array.isArray(v) || v.length > 0))
     .slice(0, 5);
-  const position = Math.min(Math.max(80, top), Math.max(80, window.innerHeight - 570));
-  const excerpt = s.text
-    .slice(0, 700)
-    .replace(/^#\s+.*\n+/, '')
-    .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, target, alias) => alias || target);
+  const excerpt = sourceExcerpt(s);
   const selected = () => {
     const sel = window.getSelection();
     const text = sel?.toString().trim();
@@ -36,10 +38,15 @@ export function SourceCard({
   };
   return (
     <section
-      className="source-card floating"
+      ref={panel}
+      className="source-card shared-panel floating"
+      onContextMenu={(event) => {
+        if ((event.target as HTMLElement).closest('input, textarea, select')) return;
+        openMenu(event, sourceContext(s, { quote: selected(), onRead, onCite: (quote) => onCite(s, quote), onAssociate }));
+      }}
       aria-label={'Fiche ' + s.title}
-      style={{ top: position, maxHeight: window.innerHeight - position - 70 }}
     >
+      <div className="shared-panel-label" aria-hidden="true">{origin?.label ?? s.title}</div>
       <button className="card-close icon-button" aria-label="Fermer la fiche" onClick={onClose}>
         <X size={14} />
       </button>
