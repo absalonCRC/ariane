@@ -19,7 +19,7 @@ Adjust the reading width, line spacing and focus mode to suit the way you write.
 
 ## The right context, beside the sentence
 
-A name in your draft can lead back to a research note. Inspect the source, see where it appears in the manuscript, and insert a reference when it belongs in your work.
+Names in your draft receive automatic colors by entity type. Turn a detected mention into an entry in the project’s vault, or open an existing research note beside the sentence. Inspect its source and linked passages, then insert a reference when it belongs in your work.
 
 ![The full Ariane window with a source card opened from a detected mention of Mara Vale](docs/media/sources.jpg)
 
@@ -54,7 +54,7 @@ Inside a page, the **outliner** lets you nest ideas, move an entire branch and f
 
 ## Your pace, your focus
 
-Keep the current **paragraph or sentence** in focus, or use typewriter scrolling to keep your place on the page, with optional mechanical key and carriage-return sounds. Follow the word, character or line count, and start a **25-minute Pomodoro** when it is time to settle into a draft. Optional **local dictation** lets you capture a thought aloud.
+Keep the current **word, paragraph or sentence** in focus, or use typewriter scrolling to keep your place on the page, with optional mechanical key and carriage-return sounds. Follow the word, character or line count, and start a **25-minute Pomodoro** when it is time to settle into a draft. Optional **local dictation** lets you capture a thought aloud.
 
 ![Paragraph focus in the native editor, with surrounding paragraphs softly dimmed](docs/media/focus.jpg)
 
@@ -86,11 +86,15 @@ The project stays local in SQLite with readable Markdown mirrors. Ariane detects
 
 ## See Ariane in action
 
-**[Watch the film · 89 seconds](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)**
+**[Watch the film · 59.5 seconds](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)**
 
-The film follows **real interactions in Ariane 0.2.0-alpha.1 on macOS**: writing, sources, live Markdown, outlining, focus, dictation controls, search, counters, Pomodoro and draft comparison. It opens on a line being typed, with Ariane’s typewriter sounds before the music begins. A male English voice-over follows the visible actions, with time to read each result.
+[![Ariane — In context: watch the 59.5-second film](docs/media/film-poster.jpg)](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)
 
-*The Human Thread* is fictional demo material about AI and authorship. The film uses dedicated demo projects created for the recordings. All people, institutions and interviews are invented.
+The film follows native interactions in **Ariane 0.2.0-alpha.1 on macOS**: live Markdown, automatic entity colors and entry creation, search results, local transcription, mouse outlining, focus, word counts, Pomodoro and draft comparison. It opens on a line being typed, with Ariane’s mechanical key sounds before the music. A male English voice-over follows the actions, with animated paper-and-thread transitions made using Imagegen and Fal.
+
+The dictation sequence uses GPT-generated audio supplied to the real local transcription and editor pipeline in a dedicated capture build. [Recording methods and media provenance](docs/media/README.md) explain the setup.
+
+*The Human Thread* is fictional demo material about AI and authorship. The newer *The Connected Page* project uses illustrative prose naming Ada Lovelace and London, rather than historical quotations.
 
 [Explore the demo material](examples/the-human-thread) · [Media provenance and film transcript](docs/media/README.md)
 

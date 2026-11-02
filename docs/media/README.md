@@ -4,80 +4,83 @@ Captured for the 0.2.0-alpha.1 presentation on 2 November 2026.
 
 ## Provenance
 
-The product imagery comes from **Ariane running natively on macOS**, with the sidebar closed. The 89-second film edits actual window recordings. New takes show letter-by-letter typing, mouse drags above, below and inside an outline line, folding and moving a branch, paragraph and sentence focus, typewriter scrolling, source context, counters and Pomodoro. Live Markdown, table editing, dictation controls and draft comparison also use native recordings.
+The **59.5-second V6 film** combines native Ariane window recordings with a generated paper-and-thread identity sequence. The sidebar stays closed. Product actions include live Markdown table creation and editing; automatic entity colors; creating a project-vault entry from a detected name; search results and opening an entry; local dictation; mouse outlining; paragraph and sentence focus; word counts; Pomodoro; and draft comparison.
 
-Crops, camera moves, changes of playback speed, restrained gesture rings, feature labels and the closing composition are editorial. The macOS screen-recording badge is removed from the picture. Product controls, results and interactions were not generated or recreated. The closing logo is the same lowercase asset imported by `ArianeWordmark.tsx` in the app. The paper-and-thread background was generated with OpenAI Imagegen; it is a closing graphic, not product imagery.
+Crops, camera moves, timing edits, gesture rings and feature labels are editorial. The macOS screen-recording badge is removed. UI controls and search/entity results are recorded from the running app, not generated images. The closing wordmark is the official lowercase asset used by `ArianeWordmark.tsx`, with the raised closing text retained.
 
-The dedicated **The Human Thread — Studio** and earlier **The Human Thread — Motion** projects contain fictional writing about AI and authorship. All people, institutions, interviews and observations are invented. The [portable essay and research material](../../examples/the-human-thread) remains available separately. Native demo projects, recordings, editable production scripts and audio masters are retained locally in Ariane Showcase.
+The new thread keyframe was made with **OpenAI Imagegen**. It was animated using **[Seedance 2.5 image-to-video on Fal](https://fal.ai/models/bytedance/seedance-2.5/image-to-video)** through Safari: request `01a19d90-7fd5-77f0-8b0f-0e6b70cb5732`, five seconds, 720p, 24 fps, no generated audio. The animation appears in two short transitions and the closing sequence. It does not depict application behavior.
 
-The dictation shot shows native active controls. A separate test sent an OpenAI-generated phrase through Ariane’s bundled local transcription engine and returned the expected words. Speaker playback into the microphone did not produce a complete UI transcription; the film does not represent that test as a successful end-to-end microphone demonstration. Ariane’s dictation remains local; the film’s narration was generated separately.
+### Dictation capture
+
+The dictation shot uses a **dedicated capture build with an audio-input fixture**: an existing OpenAI-generated WAV is decoded into a MediaStream in place of the hardware microphone. Ariane’s segmentation, local Parakeet transcription, insertion logic and editor remain unchanged. The engine produced and inserted “A quiet page A clear thought The voice is yours.”; the word count changed from 9 to 19. The result was neither pasted nor supplied as a prewritten transcript.
+
+This demonstrates the actual local transcription and insertion pipeline, not a successful hardware-microphone test. Earlier attempts to play the generated voice through the Mac speakers and to route it through temporary Core Audio devices were not used. The temporary devices were removed. The audio adapter exists only in the separate production copy and is not part of the published application.
+
+### Demo material
+
+*The Human Thread — Studio* and the earlier *Motion* project contain fictional writing about AI and authorship. The new *The Connected Page* project uses illustrative prose naming Ada Lovelace and London; it is not a historical quotation or a sourced historical assertion. Its created entry belongs to the demo project. Existing external vaults are not modified.
+
+[Portable essay and research material](../../examples/the-human-thread). Native demo projects, source recordings, production scripts and audio masters remain in the local Ariane Showcase folder; V4 and V5 exports are preserved.
 
 ## Sound and accessibility
 
-The English narration is **AI-generated speech**, using the American male **Brian** voice from [Eleven v4 on Fal](https://fal.ai/models/elevenlabs/tts/eleven-v4), exported as uncompressed 48 kHz PCM. Phrase edits align the narration with the visible actions without changing voice pitch or speed.
+The English voice-over is **AI-generated speech**, using the American male **Brian** voice from [Eleven v4 on Fal](https://fal.ai/models/elevenlabs/tts/eleven-v4). V6 reuses the approved V4/V5 voice recordings and aligns complete phrases to the visible actions, without changing their pitch or speech rate.
 
-The opening uses **Ariane’s own key, space and carriage-return samples** from `src/editor/sounds`, synchronized in the edit to the native typing footage. Music begins at **00:04.65** and narration at **00:04.80**. The instrumental score and additional transition foley are original synthesized audio. Typewriter sounds were mixed from the app assets, rather than captured as system audio.
+The opening uses Ariane’s own key, space and carriage-return samples from `src/editor/sounds`, synchronized with the native typing footage. **Music and narration begin at 00:03.40**, after the opening keys. Music and transition foley are original synthesized audio. Typewriter samples are mixed separately from the screen recordings.
 
-`ariane-film.mp4` is the **1920 × 1080, 60 fps** H.264 film, with a 48 kHz stereo AAC mix and optional English subtitles. The mix targets −16 LUFS and a −1.5 dBTP ceiling before AAC encoding. Standalone captions: [WebVTT](ariane-film.en.vtt) · [SRT](ariane-film.en.srt).
+`ariane-film.mp4` is **1920 × 1080 at 60 fps**, H.264, with 48 kHz stereo AAC and optional English captions, disabled by default. The mix targets −16 LUFS and −1.5 dBTP before AAC encoding. Standalone captions: [WebVTT](ariane-film.en.vtt) · [SRT](ariane-film.en.srt).
 
-`film-poster.jpg` is the corrected closing frame. The README does not autoplay animation. The light wordmark preserves the original logo’s alpha silhouette for contrast in GitHub’s dark theme. GitHub releases remain withdrawn pending a notarized distribution.
+`film-poster.jpg` shows the final official wordmark composition. No animation autoplays in the README. The current writing, source, outliner and focus stills preserve the full native window; other detail views are identified by their captions. `versions.jpg` stacks two exact comparison excerpts for readability.
 
-The stills are native app imagery. The current writing, source, outliner and focus images preserve the full window. Other detail views remain labeled by their captions. `versions.jpg` places two exact excerpts from the native side-by-side comparison above one another for readability.
+**GitHub releases remain withdrawn pending a notarized distribution.** This update publishes presentation media only.
 
 ## Film sequence
 
 | Time | Visible action |
 | --- | --- |
-| 00:00–00:09.7 | Close-up typing and carriage return; the camera opens onto the page as music and narration enter. |
-| 00:09.7–00:18.2 | Live Markdown heading and emphasis; table insertion and cell editing. |
-| 00:18.2–00:36.1 | Mouse drags above, below and inside a line; fold, move and unfold a complete branch. |
-| 00:36.1–00:47.5 | Paragraph focus, sentence focus and a page that follows the typing line. |
-| 00:47.5–00:51.6 | Native local dictation controls in their active state. |
-| 00:51.6–01:01.3 | Search results, then a complete source card beside the manuscript. |
-| 01:01.3–01:07.9 | Word, character and line counters, each held for more than two seconds. |
-| 01:07.9–01:12.5 | Start a 25-minute Pomodoro and see its countdown. |
-| 01:12.5–01:21.3 | Refine a phrase, then inspect the side-by-side draft comparison. |
-| 01:21.3–01:29 | Dark writing surface, then the official lowercase logo on a continuous paper-and-thread background. |
+| 00:00–00:06 | Macro typing with mechanical keys, then a reveal of the page. |
+| 00:06–00:10 | A Markdown table becomes editable; a cell changes. |
+| 00:10–00:11.1 | Generated thread transition. |
+| 00:11.1–00:18.3 | Names receive automatic colors; a detected person becomes a project-vault entry. |
+| 00:18.3–00:23 | Search returns manuscript and vault results; an entry opens. |
+| 00:23–00:28.8 | Local dictation and its inserted text. |
+| 00:28.8–00:40 | Thread transition; mouse drags above, below and inside a line; move and unfold a branch. |
+| 00:40–00:45.6 | Paragraph and sentence focus. |
+| 00:45.6–00:51.6 | Word counter, then a running 25-minute Pomodoro. |
+| 00:51.6–00:53.7 | Earlier and current drafts side by side. |
+| 00:53.7–00:59.5 | Animated thread, official wordmark and closing text. |
 
 ## Narration transcript
 
 An idea starts with a few words.
 
-Ariane gives it room to grow.
+Write in live Markdown.
 
-Write in live Markdown, and see your thoughts take shape.
+Shape your thoughts.
+
+Keep your sources close, without leaving the page.
+
+Find the thread across your writing and notes.
+
+Capture a thought with local dictation.
 
 Turn fragments into an outline.
 
-Nest a thought.
+Move.
+
+Nest.
 
 Move the whole branch.
 
 Open it again.
 
-Then stay with the writing.
+Focus on a paragraph. Or a single sentence.
 
-One paragraph.
+Every word counts.
 
-One sentence.
+Make time for twenty-five minutes of focus.
 
-The page follows your pace.
-
-Speak when a thought arrives faster than your fingers.
-
-Find the thread across your pages and notes.
-
-Bring a source beside the sentence that needs it.
-
-See your progress, word by word.
-
-Set aside twenty-five minutes, and keep going.
-
-When the idea changes, return to an earlier draft.
-
-Compare.
-
-Keep what matters.
+Revisit a draft.
 
 Ariane. Your words. In context.
 
