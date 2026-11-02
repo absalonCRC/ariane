@@ -1,6 +1,6 @@
 # Préparer une release
 
-La première cible est `0.1.0-alpha.1`, macOS 26+, arm64. Le dépôt et la CI ne publient rien automatiquement.
+La version en cours de développement est `0.2.0-alpha.1`, macOS 26+, arm64. Le dépôt et la CI ne publient rien automatiquement.
 
 ## Paquet local sans compte Apple payant
 

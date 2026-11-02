@@ -1,5 +1,14 @@
 # Journal des changements
 
+## 0.2.0-alpha.1 — 2026-11-02, non publiée
+
+- Interface disponible en français, anglais et espagnol, avec choix de langue mémorisé.
+- Espace d’écriture remanié : bibliothèque repliable, accès aux outils, notifications dans le titre et infobulles communes.
+- Réglages de largeur et d’interligne, aperçus des modes de concentration et de défilement.
+- Tableaux Markdown modifiables, navigation dans les sources et distinction entre citations et mentions.
+- Import de manuscrits Markdown, DOCX et TextBundle.
+- Organisation des textes dans la bibliothèque, textes de travail hors manuscrit, comparaison et reprise de passages entre versions.
+
 ## 0.1.0-alpha.1 — non publiée
 
 Première alpha prévue pour macOS 26+ sur Apple Silicon.

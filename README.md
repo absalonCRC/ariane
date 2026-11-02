@@ -55,9 +55,9 @@ Ariane s’adresse aux personnes qui écrivent des textes longs et s’appuient 
 
 ## Essayer l’alpha
 
-**Ariane 0.1.0-alpha.1 est une version expérimentale, destinée aux Mac Apple Silicon sous macOS 26 ou ultérieur.** Elle n’est pas encore proposée sous forme d’application notarifiée prête à télécharger. Les personnes à l’aise avec les outils de développement peuvent la construire depuis les sources.
+**Ariane 0.2.0-alpha.1 est une version expérimentale, destinée aux Mac Apple Silicon sous macOS 26 ou ultérieur.** Elle n’est pas encore proposée sous forme d’application notarifiée prête à télécharger. Les personnes à l’aise avec les outils de développement peuvent la construire depuis les sources.
 
-[Voir la prérelease et ses sources](https://github.com/absalonCRC/ariane/releases/tag/v0.1.0-alpha.1) · [Guide de construction détaillé](docs/building.md)
+[Prérelease précédente : 0.1.0-alpha.1](https://github.com/absalonCRC/ariane/releases/tag/v0.1.0-alpha.1) · [Guide de construction détaillé](docs/building.md)
 
 <details>
 <summary>Construire l’application depuis les sources</summary>
