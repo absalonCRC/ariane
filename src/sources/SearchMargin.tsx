@@ -1,12 +1,19 @@
+import { entityTint } from '../enrichment/entityTypes';
 import { localizeMessage, t, useLocale } from '../i18n';
 import type { Source } from '../app/types';
 export function SearchMargin({
   sources,
+  colors,
+  expandedId,
+  expandedHeight,
   busy,
   error,
   onOpen,
 }: {
   sources: Source[];
+  colors?: Record<string, string>;
+  expandedId?: string;
+  expandedHeight?: number;
   busy: boolean;
   error: string;
   onOpen: (source: Source, element: HTMLButtonElement) => void;
@@ -31,7 +38,14 @@ export function SearchMargin({
         sources.map((source) => (
           <button
             key={source.id}
-            className="source-label"
+            className="source-label entity-tinted"
+            data-expanded={source.id === expandedId}
+            style={{
+              ...entityTint(source.kind, colors),
+              ...(source.id === expandedId
+                ? { height: expandedHeight, minHeight: expandedHeight, flexShrink: 0 }
+                : {}),
+            }}
             onClick={(event) => onOpen(source, event.currentTarget)}
           >
             <span>{source.title}</span>

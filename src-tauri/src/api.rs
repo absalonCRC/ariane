@@ -91,6 +91,16 @@ pub enum Request {
         path: String,
     },
     CreateOwnedVault,
+    NoteSuggestions {
+        project_path: String,
+        query: String,
+    },
+    ClassifyCreatedNote { project_path: String, id: String, #[serde(default)] context: String },
+    NoteReferences { project_path: String, ids: Vec<String> },
+    CreateQuickNote {
+        project_path: String,
+        name: String,
+    },
     CreateVaultEntity {
         kind: String,
         name: String,
@@ -147,6 +157,19 @@ pub enum Request {
     MemoryQueue { project_path: String, section: String, node: Option<String>, revision: i64, depth: u8, #[serde(default)] semantic: bool },
     MemoryEntities { project_path: String, section: String, node: Option<String>, revision: i64 },
     MemoryContext { project_path: String, section: String, node: Option<String>, depth: u8 },
+    InlineEntities {
+        project_path: String,
+        section: String,
+        revision: i64,
+    },
+    CreateDetectedEntity {
+        project_path: String,
+        section: String,
+        revision: i64,
+        from: usize,
+        to: usize,
+        kind: String,
+    },
     MemoryEntity { project_path: String, id: String },
     MemoryList { project_path: String },
     MemoryDismiss { project_path: String, id: String, hash: String },
@@ -364,6 +387,36 @@ pub fn handle(
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     memory::context(&root,&section,node.as_deref(),depth)
                 }
+                Request::InlineEntities {
+                    project_path,
+                    section,
+                    revision,
+                } => {
+                    if Path::new(&project_path) != root {
+                        return Err("Le projet actif a changé.".into());
+                    }
+                    json(memory::inline_entities(&root, &index, &section, revision)?)
+                }
+                Request::CreateDetectedEntity {
+                    project_path,
+                    section,
+                    revision,
+                    from,
+                    to,
+                    kind,
+                } => {
+                    if Path::new(&project_path) != root {
+                        return Err("Le projet actif a changé.".into());
+                    }
+                    let _guard = state.enriching.lock().map_err(|e| e.to_string())?;
+                    let source = memory::create_detected_entity(
+                        &root, &index, &section, revision, from, to, &kind,
+                    )?;
+                    enrichment::run(&root, &index)?;
+                    let mut decorated = vec![source];
+                    enrichment::decorate(&root, &index, &mut decorated)?;
+                    json(decorated.remove(0))
+                }
                 Request::MemoryEntity { project_path, id } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     memory::sync(&root)?;
@@ -433,6 +486,49 @@ pub fn handle(
                 Request::ConnectVault { path } => {
                     vaults::connect(&root, Path::new(&path))?;
                     json(vaults::list(&root, &index)?)
+                }
+                Request::NoteSuggestions {
+                    project_path,
+                    query,
+                } => {
+                    if Path::new(&project_path) != root {
+                        return Err("Le projet actif a changé.".into());
+                    }
+                    json(vaults::suggest_notes(&root, &index, &query)?)
+                }
+                Request::NoteReferences { project_path, ids } => {
+                    if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
+                    if ids.len()>200 { return Err("Trop de références demandées.".into()); }
+                    json(vaults::note_references(&root,&index,&ids)?)
+                }
+                Request::ClassifyCreatedNote { project_path, id, context } => {
+                    if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
+                    let types=vaults::classification_types(&root,&index)?;
+                    let available=vaults::list(&root,&index)?;
+                    let source=vaults::source(&index,&id,&available)?;
+                    if types.is_empty() || source.kind.to_lowercase()!="note" || !available.iter().any(|v|v.id==source.vault_id && v.owned && v.available) {
+                        return Ok(json!({"pending":false}));
+                    }
+                    let kind=if let Some(kind)=vaults::example_type(&source.title,&types) { Some(kind.to_owned()) }
+                    else {
+                        if !EntityEngine::available(&state.data,&state.resources) { return Ok(json!({"pending":false,"unavailable":true})); }
+                        let Ok(mut worker)=state.entity_engine.try_lock() else { return Ok(json!({"pending":true})); };
+                        let context:String=context.chars().take(1000).collect();
+                        let Some(output)=worker.classify_note(&state.data,&state.resources,&state.memory_activity,&source.title,&context,serde_json::to_value(&types).app()?)? else { return Ok(json!({"pending":true})); };
+                        vaults::predicted_type(&output,&types).map(str::to_owned)
+                    };
+                    if root != super::api::root(state)? { return Ok(json!({"pending":false,"stale":true})); }
+                    let _guard=state.enriching.lock().map_err(|e|e.to_string())?;
+                    if serde_json::to_value(&types).app()? != serde_json::to_value(vaults::classification_types(&root,&index)?).app()? { return Ok(json!({"pending":true})); }
+                    let typed=if let Some(kind)=kind { vaults::apply_note_type(&root,&index,&source,&kind)? } else { None };
+                    Ok(json!({"pending":false,"source":typed}))
+                }
+                Request::CreateQuickNote { project_path, name } => {
+                    if Path::new(&project_path) != root {
+                        return Err("Le projet actif a changé.".into());
+                    }
+                    let _guard = state.enriching.lock().map_err(|e| e.to_string())?;
+                    json(vaults::create_quick_note(&root, &index, &name)?)
                 }
                 Request::CreateOwnedVault => {
                     vaults::create_owned(&root)?;

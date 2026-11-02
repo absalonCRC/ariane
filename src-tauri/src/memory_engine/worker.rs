@@ -18,6 +18,7 @@ impl EntityEngine {
             && data.join("memory/manifest.json").is_file()
             && data.join("memory/models/gliner/model.safetensors").is_file()
             && resources.join("engine/memory.py").is_file()
+            && resources.join("engine/memory-model.txt").is_file()
     }
     fn start(&mut self, data: &Path, resources: &Path, activity: &Activity) -> Result<()> {
         if let Some(child) = self.child.as_mut() {
@@ -73,13 +74,19 @@ impl EntityEngine {
         activity: &Activity,
         text: &str,
     ) -> Result<Option<Value>> {
+        self.run(data,resources,activity,json!({"operation":"entities","text":text}))
+    }
+    pub fn classify_note(&mut self,data:&Path,resources:&Path,activity:&Activity,title:&str,context:&str,types:Value) -> Result<Option<Value>> {
+        self.run(data,resources,activity,json!({"operation":"classify_note","title":title,"text":context,"types":types}))
+    }
+    fn run(&mut self,data:&Path,resources:&Path,activity:&Activity,mut input:Value) -> Result<Option<Value>> {
         if activity.ner_blocked() || critical_memory_pressure() {
             return Ok(None);
         }
         self.start(data, resources, activity)?;
         self.serial += 1;
         let id = self.serial;
-        let input = json!({"id":id,"operation":"entities","text":text});
+        input["id"] = json!(id);
         let stdin = self.input.as_mut().ok_or("Entrée du moteur indisponible")?;
         writeln!(stdin, "{input}").app()?;
         stdin.flush().app()?;

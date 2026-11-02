@@ -1,3 +1,4 @@
+import { syntaxTree } from '@codemirror/language';
 import {
   Decoration,
   EditorView,
@@ -5,7 +6,7 @@ import {
   type DecorationSet,
   type ViewUpdate,
 } from '@codemirror/view';
-import type { Text } from '@codemirror/state';
+import { Facet, type EditorState, type Text } from '@codemirror/state';
 
 // Ignore empty trailing lines and spaces: an invisible caret there cannot illustrate a mode.
 export function focusPreviewPosition(doc: Text): number {
@@ -84,4 +85,67 @@ export function paragraphFocus(previewAtEnd = false) {
     },
     { decorations: (plugin) => plugin.decorations },
   );
+}
+
+// null means word focus is disabled; boolean selects caret or preview position.
+export const wordFocusMode = Facet.define<boolean, boolean | null>({
+  combine: (values) => (values.length ? values[values.length - 1] : null),
+});
+
+export function wordFocusRange(state: EditorState, previewAtEnd = false) {
+  const head = previewAtEnd ? focusPreviewPosition(state.doc) : state.selection.main.head;
+  const line = state.doc.lineAt(head);
+  const offset = head - line.from;
+  // Keep accents, apostrophes and internal hyphens in the same word.
+  const words = /[\p{L}\p{N}][\p{L}\p{M}\p{N}]*(?:[’'\-][\p{L}\p{N}][\p{L}\p{M}\p{N}]*)*/gu;
+  let active: { from: number; to: number } | undefined;
+  for (const word of line.text.matchAll(words)) {
+    const start = word.index!;
+    let node = syntaxTree(state).resolveInner(line.from + start, 1);
+    let hidden = false;
+    let range = { from: line.from + start, to: line.from + start + word[0].length };
+    for (;;) {
+      if (node.name === 'URL') hidden = true;
+      // A live note is an atomic widget: focus its visible title, never its hidden ID.
+      if (node.name === 'Link' && state.sliceDoc(node.from, node.to).includes('](ariane://source/'))
+        range = { from: node.from, to: node.to };
+      if (!node.parent) break;
+      node = node.parent;
+    }
+    if (hidden) continue;
+    if (offset < start) {
+      active ??= range;
+      break;
+    }
+    active = range;
+    if (offset <= start + word[0].length) break;
+  }
+  return active;
+}
+
+export function wordFocus(previewAtEnd = false) {
+  return [
+    wordFocusMode.of(previewAtEnd),
+    ViewPlugin.fromClass(
+      class {
+        decorations: DecorationSet;
+        constructor(view: EditorView) {
+          this.decorations = this.build(view);
+        }
+        update(update: ViewUpdate) {
+          if (update.selectionSet || update.docChanged || update.viewportChanged)
+            this.decorations = this.build(update.view);
+        }
+        build(view: EditorView) {
+          const active = wordFocusRange(view.state, previewAtEnd);
+          return active
+            ? Decoration.set([
+                Decoration.mark({ class: 'focused-word' }).range(active.from, active.to),
+              ])
+            : Decoration.none;
+        }
+      },
+      { decorations: (plugin) => plugin.decorations },
+    ),
+  ];
 }

@@ -33,6 +33,12 @@ export interface Project {
   canUndoStructure?: boolean;
   conflicts?: string[];
 }
+export interface EntityTypeDefinition {
+  name: string;
+  description: string;
+  examples: string[];
+  enabled: boolean;
+}
 export interface Settings {
   collapsed?: string[];
   libraryView?: 'texts' | 'manuscript' | 'note' | 'sources' | 'trash';
@@ -41,12 +47,16 @@ export interface Settings {
   fontSize: number;
   columnWidth?: number;
   lineHeight?: number;
-  focus: 'none' | 'paragraph' | 'sentence';
+  focus: 'none' | 'paragraph' | 'sentence' | 'word';
   typewriter: boolean;
   typewriterSound: boolean;
   depth: number;
   revision: boolean;
   enrichment: boolean;
+  entityHighlighting?: boolean;
+  entityColors?: Record<string, string>;
+  entityTypes?: EntityTypeDefinition[];
+  classifyNewNotes?: boolean;
   language: string;
   citationStyle: 'notes' | 'apa' | 'chicago';
   cursor: number;
@@ -65,6 +75,8 @@ export const defaultSettings: Settings = {
   depth: 3,
   revision: false,
   enrichment: true,
+  entityHighlighting: true,
+  entityColors: {},
   language: 'fr',
   citationStyle: 'notes',
   cursor: 0,

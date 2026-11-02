@@ -1,3 +1,5 @@
+import { EntityColorToggle } from '../components/EntityColorToggle';
+import { EntityPreferences } from '../enrichment/EntityPreferences';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { t, useLocale } from '../i18n';
 import { ReadingComfort } from '../components/ReadingComfort';
@@ -134,6 +136,7 @@ export function Preferences({
                 {t('Ces réglages sont conservés avec le projet.')}
               </p>
               <WritingModes value={value} onChange={onChange} />
+              <EntityColorToggle value={value} onChange={onChange} />
               {value.typewriter && (
                 <label className="preference-toggle">
                   <span>
@@ -235,6 +238,7 @@ export function Preferences({
                   onChange={(e) => onChange({ enrichment: e.target.checked })}
                 />
               </label>
+              <EntityPreferences value={value} onChange={onChange} />
               {enrichmentError && (
                 <p role="status" className="error-text">
                   {t('Enrichissement suspendu : {0}', { 0: enrichmentError })}

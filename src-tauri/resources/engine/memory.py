@@ -28,7 +28,7 @@ os.environ["MKL_NUM_THREADS"] = "1"
 MODEL_ID = Path(__file__).with_name("memory-model.txt").read_text().strip()
 MAX_TEXT_CHARS = 65536
 E5_MAX_TOKENS = 512
-NER_MODEL_ID = "fastino/gliner2-multi-v1@ce747d7+qnnpack-v3:entities-v1"
+NER_MODEL_ID = "fastino/gliner2-multi-v1@ce747d7+qnnpack-v3:entities-v2"
 LABELS = ("person", "location", "organization", "work", "event")
 
 
@@ -202,6 +202,28 @@ class MemoryEngine:
         operation = request.get("operation")
         text = request.get("text")
         role = request.get("role", "passage")
+        if operation == "classify_note":
+            title = request.get("title")
+            types = request.get("types")
+            if not isinstance(title, str) or not title.strip() or len(title)>120 or not isinstance(types,list) or not 1<=len(types)<=64:
+                raise ValueError("Classification de note invalide.")
+            labels = {}
+            for item in types:
+                name, description, examples = item.get("name"), item.get("description", ""), item.get("examples", [])
+                if not isinstance(name,str) or not name.strip() or len(name)>60 or not isinstance(description,str) or len(description)>500 or not isinstance(examples,list) or len(examples)>30 or any(not isinstance(e,str) or len(e)>120 for e in examples):
+                    raise ValueError("Définition de type invalide.")
+                labels[name] = description + (" Exemples : " + ", ".join(examples) if examples else "")
+            labels["Note"] = "Une note générale ou une entité dont le type est inconnu ou ambigu."
+            context = text if isinstance(text,str) else ""
+            # A quick-note title is often typed in lowercase. Normalize only the
+            # classifier input; preserve the user's title and file byte-for-byte.
+            title = title.title() if title.islower() else title
+            # Keep this input as note metadata. Instruction-like prefixes weakened
+            # short-name predictions in the installed multilingual classifier.
+            sample = "Nom : " + title + "." + (" Contexte : " + context[:1000] if context else "")
+            start = time.perf_counter()
+            result = self.gliner().classify_text(sample,{"type":{"labels":labels,"multi_label":True,"cls_threshold":0,"top_k":3}},include_confidence=True)
+            return {"id":request_id,"classification":result,"elapsedMs":round((time.perf_counter()-start)*1000,2)}
         if operation not in ("embed", "analyze", "entities"):
             raise ValueError("operation doit valoir 'embed', 'analyze' ou 'entities'.")
         if not isinstance(text, str) or not text.strip():

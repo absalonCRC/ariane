@@ -29,7 +29,7 @@ def main():
     engine.mkdir(parents=True, exist_ok=True)
     subprocess.run(["swiftc", "-O", str(ROOT / "scripts/pdf-text.swift"), "-o", str(engine / "pdf-text")], check=True)
     subprocess.run(["codesign", "--force", "--sign", "-", str(engine / "pdf-text")], check=True, capture_output=True)
-    files += ["pdf-text", "memory.py"]
+    files += ["pdf-text", "memory.py", "memory-model.txt"]
     manifest = json.loads((ROOT / "resources.lock.json").read_text())
     model = manifest["model"]
     weights = RESOURCES / "models" / model["name"]

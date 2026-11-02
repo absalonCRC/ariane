@@ -1,4 +1,6 @@
 mod entities;
+mod inline;
+pub use inline::{create_detected_entity, inline_entities};
 mod ner;
 pub use ner::{apply_entities, pending_entities_at};
 mod queue;

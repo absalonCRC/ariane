@@ -33,7 +33,7 @@ pub(super) fn mention(
         "event" | "événement" => "event",
         _ => return Err("Type d'entité inconnu.".into()),
     };
-    if kind == "person" && label.split_whitespace().count() < 2 {
+    if kind == "person" && !origin.starts_with("model:") && label.split_whitespace().count() < 2 {
         return Ok(());
     }
     let name = format!("{kind}:{}", normalized(label));
@@ -59,7 +59,7 @@ pub(super) fn mention(
 }
 
 pub(super) fn rules(tx: &Transaction<'_>, p: &super::Passage) -> Result<()> {
-    // A complete explicit name can form a fiche; isolated first names and pronouns cannot.
+    // Rules only propose full names. Single-word names require a confident model span.
     static RE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
         regex::Regex::new(r"\b[\p{Lu}][\p{L}'’\-]+(?:\s+[\p{Lu}][\p{L}'’\-]+)+\b").unwrap()
     });

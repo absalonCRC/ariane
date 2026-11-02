@@ -81,7 +81,8 @@ export function useSharedPanel(
     if (writing) observer?.observe(writing);
     const anchorObserver =
       typeof MutationObserver === 'undefined' ? null : new MutationObserver(reanchor);
-    const rail = origin?.anchor?.closest('.source-margin');
+    const rail = origin?.anchor?.closest('.source-margin, .vault-search-margin');
+    rail?.addEventListener('scroll', reanchor, { passive: true });
     if (rail)
       anchorObserver?.observe(rail, {
         subtree: true,
@@ -172,6 +173,7 @@ export function useSharedPanel(
     return () => {
       observer?.disconnect();
       anchorObserver?.disconnect();
+      rail?.removeEventListener('scroll', reanchor);
       window.removeEventListener('resize', reanchor);
       window.removeEventListener('scroll', scrolled);
       scroller?.removeEventListener('scroll', scrolled);

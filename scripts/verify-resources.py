@@ -14,7 +14,7 @@ with (workspace / "native-dependencies.lock.json").open("rb") as source:
 if native.get("native_lock_sha256") != lock_hash:
     raise SystemExit("Native resources are stale. Run python3 scripts/setup-resources.py")
 files = native["files"]
-required = {"llama-server", "pandoc", "typst", "pdf-text", "memory.py"}
+required = {"llama-server", "pandoc", "typst", "pdf-text", "memory.py", "memory-model.txt"}
 if not required.issubset(files) or any(Path(name).name != name for name in files):
     raise SystemExit("Invalid native resource manifest")
 if not any(name.startswith("libggml-cpu-") and name.endswith(".so") for name in files):

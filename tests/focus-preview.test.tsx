@@ -76,6 +76,7 @@ it('temporarily previews concentration in the manuscript and applies it only on 
     await act(async () => root.render(<Harness />));
     const editor = host.querySelector<HTMLElement>('.cm-editor')!;
     const phrase = host.querySelector<HTMLButtonElement>('button[aria-label="Phrase"]')!;
+    const word = host.querySelector<HTMLButtonElement>('button[aria-label="Mot"]')!;
     const paragraph = host.querySelector<HTMLButtonElement>('button[aria-label="Paragraphe"]')!;
     expect(editor.dataset.focus).toBe('none');
     await act(async () => hover(phrase));
@@ -85,6 +86,12 @@ it('temporarily previews concentration in the manuscript and applies it only on 
     expect(saved).not.toHaveBeenCalled();
     expect(change).not.toHaveBeenCalled();
     await act(async () => leave(phrase));
+    expect(editor.dataset.focus).toBe('none');
+    await act(async () => hover(word));
+    expect(editor.dataset.focus).toBe('word');
+    expect(editor.querySelector('.focused-word')?.textContent).toBe('phrase');
+    expect(saved).not.toHaveBeenCalled();
+    await act(async () => leave(word));
     expect(editor.dataset.focus).toBe('none');
     await act(async () => hover(paragraph));
     expect(editor.querySelector('.focused-line')?.textContent).toContain('Un autre paragraphe.');
@@ -104,6 +111,10 @@ it('temporarily previews concentration in the manuscript and applies it only on 
       host.querySelector<HTMLButtonElement>('button[aria-label="Fermer les réglages"]')!.click(),
     );
     expect(editor.dataset.focus).toBe('paragraph');
+    await act(async () => word.click());
+    expect(saved).toHaveBeenLastCalledWith({ focus: 'word' });
+    expect(editor.dataset.focus).toBe('word');
+    expect(editor.querySelector('.focused-word')).not.toBeNull();
     expect(change).not.toHaveBeenCalled();
   } finally {
     await act(async () => root.unmount());

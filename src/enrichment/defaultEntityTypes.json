@@ -1,0 +1,12 @@
+[
+  {"name":"Personne","description":"Une personne réelle ou fictive, son prénom ou son nom.","examples":["Marie Curie","Victor Hugo"],"enabled":true},
+  {"name":"Lieu","description":"Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.","examples":["Paris","Toulouse"],"enabled":true},
+  {"name":"Pays","description":"Un pays ou un État souverain réel ou fictif.","examples":["France","Portugal"],"enabled":true},
+  {"name":"Ordre","description":"Un ordre religieux, militaire ou initiatique.","examples":["Templiers","Hospitaliers"],"enabled":true},
+  {"name":"Religion","description":"Une religion, une croyance ou une tradition spirituelle.","examples":["Christianisme","Bouddhisme"],"enabled":true},
+  {"name":"Organisation","description":"Une entreprise, une association ou une institution.","examples":["UNESCO"],"enabled":true},
+  {"name":"Œuvre","description":"Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.","examples":["Les Misérables"],"enabled":true},
+  {"name":"Événement","description":"Un événement historique ou fictif nommé, une bataille, une fête.","examples":["Révolution française"],"enabled":true},
+  {"name":"Concept","description":"Une idée ou un concept abstrait.","examples":["Liberté"],"enabled":true},
+  {"name":"Objet","description":"Un objet matériel, un artefact ou un outil nommé.","examples":["Excalibur"],"enabled":true}
+]

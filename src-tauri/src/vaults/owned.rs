@@ -17,6 +17,12 @@ struct Category {
 }
 const CATEGORIES: &[Category] = &[
     Category {
+        id: "note",
+        label: "Note",
+        folder: "Notes",
+        fields: &[],
+    },
+    Category {
         id: "personne",
         label: "Personne",
         folder: "Personnes",
@@ -290,6 +296,12 @@ pub fn create_entity(root: &Path, kind: &str, name: &str, description: &str) -> 
     }
     let canonical = vault.canonicalize().app()?;
     let folder = canonical.join(category.folder);
+    // Older owned vaults predate generic notes. Never follow a supplied symlink.
+    if kind == "note"
+        && fs::symlink_metadata(&folder).is_err_and(|e| e.kind() == std::io::ErrorKind::NotFound)
+    {
+        fs::create_dir(&folder).app()?;
+    }
     if !fs::symlink_metadata(&folder).is_ok_and(|m| m.is_dir() && !m.file_type().is_symlink())
         || !folder.canonicalize().app()?.starts_with(&canonical)
     {

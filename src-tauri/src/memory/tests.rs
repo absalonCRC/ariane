@@ -71,16 +71,20 @@ fn offsets_are_unicode_codepoints_not_utf16_or_bytes() {
     assert!(apply(d.path(), &p, &output("Louise Morel", "person", 3, 15)).is_err());
 }
 #[test]
-fn short_ambiguous_names_and_weak_predictions_do_not_create_fiches() {
+fn confident_single_word_names_are_kept_but_rules_and_weak_predictions_are_not() {
     let d = fixture();
     scene(d.path(), "a", "Louise attend Paris.", &[("n", 0)]);
     sync(d.path()).unwrap();
-    let p = passage(d.path(), "a", Some("n")).unwrap().unwrap();
-    apply(d.path(), &p, &output("Louise", "person", 0, 6)).unwrap();
-    let mut low = output("Paris", "location", 14, 19);
-    low["entities"][0]["score"] = json!(0.2);
-    apply(d.path(), &p, &low).unwrap();
     assert!(list(d.path()).unwrap().as_array().unwrap().is_empty());
+    let p = passage(d.path(), "a", Some("n")).unwrap().unwrap();
+    let mut prediction = output("Louise", "person", 0, 6);
+    prediction["entities"]
+        .as_array_mut().unwrap()
+        .push(json!({"text":"Paris","label":"location","start":14,"end":19,"score":0.2}));
+    apply(d.path(), &p, &prediction).unwrap();
+    let entities = list(d.path()).unwrap();
+    assert_eq!(entities.as_array().unwrap().len(), 1);
+    assert_eq!(entities[0]["title"], "Louise");
 }
 #[test]
 fn node_identity_survives_moves_but_deleted_nodes_disappear() {

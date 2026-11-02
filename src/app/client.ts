@@ -152,6 +152,31 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     localStorage.setItem(key, JSON.stringify(history));
     return result.project;
   }
+  if (type === 'noteReferences')
+    return previewSources(p.path).filter((s) => (a.ids as string[]).includes(s.id));
+  if (type === 'classifyCreatedNote') return { pending: false };
+  if (type === 'noteSuggestions' || type === 'createQuickNote') {
+    if (a.projectPath !== p.path) throw new Error(t('Ouvrez un projet pour continuer.'));
+    const fold = (value: string) =>
+      value
+        .normalize('NFD')
+        .replace(/\p{M}/gu, '')
+        .toLocaleLowerCase()
+        .replace(/[^\p{L}\p{N}]/gu, '');
+    const values = previewSources(p.path);
+    const query = fold(String(a.query ?? a.name ?? ''));
+    if (type === 'noteSuggestions')
+      return values
+        .filter((s) => [s.title, ...s.aliases].some((n) => fold(n).includes(query)))
+        .slice(0, 20);
+    const existing = values.filter((s) => [s.title, ...s.aliases].some((n) => fold(n) === query));
+    if (existing.length > 1)
+      throw new Error('Plusieurs notes portent ce nom. Utilisez @ pour choisir la note.');
+    if (existing.length) return existing[0];
+    if (!previewVault(p.path)) makePreviewVault(p.path);
+    browserRequest('createVaultEntity', { kind: 'note', name: a.name });
+    return previewSources(p.path).at(-1);
+  }
   if (type === 'browseSources') {
     const all = previewSources(p.path).filter((s) => !a.vault || s.vaultId === a.vault);
     const query = String(a.query || '').toLocaleLowerCase();
@@ -255,6 +280,7 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     const vault = previewVault(p.path);
     if (!vault) throw new Error(t('Créez un vault Ariane.'));
     const labels: Record<string, string> = {
+      note: 'Note',
       personne: 'Personne',
       lieu: 'Lieu',
       organisation: 'Organisation',

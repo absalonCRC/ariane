@@ -1,3 +1,8 @@
+import { marginLayout } from '../sources/marginLayout';
+import { entityTint } from '../enrichment/entityTypes';
+import { useNoteCreation } from '../enrichment/useNoteCreation';
+import { useInlineEntities } from '../enrichment/useInlineEntities';
+import { EntityProposal } from '../enrichment/EntityProposal';
 import { localizeMessage, t, useLocale, localeTag } from '../i18n';
 import { plainExcerpt } from '../enrichment/excerpts';
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -56,6 +61,8 @@ export function App() {
   const titleNotices = useTitleNotices(workspace);
   const scrollActivity = useScrollActivity();
   const memory = useMemory(workspace);
+  const createNote = useNoteCreation(workspace);
+  const inlineEntities = useInlineEntities(workspace, memory.result, memory.entityError);
   useEffect(() => {
     if (import.meta.env.VITE_PERFORMANCE === '1')
       void import('../performance/native').then(({ attach }) => attach(workspace, memory));
@@ -181,6 +188,26 @@ export function App() {
     groups,
   } = workspace;
   const sourcePresence = usePresenceValue(groups.length ? groups : null);
+  const cardPresence = usePresenceValue(card);
+  const [expandedHeight, setExpandedHeight] = useState(400);
+  const [railScroll, setRailScroll] = useState(0);
+  useLayoutEffect(() => {
+    if (!card) return;
+    const panel = document.querySelector<HTMLElement>('.source-card');
+    if (!panel) return;
+    const measure = () => setExpandedHeight(Math.max(54, panel.offsetHeight));
+    measure();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(panel);
+    return () => observer?.disconnect();
+  }, [card?.source.id]);
+  const railGroups = marginLayout(
+    sourcePresence.value ?? [],
+    groupOpen,
+    cardPresence.value?.source.id,
+    expandedHeight,
+  );
+
   useEffect(() => {
     let alive = true;
     setAssociated(new Set());
@@ -213,7 +240,7 @@ export function App() {
   const contextTop =
     memory.top === null
       ? null
-      : Math.max(memory.top, ...groups.map((g) => g.top + Math.min(g.sources.length, 2) * 54 + 36));
+      : Math.max(memory.top, ...railGroups.map((g) => g.top + g.height + 36)) - railScroll;
   const recallSection =
     memory.suggestion?.kind === 'recall' ? memory.suggestion.passage.section : null;
   const suggestionExcerpt =
@@ -477,6 +504,28 @@ export function App() {
             generation={doc.generation}
             readOnly={workspace.libraryBusy}
             settings={doc.settings}
+            projectPath={p.path}
+            noteLookup={(query) => request('noteSuggestions', { projectPath: p.path, query })}
+            noteCreate={createNote}
+            noteResolve={(ids) => request('noteReferences', { projectPath: p.path, ids })}
+            sourceVersion={workspace.sourceVersion}
+            onOpenNote={(id) => {
+              void request<Source>('source', { id })
+                .then((source) => {
+                  if (doc.ref.current?.path !== p.path) return;
+                  memory.close();
+                  inlineEntities.close();
+                  workspace.setCard(null);
+                  workspace.setReader(source);
+                })
+                .catch(fail);
+            }}
+            onNoteError={fail}
+            entities={inlineEntities.batches}
+            onEntity={(mention) => {
+              memory.close();
+              void inlineEntities.open(mention);
+            }}
             focusPreview={surface === 'settings' && !workspace.historyMode ? focusPreview : null}
             scrollPreview={surface === 'settings' && !workspace.historyMode ? scrollPreview : null}
             onSelection={setTextSelection}
@@ -490,12 +539,14 @@ export function App() {
             onCursor={(v) => (cursor.current = v)}
             onTyping={() => {
               memory.onTyping();
+              inlineEntities.close();
               serial.current++;
               setCard(null);
               workspace.setSourceStatus('loading');
               workspace.setSources((current) => (current.length ? [] : current));
             }}
           />
+          <EntityProposal entities={inlineEntities} />
           {!scenes.length &&
             (doc.settings.continuous ? (
               <div className="empty-manuscript">
@@ -561,6 +612,7 @@ export function App() {
           <div
             className="source-margin"
             aria-label={t('Sources dans la marge')}
+            onScroll={(event) => setRailScroll(event.currentTarget.scrollTop)}
             data-phase={sourcePresence.exiting ? 'exit' : 'open'}
             inert={sourcePresence.exiting}
             aria-hidden={sourcePresence.exiting || undefined}
@@ -569,22 +621,30 @@ export function App() {
                 ? {
                     left: railLeft,
                     width: railWidth,
-                    clipPath: `inset(${Math.max(0, workspace.marginBounds.top)}px 0 ${Math.max(0, innerHeight - workspace.marginBounds.bottom)}px 0)`,
+                    top: workspace.marginBounds.top,
+                    height: Math.max(0, workspace.marginBounds.bottom - workspace.marginBounds.top),
+                    bottom: 'auto',
                   }
                 : { visibility: 'hidden' }
             }
           >
-            {(sourcePresence.value ?? []).map((g) => (
+            {railGroups.map((g) => (
               <div
                 className="source-group"
                 data-anchor-line={g.id}
                 data-expanded={groupOpen === g.id}
                 key={g.id}
-                style={{ top: g.top }}
+                style={{ top: g.top - (workspace.marginBounds?.top ?? 0) }}
               >
                 {g.sources.slice(0, groupOpen === g.id ? g.sources.length : 2).map((s) => (
                   <button
-                    className="source-label"
+                    className="source-label entity-tinted"
+                    style={{
+                      ...entityTint(s.kind, doc.settings.entityColors),
+                      ...(cardPresence.value?.source.id === s.id
+                        ? { height: expandedHeight, minHeight: expandedHeight }
+                        : {}),
+                    }}
                     key={s.id}
                     onContextMenu={(event) =>
                       openMenu(
@@ -634,6 +694,16 @@ export function App() {
                 )}
               </div>
             ))}
+            {memory.suggestion && contextTop !== null && (
+              <div
+                aria-hidden="true"
+                className="margin-scroll-end"
+                style={{
+                  top: contextTop + railScroll - (workspace.marginBounds?.top ?? 0),
+                  height: suggestionExcerpt ? 145 : 100,
+                }}
+              />
+            )}
           </div>
         )}
       <Presence kind="content">
@@ -650,7 +720,6 @@ export function App() {
           doc.settings.focus === 'none' &&
           !memory.view &&
           !reader &&
-          !card &&
           !searching && (
             <div
               className="memory-suggestion"
@@ -689,7 +758,15 @@ export function App() {
                     ],
                   });
                 }}
-                className="source-label memory-context"
+                className={`source-label memory-context${memory.suggestion.kind === 'entity' ? ' entity-tinted' : ''}`}
+                style={
+                  memory.suggestion.kind === 'entity'
+                    ? entityTint(
+                        memory.result?.entities[0]?.kind ?? 'Note',
+                        doc.settings.entityColors,
+                      )
+                    : undefined
+                }
                 onClick={(event) => {
                   setSurface('none');
                   memory.open(
@@ -792,6 +869,9 @@ export function App() {
       </Presence>{' '}
       {searching && !reader && !(memory.view && !memory.origin) && (
         <SearchMargin
+          colors={doc.settings.entityColors}
+          expandedId={cardPresence.value?.source.id}
+          expandedHeight={expandedHeight}
           sources={workspace.unifiedSearch.sources}
           busy={workspace.unifiedSearch.busy}
           error={workspace.unifiedSearch.error}

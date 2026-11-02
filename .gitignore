@@ -30,6 +30,7 @@ src-tauri/resources/models/*.gguf
 src-tauri/resources/models/*.download
 src-tauri/resources/engine/*
 !src-tauri/resources/engine/memory.py
+!src-tauri/resources/engine/memory-model.txt
 src-tauri/resources/notices/native/
 __pycache__/
 *.pyc

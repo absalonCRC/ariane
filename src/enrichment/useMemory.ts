@@ -1,5 +1,6 @@
 import type { PanelOrigin } from '../components/useSharedPanel';
 import { useEffect, useRef, useState } from 'react';
+import { t } from '../i18n';
 import { native, request } from '../app/client';
 import type { Workspace } from '../app/useWorkspace';
 
@@ -248,6 +249,7 @@ export function useMemory(workspace: Workspace) {
       const start = epoch.current;
       try {
         const value = await request<{
+          available?: boolean;
           entities?: MemoryEntity[];
           anchorHash?: string;
           pending?: boolean;
@@ -262,6 +264,10 @@ export function useMemory(workspace: Workspace) {
           revision: section.revision,
         });
         if (!alive || start !== epoch.current || latest.current.p?.path !== path) return;
+        if (value.available === false) {
+          setEntityError(t('Le moteur de détection des entités est indisponible.'));
+          return;
+        }
         const current = latest.current.editor.current?.context();
         if (
           !value.stale &&
@@ -350,10 +356,14 @@ export function useMemory(workspace: Workspace) {
     view,
     origin,
     open,
-    close: () => { setView(null); setOrigin(null); },
+    close: () => {
+      setView(null);
+      setOrigin(null);
+    },
     resume,
     showResume,
     error: error || entityError,
+    entityError,
     suggestion,
     onTyping,
     dismiss,
