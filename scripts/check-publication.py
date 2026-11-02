@@ -33,8 +33,11 @@ def check(root=ROOT):
             errors.append(f"Missing source: {name}")
             continue
         data = path.read_bytes()
-        if len(data) > 5 * 1024 * 1024:
-            errors.append(f"File exceeds 5 MiB: {name}")
+        # The public 1080p film needs more room; all other files keep the cap.
+        # This exact-path exception does not skip the content checks below.
+        limit_mib = 15 if name == "docs/media/ariane-film.mp4" else 5
+        if len(data) > limit_mib * 1024 * 1024:
+            errors.append(f"File exceeds {limit_mib} MiB: {name}")
         if data[:4] in (b'\xcf\xfa\xed\xfe', b'\xca\xfe\xba\xbe') or path.suffix in {'.gguf', '.sqlite', '.p12', '.p8', '.key'}:
             errors.append(f"Binary, model, data or key: {name}")
         for label, pattern in patterns.items():
