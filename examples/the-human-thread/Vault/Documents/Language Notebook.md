@@ -2,10 +2,8 @@
 title: "Language Notebook"
 type: "document"
 aliases: ["language notebook"]
-Fictif: true
 Description: "Three ways to carry the same intention across a sentence."
 tags: ["demo", "writing", "ai"]
-Provenance: "Original fictional demonstration material for Ariane"
 ---
 
 # Language Notebook

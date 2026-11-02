@@ -1,82 +1,81 @@
 <div align="center">
-  <img src="src/assets/ariane-wordmark-lowercase.png" alt="ariane" width="250">
+  <img src="src/assets/ariane-wordmark-lowercase.png" alt="ariane" width="230">
   <p><strong>Keep the human thread.</strong></p>
-  <p>A local writing app for long-form work. Your manuscript, your research, your voice.</p>
-  <p><strong>English · Français · Español</strong></p>
-  <p>
-    <a href="#see-ariane-in-action">Watch the film</a> ·
-    <a href="#a-page-with-room-to-think">Explore the features</a> ·
-    <a href="#try-the-alpha">Try the alpha</a> ·
-    <a href="#contribute">Contribute</a>
-  </p>
-  <p><a href="https://github.com/absalonCRC/ariane/actions/workflows/verify.yml"><img src="https://github.com/absalonCRC/ariane/actions/workflows/verify.yml/badge.svg" alt="GitHub Actions verification"></a> <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--only-343434" alt="GPL-3.0-only license"></a> <img src="https://img.shields.io/badge/macOS-26%2B%20%7C%20Apple%20Silicon-343434" alt="macOS 26 and later, Apple Silicon"></p>
+  <p>A quiet, local space for your manuscript and the knowledge around it.</p>
+  <p>English · Français · Español</p>
+  <p><a href="#a-page-with-room-to-think">Discover Ariane</a> · <a href="#see-ariane-in-action">Watch the film</a> · <a href="#try-the-alpha">Try the alpha</a></p>
 </div>
 
-## See Ariane in action
-
-[![Watch the 46-second Ariane introduction](docs/media/film-poster.jpg)](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)
-
-**[Watch or download the film · 46 seconds · MP4](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)**
-
-Ariane brings a quiet Markdown editor, a structured manuscript and a research library into one local workspace. Mention a person, place or idea in your draft, and a related note can appear in the margin. Open the context, insert a reference when it is useful, and return to your sentence.
-
-The film and screenshots show **0.2.0-alpha.1 running natively on macOS**, using *The Human Thread*: a fictional essay about AI and authorship. The project contains four chapters, eight pages, ten research notes and two sample drafts. All people, interviews and institutions are invented. [Browse the reusable demonstration material](examples/the-human-thread).
+[![Ariane’s writing page with the sidebar closed, literary typography and discreet source mentions in the margin](docs/media/writing.jpg)](docs/media/writing.jpg)
 
 ## A page with room to think
 
-Start with a title and write. Literary typography, adjustable reading width and line spacing, sentence or paragraph focus, and typewriter scrolling let you shape your writing environment. Tools stay close without turning the page into a dashboard.
+A title. Your words. Room around them. The library stays tucked away until you need it. Open your manuscript’s structure, then return to the page.
 
-![Ariane’s native writing workspace, with chapters on the left and related research in the margin](docs/media/writing.jpg)
+Adjust the reading width, line spacing and focus mode to suit the way you write. Ariane keeps the tools within reach and gives the sentence the space.
 
-### Your research, beside the sentence
+## The right context, beside the sentence
 
-Connect an existing Obsidian vault in **read-only mode**, or create a vault owned by the project. Browse your notes, follow detected mentions and inspect related sources beside your draft. Open the full note, find its appearances in the manuscript, or insert a citation or reference.
+A name in your draft can lead back to a research note. Inspect the source, see where it appears in the manuscript, and insert a reference when it belongs in your work.
 
-Connections are invitations to investigate. A suggested note does not verify a claim, and a name match does not establish someone’s identity.
+![Close-up of the manuscript and the source card opened from a detected mention of Mara Vale](docs/media/sources.jpg)
 
-![A source card for the fictional essayist Mara Vale beside the manuscript](docs/media/sources.jpg)
-
-<details>
-<summary>Look inside a research note</summary>
-
-![A full research note with fictional interview excerpts and linked manuscript passages](docs/media/research.jpg)
-
-The same research can be reached from the source library and from the manuscript. External vaults remain read-only.
-</details>
-
-### A manuscript you can shape
-
-Organize chapters, scenes and notes in the project tree. Reorder sections, choose what belongs in the manuscript, read the assembled text, and import writing into the open project. Editable Markdown tables keep comparisons readable while their underlying text remains portable.
-
-![An editable Markdown table comparing writing tasks, useful assistance and human decisions](docs/media/tables.jpg)
-
-### Revise without losing the earlier thought
-
-Keep named versions, compare drafts side by side, inspect additions and removals, and bring back an individual passage. Ariane saves a version before applying a passage or restoring a snapshot.
-
-![Native version comparison with additions and removals highlighted](docs/media/versions.jpg)
-
-### Find the thread again
-
-Search across project texts and connected vaults from the writing page. Local semantic retrieval can also suggest related manuscript passages and research notes. Open the result and decide whether the connection belongs in your work.
-
-![Search results for human thread across the manuscript and the research vault](docs/media/search.jpg)
-
-### Make the space yours
-
-Choose **English, French or Spanish** for the interface. The choice is remembered across sessions; changing it leaves your manuscript untouched. Document language is a separate setting. Light, dark and system themes adapt the whole workspace to your preferred environment.
-
-![The same manuscript in Ariane’s dark theme](docs/media/dark.jpg)
-
-### Take your writing with you
-
-Export the full manuscript or the current section as **Markdown, PDF, Word or EPUB**, with citations. The writing project is stored locally in SQLite with readable Markdown mirrors. Ariane detects conflicting external edits and preserves a recovery copy during resolution.
+Use an existing Obsidian vault in **read-only mode**, or create a vault owned by the project. Local semantic retrieval can suggest related notes and passages. You decide what is relevant; a suggestion is not a verified claim.
 
 <details>
-<summary>See the export options</summary>
+<summary>From a source card to the full note</summary>
 
-![The native export panel with Markdown, PDF, Word and EPUB options](docs/media/export.jpg)
+<p align="center"><img src="docs/media/research.jpg" alt="A close-up of Ariane’s read-only source reader" width="330"></p>
+
 </details>
+
+## Keep the thought. Reconsider the sentence.
+
+Compare named drafts, inspect what changed and recover an individual passage. Ariane saves a version before applying a passage or restoring a snapshot.
+
+![Earlier and current wording, enlarged from the two columns of Ariane’s native comparison view](docs/media/versions.jpg)
+
+*Two excerpts from the side-by-side comparison, stacked here for readability.*
+
+## A structure that stays out of the way
+
+Chapters, scenes and working notes sit behind the page. Reorder them, read the assembled manuscript or import writing into the open project. Markdown tables are directly editable, so comparisons stay readable while the text remains portable.
+
+<p align="center"><img src="docs/media/tables.jpg" alt="A close-up of an editable Markdown table: writing task, useful assistance and human decision" width="720"></p>
+
+## Daylight. Late night. Your language.
+
+Light, dark and system themes. An interface in **English, French or Spanish**. Your language choice is remembered; your manuscript keeps its own language.
+
+![A close view of Ariane’s dark writing surface and typography, with the sidebar closed](docs/media/dark.jpg)
+
+## Find it. Finish it. Take it with you.
+
+Search project texts and connected vaults from the page. Export your whole manuscript or the current section as **Markdown, PDF, Word or EPUB**, with citations.
+
+<details>
+<summary>Search without leaving the page</summary>
+
+<p align="center"><img src="docs/media/search.jpg" alt="Close-up of the search popover, with manuscript passages matching human thread" width="640"></p>
+
+</details>
+
+<details>
+<summary>Four formats, one export panel</summary>
+
+<p align="center"><img src="docs/media/export.jpg" alt="Close-up of the native export panel with Markdown, PDF, Word and EPUB formats" width="390"></p>
+
+</details>
+
+The project stays local in SQLite with readable Markdown mirrors. Ariane detects conflicting external edits and preserves a recovery copy during resolution.
+
+## See Ariane in action
+
+**[Watch the film · 46 seconds](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)** · [Download the 1080p/60 fps version](https://github.com/absalonCRC/ariane/releases/download/v0.2.0-alpha.1/Ariane-The-Human-Thread-1080p60.mp4)
+
+The presentation uses **0.2.0-alpha.1 running natively on macOS**. Product details are enlarged from real captures. *The Human Thread* is a fictional essay about AI and authorship, with four chapters, eight pages, ten research notes and two sample drafts. All people, institutions and interviews are invented.
+
+[Explore the demo material](examples/the-human-thread) · [Media provenance and film transcript](docs/media/README.md)
 
 ## Local by design
 

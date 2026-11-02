@@ -2,10 +2,8 @@
 title: "Jonas Reed"
 type: "personne"
 aliases: ["Jonas"]
-Fictif: true
 Description: "Fictional editor interested in the seams that make an argument human."
 tags: ["demo", "writing", "ai"]
-Provenance: "Original fictional demonstration material for Ariane"
 ---
 
 # Jonas Reed

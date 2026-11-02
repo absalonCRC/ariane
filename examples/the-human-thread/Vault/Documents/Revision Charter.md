@@ -2,10 +2,8 @@
 title: "Revision Charter"
 type: "document"
 aliases: ["revision charter"]
-Fictif: true
 Description: "Five editorial principles for keeping the writer responsible for the draft."
 tags: ["demo", "writing", "ai"]
-Provenance: "Original fictional demonstration material for Ariane"
 ---
 
 # Revision Charter

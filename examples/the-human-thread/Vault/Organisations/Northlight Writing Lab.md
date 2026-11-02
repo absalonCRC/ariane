@@ -2,10 +2,8 @@
 title: "Northlight Writing Lab"
 type: "organisation"
 aliases: ["Northlight"]
-Fictif: true
 Description: "An invented writing workshop examining how tools shape creative decisions."
 tags: ["demo", "writing", "ai"]
-Provenance: "Original fictional demonstration material for Ariane"
 ---
 
 # Northlight Writing Lab

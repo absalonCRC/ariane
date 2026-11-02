@@ -2,10 +2,8 @@
 title: "Tool Evolution Map"
 type: "document"
 aliases: ["tool evolution"]
-Fictif: true
 Description: "A conceptual map from correction to completion to collaboration."
 tags: ["demo", "writing", "ai"]
-Provenance: "Original fictional demonstration material for Ariane"
 ---
 
 # Tool Evolution Map

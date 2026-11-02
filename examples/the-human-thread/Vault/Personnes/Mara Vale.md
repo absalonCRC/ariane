@@ -2,10 +2,8 @@
 title: "Mara Vale"
 type: "personne"
 aliases: ["Mara"]
-Fictif: true
 Description: "Fictional essayist exploring authorship, attention and artificial intelligence."
 tags: ["demo", "writing", "ai"]
-Provenance: "Original fictional demonstration material for Ariane"
 ---
 
 # Mara Vale

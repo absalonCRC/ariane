@@ -10,7 +10,9 @@ A larger step toward a quiet, connected writing workspace. This **source-only pr
 - **Research beside the manuscript:** source browsing, linked passages, and a clearer distinction between inserted references and detected name mentions.
 - **A more flexible manuscript library:** chapters, scenes, working notes, inclusion controls and imports from Markdown, DOCX and TextBundle.
 - **Better draft comparison:** side-by-side passages, word-level additions and removals, individual passage recovery and a saved version before applying changes.
-- **A new English project presentation:** eight native screenshots, a 46-second introduction and a reusable fictional demo about AI and authorship.
+- **A new English project presentation:** editorial close-ups from the native app, a 46-second introduction and a reusable fictional demo about AI and authorship.
+
+The presentation was refreshed on 2 November: sidebar closed, selected details enlarged, and a revised film. The release tag still identifies the same application sources; the presentation attachments below are the refreshed edition.
 
 ## Downloads
 

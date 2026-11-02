@@ -2,10 +2,8 @@
 title: "Editorial Friction"
 type: "concept"
 aliases: ["editorial friction"]
-Fictif: true
 Description: "A pause that helps a writer notice an important choice."
 tags: ["demo", "writing", "ai"]
-Provenance: "Original fictional demonstration material for Ariane"
 ---
 
 # Editorial Friction

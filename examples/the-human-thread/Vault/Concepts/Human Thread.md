@@ -2,10 +2,8 @@
 title: "Human Thread"
 type: "concept"
 aliases: ["the human thread"]
-Fictif: true
 Description: "The author’s continuity of intention, from first observation to finished page."
 tags: ["demo", "writing", "ai"]
-Provenance: "Original fictional demonstration material for Ariane"
 ---
 
 # Human Thread

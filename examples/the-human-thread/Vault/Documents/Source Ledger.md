@@ -2,10 +2,8 @@
 title: "Source Ledger"
 type: "document"
 aliases: ["source ledger"]
-Fictif: true
 Description: "A small research inventory with explicit provenance."
 tags: ["demo", "writing", "ai"]
-Provenance: "Original fictional demonstration material for Ariane"
 ---
 
 # Source Ledger

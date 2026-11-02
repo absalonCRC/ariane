@@ -2,10 +2,8 @@
 title: "Northlight Interview"
 type: "document"
 aliases: ["the interview"]
-Fictif: true
 Description: "A fictional conversation about fluency, voice and editorial judgment."
 tags: ["demo", "writing", "ai"]
-Provenance: "Original fictional demonstration material for Ariane"
 ---
 
 # Northlight Interview
