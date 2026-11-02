@@ -37,12 +37,13 @@ export interface Settings {
   collapsed?: string[];
   libraryView?: 'texts' | 'manuscript' | 'note' | 'sources' | 'trash';
   countMode: 'characters' | 'words' | 'lines';
-  font: 'literary' | 'mono';
+  font: 'literary' | 'sans' | 'mono';
   fontSize: number;
   columnWidth?: number;
   lineHeight?: number;
   focus: 'none' | 'paragraph' | 'sentence';
   typewriter: boolean;
+  typewriterSound: boolean;
   depth: number;
   revision: boolean;
   enrichment: boolean;
@@ -60,6 +61,7 @@ export const defaultSettings: Settings = {
   lineHeight: 1.5,
   focus: 'none',
   typewriter: false,
+  typewriterSound: false,
   depth: 3,
   revision: false,
   enrichment: true,

@@ -1,149 +1,87 @@
 import { t, useLocale } from '../i18n';
-import { useEffect, useId, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import type { Settings } from '../app/types';
+import { PreviewButton } from './PreviewButton';
 
-type Preview = 'none' | 'paragraph' | 'sentence' | 'classic' | 'typewriter';
-const descriptions: Record<Preview, string> = {
-  none: 'Tout le texte reste visible.',
-  paragraph: 'Le paragraphe actif se détache.',
-  sentence: 'Seule la phrase active se détache.',
-  classic: 'La page suit votre défilement.',
-  typewriter: 'La ligne active reste au centre.',
-};
-
-function ModeButton({
-  mode,
-  label,
-  active,
-  onClick,
-}: {
-  mode: Preview;
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  useLocale();
-  const [preview, setPreview] = useState(false);
-  const trigger = useRef<HTMLButtonElement>(null);
-  const [position, setPosition] = useState({ left: 0, top: 0 });
-  function show() {
-    const rect = trigger.current?.getBoundingClientRect();
-    if (!rect) return;
-    setPosition({
-      left: Math.max(12, Math.min(innerWidth - 282, rect.left)),
-      top: rect.top > 190 ? rect.top - 180 : rect.bottom + 8,
-    });
-    setPreview(true);
-  }
-  useEffect(() => {
-    const hide = () => setPreview(false);
-    window.addEventListener('resize', hide);
-    document.addEventListener('scroll', hide, true);
-    return () => {
-      window.removeEventListener('resize', hide);
-      document.removeEventListener('scroll', hide, true);
-    };
-  }, []);
-  const id = useId();
+type FocusMode = Settings['focus'];
+function FocusModeIcon({ mode }: { mode: FocusMode }) {
   return (
-    <span
-      className="writing-mode"
-      onPointerEnter={(event) => {
-        if (event.pointerType !== 'touch') show();
-      }}
-      onPointerLeave={() => setPreview(false)}
-      onFocus={show}
-      onBlur={() => setPreview(false)}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape' && preview) {
-          setPreview(false);
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      }}
-    >
-      <button
-        ref={trigger}
-        type="button"
-        aria-pressed={active}
-        aria-describedby={preview ? id : undefined}
-        className={active ? 'active' : ''}
-        onClick={onClick}
-      >
-        {t(label)}
-      </button>
-      {preview &&
-        createPortal(
-          <span
-            style={position}
-            className="writing-mode-preview"
-            role="tooltip"
-            id={id}
-            data-mode={mode}
-          >
-            <span className="mode-sample" aria-hidden="true">
-              <span className="mode-lines">
-                <span className="sample-before">{t('La fenêtre donne sur le jardin.')}</span>
-                <span className="sample-active">
-                  {t('Une phrase trouve son rythme.')} <span>{t('Le jour se lève.')}</span>
-                </span>
-                <span className="sample-after">{t('L’encre sèche sur le papier.')}</span>
-              </span>
-            </span>
-            <span className="mode-caption">{t(descriptions[mode])}</span>
-          </span>,
-          trigger.current?.closest('dialog') ?? document.body,
-        )}
-    </span>
+    <svg viewBox="0 0 24 20" width="20" height="18" fill="none" aria-hidden="true">
+      <g stroke="currentColor" strokeLinecap="round" strokeWidth="1.5">
+        <path d="M3 3.5h18M3 7h14" opacity={mode === 'none' ? 1 : 0.32} />
+        <path d="M3 12h18M3 15.5h14" opacity={mode === 'sentence' ? 0.32 : 1} />
+        {mode === 'sentence' && <path d="M3 12h11" strokeWidth="2.2" />}
+      </g>
+    </svg>
   );
 }
-
+function ScrollModeIcon({ typewriter }: { typewriter: boolean }) {
+  return (
+    <svg viewBox="0 0 24 20" width="20" height="18" fill="none" aria-hidden="true">
+      <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
+        <path d="M3 4h12M3 8h12M3 12h12M3 16h12" opacity={typewriter ? 0.35 : 1} />
+        {typewriter && <path d="M3 10h12" strokeWidth="2" />}
+        {typewriter ? <path d="M18 7l3 3-3 3" /> : <path d="M19 3v14m-2-2 2 2 2-2m-4-10 2-2 2 2" />}
+      </g>
+    </svg>
+  );
+}
 export function WritingModes({
   value,
   onChange,
+  onFocusPreview,
+  onScrollPreview,
 }: {
   value: Settings;
   onChange: (patch: Partial<Settings>) => void;
+  onFocusPreview?: (mode: FocusMode | null) => void;
+  onScrollPreview?: (mode: boolean | null) => void;
 }) {
   useLocale();
   return (
     <>
       <div className="settings-row" role="group" aria-label={t('Concentration')}>
         <span className="settings-label">{t('Concentration')}</span>
-        <div className="segmented mode-options">
+        <div className="segmented mode-options focus-mode-options">
           {(
             [
-              ['none', t('Aucune')],
-              ['paragraph', t('Paragraphe')],
-              ['sentence', t('Phrase')],
+              ['none', 'Aucune'],
+              ['paragraph', 'Paragraphe'],
+              ['sentence', 'Phrase'],
             ] as const
           ).map(([mode, label]) => (
-            <ModeButton
+            <PreviewButton
               key={mode}
-              mode={mode}
+              value={mode}
               label={t(label)}
               active={value.focus === mode}
-              onClick={() => onChange({ focus: mode })}
-            />
+              onSelect={() => onChange({ focus: mode })}
+              onPreview={onFocusPreview}
+            >
+              <FocusModeIcon mode={mode} />
+            </PreviewButton>
           ))}
         </div>
       </div>
       <div className="settings-row" role="group" aria-label={t('Défilement')}>
         <span className="settings-label">{t('Défilement')}</span>
-        <div className="segmented mode-options">
-          <ModeButton
-            mode="classic"
-            label={t('Classique')}
-            active={!value.typewriter}
-            onClick={() => onChange({ typewriter: false })}
-          />
-          <ModeButton
-            mode="typewriter"
-            label={t('Machine à écrire')}
-            active={value.typewriter}
-            onClick={() => onChange({ typewriter: true })}
-          />
+        <div className="segmented mode-options scroll-mode-options">
+          {(
+            [
+              [false, 'Classique'],
+              [true, 'Machine à écrire'],
+            ] as const
+          ).map(([mode, label]) => (
+            <PreviewButton
+              key={label}
+              value={mode}
+              label={t(label)}
+              active={value.typewriter === mode}
+              onSelect={() => onChange({ typewriter: mode })}
+              onPreview={onScrollPreview}
+            >
+              <ScrollModeIcon typewriter={mode} />
+            </PreviewButton>
+          ))}
         </div>
       </div>
     </>

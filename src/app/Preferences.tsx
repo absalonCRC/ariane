@@ -94,7 +94,8 @@ export function Preferences({
                   onChange={(e) => onChange({ font: e.target.value as Values['font'] })}
                 >
                   <option value="literary">{t('Littéraire · EB Garamond')}</option>
-                  <option value="mono">{t('Chasse fixe')}</option>
+                  <option value="sans">{t('Sans empattement · Figtree')}</option>
+                  <option value="mono">{t('Chasse fixe · Source Code Pro')}</option>
                 </select>
               </label>
               <label>
@@ -112,7 +113,11 @@ export function Preferences({
               <p
                 className="settings-type-preview"
                 style={{
-                  fontFamily: value.font === 'mono' ? 'var(--mono)' : 'var(--literary)',
+                  fontFamily: {
+                    literary: 'var(--writing-serif)',
+                    sans: 'var(--writing-sans)',
+                    mono: 'var(--writing-mono)',
+                  }[value.font],
                   fontSize: value.fontSize,
                   lineHeight: value.lineHeight ?? 1.5,
                   maxWidth: value.columnWidth ?? 750,
@@ -129,6 +134,19 @@ export function Preferences({
                 {t('Ces réglages sont conservés avec le projet.')}
               </p>
               <WritingModes value={value} onChange={onChange} />
+              {value.typewriter && (
+                <label className="preference-toggle">
+                  <span>
+                    {t('Son de machine à écrire')}
+                    <small>{t('Jouer un son pendant la frappe dans le manuscrit.')}</small>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={value.typewriterSound}
+                    onChange={(e) => onChange({ typewriterSound: e.target.checked })}
+                  />
+                </label>
+              )}
               <label className="preference-toggle">
                 <span>
                   {t('Révision')}

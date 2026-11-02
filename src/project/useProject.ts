@@ -25,6 +25,8 @@ export function useProject(onError: (e: unknown) => void) {
     sectionIndex.current = new Map(p.sections.map(section => [section.id, section]));
     setProject(p);
     const s = { ...defaultSettings, ...p.settings };
+    // Preserve projects that briefly used the second typography's earlier identifier.
+    if ((s.font as string) === 'book') s.font = 'sans';
     settingsRef.current = s;
     setSettingsState(s);
     dirty.current.clear();

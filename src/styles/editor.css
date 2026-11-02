@@ -416,7 +416,7 @@
   width: min(680px, calc(100% - 60px));
 }
 .document-title {
-  font-family: var(--literary) !important;
+  font-family: var(--manuscript-font, var(--writing-serif)) !important;
   font-weight: 400 !important;
   font-size: 40px !important;
   line-height: 1.3 !important;
@@ -430,17 +430,19 @@
 }
 .editor-host {
   height: auto;
-  --writing-font: var(--literary);
+  --writing-font: var(--manuscript-font, var(--writing-serif));
 }
-.mono .editor-host,
-.mono .document-title {
-  --writing-font: var(--mono);
-  font-family: var(--mono) !important;
+.app[data-writing-font='literary'] { --manuscript-font: var(--writing-serif); }
+.app[data-writing-font='sans'] { --manuscript-font: var(--writing-sans); }
+.app[data-writing-font='mono'] { --manuscript-font: var(--writing-mono); }
+.app[data-writing-font='mono'] .editor-host,
+.app[data-writing-font='mono'] .document-title {
+  font-family: var(--writing-mono) !important;
 }
-.mono .document-title {
+.app[data-writing-font='mono'] .document-title {
   font-size: 27px !important;
 }
-.mono .editor-host {
+.app[data-writing-font='mono'] .editor-host {
   --writing-size: 18px;
 }
 .cm-editor {
@@ -1109,6 +1111,10 @@ input[type='range'] {
 }
 .settings-control .settings .check-label input {
   margin: 0 0 0 auto;
+  accent-color: var(--workspace-accent);
+}
+.settings-control .settings .settings-row.check-label {
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 @media (max-height: 680px) {
   .settings-control .settings {

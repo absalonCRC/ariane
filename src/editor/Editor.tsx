@@ -14,7 +14,7 @@ import { outlineEditor, type OutlineEditor } from './outline/state';
 import { outlinePresentation } from './outline/view';
 import { prepareTextInsertion } from './insertion';
 import { analyze } from '../revision/diagnostics';
-import { sentenceFocus, paragraphFocus } from './focus';
+import { sentenceFocus, paragraphFocus, focusPreviewPosition } from './focus';
 import type { SelectionAnchor } from '../components/SelectionToolbar';
 import { useContextMenu } from '../components/ContextMenu';
 import { editorContext } from './contextMenu';
@@ -28,6 +28,7 @@ import { highlightTextMatch, textSearchHighlight } from './textSearch';
 import { formatMarkdown, type MarkdownFormat } from './formatMarkdown';
 import { prepareCitationInsertion } from './citationInsertion';
 import { reviewTarget, type ReviewTarget } from './reviewTarget';
+import { createTypewriterSound, type TypewriterSound } from './typewriterSound';
 export interface VisibleText {
   cursor?: number;
   text: string;
@@ -66,6 +67,8 @@ interface Props {
   generation: number;
   readOnly?: boolean;
   settings: Settings;
+  focusPreview?: Settings['focus'] | null;
+  scrollPreview?: boolean | null;
   onChange: (changes: Map<string, string>, outlines?: Map<string, Outline>) => void;
   onDraftChange?: (drafts: Map<string, SectionDraft>) => void;
   onVisible: (value: VisibleText) => void;
@@ -91,6 +94,19 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
   const options = useRef(new Compartment());
   const notifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wordTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const focusPreviewScroll = useRef<{ scroller: HTMLElement; top: number; left: number } | null>(
+    null,
+  );
+  const typingSound = useRef<TypewriterSound | null>(null);
+  useEffect(() => {
+    if (!props.settings.typewriter || !props.settings.typewriterSound) return;
+    const sound = createTypewriterSound();
+    typingSound.current = sound;
+    return () => {
+      typingSound.current = null;
+      sound.destroy();
+    };
+  }, [props.settings.typewriter, props.settings.typewriterSound]);
   useImperativeHandle(ref, () => ({
     context() {
       const v = view.current,
@@ -589,15 +605,17 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       v.destroy();
       view.current = null;
       outlineRef.current = null;
+      focusPreviewScroll.current = null;
     };
   }, [props.generation, props.sections.map((s) => s.id).join(':')]);
   useEffect(() => {
     const v = view.current;
     if (!v) return;
-    const mode = props.settings.focus;
+    const mode = props.focusPreview ?? props.settings.focus;
     v.dom.dataset.focus = mode;
     v.contentDOM.lang = props.settings.language;
-    v.dom.dataset.typewriter = String(props.settings.typewriter);
+    const visualTypewriter = props.scrollPreview ?? props.settings.typewriter;
+    v.dom.dataset.typewriter = String(visualTypewriter);
     const diagnostics = props.settings.revision
       ? EditorView.updateListener.of((u) => {
           if (u.docChanged || u.viewportChanged) paintRevision(u.view);
@@ -613,29 +631,99 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
         }),
         EditorState.readOnly.of(!!props.readOnly),
         ...(mode === 'sentence'
-          ? [sentenceFocus()]
+          ? [sentenceFocus(props.focusPreview != null)]
           : mode === 'paragraph'
-            ? [paragraphFocus()]
+            ? [paragraphFocus(props.focusPreview != null)]
             : []),
-        ...(props.settings.typewriter ? [typewriterScrolling()] : []),
+        ...(visualTypewriter ? [typewriterScrolling(props.scrollPreview != null)] : []),
       ]),
     });
-    if (props.settings.typewriter) v.requestMeasure();
+    if (visualTypewriter) v.requestMeasure();
     if (props.settings.revision) paintRevision(v);
     else v.dom.querySelectorAll('[data-remark]').forEach((e) => e.removeAttribute('data-remark'));
   }, [
     locale,
     props.readOnly,
     props.settings.focus,
+    props.focusPreview,
     props.settings.revision,
     props.settings.language,
     props.settings.typewriter,
+    props.scrollPreview,
+    props.generation,
+    props.sections.map((section) => section.id).join(':'),
+  ]);
+  useEffect(() => {
+    const v = view.current;
+    if (!v) return;
+    const needsPreviewPosition =
+      (props.focusPreview != null && props.focusPreview !== 'none') || props.scrollPreview != null;
+    if (needsPreviewPosition) {
+      const scroller = documentScroller(v);
+      if (!focusPreviewScroll.current)
+        focusPreviewScroll.current = {
+          scroller,
+          top: scroller.scrollTop,
+          left: scroller.scrollLeft,
+        };
+      v.dispatch({
+        effects: EditorView.scrollIntoView(focusPreviewPosition(v.state.doc), {
+          y: props.scrollPreview === true ? 'center' : 'nearest',
+        }),
+      });
+    } else if (
+      props.focusPreview == null &&
+      props.scrollPreview == null &&
+      focusPreviewScroll.current
+    ) {
+      const { scroller, top, left } = focusPreviewScroll.current;
+      focusPreviewScroll.current = null;
+      scroller.scrollTop = top;
+      scroller.scrollLeft = left;
+    }
+  }, [
+    props.focusPreview,
+    props.scrollPreview,
     props.generation,
     props.sections.map((section) => section.id).join(':'),
   ]);
   return (
     <div
-      className={'editor-host ' + (props.settings.focus !== 'none' ? 'concentrating' : '')}
+      className={
+        'editor-host ' +
+        ((props.focusPreview ?? props.settings.focus) !== 'none' ? 'concentrating' : '')
+      }
+      onKeyDownCapture={(event) => {
+        const target = event.target;
+        const v = view.current;
+        if (
+          !props.settings.typewriter ||
+          !props.settings.typewriterSound ||
+          props.readOnly ||
+          !v ||
+          !(target instanceof HTMLElement) ||
+          !v.contentDOM.contains(target) ||
+          event.metaKey ||
+          (event.ctrlKey && !event.getModifierState('AltGraph')) ||
+          event.nativeEvent.isComposing
+        )
+          return;
+        const table = target.closest('.markdown-table-preview');
+        const tableInput = table && target instanceof HTMLInputElement && !target.readOnly;
+        if (
+          table
+            ? !tableInput
+            : !!target.closest('button, input, textarea, select, [contenteditable="false"]')
+        )
+          return;
+        const key = event.key;
+        if (key === 'Enter') {
+          // Enter in a table moves between cells; it does not insert a line break.
+          if (!tableInput) typingSound.current?.play('return');
+        } else if (key === 'Backspace' || key === 'Delete') typingSound.current?.play('delete');
+        else if (key === ' ') typingSound.current?.play('space');
+        else if (Array.from(key).length === 1) typingSound.current?.play('key');
+      }}
       style={
         {
           '--writing-size': props.settings.fontSize + 'px',

@@ -5,7 +5,19 @@ import {
   type DecorationSet,
   type ViewUpdate,
 } from '@codemirror/view';
-export function sentenceFocus() {
+import type { Text } from '@codemirror/state';
+
+// Ignore empty trailing lines and spaces: an invisible caret there cannot illustrate a mode.
+export function focusPreviewPosition(doc: Text): number {
+  for (let number = doc.lines; number > 0; number--) {
+    const line = doc.line(number);
+    const lastCharacter = line.text.search(/\s*$/u);
+    if (lastCharacter > 0) return line.from + lastCharacter;
+  }
+  return 0;
+}
+
+export function sentenceFocus(previewAtEnd = false) {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
@@ -17,7 +29,7 @@ export function sentenceFocus() {
           this.decorations = this.build(u.view);
       }
       build(v: EditorView) {
-        const head = v.state.selection.main.head;
+        const head = previewAtEnd ? focusPreviewPosition(v.state.doc) : v.state.selection.main.head;
         const line = v.state.doc.lineAt(head);
         const offset = head - line.from;
         const sentence = /[^.!?]+[.!?]?/gu;
@@ -39,7 +51,7 @@ export function sentenceFocus() {
   );
 }
 
-export function paragraphFocus() {
+export function paragraphFocus(previewAtEnd = false) {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
@@ -52,7 +64,9 @@ export function paragraphFocus() {
       }
       build(view: EditorView) {
         const doc = view.state.doc;
-        const line = doc.lineAt(view.state.selection.main.head);
+        const line = doc.lineAt(
+          previewAtEnd ? focusPreviewPosition(doc) : view.state.selection.main.head,
+        );
         let first = line.number,
           last = line.number;
         if (line.text.trim()) {

@@ -1,14 +1,16 @@
 import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
 import { documentScroller } from './scrolling';
+import { focusPreviewPosition } from './focus';
 
 // Measure after CodeMirror has laid out wrapped lines. Scrolling never changes selection.
-export function typewriterScrolling() {
+export function typewriterScrolling(previewAtEnd = false) {
   return ViewPlugin.fromClass(
     class {
       observer: ResizeObserver;
       frame = 0;
       dragging = false;
       contextMenu = false;
+      destroyed = false;
       column: HTMLElement | null;
       constructor(readonly view: EditorView) {
         this.column = view.dom.closest('.manuscript-column');
@@ -31,7 +33,12 @@ export function typewriterScrolling() {
           return;
         }
         if (u.docChanged || u.selectionSet) this.contextMenu = false;
-        if (u.docChanged || u.selectionSet || u.heightChanged)
+        if (
+          u.docChanged ||
+          u.selectionSet ||
+          u.heightChanged ||
+          (previewAtEnd && u.viewportChanged)
+        )
           this.measure(u.docChanged || u.selectionSet);
       }
       measure(animate: boolean) {
@@ -41,7 +48,9 @@ export function typewriterScrolling() {
           read: () => {
             const scroller = documentScroller(v);
             const height = scroller.clientHeight;
-            const caret = v.coordsAtPos(v.state.selection.main.head);
+            const caret = v.coordsAtPos(
+              previewAtEnd ? focusPreviewPosition(v.state.doc) : v.state.selection.main.head,
+            );
             const box = scroller.getBoundingClientRect();
             const center = Math.max(0, Math.min(height, window.innerHeight / 2 - box.top));
             return {
@@ -68,7 +77,15 @@ export function typewriterScrolling() {
               this.measure(false);
               return;
             }
-            if (this.contextMenu || target === null || this.dragging || v.dom.dataset.outlineDragging || !v.state.selection.main.empty) return;
+            if (
+              this.destroyed ||
+              this.contextMenu ||
+              target === null ||
+              this.dragging ||
+              v.dom.dataset.outlineDragging ||
+              (!previewAtEnd && !v.state.selection.main.empty)
+            )
+              return;
             cancelAnimationFrame(this.frame);
             const from = documentScroller(v).scrollTop;
             const duration =
@@ -88,6 +105,7 @@ export function typewriterScrolling() {
         });
       }
       destroy() {
+        this.destroyed = true;
         cancelAnimationFrame(this.frame);
         this.observer.disconnect();
         documentScroller(this.view).removeEventListener('pointerdown', this.pointerDown);

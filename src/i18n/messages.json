@@ -315,6 +315,22 @@
     "Typewriter",
     "Máquina de escribir"
   ],
+  "Sans empattement · Figtree": [
+    "Sans serif · Figtree",
+    "Sin serifa · Figtree"
+  ],
+  "Chasse fixe · Source Code Pro": [
+    "Monospaced · Source Code Pro",
+    "Monoespaciada · Source Code Pro"
+  ],
+  "Son de machine à écrire": [
+    "Typewriter sounds",
+    "Sonido de máquina de escribir"
+  ],
+  "Jouer un son pendant la frappe dans le manuscrit.": [
+    "Play sounds while typing in the manuscript.",
+    "Reproducir sonidos al escribir en el manuscrito."
+  ],
   "Garder la ligne active au centre pendant la saisie.": [
     "Keep the active line centred while typing.",
     "Mantener la línea activa en el centro al escribir."

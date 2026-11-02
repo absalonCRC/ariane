@@ -2,6 +2,7 @@ import { t, useLocale } from '../i18n';
 import { useRef } from 'react';
 import { usePanelFocus } from '../components/usePanelFocus';
 import { WritingModes } from '../components/WritingModes';
+import { TypographyModes } from '../components/TypographyModes';
 import { ReadingComfort } from '../components/ReadingComfort';
 import { X } from 'lucide-react';
 import type { Settings as Values } from './types';
@@ -14,6 +15,9 @@ export function Settings({
   open,
   onFormat,
   canFormat,
+  onFocusPreview,
+  onFontPreview,
+  onScrollPreview,
 }: {
   value: Values;
   onChange: (v: Partial<Values>) => void;
@@ -21,6 +25,9 @@ export function Settings({
   open: boolean;
   onFormat: (format: MarkdownFormat) => void;
   canFormat: boolean;
+  onFocusPreview?: (mode: Values['focus'] | null) => void;
+  onFontPreview?: (font: Values['font'] | null) => void;
+  onScrollPreview?: (mode: boolean | null) => void;
 }) {
   useLocale();
   const panel = useRef<HTMLElement>(null);
@@ -48,25 +55,11 @@ export function Settings({
         </button>
       </div>
       <FormattingToolbar onFormat={onFormat} disabled={!canFormat} />
-      <div className="settings-row" role="group" aria-label={t('Typographie')}>
-        <span className="settings-label">{t('Typographie')}</span>
-        <div className="segmented">
-          <button
-            aria-pressed={value.font === 'literary'}
-            className={value.font === 'literary' ? 'active' : ''}
-            onClick={() => onChange({ font: 'literary' })}
-          >
-            {t('Littéraire')}
-          </button>
-          <button
-            aria-pressed={value.font === 'mono'}
-            className={value.font === 'mono' ? 'active' : ''}
-            onClick={() => onChange({ font: 'mono' })}
-          >
-            {t('Chasse fixe')}
-          </button>
-        </div>
-      </div>
+      <TypographyModes
+        value={value.font}
+        onChange={(font) => onChange({ font })}
+        onPreview={onFontPreview}
+      />
       <label className="settings-row">
         <span className="settings-label">
           {t('Taille du texte · {0} px', { 0: value.fontSize })}
@@ -80,7 +73,22 @@ export function Settings({
           onChange={(e) => onChange({ fontSize: +e.target.value })}
         />
       </label>
-      <WritingModes value={value} onChange={onChange} />
+      <WritingModes
+        value={value}
+        onChange={onChange}
+        onFocusPreview={onFocusPreview}
+        onScrollPreview={onScrollPreview}
+      />
+      {value.typewriter && (
+        <label className="settings-row check-label">
+          <span className="settings-label">{t('Son de machine à écrire')}</span>
+          <input
+            type="checkbox"
+            checked={value.typewriterSound}
+            onChange={(event) => onChange({ typewriterSound: event.target.checked })}
+          />
+        </label>
+      )}
       <ReadingComfort value={value} onChange={onChange} />
     </section>
   );
