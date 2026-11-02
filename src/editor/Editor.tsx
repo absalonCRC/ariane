@@ -1,3 +1,5 @@
+import { t, useLocale } from '../i18n';
+import { editorPhrases } from '../i18n/editor';
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { EditorState, Compartment } from '@codemirror/state';
 import { EditorView, keymap, drawSelection } from '@codemirror/view';
@@ -37,7 +39,12 @@ export interface VisibleText {
 export interface EditorHandle {
   context: () => { section: string; node: string | null; offset: number; cursor: number } | null;
   contextTop: (section: string, node: string | null) => number | null;
-  restoreContext: (context: { section: string; node: string | null; offset: number; cursor: number }) => boolean;
+  restoreContext: (context: {
+    section: string;
+    node: string | null;
+    offset: number;
+    cursor: number;
+  }) => boolean;
   insert: (text: string) => void;
   text: () => string;
   focus: () => void;
@@ -71,6 +78,7 @@ interface Props {
   onSelection?: (anchor: SelectionAnchor | null) => void;
 }
 export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref) {
+  const locale = useLocale();
   const openMenu = useContextMenu();
   const menuRef = useRef(openMenu);
   menuRef.current = openMenu;
@@ -85,35 +93,53 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
   const wordTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useImperativeHandle(ref, () => ({
     context() {
-      const v = view.current, outline = outlineRef.current;
+      const v = view.current,
+        outline = outlineRef.current;
       if (!v || !outline) return null;
       const cursor = v.state.selection.main.head;
       const span = spans.current.find((s) => cursor >= s.from && cursor <= s.to);
       if (!span) return null;
-      const entry = [...v.state.field(outline.field).nodes].reverse().find((n) => n.section === span.id && n.from <= cursor);
+      const entry = [...v.state.field(outline.field).nodes]
+        .reverse()
+        .find((n) => n.section === span.id && n.from <= cursor);
       const persisted = latest.current.sections.find((s) => s.id === span.id)?.outline;
-      return { section: span.id, node: persisted ? entry?.id ?? null : null, offset: cursor - (entry?.from ?? span.from), cursor };
+      return {
+        section: span.id,
+        node: persisted ? (entry?.id ?? null) : null,
+        offset: cursor - (entry?.from ?? span.from),
+        cursor,
+      };
     },
     contextTop(section, node) {
-      const v = view.current, outline = outlineRef.current;
+      const v = view.current,
+        outline = outlineRef.current;
       if (!v || !outline) return null;
-      const from = node ? v.state.field(outline.field).nodes.find((n) => n.section === section && n.id === node)?.from : spans.current.find((s) => s.id === section)?.from;
+      const from = node
+        ? v.state.field(outline.field).nodes.find((n) => n.section === section && n.id === node)
+            ?.from
+        : spans.current.find((s) => s.id === section)?.from;
       if (from === undefined) return null;
       const top = v.coordsAtPos(from)?.top;
       const bounds = documentBounds(v);
       return top !== undefined && top >= bounds.top && top < bounds.bottom - 35 ? top : null;
     },
     restoreContext(context) {
-      const v = view.current, outline = outlineRef.current;
+      const v = view.current,
+        outline = outlineRef.current;
       if (!v || !outline) return false;
       const span = spans.current.find((s) => s.id === context.section);
       if (!span) return false;
       const nodes = v.state.field(outline.field).nodes;
       const entry = nodes.find((n) => n.section === context.section && n.id === context.node);
       if (entry) outline.reveal(v, entry.id);
-      const next = entry ? nodes.find((n) => n.from > entry.from)?.from ?? span.to : span.to;
-      const position = entry ? Math.min(entry.from + context.offset, next) : Math.min(span.to, Math.max(span.from, context.cursor));
-      v.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: 'center' }) });
+      const next = entry ? (nodes.find((n) => n.from > entry.from)?.from ?? span.to) : span.to;
+      const position = entry
+        ? Math.min(entry.from + context.offset, next)
+        : Math.min(span.to, Math.max(span.from, context.cursor));
+      v.dispatch({
+        selection: { anchor: position },
+        effects: EditorView.scrollIntoView(position, { y: 'center' }),
+      });
       return true;
     },
     insert(text) {
@@ -148,13 +174,21 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       if (view.current) highlightTextMatch(view.current, query, direction);
     },
     revealMatch(section, from, query) {
-      const v = view.current, outline = outlineRef.current;
-      const span = spans.current.find(s => s.id === section);
+      const v = view.current,
+        outline = outlineRef.current;
+      const span = spans.current.find((s) => s.id === section);
       if (!v || !span) return false;
       const position = Math.min(span.to, span.from + (from ?? 0));
-      const node = outline ? [...v.state.field(outline.field).nodes].reverse().find(n => n.section === section && n.from <= position) : null;
+      const node = outline
+        ? [...v.state.field(outline.field).nodes]
+            .reverse()
+            .find((n) => n.section === section && n.from <= position)
+        : null;
       if (node && outline) outline.reveal(v, node.id);
-      v.dispatch({ selection: { anchor: position }, effects: EditorView.scrollIntoView(position, { y: 'center' }) });
+      v.dispatch({
+        selection: { anchor: position },
+        effects: EditorView.scrollIntoView(position, { y: 'center' }),
+      });
       highlightTextMatch(v, from === null ? '' : query, 'current', true);
       return true;
     },
@@ -174,12 +208,20 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       const v = view.current;
       if (!v) return null;
       const selection = v.state.selection.main;
-      const span = spans.current.find(s => selection.from >= s.from && selection.to <= s.to);
-      return span ? { section: span.id, from: selection.from - span.from, to: selection.to - span.from,
-        text: v.state.sliceDoc(selection.from, selection.to) } : null;
+      const span = spans.current.find((s) => selection.from >= s.from && selection.to <= s.to);
+      return span
+        ? {
+            section: span.id,
+            from: selection.from - span.from,
+            to: selection.to - span.from,
+            text: v.state.sliceDoc(selection.from, selection.to),
+          }
+        : null;
     },
     prepareCitation() {
-      return view.current ? prepareCitationInsertion(view.current, spans.current, () => view.current) : () => false;
+      return view.current
+        ? prepareCitationInsertion(view.current, spans.current, () => view.current)
+        : () => false;
     },
     prepareInsertion() {
       const v = view.current;
@@ -215,18 +257,32 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     const selectionGeometry = () => {
       const v = view.current;
       if (!v) return;
-      v.requestMeasure({ key: selectionMeasureKey,
+      v.requestMeasure({
+        key: selectionMeasureKey,
         read: (): SelectionAnchor | null => {
           const selection = v.state.selection.main;
           const active = document.activeElement;
-          if (selection.empty || v.state.readOnly || v.composing ||
-            (!v.hasFocus && !(active instanceof HTMLElement && active.closest('.selection-toolbar'))) ||
-            !spans.current.some((span) => selection.from >= span.from && selection.to <= span.to)) return null;
-          const first = v.coordsAtPos(selection.from), last = v.coordsAtPos(selection.to, -1);
+          if (
+            selection.empty ||
+            v.state.readOnly ||
+            v.composing ||
+            (!v.hasFocus &&
+              !(active instanceof HTMLElement && active.closest('.selection-toolbar'))) ||
+            !spans.current.some((span) => selection.from >= span.from && selection.to <= span.to)
+          )
+            return null;
+          const first = v.coordsAtPos(selection.from),
+            last = v.coordsAtPos(selection.to, -1);
           const box = documentBounds(v);
           if (!first || first.top < box.top || first.top >= box.bottom - 30) return null;
-          return { top: first.top, bottom: first.bottom,
-            left: last && Math.abs(first.top - last.top) < 2 ? (first.left + last.right) / 2 : (box.left + box.right) / 2 };
+          return {
+            top: first.top,
+            bottom: first.bottom,
+            left:
+              last && Math.abs(first.top - last.top) < 2
+                ? (first.left + last.right) / 2
+                : (box.left + box.right) / 2,
+          };
         },
         write: (anchor) => latest.current.onSelection?.(anchor),
       });
@@ -303,7 +359,9 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       selection: { anchor: Math.min(latest.current.settings.cursor, data.text.length) },
       extensions: [
         history(),
-        EditorState.transactionFilter.of(tr => tr.docChanged && latest.current.readOnly ? [] : tr),
+        EditorState.transactionFilter.of((tr) =>
+          tr.docChanged && latest.current.readOnly ? [] : tr,
+        ),
         mapping.extensions,
         outline.extensions,
         outlinePresentation(outline),
@@ -323,7 +381,6 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
         ),
         EditorView.contentAttributes.of({
           spellcheck: 'true',
-          'aria-label': 'Manuscrit',
           lang: latest.current.settings.language,
         }),
         options.current.of([]),
@@ -368,7 +425,8 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
             schedule();
           }
           if (u.geometryChanged && !u.docChanged) geometry();
-          if (u.selectionSet || u.docChanged || u.geometryChanged || u.focusChanged) selectionGeometry();
+          if (u.selectionSet || u.docChanged || u.geometryChanged || u.focusChanged)
+            selectionGeometry();
           if (u.selectionSet) latest.current.onCursor(u.state.selection.main.head);
         }),
         EditorView.domEventHandlers({
@@ -381,17 +439,46 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
             return false;
           },
           contextmenu: (event, currentView) => {
-            const handle = (event.target as HTMLElement).closest<HTMLElement>('[data-outline-handle]');
-            const node = handle && currentView.state.field(outline.field).nodes.find((node) => node.id === handle.dataset.outlineHandle);
-            const position = node ? node.from : (event.clientX || event.clientY) ? currentView.posAtCoords({ x: event.clientX, y: event.clientY }) : null;
+            const handle = (event.target as HTMLElement).closest<HTMLElement>(
+              '[data-outline-handle]',
+            );
+            const node =
+              handle &&
+              currentView.state
+                .field(outline.field)
+                .nodes.find((node) => node.id === handle.dataset.outlineHandle);
+            const position = node
+              ? node.from
+              : event.clientX || event.clientY
+                ? currentView.posAtCoords({ x: event.clientX, y: event.clientY })
+                : null;
             const selected = currentView.state.selection.main;
-            if (position !== null && (selected.empty || position < selected.from || position > selected.to))
-              currentView.dispatch({ selection: { anchor: position }, userEvent: 'select.context' });
+            if (
+              position !== null &&
+              (selected.empty || position < selected.from || position > selected.to)
+            )
+              currentView.dispatch({
+                selection: { anchor: position },
+                userEvent: 'select.context',
+              });
             else currentView.dispatch({ userEvent: 'select.context' });
             const coords = currentView.coordsAtPos(currentView.state.selection.main.head);
-            menuRef.current({ clientX: event.clientX || coords?.left || 0, clientY: event.clientY || coords?.bottom || 0,
-              currentTarget: currentView.contentDOM, preventDefault: () => event.preventDefault(), stopPropagation: () => event.stopPropagation() },
-              editorContext(currentView, outline, spans.current, () => view.current, latest.current.onSearchSources));
+            menuRef.current(
+              {
+                clientX: event.clientX || coords?.left || 0,
+                clientY: event.clientY || coords?.bottom || 0,
+                currentTarget: currentView.contentDOM,
+                preventDefault: () => event.preventDefault(),
+                stopPropagation: () => event.stopPropagation(),
+              },
+              editorContext(
+                currentView,
+                outline,
+                spans.current,
+                () => view.current,
+                latest.current.onSearchSources,
+              ),
+            );
             return event.defaultPrevented;
           },
           scroll: () => {
@@ -404,8 +491,10 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
               e.preventDefault();
               const pos =
                 v.posAtCoords({ x: e.clientX, y: e.clientY }) ?? v.state.selection.main.head;
-              prepareCitationInsertion(v, spans.current, () => view.current, { from: pos, to: pos })(
-                e.dataTransfer.getData('application/x-ariane-citation'));
+              prepareCitationInsertion(v, spans.current, () => view.current, {
+                from: pos,
+                to: pos,
+              })(e.dataTransfer.getData('application/x-ariane-citation'));
               return true;
             }
             return false;
@@ -456,9 +545,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
               read: () => {
                 const pos = Math.min(previous.pos, v.state.doc.length);
                 const coords = v.coordsAtPos(pos);
-                return coords
-                  ? coords.top - documentBounds(v).top - previous.offset
-                  : 0;
+                return coords ? coords.top - documentBounds(v).top - previous.offset : 0;
               },
               write: (delta) => {
                 if (delta) documentScroller(v).scrollTop += delta;
@@ -468,9 +555,17 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
           });
     observer?.observe(v.scrollDOM);
     const scroller = documentScroller(v);
-    const scrolled = () => { rememberLater(); geometry(); schedule(); selectionGeometry(); };
+    const scrolled = () => {
+      rememberLater();
+      geometry();
+      schedule();
+      selectionGeometry();
+    };
     scroller.addEventListener('scroll', scrolled, { passive: true });
-    const resized = () => { geometry(); selectionGeometry(); };
+    const resized = () => {
+      geometry();
+      selectionGeometry();
+    };
     window.addEventListener('resize', resized);
     rememberLater();
     counter.update(
@@ -511,6 +606,11 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     v.dispatch({
       effects: options.current.reconfigure([
         diagnostics,
+        EditorState.phrases.of(editorPhrases()),
+        EditorView.contentAttributes.of({
+          'aria-label': t('Manuscrit'),
+          lang: props.settings.language,
+        }),
         EditorState.readOnly.of(!!props.readOnly),
         ...(mode === 'sentence'
           ? [sentenceFocus()]
@@ -524,6 +624,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     if (props.settings.revision) paintRevision(v);
     else v.dom.querySelectorAll('[data-remark]').forEach((e) => e.removeAttribute('data-remark'));
   }, [
+    locale,
     props.readOnly,
     props.settings.focus,
     props.settings.revision,

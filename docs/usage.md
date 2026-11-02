@@ -93,3 +93,7 @@ La vue d’ensemble des scènes a été retirée. Les versions distinguent aussi
 Sélectionner un passage puis **Annoter la sélection**, dans la barre de sélection ou le menu Édition, ouvre les annotations dans la marge des sources. Une annotation peut être modifiée, résolue puis rouverte. Elle reste séparée du manuscrit et des exports. Le passage est retrouvé par son texte exact et son contexte ; une annotation ambiguë ou dont le passage a changé est signalée comme introuvable. Les annotations restent dans le projet lors d’une restauration de version ; leur ancrage est alors réévalué.
 
 Les fiches de sources distinguent les **références explicites** des **mentions du nom**. Une mention littérale ne confirme pas une identité. Les associations choisies par l’auteur restent une information distincte. Les citations et les références sont insérées au curseur et remplacent la sélection éventuelle. Les définitions des notes sont placées en fin de scène. À l’export, les identifiants des notes sont rendus uniques par scène.
+
+## Langue de l’interface
+
+Ariane est disponible en français, anglais et espagnol. Choisissez la langue sur l’écran d’accueil, ou dans **Paramètres → Apparence → Langue de l’application**. Le choix s’applique immédiatement à l’interface et aux menus natifs, puis reste mémorisé sur ce Mac. La langue du document, utilisée pour la dictée et la révision, se règle séparément dans **Paramètres → Écriture**.

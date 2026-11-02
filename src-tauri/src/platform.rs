@@ -4,6 +4,10 @@ use tauri::{
 };
 
 pub fn menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
+    menu_for_language(app, "fr")
+}
+
+pub fn menu_for_language(app: &AppHandle, language: &str) -> tauri::Result<Menu<tauri::Wry>> {
     let menu = Menu::default(app)?;
     #[cfg(target_os = "macos")]
     if let Some(MenuItemKind::Submenu(application)) = menu.items()?.first() {
@@ -59,5 +63,56 @@ pub fn menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     }
     menu.remove_at(3)?;
     menu.insert(&view,3)?;
+    localize_items(menu.items()?, language)?;
     Ok(menu)
+}
+
+// The same catalog serves React and the native menu bar.
+fn text(value: &str, language: &str) -> String {
+    let plain = value.replace('&', "");
+    let source = match plain.as_str() {
+        "Window" => "Fenêtre", "Help" => "Aide", "Edit" => "Édition",
+        "About Ariane" | "About" => "À propos d’Ariane",
+        "Hide Ariane" | "Hide" => "Masquer Ariane", "Hide Others" => "Masquer les autres",
+        "Show All" => "Tout afficher", "Minimize" => "Réduire la fenêtre",
+        "Zoom" | "Maximize" => "Agrandir", "Close Window" | "Close" => "Fermer la fenêtre",
+        "Toggle Full Screen" => "Plein écran", "Undo" => "Annuler la dernière action", "Redo" => "Rétablir",
+        "Cut" => "Couper", "Copy" => "Copier", "Paste" => "Coller", "Select All" => "Tout sélectionner",
+        other => other,
+    };
+    if language == "fr" { return source.to_owned(); }
+    static MESSAGES: std::sync::OnceLock<std::collections::HashMap<String, [String; 2]>> = std::sync::OnceLock::new();
+    let messages = MESSAGES.get_or_init(|| serde_json::from_str(include_str!("../../src/i18n/messages.json")).expect("valid translation catalog"));
+    messages.get(source).map(|values| values[usize::from(language == "es")].clone()).unwrap_or_else(|| source.to_owned())
+}
+fn localize_items(items: Vec<MenuItemKind<tauri::Wry>>, language: &str) -> tauri::Result<()> {
+    for item in items {
+        match item {
+            MenuItemKind::Submenu(menu) => {
+                menu.set_text(text(&menu.text()?, language))?;
+                localize_items(menu.items()?, language)?;
+            }
+            MenuItemKind::MenuItem(item) => item.set_text(text(&item.text()?, language))?,
+            MenuItemKind::Predefined(item) => {
+                let label = item.text()?;
+                if !label.is_empty() { item.set_text(text(&label, language))?; }
+            }
+            _ => {},
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::text;
+    #[test]
+    fn menu_labels_follow_the_application_language() {
+        assert_eq!(text("Nouveau projet…", "en"), "New project…");
+        assert_eq!(text("Nouveau projet…", "es"), "Nuevo proyecto…");
+        assert_eq!(text("&Copy", "fr"), "Copier");
+        assert_eq!(text("Hide Others", "es"), "Ocultar las demás");
+        assert_eq!(text("Window", "fr"), "Fenêtre");
+        assert_eq!(text("Ariane", "en"), "Ariane");
+    }
 }

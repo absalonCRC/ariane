@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
 export function WorkspaceScreen({
@@ -13,6 +14,7 @@ export function WorkspaceScreen({
   children: ReactNode;
   className?: string;
 }) {
+  useLocale();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = ref.current!,
@@ -39,7 +41,7 @@ export function WorkspaceScreen({
       <header className="workspace-screen-header">
         <button onClick={onClose} className="workspace-return">
           <ArrowLeft size={16} />
-          Revenir au texte
+          {t('Revenir au texte')}
         </button>
         <div>
           <h1>{title}</h1>

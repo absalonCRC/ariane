@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { EditorView } from '@codemirror/view';
 import { undo, redo, undoDepth, redoDepth, isolateHistory } from '@codemirror/commands';
 import {
@@ -43,7 +44,7 @@ export function editorContext(
   if (text && canCopy) {
     if (editable)
       clipboard.push({
-        label: 'Couper',
+        label: t('Couper'),
         icon: Scissors,
         shortcut: '⌘ X',
         run: async () => {
@@ -58,7 +59,7 @@ export function editorContext(
         },
       });
     clipboard.push({
-      label: 'Copier',
+      label: t('Copier'),
       icon: Copy,
       shortcut: '⌘ C',
       run: () => navigator.clipboard.writeText(text),
@@ -66,7 +67,7 @@ export function editorContext(
   }
   if (canPaste)
     clipboard.push({
-      label: 'Coller',
+      label: t('Coller'),
       icon: Clipboard,
       shortcut: '⌘ V',
       run: async () => {
@@ -84,14 +85,14 @@ export function editorContext(
   const history: MenuAction[] = [];
   if (editable && undoDepth(state))
     history.push({
-      label: 'Annuler',
+      label: t('Annuler'),
       icon: Undo2,
       shortcut: '⌘ Z',
       run: () => perform(() => undo(view)),
     });
   if (editable && redoDepth(state))
     history.push({
-      label: 'Rétablir',
+      label: t('Rétablir'),
       icon: Redo2,
       shortcut: '⌘ ⇧ Z',
       run: () => perform(() => redo(view)),
@@ -107,12 +108,12 @@ export function editorContext(
     );
   if (text && editable && withinScene)
     selectionActions.push(
-      { label: 'Gras', icon: Bold, run: () => format('bold') },
-      { label: 'Italique', icon: Italic, run: () => format('italic') },
+      { label: t('Gras'), icon: Bold, run: () => format('bold') },
+      { label: t('Italique'), icon: Italic, run: () => format('italic') },
     );
   if (text.trim() && text.length <= 500 && onSearch)
     selectionActions.push({
-      label: 'Rechercher dans les sources',
+      label: t('Rechercher dans les sources'),
       icon: Search,
       run: () => onSearch(text),
     });
@@ -127,28 +128,28 @@ export function editorContext(
         index = siblings.indexOf(node);
       if (index > 0)
         structure.push({
-          label: 'Indenter le passage',
+          label: t('Indenter le passage'),
           icon: IndentIncrease,
           shortcut: 'Tab',
           run: () => perform(() => outline.indent(view)),
         });
       if (node.parent)
         structure.push({
-          label: 'Désindenter le passage',
+          label: t('Désindenter le passage'),
           icon: IndentDecrease,
           shortcut: '⇧ Tab',
           run: () => perform(() => outline.outdent(view)),
         });
       if (index > 0)
         structure.push({
-          label: 'Monter le passage',
+          label: t('Monter le passage'),
           icon: ChevronUp,
           shortcut: '⌥ ↑',
           run: () => perform(() => outline.move(view, -1)),
         });
       if (index >= 0 && index < siblings.length - 1)
         structure.push({
-          label: 'Descendre le passage',
+          label: t('Descendre le passage'),
           icon: ChevronDown,
           shortcut: '⌥ ↓',
           run: () => perform(() => outline.move(view, 1)),
@@ -156,17 +157,21 @@ export function editorContext(
       if (nodes.some((item) => item.parent === node.id))
         structure.push({
           label: session.folded.has(node.id)
-            ? 'Déplier les sous-passages'
-            : 'Replier les sous-passages',
+            ? t('Déplier les sous-passages')
+            : t('Replier les sous-passages'),
           run: () => perform(() => outline.toggleFold(view, node.id)),
         });
     }
   }
   const words = text.trim() ? text.trim().split(/\s+/u).length : 0;
   return {
-    title: text ? 'Sélection' : 'Passage',
+    title: text ? t('Sélection') : t('Passage'),
     detail: text
-      ? `${words} mot${words > 1 ? 's' : ''} sélectionné${words > 1 ? 's' : ''}`
+      ? t('{0} mot{1} sélectionné{2}', {
+          0: words,
+          1: words > 1 ? 's' : '',
+          2: words > 1 ? 's' : '',
+        })
       : undefined,
     groups: [history, clipboard, selectionActions, structure],
   };

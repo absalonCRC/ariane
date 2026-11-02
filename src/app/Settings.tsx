@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useRef } from 'react';
 import { usePanelFocus } from '../components/usePanelFocus';
 import { WritingModes } from '../components/WritingModes';
@@ -21,6 +22,7 @@ export function Settings({
   onFormat: (format: MarkdownFormat) => void;
   canFormat: boolean;
 }) {
+  useLocale();
   const panel = useRef<HTMLElement>(null);
   usePanelFocus(panel, open);
   return (
@@ -35,40 +37,42 @@ export function Settings({
       }}
       id="writing-settings"
       className="settings floating"
-      aria-label="Réglages d’écriture"
+      aria-label={t('Réglages d’écriture')}
       aria-hidden={!open}
       inert={!open}
     >
       <div className="panel-top">
-        <h2>Écriture et lecture</h2>
-        <button className="icon-button" aria-label="Fermer les réglages" onClick={onClose}>
+        <h2>{t('Écriture et lecture')}</h2>
+        <button className="icon-button" aria-label={t('Fermer les réglages')} onClick={onClose}>
           <X size={15} />
         </button>
       </div>
       <FormattingToolbar onFormat={onFormat} disabled={!canFormat} />
-      <div className="settings-row" role="group" aria-label="Typographie">
-        <span className="settings-label">Typographie</span>
+      <div className="settings-row" role="group" aria-label={t('Typographie')}>
+        <span className="settings-label">{t('Typographie')}</span>
         <div className="segmented">
           <button
             aria-pressed={value.font === 'literary'}
             className={value.font === 'literary' ? 'active' : ''}
             onClick={() => onChange({ font: 'literary' })}
           >
-            Littéraire
+            {t('Littéraire')}
           </button>
           <button
             aria-pressed={value.font === 'mono'}
             className={value.font === 'mono' ? 'active' : ''}
             onClick={() => onChange({ font: 'mono' })}
           >
-            Chasse fixe
+            {t('Chasse fixe')}
           </button>
         </div>
       </div>
       <label className="settings-row">
-        <span className="settings-label">Taille du texte · {value.fontSize} px</span>
+        <span className="settings-label">
+          {t('Taille du texte · {0} px', { 0: value.fontSize })}
+        </span>
         <input
-          aria-label="Taille du texte"
+          aria-label={t('Taille du texte')}
           type="range"
           min="17"
           max="30"

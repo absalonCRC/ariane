@@ -1,3 +1,4 @@
+import { t, useLocale, localeTag } from '../i18n';
 import type { Settings } from '../app/types';
 
 export function ReadingComfort({
@@ -7,13 +8,16 @@ export function ReadingComfort({
   value: Settings;
   onChange: (patch: Partial<Settings>) => void;
 }) {
+  useLocale();
   return (
     <details className="reading-comfort">
-      <summary>Confort de lecture</summary>
+      <summary>{t('Confort de lecture')}</summary>
       <label className="settings-row">
-        <span className="settings-label">Largeur · {value.columnWidth ?? 750}</span>
+        <span className="settings-label">
+          {t('Largeur · {0}', { 0: value.columnWidth ?? 750 })}
+        </span>
         <input
-          aria-label="Largeur de la colonne"
+          aria-label={t('Largeur de la colonne')}
           type="range"
           min="560"
           max="900"
@@ -24,10 +28,10 @@ export function ReadingComfort({
       </label>
       <label className="settings-row">
         <span className="settings-label">
-          Interligne · {(value.lineHeight ?? 1.5).toLocaleString('fr-FR')}
+          {t('Interligne · {0}', { 0: (value.lineHeight ?? 1.5).toLocaleString(localeTag()) })}
         </span>
         <input
-          aria-label="Interligne"
+          aria-label={t('Interligne')}
           type="range"
           min="1.3"
           max="1.9"
@@ -41,7 +45,7 @@ export function ReadingComfort({
         className="comfort-reset"
         onClick={() => onChange({ columnWidth: 750, lineHeight: 1.5 })}
       >
-        Valeurs par défaut
+        {t('Valeurs par défaut')}
       </button>
     </details>
   );

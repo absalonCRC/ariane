@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { usePresenceValue } from './Presence';
 import { useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
@@ -20,12 +21,14 @@ const actions = [
 
 export function SelectionToolbar({
   anchor,
-  onFormat, onAnnotate,
+  onFormat,
+  onAnnotate,
 }: {
   anchor: SelectionAnchor | null;
   onFormat: (format: MarkdownFormat) => void;
   onAnnotate?: () => void;
 }) {
+  useLocale();
   const menuOpen = useContextMenuOpen();
   const ref = useRef<HTMLDivElement>(null);
   const visible = !!anchor && !menuOpen;
@@ -43,7 +46,7 @@ export function SelectionToolbar({
     <div
       ref={ref}
       role="toolbar"
-      aria-label="Mettre en forme la sélection"
+      aria-label={t('Mettre en forme la sélection')}
       className="selection-toolbar"
       data-phase={shown.exiting ? 'exit' : 'open'}
       inert={shown.exiting}
@@ -70,12 +73,16 @@ export function SelectionToolbar({
         }
       }}
     >
-      {onAnnotate && <button type="button" aria-label="Annoter la sélection" onClick={onAnnotate}><MessageSquare size={15} strokeWidth={1.6} /></button>}
+      {onAnnotate && (
+        <button type="button" aria-label={t('Annoter la sélection')} onClick={onAnnotate}>
+          <MessageSquare size={15} strokeWidth={1.6} />
+        </button>
+      )}
       {actions.map(([format, label, Icon]) => (
         <button
           key={format}
           type="button"
-          aria-label={label}
+          aria-label={t(label)}
           onClick={() => {
             if (!shown.exiting) onFormat(format);
           }}

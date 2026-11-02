@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useMemo, useState } from 'react';
 import type { Section, Source } from '../app/types';
 import { sourceOccurrences, type SourceOccurrence } from './occurrences';
@@ -12,9 +13,10 @@ export function SourceOccurrences({
   contentVersion?: string;
   onLocate: (hit: SourceOccurrence) => void;
 }) {
+  const locale = useLocale();
   const matches = useMemo(
     () => sourceOccurrences(sections, source),
-    [sections, source, contentVersion],
+    [sections, source, contentVersion, locale],
   );
   const references = matches.filter((hit) => hit.kind === 'reference');
   const mentions = matches.filter((hit) => hit.kind === 'mention');
@@ -30,7 +32,7 @@ export function SourceOccurrences({
       ))}
       {hits.length > limit && (
         <button className="occurrences-more" onClick={more}>
-          Afficher les suivantes
+          {t('Afficher les suivantes')}
         </button>
       )}
     </>
@@ -38,26 +40,33 @@ export function SourceOccurrences({
   return (
     <details className="source-occurrences">
       <summary
-        aria-label={`Dans le manuscrit : ${references.length} référence${references.length > 1 ? 's' : ''} explicite${references.length > 1 ? 's' : ''} et ${mentions.length} mention${mentions.length > 1 ? 's' : ''} du nom`}
+        aria-label={t('Dans le manuscrit : {0} et {1}', {
+          0: t(references.length === 1 ? '{0} référence explicite' : '{0} références explicites', {
+            0: references.length,
+          }),
+          1: t(mentions.length === 1 ? '{0} mention du nom' : '{0} mentions du nom', {
+            0: mentions.length,
+          }),
+        })}
       >
-        Dans le manuscrit ·{' '}
+        {t('Dans le manuscrit ·')}{' '}
         <span>
-          {references.length} référence{references.length > 1 ? 's' : ''}
+          {t('{0} référence{1}', { 0: references.length, 1: references.length > 1 ? 's' : '' })}
         </span>{' '}
         ·{' '}
         <span>
-          {mentions.length} mention{mentions.length > 1 ? 's' : ''}
+          {t(mentions.length === 1 ? '{0} mention' : '{0} mentions', { 0: mentions.length })}
         </span>
       </summary>
       <p className="hint">
-        Les références sont des citations insérées dans le texte. Les mentions sont des noms ou
-        alias repérés littéralement : elles ne confirment ni l’identité ni une association au
-        projet.
+        {t(
+          'Les références sont des citations insérées dans le texte. Les mentions sont des noms ou alias repérés littéralement : elles ne confirment ni l’identité ni une association au projet.',
+        )}
       </p>
-      {!matches.length && <p className="hint">Aucune occurrence dans les textes actuels.</p>}
-      {references.length > 0 && <p className="hint">Références explicites</p>}
+      {!matches.length && <p className="hint">{t('Aucune occurrence dans les textes actuels.')}</p>}
+      {references.length > 0 && <p className="hint">{t('Références explicites')}</p>}
       {show(references, referenceLimit, () => setReferenceLimit((n) => n + 12))}
-      {mentions.length > 0 && <p className="hint">Mentions du nom</p>}
+      {mentions.length > 0 && <p className="hint">{t('Mentions du nom')}</p>}
       {show(mentions, mentionLimit, () => setMentionLimit((n) => n + 12))}
     </details>
   );

@@ -1,3 +1,4 @@
+import { t, useLocale, localeTag } from '../i18n';
 import { Fragment, useEffect, useState } from 'react';
 import { Archive, Pin } from 'lucide-react';
 import { request } from '../app/client';
@@ -13,6 +14,7 @@ export function ProjectCatalog({
   currentPath?: string;
   searchable?: boolean;
 }) {
+  useLocale();
   const [entries, setEntries] = useState<ProjectEntry[]>([]);
   const [archived, setArchived] = useState(false);
   const [query, setQuery] = useState('');
@@ -60,34 +62,34 @@ export function ProjectCatalog({
   return (
     <div
       className="project-catalog"
-      aria-label="Bibliothèque de projets"
+      aria-label={t('Bibliothèque de projets')}
       aria-busy={loading || busy}
     >
       {searchable && (
         <input
-          aria-label="Filtrer les projets"
-          placeholder="Retrouver un projet…"
+          aria-label={t('Filtrer les projets')}
+          placeholder={t('Retrouver un projet…')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
       )}
       <div className="library-tabs">
         <button aria-pressed={!archived} onClick={() => setArchived(false)}>
-          {searchable ? 'Récents' : 'Projets'}
+          {searchable ? t('Récents') : t('Projets')}
         </button>
         <button aria-pressed={archived} onClick={() => setArchived(true)}>
-          Archives
+          {t('Archives')}
         </button>
       </div>
       {loading ? (
-        <p className="hint">Ouverture…</p>
+        <p className="hint">{t('Ouverture…')}</p>
       ) : !values.length ? (
         <p className="hint">
           {query
-            ? 'Aucun projet correspondant.'
+            ? t('Aucun projet correspondant.')
             : archived
-              ? 'Aucun projet archivé.'
-              : 'Les projets créés ou ouverts apparaîtront ici.'}
+              ? t('Aucun projet archivé.')
+              : t('Les projets créés ou ouverts apparaîtront ici.')}
         </p>
       ) : (
         values.map((entry, index) => (
@@ -95,7 +97,7 @@ export function ProjectCatalog({
             {!searchable &&
               !archived &&
               (index === 0 || values[index - 1].pinned !== entry.pinned) && (
-                <p className="catalog-group-label">{entry.pinned ? 'Épinglés' : 'Récents'}</p>
+                <p className="catalog-group-label">{entry.pinned ? t('Épinglés') : t('Récents')}</p>
               )}
             <div className="catalog-entry" key={entry.path}>
               <button
@@ -109,18 +111,18 @@ export function ProjectCatalog({
                 {(searchable || !entry.available) && (
                   <small>
                     {!entry.available
-                      ? 'Dossier introuvable · Ouvrez son nouvel emplacement'
+                      ? t('Dossier introuvable · Ouvrez son nouvel emplacement')
                       : entry.pinned
-                        ? 'Épinglé'
-                        : new Date(entry.lastOpened).toLocaleDateString('fr-FR')}
+                        ? t('Épinglé')
+                        : new Date(entry.lastOpened).toLocaleDateString(localeTag())}
                   </small>
                 )}
               </button>
               <button
                 className="icon-button"
                 disabled={busy}
-                aria-label={(entry.pinned ? 'Désépingler ' : 'Épingler ') + entry.name}
-                data-tooltip={entry.pinned ? 'Désépingler' : 'Épingler'}
+                aria-label={(entry.pinned ? t('Désépingler ') : t('Épingler ')) + entry.name}
+                data-tooltip={entry.pinned ? t('Désépingler') : t('Épingler')}
                 aria-pressed={entry.pinned}
                 onClick={() => void change(entry, { pinned: !entry.pinned })}
               >
@@ -129,8 +131,8 @@ export function ProjectCatalog({
               <button
                 className="icon-button"
                 disabled={busy}
-                aria-label={(entry.archived ? 'Désarchiver ' : 'Archiver ') + entry.name}
-                data-tooltip={entry.archived ? 'Désarchiver' : 'Archiver'}
+                aria-label={(entry.archived ? t('Désarchiver ') : t('Archiver ')) + entry.name}
+                data-tooltip={entry.archived ? t('Désarchiver') : 'Archiver'}
                 onClick={() => void change(entry, { archived: !entry.archived })}
               >
                 <Archive size={13} />
@@ -139,7 +141,7 @@ export function ProjectCatalog({
           </Fragment>
         ))
       )}
-      {archived && <p className="hint">Les projets archivés restent sur ce Mac.</p>}
+      {archived && <p className="hint">{t('Les projets archivés restent sur ce Mac.')}</p>}
     </div>
   );
 }

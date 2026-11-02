@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale, localeTag } from '../i18n';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ReactMarkdown, { type Components } from 'react-markdown';
@@ -11,14 +12,14 @@ import '../styles/history-refinements.css';
 
 const comparisonMarkdown: Components = {
   a: ({ children }) => <span>{children}</span>,
-  img: ({ alt }) => <span>{alt || 'Image'}</span>,
+  img: ({ alt }) => <span>{alt || t('Image')}</span>,
 };
 
 function versionLabel(version: Version) {
   const created = new Date(version.created);
   const date = Number.isNaN(created.getTime())
     ? version.created
-    : new Intl.DateTimeFormat('fr-FR', {
+    : new Intl.DateTimeFormat(localeTag(), {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -41,6 +42,7 @@ interface Props {
   onCloseTools?: () => void;
 }
 export function History(p: Props) {
+  const locale = useLocale();
   const [versions, setVersions] = useState<Version[]>([]);
   const [leftId, setLeftId] = useState('');
   const [rightId, setRightId] = useState('current');
@@ -130,11 +132,11 @@ export function History(p: Props) {
         id,
         left: a,
         right: b,
-        title: b?.title || a?.title || 'Sans titre',
+        title: b?.title || a?.title || t('Sans titre'),
         changed: !a || !b || a.text !== b.text || sectionChanges(a, b).length > 0,
       };
     });
-  }, [loaded, p.project.sections]);
+  }, [loaded, p.project.sections, locale]);
   const visible = entries.filter((e) => !onlyChanged || e.changed);
   const selected = visible.find((e) => e.id === scene) ?? visible[0];
   const metadata = sectionChanges(selected?.left, selected?.right);
@@ -206,7 +208,7 @@ export function History(p: Props) {
     try {
       const revision = live.revision;
       await p.flush();
-      await request('capture', { name: 'Avant reprise de passage', scope: live.id });
+      await request('capture', { name: t('Avant reprise de passage'), scope: live.id });
       await p.onApply(live.id, reprisePassage(live.text, rows[index]), revision);
       setVersions(await request('versions'));
       setChangeIndex(-1);
@@ -230,21 +232,21 @@ export function History(p: Props) {
       ?.scrollIntoView({ block: 'center', behavior: 'instant' });
   }
   return (
-    <section className="history-editor" aria-label="Versions du texte" data-view={view}>
+    <section className="history-editor" aria-label={t('Versions du texte')} data-view={view}>
       {p.toolsHost &&
         createPortal(
           <section
             id="version-settings"
             className="settings floating version-settings"
-            aria-label="Outils des versions"
+            aria-label={t('Outils des versions')}
             aria-hidden={!p.toolsOpen}
             inert={!p.toolsOpen}
           >
             <div className="panel-top">
-              <h2>Versions</h2>
+              <h2>{t('Versions')}</h2>
               <button
                 className="icon-button"
-                aria-label="Fermer les outils des versions"
+                aria-label={t('Fermer les outils des versions')}
                 onClick={p.onCloseTools}
               >
                 <X size={15} />
@@ -258,10 +260,10 @@ export function History(p: Props) {
                 p.onCloseTools?.();
               }}
             >
-              <Plus size={14} /> Conserver une version
+              <Plus size={14} /> {t('Conserver une version')}
             </button>
             <label className="settings-row version-filter">
-              <span className="settings-label">Textes modifiés uniquement</span>
+              <span className="settings-label">{t('Textes modifiés uniquement')}</span>
               <input
                 type="checkbox"
                 checked={onlyChanged}
@@ -276,19 +278,19 @@ export function History(p: Props) {
                 p.onCloseTools?.();
               }}
             >
-              Restaurer cette version…
+              {t('Restaurer cette version…')}
             </button>
             <p className="version-tools-hint">
-              Une sauvegarde est conservée avant chaque reprise ou restauration.
+              {t('Une sauvegarde est conservée avant chaque reprise ou restauration.')}
             </p>
           </section>,
           p.toolsHost,
         )}
       <header className="history-modebar">
         <button onClick={p.onClose}>
-          <ArrowLeft size={13} /> Revenir au texte
+          <ArrowLeft size={13} /> {t('Revenir au texte')}
         </button>
-        <span>Versions du texte</span>
+        <span>{t('Versions du texte')}</span>
       </header>
       <div className="history-capture">
         {' '}
@@ -300,61 +302,62 @@ export function History(p: Props) {
             }}
           >
             <label>
-              Nom
+              {t('Nom')}
               <input
                 required
                 autoFocus
-                placeholder="Avant révision, autre début…"
+                placeholder={t('Avant révision, autre début…')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             </label>
             <label>
-              Portée
+              {t('Portée')}
               <select value={scope} onChange={(e) => setScope(e.target.value)}>
-                <option value="project">Tout le projet</option>
-                {p.active && <option value="section">Section actuelle et ses scènes</option>}
+                <option value="project">{t('Tout le projet')}</option>
+                {p.active && <option value="section">{t('Section actuelle et ses scènes')}</option>}
               </select>
             </label>
             <button className="history-save" disabled={busy || !name.trim()}>
               <Plus size={14} />
-              Conserver
+              {t('Conserver')}
             </button>
             <button
               type="button"
               className="history-create-cancel"
               onClick={() => setCreating(false)}
             >
-              Annuler
+              {t('Annuler')}
             </button>
           </form>
         )}
       </div>
       <div className="history-workspace">
-        <section className="history-comparison" aria-label="Comparaison des versions">
+        <section className="history-comparison" aria-label={t('Comparaison des versions')}>
           {!loading && !versions.length && !error ? (
             <div className="history-first-version">
-              <h2>Aucune version enregistrée</h2>
+              <h2>{t('Aucune version enregistrée')}</h2>
               <p>
-                Conservez un état du texte pour comparer vos révisions côte à côte et reprendre les
-                passages de votre choix.
+                {t(
+                  'Conservez un état du texte pour comparer vos révisions côte à côte et reprendre les passages de votre choix.',
+                )}
               </p>
               <button onClick={() => setCreating(true)}>
-                <Plus size={14} /> Conserver la première version
+                <Plus size={14} /> {t('Conserver la première version')}
               </button>
             </div>
           ) : (
             <>
               <div className="history-controls">
                 <label>
-                  Version de référence
+                  {t('Version de référence')}
                   <select
-                    aria-label="Version de référence"
+                    aria-label={t('Version de référence')}
                     value={leftId}
                     disabled={busy || !leftId}
                     onChange={(e) => setLeftId(e.target.value)}
                   >
-                    <option value="current">Texte actuel</option>
+                    <option value="current">{t('Texte actuel')}</option>
                     {versions.map((v) => (
                       <option key={v.id} value={v.id}>
                         {versionLabel(v)}
@@ -363,14 +366,14 @@ export function History(p: Props) {
                   </select>
                 </label>
                 <label>
-                  Comparer avec
+                  {t('Comparer avec')}
                   <select
-                    aria-label="Version comparée"
+                    aria-label={t('Version comparée')}
                     value={rightId}
                     disabled={busy}
                     onChange={(e) => setRightId(e.target.value)}
                   >
-                    <option value="current">Texte actuel</option>
+                    <option value="current">{t('Texte actuel')}</option>
                     {versions.map((v) => (
                       <option key={v.id} value={v.id}>
                         {versionLabel(v)}
@@ -383,7 +386,7 @@ export function History(p: Props) {
                 <div className="history-diff-identity">
                   <select
                     className="history-scene-title"
-                    aria-label="Texte comparé"
+                    aria-label={t('Texte comparé')}
                     value={selected?.id ?? ''}
                     onChange={(e) => {
                       setScene(e.target.value);
@@ -391,11 +394,11 @@ export function History(p: Props) {
                         p.onSelectText?.(e.target.value);
                     }}
                   >
-                    {!visible.length && <option value="">Aucun texte</option>}
+                    {!visible.length && <option value="">{t('Aucun texte')}</option>}
                     {visible.map((e) => (
                       <option key={e.id} value={e.id}>
                         {e.title}
-                        {!e.left ? ' · Ajouté' : !e.right ? ' · Retiré' : ''}
+                        {!e.left ? t(' · Ajouté') : !e.right ? t(' · Retiré') : ''}
                       </option>
                     ))}
                   </select>
@@ -406,39 +409,43 @@ export function History(p: Props) {
                   <div
                     className="history-view-switch"
                     role="group"
-                    aria-label="Affichage de la comparaison"
+                    aria-label={t('Affichage de la comparaison')}
                   >
                     <button
                       type="button"
                       aria-pressed={view === 'source'}
                       onClick={() => setView('source')}
                     >
-                      Source
+                      {t('Source')}
                     </button>
                     <button
                       type="button"
                       aria-pressed={view === 'reading'}
                       onClick={() => setView('reading')}
                     >
-                      Lecture
+                      {t('Lecture')}
                     </button>
                   </div>
                   <div
                     className="history-inline-navigation"
                     role="group"
-                    aria-label="Parcourir les modifications"
+                    aria-label={t('Parcourir les modifications')}
                   >
                     <span className="history-change-count" aria-live="polite">
                       {loading
-                        ? 'Chargement…'
+                        ? t('Chargement…')
                         : changeIndex < 0
-                          ? `${changes.length} passage${changes.length > 1 ? 's' : ''} modifié${changes.length > 1 ? 's' : ''}`
+                          ? t('{0} passage{1} modifié{2}', {
+                              0: changes.length,
+                              1: changes.length > 1 ? 's' : '',
+                              2: changes.length > 1 ? 's' : '',
+                            })
                           : `${changeIndex + 1} / ${changes.length}`}
                     </span>
                     <button
                       type="button"
                       disabled={loading || !!error || !!incompatible || !changes.length}
-                      aria-label="Modification précédente"
+                      aria-label={t('Modification précédente')}
                       onClick={() => nextChange(-1)}
                     >
                       <ArrowUp size={14} />
@@ -446,7 +453,7 @@ export function History(p: Props) {
                     <button
                       type="button"
                       disabled={loading || !!error || !!incompatible || !changes.length}
-                      aria-label="Modification suivante"
+                      aria-label={t('Modification suivante')}
                       onClick={() => nextChange(1)}
                     >
                       <ArrowDown size={14} />
@@ -456,32 +463,34 @@ export function History(p: Props) {
               </div>
               {error && (
                 <p className="workspace-error" role="alert">
-                  {error}
+                  {localizeMessage(error)}
                 </p>
               )}
               {confirm && (
                 <div className="history-confirm" role="alert">
                   <p>
-                    Restaurer « {confirm.name} »{' '}
-                    {confirm.scope ? 'pour sa section' : 'pour tout le projet'} ? L’état actuel sera
-                    conservé avant restauration.
+                    {t('Restaurer « {0} » {1} ? L’état actuel sera conservé avant restauration.', {
+                      0: confirm.name,
+                      1: confirm.scope ? t('pour sa section') : t('pour tout le projet'),
+                    })}
                   </p>
                   <button disabled={busy} onClick={() => setConfirm(null)}>
-                    Annuler
+                    {t('Annuler')}
                   </button>
                   <button disabled={busy} onClick={() => void restore()}>
-                    Confirmer la restauration
+                    {t('Confirmer la restauration')}
                   </button>
                 </div>
               )}
               {loading ? (
                 <p className="history-empty" role="status">
-                  Chargement des versions…
+                  {t('Chargement des versions…')}
                 </p>
               ) : incompatible ? (
                 <p className="history-empty">
-                  Ces versions concernent des sections différentes. Comparez chacune avec le texte
-                  actuel.
+                  {t(
+                    'Ces versions concernent des sections différentes. Comparez chacune avec le texte actuel.',
+                  )}
                 </p>
               ) : error ? null : (
                 <>
@@ -492,15 +501,17 @@ export function History(p: Props) {
                     className="history-diff-scroll"
                     ref={diffRef}
                     tabIndex={0}
-                    aria-label="Passages comparés"
+                    aria-label={t('Passages comparés')}
                   >
                     {!rows.length && (
                       <p className="history-empty">
                         {selected
                           ? metadata.length
-                            ? 'Le texte est identique ; les changements de structure figurent ci-dessus.'
-                            : 'Ce texte est vide dans les deux versions.'
-                          : 'Aucun texte dans cette sélection.'}
+                            ? t(
+                                'Le texte est identique ; les changements de structure figurent ci-dessus.',
+                              )
+                            : t('Ce texte est vide dans les deux versions.')
+                          : t('Aucun texte dans cette sélection.')}
                       </p>
                     )}
                     {rows.map((row, index) => (
@@ -521,7 +532,7 @@ export function History(p: Props) {
                         >
                           <span
                             className="diff-gutter"
-                            aria-label={row.changed ? 'Retrait' : undefined}
+                            aria-label={row.changed ? t('Retrait') : undefined}
                           >
                             {row.changed && row.left.length ? '−' : ''}
                             <small>{row.left.length ? row.leftStart + 1 : ''}</small>
@@ -555,7 +566,7 @@ export function History(p: Props) {
                         >
                           <span
                             className="diff-gutter"
-                            aria-label={row.changed ? 'Ajout' : undefined}
+                            aria-label={row.changed ? t('Ajout') : undefined}
                           >
                             {row.changed && row.right.length ? '+' : ''}
                             <small>{row.right.length ? row.rightStart + 1 : ''}</small>
@@ -585,7 +596,7 @@ export function History(p: Props) {
                           <div className="history-passage-action">
                             <button disabled={busy} onClick={() => void apply(index)}>
                               <ArrowRight size={12} />
-                              Reprendre le passage de référence
+                              {t('Reprendre le passage de référence')}
                             </button>
                           </div>
                         )}
@@ -594,8 +605,12 @@ export function History(p: Props) {
                   </div>
                   <footer className="history-legend">
                     {rightId === 'current'
-                      ? 'Les reprises de passages modifient le texte actuel. Une version est conservée avant chaque reprise.'
-                      : 'Comparaison de deux instantanés. Choisissez « Texte actuel » à droite pour reprendre un passage.'}
+                      ? t(
+                          'Les reprises de passages modifient le texte actuel. Une version est conservée avant chaque reprise.',
+                        )
+                      : t(
+                          'Comparaison de deux instantanés. Choisissez « Texte actuel » à droite pour reprendre un passage.',
+                        )}
                   </footer>
                 </>
               )}

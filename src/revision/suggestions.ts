@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 export interface LanguageIssue {
   offset: number;
   length: number;
@@ -113,7 +114,7 @@ export function reviewSuggestions(
           to,
           original: old,
           replacement,
-          message: 'Suggestion locale',
+          message: t('Suggestion locale'),
           source: 'model',
         });
       }

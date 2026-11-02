@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { usePresenceValue } from './Presence';
 import {
   createContext,
@@ -43,6 +44,7 @@ const MenuContext = createContext<OpenMenu>(() => {});
 export const useContextMenu = () => useContext(MenuContext);
 
 export function ContextMenuProvider({ children }: { children: ReactNode }) {
+  useLocale();
   const [menu, setMenu] = useState<
     (MenuContent & { x: number; y: number; origin: HTMLElement | null }) | null
   >(null);
@@ -191,11 +193,13 @@ export function ContextMenuProvider({ children }: { children: ReactNode }) {
                           try {
                             Promise.resolve(run()).catch(() =>
                               setError(
-                                'Cette action n’a pas pu aboutir. Vérifiez notamment l’accès au presse-papiers.',
+                                t(
+                                  'Cette action n’a pas pu aboutir. Vérifiez notamment l’accès au presse-papiers.',
+                                ),
                               ),
                             );
                           } catch {
-                            setError('Cette action n’a pas pu aboutir.');
+                            setError(t('Cette action n’a pas pu aboutir.'));
                           }
                         }}
                       >

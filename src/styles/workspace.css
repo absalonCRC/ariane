@@ -631,3 +631,13 @@
   margin: 0;
   flex: 1;
 }
+
+.settings-page .language-switcher {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+.settings-page .language-switcher select {
+  grid-column: 1 / -1;
+  margin-left: 0;
+}

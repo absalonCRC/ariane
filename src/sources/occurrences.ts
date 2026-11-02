@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { Section, Source } from '../app/types';
 import type { ManuscriptMatch } from '../app/projectSearch';
 import { ordered } from '../project/tree';
@@ -58,7 +59,7 @@ export function sourceOccurrences(sections: Section[], source: Source): SourceOc
       results.push({
         key: `${section.id}:${from}`,
         section: section.id,
-        title: section.title || 'Sans titre',
+        title: section.title || t('Sans titre'),
         from,
         to,
         matched,

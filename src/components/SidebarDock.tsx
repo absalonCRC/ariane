@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { ThemeSwitcher } from './ThemeSwitcher';
 
@@ -16,6 +17,7 @@ export function SidebarDock({
   onActionsHost?: (element: HTMLDivElement | null) => void;
   children?: ReactNode;
 }) {
+  useLocale();
   const dock = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
     const actions = dock.current?.querySelector('.binder-footer-project');
@@ -27,7 +29,7 @@ export function SidebarDock({
       ref={dock}
       className="binder-footer"
       data-expanded={expanded}
-      aria-label="Accès du projet"
+      aria-label={t('Accès du projet')}
       inert={busy}
     >
       <div className="binder-footer-actions">

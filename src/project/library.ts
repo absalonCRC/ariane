@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { Project, Section } from '../app/types';
 import { descendants, hasChapterAncestor } from './tree';
 export type DocumentRole = 'manuscript' | 'note';
@@ -45,7 +46,7 @@ export function applyLibraryOperation(
   const copies: { from: string; to: string }[] = [];
   const ids = new Set(op.ids || []);
   if (op.action === 'undo') {
-    if (!before) throw new Error('Aucune opération à annuler.');
+    if (!before) throw new Error(t('Aucune opération à annuler.'));
     const old = new Map(before.map((s) => [s.id, s]));
     all = all.map((s) =>
       old.has(s.id)
@@ -66,7 +67,7 @@ export function applyLibraryOperation(
           (id) => !all.some((s) => s.id === id && !!s.trashed === (op.action === 'restore')),
         ))
     )
-      throw new Error('Sélection introuvable.');
+      throw new Error(t('Sélection introuvable.'));
     const byId = new Map(all.map((s) => [s.id, s]));
     const roots = all.filter((s) => {
       if (!ids.has(s.id)) return false;
@@ -82,12 +83,12 @@ export function applyLibraryOperation(
     const affected = new Set(roots.flatMap((s) => descendants(all, s.id).map((s) => s.id)));
     if (op.action === 'move' || op.action === 'add') {
       const target = op.target ? all.find((s) => s.id === op.target && !s.trashed) : null;
-      if (op.target && !target) throw new Error('Destination introuvable.');
+      if (op.target && !target) throw new Error(t('Destination introuvable.'));
       if (target && affected.has(target.id))
-        throw new Error('Impossible de déplacer un dossier dans sa propre branche.');
+        throw new Error(t('Impossible de déplacer un dossier dans sa propre branche.'));
       const placement = op.placement || 'inside';
       if (placement === 'inside' && target?.kind === 'scene')
-        throw new Error('Choisissez un dossier ou un chapitre.');
+        throw new Error(t('Choisissez un dossier ou un chapitre.'));
       const parent = target ? (placement === 'inside' ? target.id : target.parent) : null;
       if (
         hasChapterAncestor(all, parent) &&
@@ -95,7 +96,7 @@ export function applyLibraryOperation(
           ? op.kind === 'chapter'
           : all.some((s) => affected.has(s.id) && s.kind === 'chapter'))
       )
-        throw new Error('Un chapitre ne peut pas être placé dans un autre chapitre.');
+        throw new Error(t('Un chapitre ne peut pas être placé dans un autre chapitre.'));
       const role = target?.role || op.role || 'manuscript';
       const moving: Section[] =
         op.action === 'add'
@@ -127,7 +128,7 @@ export function applyLibraryOperation(
       all.splice(index, 0, ...moving);
       for (const s of all) if (affected.has(s.id)) s.role = role;
     } else if (op.action === 'include') {
-      if (typeof op.included !== 'boolean') throw new Error('Inclusion manquante.');
+      if (typeof op.included !== 'boolean') throw new Error(t('Inclusion manquante.'));
       for (const s of all)
         if (affected.has(s.id) && s.kind === 'scene' && !s.trashed) s.included = op.included;
     } else if (op.action === 'trash') {
@@ -176,7 +177,7 @@ export function applyLibraryOperation(
 }
 
 export function libraryOperationMessage(project: Project, op: LibraryOperation): string {
-  if (op.action === 'undo') return 'Dernière modification de la bibliothèque annulée.';
+  if (op.action === 'undo') return t('Dernière modification de la bibliothèque annulée.');
   const all = [...project.sections, ...(project.trash ?? [])];
   const ids = new Set(op.ids ?? []);
   const roots = all.filter(
@@ -190,19 +191,19 @@ export function libraryOperationMessage(project: Project, op: LibraryOperation):
       ),
   );
   const count = roots.length;
-  const noun = roots.every((s) => s.kind === 'scene') ? 'texte' : 'élément';
-  const label = count === 1 ? `« ${roots[0].title || 'Sans titre'} »` : `${count} ${noun}s`;
+  const noun = roots.every((s) => s.kind === 'scene') ? t('texte') : t('élément');
+  const label = count === 1 ? `« ${roots[0].title || t('Sans titre')} »` : `${count} ${noun}s`;
   const plural = count > 1 ? 's' : '';
-  if (op.action === 'trash') return `${label} placé${plural} dans la corbeille.`;
-  if (op.action === 'restore') return `${label} restauré${plural}.`;
-  if (op.action === 'duplicate') return `${label} dupliqué${plural}.`;
+  if (op.action === 'trash') return t('{0} placé{1} dans la corbeille.', { 0: label, 1: plural });
+  if (op.action === 'restore') return t('{0} restauré{1}.', { 0: label, 1: plural });
+  if (op.action === 'duplicate') return t('{0} dupliqué{1}.', { 0: label, 1: plural });
   if (op.action === 'include')
     return op.included
-      ? `${label} inclus dans le manuscrit et l’export.`
-      : `${label} · texte${plural} de travail, hors manuscrit.`;
+      ? t('{0} inclus dans le manuscrit et l’export.', { 0: label })
+      : t('{0} · texte{1} de travail, hors manuscrit.', { 0: label, 1: plural });
   const target = all.find((s) => s.id === op.target);
   const destination = !target
-    ? 'à la racine'
-    : `${op.placement === 'before' ? 'avant' : op.placement === 'after' ? 'après' : 'dans'} « ${target.title || 'Sans titre'} »`;
-  return `${label} déplacé${plural} ${destination}.`;
+    ? t('à la racine')
+    : `${op.placement === 'before' ? t('avant') : op.placement === 'after' ? t('après') : t('dans')} « ${target.title || t('Sans titre')} »`;
+  return t('{0} déplacé{1} {2}.', { 0: label, 1: plural, 2: destination });
 }

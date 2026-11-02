@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale } from '../i18n';
 import {
   useCallback,
   useLayoutEffect,
@@ -20,6 +21,7 @@ export type PathNotification = {
 };
 
 function NoticeLabel({ notice }: { notice: PathNotification }) {
+  useLocale();
   return (
     <>
       {notice.tone === 'error' ? (
@@ -29,7 +31,7 @@ function NoticeLabel({ notice }: { notice: PathNotification }) {
       ) : (
         <Info size={14} aria-hidden="true" />
       )}
-      <span className="path-title-text">{notice.message}</span>
+      <span className="path-title-text">{localizeMessage(notice.message)}</span>
     </>
   );
 }
@@ -43,6 +45,7 @@ function NoticeActions({
   onDetails: () => void;
   returnFocus: () => void;
 }) {
+  useLocale();
   const actions = useRef<HTMLSpanElement>(null);
   useLayoutEffect(() => {
     const element = actions.current;
@@ -57,10 +60,10 @@ function NoticeActions({
           {notice.action.label}
         </button>
       )}
-      {notice.showDetails && <button onClick={onDetails}>Détails</button>}
+      {notice.showDetails && <button onClick={onDetails}>{t('Détails')}</button>}
       <button
         className="title-notice-close"
-        aria-label="Fermer la notification"
+        aria-label={t('Fermer la notification')}
         onClick={notice.onDismiss}
       >
         <X size={13} aria-hidden="true" />
@@ -90,6 +93,7 @@ export function PathMenu({
   hasError?: boolean;
   noticeDetails?: ReactNode;
 }) {
+  useLocale();
   const [open, setOpen] = useState(false);
   const [headingSize, setHeadingSize] = useState<{ width: number; height: number }>();
   const trigger = useRef<HTMLButtonElement>(null);
@@ -106,7 +110,9 @@ export function PathMenu({
   const path = continuous ? [] : sectionPath(project.sections, selected);
   const title = [
     project.name,
-    ...(continuous ? ['Manuscrit entier'] : path.map((section) => section.title || 'Sans titre')),
+    ...(continuous
+      ? [t('Manuscrit entier')]
+      : path.map((section) => section.title || t('Sans titre'))),
   ].join(' / ');
 
   useLayoutEffect(() => {
@@ -148,7 +154,7 @@ export function PathMenu({
         }}
       >
         {section.kind === 'scene' ? <FileText size={14} /> : <Folder size={14} />}
-        <span>{section.title || 'Sans titre'}</span>
+        <span>{section.title || t('Sans titre')}</span>
       </button>
     ));
   }
@@ -175,14 +181,14 @@ export function PathMenu({
         {notifications
           .filter((notice) => notice.tone !== 'error')
           .map((notice) => (
-            <span key={notice.id}>{notice.message} </span>
+            <span key={notice.id}>{localizeMessage(notice.message)} </span>
           ))}
       </span>
       <span className="sr-only" aria-live="assertive" aria-atomic="false">
         {notifications
           .filter((notice) => notice.tone === 'error')
           .map((notice) => (
-            <span key={notice.id}>{notice.message} </span>
+            <span key={notice.id}>{localizeMessage(notice.message)} </span>
           ))}
       </span>
       <div
@@ -197,10 +203,10 @@ export function PathMenu({
               ref={trigger}
               aria-label={
                 primary
-                  ? 'Arborescence du projet · ' + primary.message
+                  ? t('Arborescence du projet · ') + primary.message
                   : hasPending
-                    ? 'Arborescence du projet · notifications à consulter'
-                    : 'Arborescence du projet'
+                    ? t('Arborescence du projet · notifications à consulter')
+                    : t('Arborescence du projet')
               }
               aria-expanded={open}
               aria-controls="path-tree"
@@ -239,7 +245,7 @@ export function PathMenu({
         </div>
       </div>
       <div className="path-popover" id="path-tree" aria-hidden={!open} inert={!open}>
-        <nav aria-label="Hiérarchie de la page courante">
+        <nav aria-label={t('Hiérarchie de la page courante')}>
           <div className="path-tree-root">
             <Folder size={14} />
             <span>{project.name}</span>
@@ -248,7 +254,7 @@ export function PathMenu({
           {continuous && (
             <div className="path-tree-root path-tree-manuscript">
               <FileText size={14} />
-              <span>Manuscrit entier</span>
+              <span>{t('Manuscrit entier')}</span>
             </div>
           )}
         </nav>
@@ -259,10 +265,10 @@ export function PathMenu({
             onAdd(parent);
           }}
         >
-          <Plus size={14} /> Nouvelle page
+          <Plus size={14} /> {t('Nouvelle page')}
         </button>
         {hasPending && (
-          <div className="path-notices" aria-label="Notifications à consulter">
+          <div className="path-notices" aria-label={t('Notifications à consulter')}>
             {noticeDetails}
           </div>
         )}

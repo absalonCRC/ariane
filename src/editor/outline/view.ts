@@ -1,3 +1,4 @@
+import { t, getLocale } from '../../i18n';
 import { documentBounds, documentScroller } from '../scrolling';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
 import {
@@ -110,6 +111,7 @@ export function outlinePresentation(outline: OutlineEditor) {
     return foldDecorations;
   };
   class PassageMarker extends GutterMarker {
+    readonly locale = getLocale();
     constructor(
       readonly node: OutlineEntry,
       readonly children: boolean,
@@ -122,6 +124,7 @@ export function outlinePresentation(outline: OutlineEditor) {
     }
     eq(other: PassageMarker) {
       return (
+        this.locale === other.locale &&
         this.node.id === other.node.id &&
         this.children === other.children &&
         this.folded === other.folded &&
@@ -146,15 +149,15 @@ export function outlinePresentation(outline: OutlineEditor) {
         'aria-label',
         this.children
           ? this.folded
-            ? 'Déplier le passage'
-            : 'Replier le passage'
-          : 'Déplacer le passage',
+            ? t('Déplier le passage')
+            : t('Replier le passage')
+          : t('Déplacer le passage'),
       );
       if (this.children) button.setAttribute('aria-expanded', String(!this.folded));
       button.dataset.state = this.children ? (this.folded ? 'replié' : 'déplié') : 'passage';
       button.dataset.tooltip = this.children
-        ? 'Glisser pour déplacer · cliquer pour replier ou déplier'
-        : 'Glisser pour déplacer le passage';
+        ? t('Glisser pour déplacer · cliquer pour replier ou déplier')
+        : t('Glisser pour déplacer le passage');
       button.draggable = false;
       button.addEventListener('pointerdown', (event) => beginDrag(view, this.node.id, event));
       button.addEventListener('click', (event) => {
@@ -362,6 +365,7 @@ export function outlinePresentation(outline: OutlineEditor) {
         );
       },
       lineMarkerChange: (u) =>
+        u.transactions.some((tr) => tr.reconfigured) ||
         u.selectionSet ||
         u.geometryChanged ||
         u.startState.field(outline.field) !== u.state.field(outline.field),

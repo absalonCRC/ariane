@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 export interface Remark {
   from: number;
   to: number;
@@ -20,7 +21,7 @@ export function analyze(text: string): Remark[] {
       remarks.push({
         from: w.index!,
         to: w.index! + w[0].length,
-        message: `Répétition rapprochée de « ${w[0]} ».`,
+        message: t('Répétition rapprochée de « {0} ».', { 0: w[0] }),
       });
     seen.set(word, w.index!);
   }
@@ -29,7 +30,7 @@ export function analyze(text: string): Remark[] {
       remarks.push({
         from: s.index!,
         to: s.index! + s[0].length,
-        message: 'Phrase de plus de 40 mots.',
+        message: t('Phrase de plus de 40 mots.'),
       });
   }
   return remarks;

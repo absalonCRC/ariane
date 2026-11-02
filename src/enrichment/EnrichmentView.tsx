@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale } from '../i18n';
 import { AnimatedDetails } from '../components/AnimatedDetails';
 import { useState } from 'react';
 import { request } from '../app/client';
@@ -16,6 +17,7 @@ export function EnrichmentView({
   onRead: (id: string) => void;
   onLocate: (section: string, node: string | null, quote: string) => void;
 }) {
+  useLocale();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const data = source.enrichment;
@@ -35,24 +37,25 @@ export function EnrichmentView({
     }
   }
   return (
-    <section className="enrichment" aria-label="Enrichissements du manuscrit">
-      <h3>Références liées</h3>
+    <section className="enrichment" aria-label={t('Enrichissements du manuscrit')}>
+      <h3>{t('Références liées')}</h3>
       <p className="hint">
-        Un même passage, affiché ici depuis le manuscrit. Modifiez l’original pour le retrouver à
-        jour dans ses références.
+        {t(
+          'Un même passage, affiché ici depuis le manuscrit. Modifiez l’original pour le retrouver à jour dans ses références.',
+        )}
       </p>
       {fields.length > 0 && (
         <dl className="enrichment-fields">
           {fields.map((f) => (
             <div key={`${f.field}:${f.value}`}>
               <dt>
-                {f.field}{' '}
+                {t(f.field)}{' '}
                 <small>
                   {f.status === 'conflict'
-                    ? 'À vérifier · valeurs différentes'
+                    ? t('À vérifier · valeurs différentes')
                     : f.status === 'confirmed'
-                      ? 'Déjà dans la fiche'
-                      : 'Complété depuis le manuscrit'}
+                      ? t('Déjà dans la fiche')
+                      : t('Complété depuis le manuscrit')}
                 </small>
               </dt>
               <dd>
@@ -72,26 +75,28 @@ export function EnrichmentView({
         open={data.passages.length <= 3}
         summary={
           <>
-            {data.passages.length} instance{data.passages.length > 1 ? 's' : ''} liée
-            {data.passages.length > 1 ? 's' : ''}
+            {t(data.passages.length === 1 ? '{0} instance liée' : '{0} instances liées', {
+              0: data.passages.length,
+            })}
           </>
         }
       >
         {data.passages.map((p) => (
           <article key={p.id} className="enrichment-passage">
             <button className="source-link" onClick={() => onLocate(p.section, p.node, p.quote)}>
-              {p.sectionTitle} · ligne {p.line}
+              {t('{0} · ligne {1}', { 0: p.sectionTitle, 1: p.line })}
             </button>
             <blockquote>{p.quote}</blockquote>
             {p.uncertain && (
               <p className="hint">
-                Les formulations incertaines, négatives ou citées restent du contexte ; elles ne
-                remplissent pas de champ.
+                {t(
+                  'Les formulations incertaines, négatives ou citées restent du contexte ; elles ne remplissent pas de champ.',
+                )}
               </p>
             )}
             {p.related.length > 0 && (
               <p className="hint">
-                Mentionnés dans le même passage :{' '}
+                {t('Mentionnés dans le même passage :')}{' '}
                 {p.related.map((r, i) => (
                   <span key={r.id}>
                     {i > 0 && ', '}
@@ -103,19 +108,19 @@ export function EnrichmentView({
               </p>
             )}
             <button disabled={busy} className="enrichment-ignore" onClick={() => void ignore(p.id)}>
-              Masquer cette instance
+              {t('Masquer cette instance')}
             </button>
           </article>
         ))}
       </AnimatedDetails>
       {data.ignored > 0 && (
         <button disabled={busy} onClick={() => void ignore(null)}>
-          Rétablir les instances masquées ({data.ignored})
+          {t('Rétablir les instances masquées ({0})', { 0: data.ignored })}
         </button>
       )}
       {error && (
         <p role="status" className="error-text">
-          {error}
+          {localizeMessage(error)}
         </p>
       )}
     </section>

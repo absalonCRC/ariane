@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Settings } from '../app/types';
@@ -22,6 +23,7 @@ function ModeButton({
   active: boolean;
   onClick: () => void;
 }) {
+  useLocale();
   const [preview, setPreview] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const [position, setPosition] = useState({ left: 0, top: 0 });
@@ -69,7 +71,7 @@ function ModeButton({
         className={active ? 'active' : ''}
         onClick={onClick}
       >
-        {label}
+        {t(label)}
       </button>
       {preview &&
         createPortal(
@@ -82,14 +84,14 @@ function ModeButton({
           >
             <span className="mode-sample" aria-hidden="true">
               <span className="mode-lines">
-                <span className="sample-before">La fenêtre donne sur le jardin.</span>
+                <span className="sample-before">{t('La fenêtre donne sur le jardin.')}</span>
                 <span className="sample-active">
-                  Une phrase trouve son rythme. <span>Le jour se lève.</span>
+                  {t('Une phrase trouve son rythme.')} <span>{t('Le jour se lève.')}</span>
                 </span>
-                <span className="sample-after">L’encre sèche sur le papier.</span>
+                <span className="sample-after">{t('L’encre sèche sur le papier.')}</span>
               </span>
             </span>
-            <span className="mode-caption">{descriptions[mode]}</span>
+            <span className="mode-caption">{t(descriptions[mode])}</span>
           </span>,
           trigger.current?.closest('dialog') ?? document.body,
         )}
@@ -104,40 +106,41 @@ export function WritingModes({
   value: Settings;
   onChange: (patch: Partial<Settings>) => void;
 }) {
+  useLocale();
   return (
     <>
-      <div className="settings-row" role="group" aria-label="Concentration">
-        <span className="settings-label">Concentration</span>
+      <div className="settings-row" role="group" aria-label={t('Concentration')}>
+        <span className="settings-label">{t('Concentration')}</span>
         <div className="segmented mode-options">
           {(
             [
-              ['none', 'Aucune'],
-              ['paragraph', 'Paragraphe'],
-              ['sentence', 'Phrase'],
+              ['none', t('Aucune')],
+              ['paragraph', t('Paragraphe')],
+              ['sentence', t('Phrase')],
             ] as const
           ).map(([mode, label]) => (
             <ModeButton
               key={mode}
               mode={mode}
-              label={label}
+              label={t(label)}
               active={value.focus === mode}
               onClick={() => onChange({ focus: mode })}
             />
           ))}
         </div>
       </div>
-      <div className="settings-row" role="group" aria-label="Défilement">
-        <span className="settings-label">Défilement</span>
+      <div className="settings-row" role="group" aria-label={t('Défilement')}>
+        <span className="settings-label">{t('Défilement')}</span>
         <div className="segmented mode-options">
           <ModeButton
             mode="classic"
-            label="Classique"
+            label={t('Classique')}
             active={!value.typewriter}
             onClick={() => onChange({ typewriter: false })}
           />
           <ModeButton
             mode="typewriter"
-            label="Machine à écrire"
+            label={t('Machine à écrire')}
             active={value.typewriter}
             onClick={() => onChange({ typewriter: true })}
           />

@@ -1,3 +1,4 @@
+import { t, getLocale } from '../i18n';
 import { micromark } from 'micromark';
 import { gfm, gfmHtml } from 'micromark-extension-gfm';
 import { isolateHistory, redo, undo } from '@codemirror/commands';
@@ -90,10 +91,15 @@ function tableActionIcon(action: TableAction) {
     'stroke-linecap': 'round',
     'stroke-linejoin': 'round',
     'aria-hidden': 'true',
-  })) icon.setAttribute(name, value);
+  }))
+    icon.setAttribute(name, value);
   const outline = document.createElementNS(ns, 'rect');
   for (const [name, value] of Object.entries({
-    x: '2.5', y: '5', width: '12.5', height: '14', rx: '2',
+    x: '2.5',
+    y: '5',
+    width: '12.5',
+    height: '14',
+    rx: '2',
   }))
     outline.setAttribute(name, value);
   icon.append(outline);
@@ -116,6 +122,7 @@ type Controller = {
 const controllers = new WeakMap<HTMLElement, Controller>();
 
 class TableWidget extends WidgetType {
+  readonly locale = getLocale();
   constructor(
     readonly source: string,
     readonly from: number,
@@ -129,6 +136,7 @@ class TableWidget extends WidgetType {
 
   eq(other: TableWidget) {
     return (
+      other.locale === this.locale &&
       other.from === this.from &&
       other.to === this.to &&
       other.source === this.source &&
@@ -143,7 +151,7 @@ class TableWidget extends WidgetType {
     const wrapper = document.createElement('div');
     wrapper.className = 'markdown-table-preview';
     if (this.quoted) wrapper.classList.add('markdown-table-preview-quoted');
-    wrapper.setAttribute('aria-label', 'Tableau Markdown modifiable');
+    wrapper.setAttribute('aria-label', t('Tableau Markdown modifiable'));
     const controller: Controller = {
       widget: this,
       active: null,
@@ -154,12 +162,12 @@ class TableWidget extends WidgetType {
     const toolbar = document.createElement('div');
     toolbar.className = 'markdown-table-actions';
     toolbar.setAttribute('role', 'toolbar');
-    toolbar.setAttribute('aria-label', 'Modifier le tableau');
+    toolbar.setAttribute('aria-label', t('Modifier le tableau'));
     const actions = [
-      ['add-row', 'Ajouter une ligne'],
-      ['remove-row', 'Supprimer la ligne'],
-      ['add-column', 'Ajouter une colonne'],
-      ['remove-column', 'Supprimer la colonne'],
+      ['add-row', t('Ajouter une ligne')],
+      ['remove-row', t('Supprimer la ligne')],
+      ['add-column', t('Ajouter une colonne')],
+      ['remove-column', t('Supprimer la colonne')],
     ] as const;
     for (const [index, [action, label]] of actions.entries()) {
       if (index === 2) {
@@ -221,7 +229,7 @@ class TableWidget extends WidgetType {
       input.value = displayCell(view.state.sliceDoc(range.from, range.to));
       input.setAttribute(
         'aria-label',
-        `Modifier la cellule ligne ${row + 1}, colonne ${column + 1}`,
+        t('Modifier la cellule ligne {0}, colonne {1}', { 0: row + 1, 1: column + 1 }),
       );
       input.className = 'markdown-table-cell-input';
       controller.active = { row, column, input, range };
@@ -533,7 +541,8 @@ export const liveTables = StateField.define<DecorationSet>({
         )
       );
     });
-    return transaction.docChanged ||
+    return transaction.reconfigured ||
+      transaction.docChanged ||
       hiddenChanged ||
       syntaxTree(transaction.startState) !== syntaxTree(transaction.state)
       ? tables(transaction.state)

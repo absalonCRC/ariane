@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useState } from 'react';
 import { save } from '@tauri-apps/plugin-dialog';
 import { native, request } from '../app/client';
@@ -6,6 +7,7 @@ import { manuscriptSections, scenesFor } from '../project/tree';
 
 // The job outlives its dialog, so writing can continue without losing its result.
 export function useExport() {
+  useLocale();
   const [format, setFormat] = useState('pdf');
   const [scope, setScope] = useState('project');
   const [state, setState] = useState<'ready' | 'working' | 'done' | 'error'>('ready');
@@ -16,14 +18,14 @@ export function useExport() {
       if (!native) {
         if (format !== 'md')
           throw new Error(
-            'Les exports PDF, Word et EPUB sont disponibles dans l’application macOS.',
+            t('Les exports PDF, Word et EPUB sont disponibles dans l’application macOS.'),
           );
         const sections =
           scope === 'project'
             ? manuscriptSections(project.sections)
             : scenesFor(project.sections, active, false);
         if (!sections.some((s) => s.kind === 'scene'))
-          throw new Error('Aucun texte inclus dans cet export.');
+          throw new Error(t('Aucun texte inclus dans cet export.'));
         const text = sections.map((s) => '# ' + s.title + '\n\n' + s.text).join('\n\n');
         const url = URL.createObjectURL(new Blob([text], { type: 'text/markdown' }));
         const link = document.createElement('a');
@@ -36,7 +38,7 @@ export function useExport() {
         return;
       }
       const path = await save({
-        title: 'Exporter le manuscrit',
+        title: t('Exporter le manuscrit'),
         defaultPath: project.name + '.' + format,
         filters: [{ name: format.toUpperCase(), extensions: [format] }],
       });

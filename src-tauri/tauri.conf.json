@@ -53,13 +53,18 @@
     "macOS": {
       "minimumSystemVersion": "26.0",
       "entitlements": "Entitlements.plist",
-      "signingIdentity": "-"
+      "signingIdentity": "-",
+      "files": {
+        "Resources/fr.lproj/InfoPlist.strings": "locales/fr.lproj/InfoPlist.strings",
+        "Resources/en.lproj/InfoPlist.strings": "locales/en.lproj/InfoPlist.strings",
+        "Resources/es.lproj/InfoPlist.strings": "locales/es.lproj/InfoPlist.strings"
+      }
     },
     "icon": [
       "icons/icon.icns",
       "icons/icon.png"
     ],
-    "copyright": "Copyright \u00a9 2026 Axel de Saint-Germain",
+    "copyright": "Copyright © 2026 Axel de Saint-Germain",
     "license": "GPL-3.0-only"
   }
 }

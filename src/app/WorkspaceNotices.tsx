@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale } from '../i18n';
 import { Presence } from '../components/Presence';
 import type { Workspace } from './useWorkspace';
 import { request } from './client';
@@ -11,6 +12,7 @@ export function WorkspaceNotices({
   workspace: Workspace;
   embedded?: boolean;
 }) {
+  useLocale();
   const contextNotice = useContextMenuNotice();
   const {
     recovery,
@@ -29,18 +31,18 @@ export function WorkspaceNotices({
       <Presence kind="notice">
         {!embedded && workspace.libraryNotice && !error && !recovery && (
           <div className="notice library-notice" role="status">
-            <span>{workspace.libraryNotice.message}</span>
+            <span>{localizeMessage(workspace.libraryNotice.message)}</span>
             {workspace.libraryNotice.undo && doc.project?.canUndoStructure && (
               <button
                 disabled={workspace.libraryBusy}
                 onClick={() => void workspace.operate({ action: 'undo' })}
               >
-                Annuler
+                {t('Annuler')}
               </button>
             )}
             <button
               className="icon-button"
-              aria-label="Fermer le message de rangement"
+              aria-label={t('Fermer le message de rangement')}
               onClick={() => workspace.setLibraryNotice(null)}
             >
               <X size={14} />
@@ -53,28 +55,30 @@ export function WorkspaceNotices({
           <div className={embedded ? 'path-notice-detail' : 'notice recovery'} role="status">
             <span>
               {exportJob.state === 'working'
-                ? 'Export en cours…'
+                ? t('Export en cours…')
                 : exportJob.state === 'done'
-                  ? 'Votre manuscrit est prêt.'
-                  : 'L’export n’a pas abouti.'}
+                  ? t('Votre manuscrit est prêt.')
+                  : t('L’export n’a pas abouti.')}
             </span>
-            <button onClick={() => setSurface('export')}>Voir l’export</button>
-            {exportJob.state !== 'working' && <button onClick={exportJob.reset}>Fermer</button>}
+            <button onClick={() => setSurface('export')}>{t('Voir l’export')}</button>
+            {exportJob.state !== 'working' && (
+              <button onClick={exportJob.reset}>{t('Fermer')}</button>
+            )}
           </div>
         )}
       </Presence>
       <Presence kind="notice">
         {recovery && (
           <div className={embedded ? 'path-notice-detail' : 'notice recovery'}>
-            <span>Votre texte a été récupéré.</span>
-            <button onClick={() => setRecovery(false)}>Reprendre l’écriture</button>
+            <span>{t('Votre texte a été récupéré.')}</span>
+            <button onClick={() => setRecovery(false)}>{t('Reprendre l’écriture')}</button>
             <button
               onClick={() => {
                 setRecovery(false);
                 setSurface('history');
               }}
             >
-              Voir les versions
+              {t('Voir les versions')}
             </button>
           </div>
         )}
@@ -87,8 +91,8 @@ export function WorkspaceNotices({
           >
             <span>
               {error.startsWith('EXTERNAL:')
-                ? 'Ce texte a été modifié ailleurs. Une copie sera conservée avant résolution.'
-                : error}
+                ? t('Ce texte a été modifié ailleurs. Une copie sera conservée avant résolution.')
+                : localizeMessage(error)}
             </span>
             {error.startsWith('EXTERNAL:') ? (
               <>
@@ -108,7 +112,7 @@ export function WorkspaceNotices({
                       .catch(fail)
                   }
                 >
-                  Lire la version externe
+                  {t('Lire la version externe')}
                 </button>
                 <button
                   onClick={() =>
@@ -126,7 +130,7 @@ export function WorkspaceNotices({
                       .catch(fail)
                   }
                 >
-                  Conserver mon texte
+                  {t('Conserver mon texte')}
                 </button>
               </>
             ) : doc.status === 'error' ? (
@@ -136,12 +140,12 @@ export function WorkspaceNotices({
                   void doc.flush().catch(fail);
                 }}
               >
-                Réessayer
+                {t('Réessayer')}
               </button>
             ) : null}
             <button
               className="icon-button"
-              aria-label="Fermer le message"
+              aria-label={t('Fermer le message')}
               onClick={() => setError('')}
             >
               <X size={14} />
@@ -153,8 +157,8 @@ export function WorkspaceNotices({
         <Presence kind="notice">
           {contextNotice.message && (
             <div className="notice recovery" role="alert">
-              <span>{contextNotice.message}</span>
-              <button onClick={contextNotice.clear}>Fermer</button>
+              <span>{localizeMessage(contextNotice.message)}</span>
+              <button onClick={contextNotice.clear}>{t('Fermer')}</button>
             </div>
           )}
         </Presence>

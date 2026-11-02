@@ -1,7 +1,13 @@
+import { t } from '../i18n';
 import { descendants } from '../project/tree';
 import { invoke, isTauri } from '@tauri-apps/api/core';
 import type { Project, Section, Source, TextPatch, Version, Vault } from './types';
-import { applyLibraryOperation, structureSnapshot, type LibraryOperation, type StructurePosition } from '../project/library';
+import {
+  applyLibraryOperation,
+  structureSnapshot,
+  type LibraryOperation,
+  type StructurePosition,
+} from '../project/library';
 import type { ProjectEntry } from './types';
 import { validOutline } from '../editor/outline/model';
 export const native = isTauri();
@@ -42,7 +48,7 @@ function store(p: Project) {
 }
 function project() {
   const p = read()[current || ''];
-  if (!p) throw new Error('Ouvrez un projet pour continuer.');
+  if (!p) throw new Error(t('Ouvrez un projet pour continuer.'));
   return p;
 }
 export function newSection(
@@ -64,25 +70,51 @@ export function newSection(
     goal: 0,
   };
 }
-function catalog(): ProjectEntry[] { return JSON.parse(localStorage.getItem('ariane.preview.catalog') || '[]'); }
+function catalog(): ProjectEntry[] {
+  return JSON.parse(localStorage.getItem('ariane.preview.catalog') || '[]');
+}
 function remember(p: Project) {
   const entries = catalog();
-  const old = entries.find(e => e.path === p.path);
-  const entry: ProjectEntry = { path: p.path, name: p.name, pinned: false, archived: false, available: true, ...old, lastOpened: new Date().toISOString() };
-  localStorage.setItem('ariane.preview.catalog', JSON.stringify([entry, ...entries.filter(e => e.path !== p.path)]));
+  const old = entries.find((e) => e.path === p.path);
+  const entry: ProjectEntry = {
+    path: p.path,
+    name: p.name,
+    pinned: false,
+    archived: false,
+    available: true,
+    ...old,
+    lastOpened: new Date().toISOString(),
+  };
+  localStorage.setItem(
+    'ariane.preview.catalog',
+    JSON.stringify([entry, ...entries.filter((e) => e.path !== p.path)]),
+  );
 }
 function browserRequest(type: string, a: Record<string, unknown>): unknown {
   if (type === 'revisionStatus') return { available: false };
-  if (type === 'bootstrap') { const p = read()[current || '']; if (p) remember(p); return p || null; }
-  if (type === 'projects') return catalog().sort((a,b) => Number(b.pinned)-Number(a.pinned) || b.lastOpened.localeCompare(a.lastOpened));
-  if (type === 'projectCatalog') { const entries = catalog().map(e => e.path === a.path ? { ...e, pinned: !!a.pinned, archived: !!a.archived } : e); localStorage.setItem('ariane.preview.catalog', JSON.stringify(entries)); return entries; }
+  if (type === 'bootstrap') {
+    const p = read()[current || ''];
+    if (p) remember(p);
+    return p || null;
+  }
+  if (type === 'projects')
+    return catalog().sort(
+      (a, b) => Number(b.pinned) - Number(a.pinned) || b.lastOpened.localeCompare(a.lastOpened),
+    );
+  if (type === 'projectCatalog') {
+    const entries = catalog().map((e) =>
+      e.path === a.path ? { ...e, pinned: !!a.pinned, archived: !!a.archived } : e,
+    );
+    localStorage.setItem('ariane.preview.catalog', JSON.stringify(entries));
+    return entries;
+  }
   if (type === 'engineStatus')
-    return { available: false, model: 'Disponible dans l’application macOS', local: true };
+    return { available: false, model: t('Disponible dans l’application macOS'), local: true };
   if (type === 'create') {
     const p: Project = {
       path: String(a.path),
       name: String(a.name),
-      sections: [newSection('Sans titre', null, 'scene')],
+      sections: [newSection(String(a.initialTitle || t('Sans titre')), null, 'scene')],
       settings: {},
       recovered: false,
     };
@@ -96,45 +128,70 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
   if (type === 'open') {
     current = String(a.path);
     localStorage.setItem('ariane.preview.current', current);
-    const p = project(); remember(p); return p;
+    const p = project();
+    remember(p);
+    return p;
   }
   const p = project();
   if (['annotations', 'addAnnotation', 'updateAnnotation', 'manuscriptOperation'].includes(type))
-    throw new Error('Cette fonction est disponible dans l’application Mac.');
+    throw new Error(t('Cette fonction est disponible dans l’application Mac.'));
   if (type === 'libraryOperation') {
     const op = a.operation as LibraryOperation;
     const key = 'ariane.preview.structure.' + p.path;
     const history: StructurePosition[][] = JSON.parse(localStorage.getItem(key) || '[]');
     const result = applyLibraryOperation(p, op, history.at(-1));
-    if (op.action === 'undo') history.pop(); else history.push(structureSnapshot(p));
-    for (const copy of result.copies) localStorage.setItem('ariane.preview.links.' + p.path + '.' + copy.to, localStorage.getItem('ariane.preview.links.' + p.path + '.' + copy.from) || '[]');
+    if (op.action === 'undo') history.pop();
+    else history.push(structureSnapshot(p));
+    for (const copy of result.copies)
+      localStorage.setItem(
+        'ariane.preview.links.' + p.path + '.' + copy.to,
+        localStorage.getItem('ariane.preview.links.' + p.path + '.' + copy.from) || '[]',
+      );
     result.project.canUndoStructure = history.length > 0;
     store(result.project);
     localStorage.setItem(key, JSON.stringify(history));
     return result.project;
   }
   if (type === 'browseSources') {
-    const all = previewSources(p.path).filter(s => !a.vault || s.vaultId === a.vault);
+    const all = previewSources(p.path).filter((s) => !a.vault || s.vaultId === a.vault);
     const query = String(a.query || '').toLocaleLowerCase();
-    const values = all.filter(s => (!a.kind || s.kind === a.kind) && (!a.folder || s.path.startsWith(String(a.folder) + '/')) && (s.title.toLocaleLowerCase().includes(query) || s.text.toLocaleLowerCase().includes(query)));
+    const values = all.filter(
+      (s) =>
+        (!a.kind || s.kind === a.kind) &&
+        (!a.folder || s.path.startsWith(String(a.folder) + '/')) &&
+        (s.title.toLocaleLowerCase().includes(query) || s.text.toLocaleLowerCase().includes(query)),
+    );
     const offset = Number(a.offset || 0);
-    return { types: [...new Set(all.map(s => s.kind))].sort().map(kind => ({ kind, count: all.filter(s => s.kind === kind).length })), items: values.slice(offset,offset+50), total: values.length, kinds: [...new Set(all.map(s => s.kind))].sort(), folders: [...new Set(all.map(s => s.path.split('/').slice(0,-1).join('/')).filter(Boolean))].sort() };
+    return {
+      types: [...new Set(all.map((s) => s.kind))]
+        .sort()
+        .map((kind) => ({ kind, count: all.filter((s) => s.kind === kind).length })),
+      items: values.slice(offset, offset + 50),
+      total: values.length,
+      kinds: [...new Set(all.map((s) => s.kind))].sort(),
+      folders: [
+        ...new Set(all.map((s) => s.path.split('/').slice(0, -1).join('/')).filter(Boolean)),
+      ].sort(),
+    };
   }
   if (type === 'save') {
     const patches = a.patches as TextPatch[];
     const ids = new Set<string>();
     for (const patch of patches) {
       const s = p.sections.find((s) => s.id === patch.id);
-      if (!s || s.revision !== patch.revision) throw new Error('Version de texte périmée.');
-      if (ids.has(patch.id)) throw new Error('Section répétée dans la sauvegarde.');
+      if (!s || s.revision !== patch.revision) throw new Error(t('Version de texte périmée.'));
+      if (ids.has(patch.id)) throw new Error(t('Section répétée dans la sauvegarde.'));
       ids.add(patch.id);
       if (patch.outline && !validOutline(patch.text, patch.outline))
-        throw new Error('Structure de passages invalide.');
+        throw new Error(t('Structure de passages invalide.'));
     }
     for (const patch of patches) {
       const s = p.sections.find((s) => s.id === patch.id)!;
       const outline = patch.outline ?? (s.text === patch.text ? s.outline : null);
-      if (s.text !== patch.text || JSON.stringify(s.outline ?? null) !== JSON.stringify(outline ?? null))
+      if (
+        s.text !== patch.text ||
+        JSON.stringify(s.outline ?? null) !== JSON.stringify(outline ?? null)
+      )
         s.revision++;
       s.text = patch.text;
       s.outline = outline;
@@ -146,7 +203,9 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     }));
   }
   if (type === 'add') {
-    const result = browserRequest('libraryOperation', { operation: { action: 'add', target: a.parent, title: a.title, kind: a.kind, role: a.role } }) as Project;
+    const result = browserRequest('libraryOperation', {
+      operation: { action: 'add', target: a.parent, title: a.title, kind: a.kind, role: a.role },
+    }) as Project;
     return result.sections;
   }
   if (type === 'update') {
@@ -166,7 +225,11 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     return p.sections;
   }
   if (type === 'reorder') {
-    applyLibraryOperation(p, { action: 'move', ids: [String(a.id)], target: a.parent as string | null });
+    applyLibraryOperation(p, {
+      action: 'move',
+      ids: [String(a.id)],
+      target: a.parent as string | null,
+    });
     p.sections = (a.ids as string[]).map((id, i) => ({
       ...p.sections.find((s) => s.id === id)!,
       position: i,
@@ -185,12 +248,12 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     return vault ? [{ ...vault, count: previewSources(p.path).length }] : [];
   }
   if (type === 'createOwnedVault') {
-    if (previewVault(p.path)) throw new Error('Ce projet possède déjà un vault.');
+    if (previewVault(p.path)) throw new Error(t('Ce projet possède déjà un vault.'));
     return [makePreviewVault(p.path)];
   }
   if (type === 'createVaultEntity') {
     const vault = previewVault(p.path);
-    if (!vault) throw new Error('Créez un vault Ariane.');
+    if (!vault) throw new Error(t('Créez un vault Ariane.'));
     const labels: Record<string, string> = {
       personne: 'Personne',
       lieu: 'Lieu',
@@ -205,10 +268,10 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     const title = String(a.name || '').trim(),
       kind = labels[String(a.kind)];
     if (!kind || !title || /[/:\\\u0000-\u001f]/u.test(title) || title === '.' || title === '..')
-      throw new Error('Nom ou type de fiche invalide.');
+      throw new Error(t('Nom ou type de fiche invalide.'));
     const values = previewSources(p.path);
     if (values.some((s) => s.kind === kind && s.title === title))
-      throw new Error('Cette fiche existe déjà.');
+      throw new Error(t('Cette fiche existe déjà.'));
     values.push({
       id: crypto.randomUUID(),
       vaultId: vault.id,
@@ -242,7 +305,9 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
       name: String(a.name),
       created: new Date().toISOString(),
       scope: a.scope as string | null,
-      sections: a.scope ? descendants([...p.sections, ...(p.trash || [])], String(a.scope)) : [...p.sections, ...(p.trash || [])],
+      sections: a.scope
+        ? descendants([...p.sections, ...(p.trash || [])], String(a.scope))
+        : [...p.sections, ...(p.trash || [])],
     };
     versions.unshift(v);
     localStorage.setItem(versionKey, JSON.stringify(versions));
@@ -251,14 +316,18 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
   if (type === 'restore') {
     const versions = JSON.parse(localStorage.getItem(versionKey) || '[]') as Version[];
     const v = versions.find((v) => v.id === a.id);
-    if (!v) throw new Error('Version introuvable');
+    if (!v) throw new Error(t('Version introuvable'));
     browserRequest('capture', { name: 'Avant restauration', scope: v.scope });
     const previous = [...p.sections, ...(p.trash || [])];
     const snapshot = v.scope ? descendants(v.sections, v.scope) : v.sections;
-    const affected = new Set(v.scope ? [...descendants(previous, v.scope), ...snapshot].map(s => s.id) : previous.map(s => s.id));
-    const restored = [...previous.filter(s => !affected.has(s.id)), ...snapshot];
-    p.sections = restored.filter(s => !s.trashed);
-    p.trash = restored.filter(s => s.trashed);
+    const affected = new Set(
+      v.scope
+        ? [...descendants(previous, v.scope), ...snapshot].map((s) => s.id)
+        : previous.map((s) => s.id),
+    );
+    const restored = [...previous.filter((s) => !affected.has(s.id)), ...snapshot];
+    p.sections = restored.filter((s) => !s.trashed);
+    p.trash = restored.filter((s) => s.trashed);
     p.canUndoStructure = false;
     localStorage.removeItem('ariane.preview.structure.' + p.path);
     store(p);
@@ -287,7 +356,7 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     );
   if (type === 'cite') return true;
   throw new Error(
-    'Cette fonction utilise le moteur Rust et les fichiers locaux. Ouvrez l’application macOS.',
+    t('Cette fonction utilise le moteur Rust et les fichiers locaux. Ouvrez l’application macOS.'),
   );
 }
 export function browserProjects() {

@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { createPortal } from 'react-dom';
 import { SidebarDock } from '../components/SidebarDock';
 import type { MouseEvent, DragEvent, CSSProperties } from 'react';
@@ -70,6 +71,7 @@ interface Props {
 }
 const draftId = '__ariane_new_section__';
 export function Binder(p: Props) {
+  useLocale();
   const openMenu = useContextMenu();
   const [renaming, setRenaming] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -120,9 +122,11 @@ export function Binder(p: Props) {
         (kind) => kind !== 'chapter' || !hasChapterAncestor(p.project.sections, parent?.id ?? null),
       )
       .map((kind) => ({
-        label: { folder: 'Nouvelle section', chapter: 'Nouveau chapitre', scene: 'Nouvelle scène' }[
-          kind
-        ],
+        label: {
+          folder: t('Nouvelle section'),
+          chapter: t('Nouveau chapitre'),
+          scene: t('Nouvelle scène'),
+        }[kind],
         run: () => {
           if (parent)
             setCollapsed((old) => {
@@ -371,8 +375,8 @@ export function Binder(p: Props) {
     const mixed = count.included > 0 && !fullyIncluded;
     const toggleLabel =
       count.total === 0
-        ? 'Aucun texte à inclure'
-        : `${mixed ? 'Inclusion partielle · ' : ''}${fullyIncluded ? 'Exclure du manuscrit' : 'Inclure dans le manuscrit'} : ${s.title || 'Sans titre'}`;
+        ? t('Aucun texte à inclure')
+        : `${mixed ? t('Inclusion partielle · ') : ''}${fullyIncluded ? t('Exclure du manuscrit') : t('Inclure dans le manuscrit')} : ${s.title || t('Sans titre')}`;
     const guides = (
       <span className="tree-guides" aria-hidden="true">
         {branch.guides.map(
@@ -418,7 +422,7 @@ export function Binder(p: Props) {
           {guides}
           <span
             className="tree-inclusion draft-inclusion"
-            title="Inclus dans le manuscrit"
+            title={t('Inclus dans le manuscrit')}
             aria-hidden="true"
           >
             <Eye size={14} />
@@ -437,14 +441,18 @@ export function Binder(p: Props) {
             autoFocus
             className="tree-rename"
             aria-label={
-              { folder: 'Nom de la section', chapter: 'Nom du chapitre', scene: 'Nom de la scène' }[
-                s.kind
-              ]
+              {
+                folder: t('Nom de la section'),
+                chapter: t('Nom du chapitre'),
+                scene: t('Nom de la scène'),
+              }[s.kind]
             }
             placeholder={
-              { folder: 'Nouvelle section', chapter: 'Nouveau chapitre', scene: 'Nouvelle scène' }[
-                s.kind
-              ]
+              {
+                folder: t('Nouvelle section'),
+                chapter: t('Nouveau chapitre'),
+                scene: t('Nouvelle scène'),
+              }[s.kind]
             }
             value={p.creationTitle ?? ''}
             onChange={(event) => p.onCreationTitle?.(event.target.value)}
@@ -459,7 +467,7 @@ export function Binder(p: Props) {
           <button
             className="icon-button"
             type="submit"
-            aria-label="Valider le nom"
+            aria-label={t('Valider le nom')}
             disabled={p.busy || !p.creationTitle?.trim()}
           >
             <Check size={13} />
@@ -476,17 +484,17 @@ export function Binder(p: Props) {
           const ids = picked.includes(s.id) ? picked : [s.id];
           if (!picked.includes(s.id)) setPicked(ids);
           const actions: MenuAction[] = [
-            ...(trash ? [] : [{ label: 'Ouvrir', icon: FileText, run: () => p.onSelect(s.id) }]),
+            ...(trash ? [] : [{ label: t('Ouvrir'), icon: FileText, run: () => p.onSelect(s.id) }]),
           ];
           if (p.onRename && !trash && ids.length === 1)
             actions.push({
-              label: 'Renommer',
+              label: t('Renommer'),
               icon: Pencil,
               shortcut: 'F2',
               run: () => beginRename(s),
             });
           if (p.onPrepare && !trash && ids.length === 1)
-            actions.push({ label: 'Préparer cette section', run: () => p.onPrepare!(s.id) });
+            actions.push({ label: t('Préparer cette section'), run: () => p.onPrepare!(s.id) });
           if (p.onManuscriptOperation && !trash && s.kind === 'scene' && ids.length === 1) {
             const siblings = p.project.sections.filter(
               (item) => item.kind === 'scene' && item.parent === s.parent && item.role === s.role,
@@ -494,7 +502,7 @@ export function Binder(p: Props) {
             const next = siblings[siblings.findIndex((item) => item.id === s.id) + 1];
             if (next)
               actions.push({
-                label: `Réunir avec « ${next.title || 'Sans titre'} »`,
+                label: t('Réunir avec « {0} »', { 0: next.title || t('Sans titre') }),
                 run: () =>
                   void p.onManuscriptOperation!({
                     action: 'join',
@@ -505,7 +513,7 @@ export function Binder(p: Props) {
           }
           if (s.kind !== 'scene' && p.project.sections.some((child) => child.parent === s.id))
             actions.push({
-              label: collapsed.has(s.id) ? 'Déplier' : 'Replier',
+              label: collapsed.has(s.id) ? t('Déplier') : t('Replier'),
               icon: collapsed.has(s.id) ? ChevronRight : ChevronDown,
               run: () =>
                 setCollapsed((old) => {
@@ -517,27 +525,27 @@ export function Binder(p: Props) {
             });
           openMenu(event, {
             title: s.title,
-            detail: { scene: 'Scène', chapter: 'Chapitre', folder: 'Section' }[s.kind],
+            detail: { scene: t('Scène'), chapter: t('Chapitre'), folder: t('Section') }[s.kind],
             groups: [
               actions,
               p.onOperation
                 ? trash
-                  ? [{ label: 'Restaurer', run: () => run({ action: 'restore', ids }) }]
+                  ? [{ label: t('Restaurer'), run: () => run({ action: 'restore', ids }) }]
                   : [
                       {
-                        label: 'Déplacer vers…',
+                        label: t('Déplacer vers…'),
                         run: () => {
                           setDestination(ids);
                           setDestinationValue('root:' + role);
                         },
                       },
                       {
-                        label: 'Dupliquer',
+                        label: t('Dupliquer'),
                         icon: Copy,
                         run: () => run({ action: 'duplicate', ids }),
                       },
                       {
-                        label: 'Mettre à la corbeille',
+                        label: t('Mettre à la corbeille'),
                         icon: Trash2,
                         run: () => run({ action: 'trash', ids }),
                       },
@@ -548,7 +556,7 @@ export function Binder(p: Props) {
                   ? addActions(s)
                   : [
                       {
-                        label: 'Nouvelle scène après celle-ci',
+                        label: t('Nouvelle scène après celle-ci'),
                         icon: Plus,
                         run: () => p.onAdd(s.parent, 'scene', role, s.id),
                       },
@@ -566,11 +574,11 @@ export function Binder(p: Props) {
                         .filter((item) => item.kind === 'scene')
                         .every((item) => item.included !== false)
                         ? s.kind === 'scene'
-                          ? 'Exclure du manuscrit'
-                          : 'Exclure les textes du manuscrit'
+                          ? t('Exclure du manuscrit')
+                          : t('Exclure les textes du manuscrit')
                         : s.kind === 'scene'
-                          ? 'Inclure dans le manuscrit'
-                          : 'Inclure les textes dans le manuscrit',
+                          ? t('Inclure dans le manuscrit')
+                          : t('Inclure les textes dans le manuscrit'),
                       run: () =>
                         run({
                           action: 'include',
@@ -586,7 +594,7 @@ export function Binder(p: Props) {
               typeof navigator.clipboard?.writeText === 'function'
                 ? [
                     {
-                      label: 'Copier le titre',
+                      label: t('Copier le titre'),
                       icon: Copy,
                       run: () => navigator.clipboard.writeText(s.title),
                     },
@@ -641,8 +649,8 @@ export function Binder(p: Props) {
                   drag.some((id) =>
                     descendants(p.project.sections, id).some((item) => item.kind === 'chapter'),
                   )
-                  ? 'Un chapitre ne peut pas contenir un autre chapitre.'
-                  : 'Impossible de déplacer un élément dans sa propre branche.',
+                  ? t('Un chapitre ne peut pas contenir un autre chapitre.')
+                  : t('Impossible de déplacer un élément dans sa propre branche.'),
               );
               setDrop(null);
               return;
@@ -680,17 +688,17 @@ export function Binder(p: Props) {
             aria-label={toggleLabel}
             data-hint={
               mixed
-                ? 'En partie dans le manuscrit'
+                ? t('En partie dans le manuscrit')
                 : fullyIncluded
-                  ? 'Inclus dans le manuscrit et l’export'
-                  : 'Texte de travail · hors manuscrit'
+                  ? t('Inclus dans le manuscrit et l’export')
+                  : t('Texte de travail · hors manuscrit')
             }
             aria-description={
               mixed
-                ? 'En partie dans le manuscrit'
+                ? t('En partie dans le manuscrit')
                 : fullyIncluded
-                  ? 'Inclus dans le manuscrit et l’export'
-                  : 'Texte de travail · hors manuscrit'
+                  ? t('Inclus dans le manuscrit et l’export')
+                  : t('Texte de travail · hors manuscrit')
             }
             aria-pressed={mixed ? 'mixed' : fullyIncluded}
             onClick={(event) => {
@@ -704,7 +712,9 @@ export function Binder(p: Props) {
         {s.kind !== 'scene' ? (
           <button
             className="disclose"
-            aria-label={(collapsed.has(s.id) ? 'Déplier ' : 'Replier ') + (s.title || 'Sans titre')}
+            aria-label={
+              (collapsed.has(s.id) ? t('Déplier ') : t('Replier ')) + (s.title || t('Sans titre'))
+            }
             aria-expanded={!collapsed.has(s.id)}
             onClick={() =>
               setCollapsed((old) => {
@@ -722,7 +732,7 @@ export function Binder(p: Props) {
         )}
         <span
           className="tree-type-icon"
-          title={{ folder: 'Section', chapter: 'Chapitre', scene: 'Scène' }[s.kind]}
+          title={{ folder: t('Section'), chapter: t('Chapitre'), scene: t('Scène') }[s.kind]}
           aria-hidden="true"
         >
           {s.kind === 'chapter' ? (
@@ -736,7 +746,7 @@ export function Binder(p: Props) {
         {renaming === s.id ? (
           <input
             className="tree-rename"
-            aria-label="Nouveau titre"
+            aria-label={t('Nouveau titre')}
             autoFocus
             value={name}
             onFocus={(event) => event.currentTarget.select()}
@@ -759,20 +769,20 @@ export function Binder(p: Props) {
           <button
             className="tree-title"
             aria-current={p.active === s.id ? 'page' : undefined}
-            aria-label={`${{ folder: 'Section', chapter: 'Chapitre', scene: 'Scène' }[s.kind]} : ${s.title || 'Sans titre'}${s.included === false ? ' · Hors manuscrit' : ''}`}
+            aria-label={`${{ folder: t('Section'), chapter: t('Chapitre'), scene: t('Scène') }[s.kind]} : ${s.title || t('Sans titre')}${s.included === false ? ' · Hors manuscrit' : ''}`}
             onClick={(e) => choose(s.id, e)}
           >
-            {s.title || 'Sans titre'}
+            {s.title || t('Sans titre')}
           </button>
         )}
         {s.kind !== 'scene' && !trash && (
           <button
             className="row-add"
-            aria-label={'Ajouter dans ' + s.title}
-            data-tooltip="Ajouter"
+            aria-label={t('Ajouter dans ') + s.title}
+            data-tooltip={t('Ajouter')}
             aria-haspopup="menu"
             onClick={(event) =>
-              openMenu(event, { title: 'Ajouter dans ' + s.title, groups: [addActions(s)] })
+              openMenu(event, { title: t('Ajouter dans ') + s.title, groups: [addActions(s)] })
             }
           >
             <Plus size={12} />
@@ -785,23 +795,23 @@ export function Binder(p: Props) {
     <>
       <button
         aria-current={p.historyMode ? 'page' : undefined}
-        aria-label="Versions"
-        data-tooltip="Versions"
+        aria-label={t('Versions')}
+        data-tooltip={t('Versions')}
         onClick={() => p.onSurface('history')}
       >
         <GitCompareArrows size={17} aria-hidden="true" />
       </button>
       <button
-        aria-label="Corbeille"
+        aria-label={t('Corbeille')}
         aria-pressed={trash}
-        data-tooltip="Corbeille"
+        data-tooltip={t('Corbeille')}
         onClick={() => changeView('trash')}
       >
         <Trash2 size={17} aria-hidden="true" />
       </button>
       <button
-        aria-label="Paramètres"
-        data-tooltip="Paramètres"
+        aria-label={t('Paramètres')}
+        data-tooltip={t('Paramètres')}
         onClick={() => p.onSurface('preferences')}
       >
         <Settings2 size={17} aria-hidden="true" />
@@ -814,7 +824,7 @@ export function Binder(p: Props) {
       inert={p.busy}
       aria-busy={p.busy}
       className="binder"
-      aria-label="Projet"
+      aria-label={t('Projet')}
       onContextMenu={(event) => {
         if (
           trash ||
@@ -823,14 +833,14 @@ export function Binder(p: Props) {
         )
           return;
         openMenu(event, {
-          title: 'Ajouter au projet',
+          title: t('Ajouter au projet'),
           groups: [addActions(null)],
         });
       }}
     >
       <button
         className="binder-edge-trigger"
-        aria-label="Replier la sidebar"
+        aria-label={t('Replier la sidebar')}
         aria-controls="project-sidebar"
         aria-expanded={true}
         data-hint-while-expanded
@@ -866,11 +876,11 @@ export function Binder(p: Props) {
             onError={p.onError}
           />
           <button className="catalog-create" onClick={() => p.onSurface('projects')}>
-            Créer ou ouvrir un projet…
+            {t('Créer ou ouvrir un projet…')}
           </button>
         </div>
       )}
-      <div className="library-tabs" aria-label="Contenu du projet">
+      <div className="library-tabs" aria-label={t('Contenu du projet')}>
         <button
           aria-pressed={view === 'texts'}
           onClick={() => changeView('texts')}
@@ -879,21 +889,21 @@ export function Binder(p: Props) {
           }}
           onDrop={(e) => dropAtRoot(e, 'manuscript')}
         >
-          Textes
+          {t('Textes')}
         </button>
         <button aria-pressed={view === 'sources'} onClick={() => changeView('sources')}>
-          Sources
+          {t('Sources')}
         </button>
-        <div className="library-actions" role="group" aria-label="Actions de la bibliothèque">
+        <div className="library-actions" role="group" aria-label={t('Actions de la bibliothèque')}>
           {view === 'texts' && (
             <button
               className="library-create icon-button"
-              aria-label="Ajouter une section, un chapitre ou une scène"
-              data-tooltip="Ajouter"
+              aria-label={t('Ajouter une section, un chapitre ou une scène')}
+              data-tooltip={t('Ajouter')}
               aria-haspopup="menu"
               onClick={(event) =>
                 openMenu(event, {
-                  title: 'Ajouter au projet',
+                  title: t('Ajouter au projet'),
                   groups: [addActions(null)],
                 })
               }
@@ -904,7 +914,7 @@ export function Binder(p: Props) {
           {p.onOperation && p.project.canUndoStructure && (
             <button
               className="icon-button"
-              aria-label="Annuler le dernier rangement"
+              aria-label={t('Annuler le dernier rangement')}
               disabled={p.busy}
               onClick={() => void run({ action: 'undo' })}
             >
@@ -913,16 +923,16 @@ export function Binder(p: Props) {
           )}
           <button
             className="icon-button"
-            aria-label="Options de la bibliothèque"
+            aria-label={t('Options de la bibliothèque')}
             aria-haspopup="menu"
             onClick={(event) =>
               openMenu(event, {
-                title: 'Bibliothèque',
+                title: t('Bibliothèque'),
                 groups: [
                   [
-                    { label: 'Créer ou ouvrir un projet…', run: () => p.onSurface('projects') },
-                    { label: 'Gérer les vaults…', run: () => p.onSurface('sources') },
-                    { label: 'Paramètres', run: () => p.onSurface('preferences') },
+                    { label: t('Créer ou ouvrir un projet…'), run: () => p.onSurface('projects') },
+                    { label: t('Gérer les vaults…'), run: () => p.onSurface('sources') },
+                    { label: t('Paramètres'), run: () => p.onSurface('preferences') },
                   ],
                 ],
               })
@@ -944,23 +954,25 @@ export function Binder(p: Props) {
         <>
           {view === 'texts' && (
             <button className="binder-manuscript" onClick={p.onContinuous}>
-              Lire le manuscrit
+              {t('Lire le manuscrit')}
             </button>
           )}
           {trash && (
-            <p className="hint">Restaurez un document pour le retrouver à son emplacement.</p>
+            <p className="hint">
+              {t('Restaurez un document pour le retrouver à son emplacement.')}
+            </p>
           )}
           {(picked.length > 1 || (trash && picked.length > 0)) && p.onOperation && (
-            <div className="library-selection" aria-label="Actions de sélection">
+            <div className="library-selection" aria-label={t('Actions de sélection')}>
               <span role="status">
-                {picked.length} sélectionné{picked.length > 1 ? 's' : ''}
+                {t('{0} sélectionné{1}', { 0: picked.length, 1: picked.length > 1 ? 's' : '' })}
               </span>
               {trash ? (
                 <button
                   disabled={p.busy}
                   onClick={() => void run({ action: 'restore', ids: picked })}
                 >
-                  Restaurer
+                  {t('Restaurer')}
                 </button>
               ) : (
                 <>
@@ -971,18 +983,18 @@ export function Binder(p: Props) {
                       setDestinationValue('root:' + role);
                     }}
                   >
-                    Déplacer…
+                    {t('Déplacer…')}
                   </button>
                   <button
                     disabled={p.busy}
-                    aria-label="Dupliquer la sélection"
+                    aria-label={t('Dupliquer la sélection')}
                     onClick={() => void run({ action: 'duplicate', ids: picked })}
                   >
                     <Copy size={13} />
                   </button>
                   <button
                     disabled={p.busy}
-                    aria-label="Mettre la sélection à la corbeille"
+                    aria-label={t('Mettre la sélection à la corbeille')}
                     onClick={() => void run({ action: 'trash', ids: picked })}
                   >
                     <Trash2 size={13} />
@@ -994,7 +1006,7 @@ export function Binder(p: Props) {
           <nav
             className="tree"
             ref={nav}
-            aria-label={trash ? 'Documents supprimés' : 'Textes du projet'}
+            aria-label={trash ? t('Documents supprimés') : t('Textes du projet')}
             onDragOver={(e) => {
               if (drag.length && !trash) {
                 e.preventDefault();
@@ -1125,7 +1137,7 @@ export function Binder(p: Props) {
           </nav>
           {!rows.length && (
             <p className="hint">
-              {trash ? 'La corbeille est vide.' : 'Vos textes apparaîtront ici.'}
+              {trash ? t('La corbeille est vide.') : t('Vos textes apparaîtront ici.')}
             </p>
           )}
           {!trash && (
@@ -1145,8 +1157,8 @@ export function Binder(p: Props) {
               {drag.length
                 ? dropError ||
                   (drop
-                    ? `${drop.placement === 'inside' ? 'Dans' : drop.placement === 'before' ? 'Avant' : 'Après'} ${p.project.sections.find((s) => s.id === drop.id)?.title || 'Sans titre'}`
-                    : 'Déposer à la racine')
+                    ? `${drop.placement === 'inside' ? t('Dans') : drop.placement === 'before' ? t('Avant') : t('Après')} ${p.project.sections.find((s) => s.id === drop.id)?.title || t('Sans titre')}`
+                    : t('Déposer à la racine'))
                 : ''}
             </div>
           )}
@@ -1160,15 +1172,15 @@ export function Binder(p: Props) {
         p.footerTarget && createPortal(footerActions, p.footerTarget)
       )}
       {destination && (
-        <Dialog title="Déplacer la sélection" onClose={() => setDestination(null)}>
+        <Dialog title={t('Déplacer la sélection')} onClose={() => setDestination(null)}>
           <label>
-            Destination
+            {t('Destination')}
             <select
-              aria-label="Destination"
+              aria-label={t('Destination')}
               value={destinationValue}
               onChange={(e) => setDestinationValue(e.target.value)}
             >
-              <option value="root:manuscript">Textes · Racine</option>
+              <option value="root:manuscript">{t('Textes · Racine')}</option>
               {p.project.sections
                 .filter(
                   (s) =>
@@ -1184,16 +1196,16 @@ export function Binder(p: Props) {
                 )
                 .map((s) => (
                   <option key={s.id} value={s.id}>
-                    Textes /{' '}
+                    {t('Textes /')}{' '}
                     {sectionPath(p.project.sections, s)
-                      .map((s) => s.title || 'Sans titre')
+                      .map((s) => s.title || t('Sans titre'))
                       .join(' / ')}
                   </option>
                 ))}
             </select>
           </label>
           <div className="dialog-actions">
-            <button onClick={() => setDestination(null)}>Annuler</button>
+            <button onClick={() => setDestination(null)}>{t('Annuler')}</button>
             <button
               className="primary"
               disabled={p.busy}
@@ -1206,7 +1218,7 @@ export function Binder(p: Props) {
                 })
               }
             >
-              Déplacer
+              {t('Déplacer')}
             </button>
           </div>
         </Dialog>

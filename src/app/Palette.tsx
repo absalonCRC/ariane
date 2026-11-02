@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { ManuscriptMatch } from './projectSearch';
@@ -41,6 +42,7 @@ export function Palette({
   panel: HTMLElement | null;
   retainContent?: boolean;
 }) {
+  useLocale();
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
   const input = useRef<HTMLInputElement>(null);
@@ -84,8 +86,8 @@ export function Palette({
     >
       <button
         className="icon-button header-search-trigger"
-        aria-label={open ? 'Fermer la recherche' : 'Rechercher dans les textes et les vaults'}
-        data-tooltip={open ? 'Fermer la recherche' : 'Rechercher'}
+        aria-label={open ? t('Fermer la recherche') : t('Rechercher dans les textes et les vaults')}
+        data-tooltip={open ? t('Fermer la recherche') : t('Rechercher')}
         aria-expanded={open}
         aria-controls="bottom-writing-panel"
         onClick={() => (open ? onClose() : onOpen())}
@@ -99,10 +101,14 @@ export function Palette({
             <input
               ref={input}
               aria-label={
-                sections ? 'Rechercher une section' : 'Rechercher dans les textes et les vaults'
+                sections
+                  ? t('Rechercher une section')
+                  : t('Rechercher dans les textes et les vaults')
               }
               placeholder={
-                sections ? 'Rechercher une section…' : 'Rechercher dans les textes et les vaults…'
+                sections
+                  ? t('Rechercher une section…')
+                  : t('Rechercher dans les textes et les vaults…')
               }
               value={query}
               onChange={(event) => {
@@ -159,7 +165,7 @@ export function Palette({
                 id="palette-results"
                 className="header-search-results"
                 role="listbox"
-                aria-label="Résultats de recherche"
+                aria-label={t('Résultats de recherche')}
               >
                 {filtered.length ? (
                   filtered.map((command, index) => (
@@ -176,7 +182,7 @@ export function Palette({
                     </button>
                   ))
                 ) : (
-                  <span>Aucun résultat</span>
+                  <span>{t('Aucun résultat')}</span>
                 )}
               </div>
             )}
@@ -184,13 +190,16 @@ export function Palette({
               <div className="manuscript-search-results">
                 <small role="status">
                   {matchTotal
-                    ? `${matchTotal} résultat${matchTotal > 1 ? 's' : ''} dans les textes`
-                    : 'Aucun passage dans les textes'}
+                    ? t('{0} résultat{1} dans les textes', {
+                        0: matchTotal,
+                        1: matchTotal > 1 ? 's' : '',
+                      })
+                    : t('Aucun passage dans les textes')}
                   {matchTotal > matches.length
-                    ? ` · ${matches.length} affichés, précisez la recherche`
+                    ? t(' · {0} affichés, précisez la recherche', { 0: matches.length })
                     : ''}
                 </small>
-                <div id="manuscript-results" role="listbox" aria-label="Passages du projet">
+                <div id="manuscript-results" role="listbox" aria-label={t('Passages du projet')}>
                   {matches.map((hit, index) => (
                     <button
                       role="option"

@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale } from '../i18n';
 import { usePanelFocus } from '../components/usePanelFocus';
 import { AnimatedDetails } from '../components/AnimatedDetails';
 import { usePresenceValue } from '../components/Presence';
@@ -37,6 +38,7 @@ export function MemoryReader({
   projectMenuOpen?: boolean;
   writingMenuOpen?: boolean;
 }) {
+  useLocale();
   const [entity, setEntity] = useState<EntityDetail | null>(null);
   const [entities, setEntities] = useState<MemoryEntity[]>([]);
   const [error, setError] = useState('');
@@ -127,7 +129,7 @@ export function MemoryReader({
       });
       if (workspace.doc.ref.current?.path !== path) return;
       if (fingerprint && source.fingerprint !== fingerprint)
-        throw new Error('Cette source a changé. Le rapprochement sera recalculé.');
+        throw new Error(t('Cette source a changé. Le rapprochement sera recalculé.'));
       memory.close();
       workspace.setReader({ ...source, page, ...(excerpt ? { selectedExcerpt: excerpt } : {}) });
     } catch (e) {
@@ -148,7 +150,7 @@ export function MemoryReader({
       data-phase={shown.exiting ? 'exit' : 'open'}
       inert={shown.exiting}
       aria-hidden={shown.exiting || undefined}
-      aria-label="Mémoire du manuscrit"
+      aria-label={t('Mémoire du manuscrit')}
       data-view={view.kind}
       data-partitioned={view.kind === 'resume' && (projectMenuOpen || writingMenuOpen)}
     >
@@ -158,17 +160,17 @@ export function MemoryReader({
         </div>
       )}
       <div className="panel-top">
-        <span>{view.kind === 'resume' ? 'REPRENDRE LE FIL' : 'DEPUIS VOTRE TEXTE'}</span>
-        <button className="icon-button" aria-label="Fermer la mémoire" onClick={memory.close}>
+        <span>{view.kind === 'resume' ? t('REPRENDRE LE FIL') : t('DEPUIS VOTRE TEXTE')}</span>
+        <button className="icon-button" aria-label={t('Fermer la mémoire')} onClick={memory.close}>
           <X size={16} />
         </button>
       </div>
-      {error && <p className="error-text">{error}</p>}
+      {error && <p className="error-text">{localizeMessage(error)}</p>}
       {view.kind === 'list' && (
         <>
-          <h2>Au fil du manuscrit</h2>
+          <h2>{t('Au fil du manuscrit')}</h2>
           <p className="hint">
-            Les fiches se constituent à partir de vos passages, sans modifier vos sources.
+            {t('Les fiches se constituent à partir de vos passages, sans modifier vos sources.')}
           </p>
           {entities.map((e) => (
             <button
@@ -177,18 +179,19 @@ export function MemoryReader({
               onClick={() => memory.open({ kind: 'entity', id: e.id })}
             >
               <strong>{e.title}</strong>
-              <small>{e.passageCount} passage(s)</small>
+              <small>{t('{0} passage(s)', { 0: e.passageCount })}</small>
             </button>
           ))}
           {!entities.length && (
             <p className="hint">
-              Les noms et les lieux reconnus apparaîtront ici après une pause d’écriture.
+              {t('Les noms et les lieux reconnus apparaîtront ici après une pause d’écriture.')}
             </p>
           )}
           {memory.error && (
             <p className="hint">
-              L’analyse locale est momentanément indisponible. Les informations déjà enregistrées
-              restent accessibles.
+              {t(
+                'L’analyse locale est momentanément indisponible. Les informations déjà enregistrées restent accessibles.',
+              )}
             </p>
           )}
         </>
@@ -197,13 +200,13 @@ export function MemoryReader({
         <>
           <h2>{entity.title}</h2>
           <p className="hint">
-            Informations dérivées du manuscrit · chaque passage reste la référence.
+            {t('Informations dérivées du manuscrit · chaque passage reste la référence.')}
           </p>
           {!!entity.fields.length && (
             <dl className="enrichment-fields">
               {entity.fields.map((f, i) => (
                 <div key={i}>
-                  <dt>{f.name}</dt>
+                  <dt>{t(f.name)}</dt>
                   <dd>
                     <button className="source-link" onClick={() => locate(f)}>
                       {f.value}
@@ -214,25 +217,25 @@ export function MemoryReader({
             </dl>
           )}
           {!!entity.timeline.length && (
-            <AnimatedDetails open summary={<>Repères dans le temps</>}>
-              {entity.timeline.map((t, i) => (
-                <button className="memory-date" key={i} onClick={() => locate(t)}>
+            <AnimatedDetails open summary={<>{t('Repères dans le temps')}</>}>
+              {entity.timeline.map((entry, i) => (
+                <button className="memory-date" key={i} onClick={() => locate(entry)}>
                   <span>
-                    {t.approximate ? 'Vers ' : ''}
-                    {t.date}
+                    {entry.approximate ? t('Vers ') : ''}
+                    {entry.date}
                   </span>
-                  <span>{t.text}</span>
+                  <span>{entry.text}</span>
                 </button>
               ))}
             </AnimatedDetails>
           )}
           <section className="enrichment">
-            <h3>Passages liés</h3>
+            <h3>{t('Passages liés')}</h3>
             {entity.passages.map((p, i) => (
               <article className="enrichment-passage" key={i}>
                 <blockquote>{p.quote}</blockquote>
                 <button className="source-link" onClick={() => locate(p)}>
-                  Rejoindre le passage
+                  {t('Rejoindre le passage')}
                 </button>
               </article>
             ))}
@@ -241,20 +244,22 @@ export function MemoryReader({
       )}
       {view.kind === 'recall' && (
         <>
-          <h2>Dans votre manuscrit</h2>
+          <h2>{t('Dans votre manuscrit')}</h2>
           <blockquote>{view.passage.quote}</blockquote>
-          <button onClick={() => locate(view.passage)}>Rejoindre le passage</button>
-          <button onClick={() => void memory.dismiss()}>Masquer ce rapprochement</button>
+          <button onClick={() => locate(view.passage)}>{t('Rejoindre le passage')}</button>
+          <button onClick={() => void memory.dismiss()}>{t('Masquer ce rapprochement')}</button>
         </>
       )}
       {view.kind === 'evidence' && (
         <>
           <h2>{view.evidence.title}</h2>
           <p className="hint">
-            Passage à confronter à votre texte. Ce rapprochement ne constitue pas une confirmation.
+            {t(
+              'Passage à confronter à votre texte. Ce rapprochement ne constitue pas une confirmation.',
+            )}
           </p>
           <blockquote>{view.evidence.quote}</blockquote>
-          {view.evidence.page && <p className="hint">Page {view.evidence.page}</p>}
+          {view.evidence.page && <p className="hint">{t('Page {0}', { 0: view.evidence.page })}</p>}
           <button
             onClick={() =>
               void readSource(
@@ -265,19 +270,21 @@ export function MemoryReader({
               )
             }
           >
-            Lire dans la source
+            {t('Lire dans la source')}
           </button>
-          <button onClick={() => void memory.dismiss()}>Masquer ce rapprochement</button>
+          <button onClick={() => void memory.dismiss()}>{t('Masquer ce rapprochement')}</button>
         </>
       )}
       {view.kind === 'resume' && (
         <div className="resume-content">
-          <h2 aria-hidden={projectMenuOpen || writingMenuOpen}>Reprendre le fil</h2>
+          <h2 aria-hidden={projectMenuOpen || writingMenuOpen}>{t('Reprendre le fil')}</h2>
           {resume?.section ? (
             <>
               <div className="resume-entry resume-current">
-                <span className="resume-kicker">Dernier passage travaillé</span>
-                <p className="resume-section">{currentSection?.title ?? 'Passage du manuscrit'}</p>
+                <span className="resume-kicker">{t('Dernier passage travaillé')}</span>
+                <p className="resume-section">
+                  {currentSection?.title ?? t('Passage du manuscrit')}
+                </p>
                 {currentExcerpt && <blockquote>{currentExcerpt}</blockquote>}
                 <button
                   className="resume-primary"
@@ -286,7 +293,7 @@ export function MemoryReader({
                     void workspace.locatePassage(resume.section, resume.node, '', resume);
                   }}
                 >
-                  Continuer ici
+                  {t('Continuer ici')}
                 </button>
               </div>
               {resume.sourceId &&
@@ -297,21 +304,21 @@ export function MemoryReader({
                     className="resume-entry resume-secondary"
                     onClick={() => void readSource(resume.sourceId!, resume.sourcePage ?? null)}
                   >
-                    <span className="resume-kicker">Dernière source consultée</span>
+                    <span className="resume-kicker">{t('Dernière source consultée')}</span>
                     <strong>{resumeSource.source.title}</strong>
                   </button>
                 )}
               {previous && (
                 <button className="resume-entry resume-secondary" onClick={() => locate(previous)}>
-                  <span className="resume-kicker">Passage précédent</span>
-                  <strong>{previousSection?.title ?? 'Passage du manuscrit'}</strong>
+                  <span className="resume-kicker">{t('Passage précédent')}</span>
+                  <strong>{previousSection?.title ?? t('Passage du manuscrit')}</strong>
                   {previousExcerpt && <span className="resume-quote">{previousExcerpt}</span>}
                 </button>
               )}
             </>
           ) : (
             <p className="hint">
-              Le contexte de cette session sera conservé pendant votre travail.
+              {t('Le contexte de cette session sera conservé pendant votre travail.')}
             </p>
           )}
         </div>

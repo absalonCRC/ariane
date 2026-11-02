@@ -1,3 +1,4 @@
+import { t, getLocale } from '../i18n';
 import { syntaxTree } from '@codemirror/language';
 import {
   Decoration,
@@ -18,6 +19,7 @@ const delimiters = new Set([
   'LinkMark',
 ]);
 class FootnoteMarker extends WidgetType {
+  readonly locale = getLocale();
   constructor(
     readonly id: string,
     readonly definition: boolean,
@@ -25,16 +27,20 @@ class FootnoteMarker extends WidgetType {
     super();
   }
   eq(other: FootnoteMarker) {
-    return other.id === this.id && other.definition === this.definition;
+    return (
+      other.locale === this.locale && other.id === this.id && other.definition === this.definition
+    );
   }
   toDOM(view: EditorView) {
     const marker = document.createElement('sup');
     marker.className = 'footnote-marker';
     marker.textContent = '†';
-    marker.dataset.tooltip = this.definition ? 'Référence de la source' : 'Lire la note de source';
+    marker.dataset.tooltip = this.definition
+      ? t('Référence de la source')
+      : t('Lire la note de source');
     if (!this.definition) {
       marker.setAttribute('role', 'button');
-      marker.setAttribute('aria-label', 'Lire la note de source');
+      marker.setAttribute('aria-label', t('Lire la note de source'));
       marker.tabIndex = 0;
       const open = () => {
         const pos = view.state.doc.toString().indexOf(`[^${this.id}]:`);
@@ -61,7 +67,12 @@ const inlineMarkdown = ViewPlugin.fromClass(
       this.decorations = this.build(view);
     }
     update(u: ViewUpdate) {
-      if (u.docChanged || u.selectionSet || u.viewportChanged)
+      if (
+        u.docChanged ||
+        u.selectionSet ||
+        u.viewportChanged ||
+        u.transactions.some((tr) => tr.reconfigured)
+      )
         this.decorations = this.build(u.view);
     }
     build(view: EditorView) {

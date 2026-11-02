@@ -1,3 +1,4 @@
+import { t, useLocale, localeTag } from '../i18n';
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import { AlignLeft, CaseSensitive, Play, Pause, RotateCcw, WholeWord } from 'lucide-react';
 import { usePomodoro } from '../timer/usePomodoro';
@@ -22,6 +23,7 @@ export function WritingCounter({
   mode: Mode;
   onChange: (mode: Mode) => void;
 }) {
+  useLocale();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const pointerDown = useRef(false);
@@ -59,7 +61,11 @@ export function WritingCounter({
   }, []);
   const { timer, ms, toggle, reset } = usePomodoro();
   const phase =
-    timer.phase === 'focus' ? 'Concentration' : timer.phase === 'break' ? 'Pause' : 'Pause longue';
+    timer.phase === 'focus'
+      ? t('Concentration')
+      : timer.phase === 'break'
+        ? t('Pause')
+        : t('Pause longue');
   const running = timer.deadline !== null;
   const started = running || timer.completed > 0 || timer.remainingMs !== durations.focus;
   const progress = Math.max(0, Math.min(1, 1 - ms / durations[timer.phase]));
@@ -69,24 +75,32 @@ export function WritingCounter({
   const unit =
     mode === 'characters'
       ? count === 1
-        ? 'caractère'
-        : 'caractères'
+        ? t('caractère')
+        : t('caractères')
       : mode === 'lines'
         ? count === 1
-          ? 'ligne'
-          : 'lignes'
+          ? t('ligne')
+          : t('lignes')
         : count === 1
-          ? 'mot'
-          : 'mots';
+          ? t('mot')
+          : t('mots');
   const noteCount =
-    notesStatus === 'loading' ? '…' : notesStatus === 'error' ? '—' : notes.toLocaleString('fr-FR');
-  const noteUnit = notesStatus === 'ready' && notes === 1 ? 'note' : 'notes';
+    notesStatus === 'loading'
+      ? '…'
+      : notesStatus === 'error'
+        ? '—'
+        : notes.toLocaleString(localeTag());
+  const noteUnit = notesStatus === 'ready' && notes === 1 ? t('note') : t('notes');
   const noteDescription =
     notesStatus === 'loading'
-      ? 'Recherche des notes du vault en cours'
+      ? t('Recherche des notes du vault en cours')
       : notesStatus === 'error'
-        ? 'Nombre de notes du vault indisponible'
-        : `${noteCount} ${noteUnit} du vault ${notes === 1 ? 'suggérée' : 'suggérées'} pour le passage affiché`;
+        ? t('Nombre de notes du vault indisponible')
+        : t('{0} {1} du vault {2} pour le passage affiché', {
+            0: noteCount,
+            1: noteUnit,
+            2: notes === 1 ? t('suggérée') : t('suggérées'),
+          });
   return (
     <div
       ref={root}
@@ -124,20 +138,20 @@ export function WritingCounter({
     >
       <button
         className="counter-value"
-        data-hint="Compteur et minuteur · survoler ou cliquer"
-        aria-description="Compteur et minuteur · survoler ou cliquer"
-        aria-label={`${count.toLocaleString('fr-FR')} ${unit} · ${noteDescription}${started ? ` · ${phase} ${formatTime(ms)}${running ? '' : ' en pause'}` : ''} · Ouvrir la barre`}
+        data-hint={t('Compteur et minuteur · survoler ou cliquer')}
+        aria-description={t('Compteur et minuteur · survoler ou cliquer')}
+        aria-label={`${count.toLocaleString(localeTag())} ${unit} · ${noteDescription}${started ? ` · ${phase} ${formatTime(ms)}${running ? '' : t(' en pause')}` : ''} · ${t('Ouvrir la barre')}`}
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen(true)}
       >
-        {count.toLocaleString('fr-FR')} {unit}
+        {count.toLocaleString(localeTag())} {unit}
         {' · '}
         {noteCount} {noteUnit}
         {started && (
           <span className="counter-timer-inline" aria-hidden="true">
             {' '}
-            · {timer.phase !== 'focus' ? 'pause ' : ''}
+            · {timer.phase !== 'focus' ? t('pause ') : ''}
             {formatTime(ms)}
           </span>
         )}
@@ -146,15 +160,15 @@ export function WritingCounter({
         id={id}
         className="counter-choices"
         role="toolbar"
-        aria-label="Compteur et Pomodoro"
+        aria-label={t('Compteur et Pomodoro')}
         aria-hidden={!open}
         inert={!open}
       >
         {(
           [
-            ['characters', 'Caractères', CaseSensitive],
-            ['words', 'Mots', WholeWord],
-            ['lines', 'Lignes', AlignLeft],
+            ['characters', t('Caractères'), CaseSensitive],
+            ['words', t('Mots'), WholeWord],
+            ['lines', t('Lignes'), AlignLeft],
           ] as const
         ).map(([value, label, Icon]) => (
           <button
@@ -177,14 +191,14 @@ export function WritingCounter({
         </span>
         <button
           className="pomodoro-action"
-          aria-label={running ? 'Mettre le minuteur en pause' : 'Démarrer le minuteur'}
+          aria-label={running ? t('Mettre le minuteur en pause') : t('Démarrer le minuteur')}
           onClick={toggle}
         >
           {running ? <Pause size={12} /> : <Play size={12} />}
         </button>
         <button
           className="pomodoro-action"
-          aria-label="Recommencer le cycle Pomodoro"
+          aria-label={t('Recommencer le cycle Pomodoro')}
           onClick={reset}
         >
           <RotateCcw size={12} />

@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale } from '../i18n';
 import { usePanelFocus } from '../components/usePanelFocus';
 import { SourceOccurrences } from './SourceOccurrences';
 import type { SourceOccurrence } from './occurrences';
@@ -34,6 +35,7 @@ export function Reader({
   onCite?: (quote: string) => unknown;
   onLocate: (section: string, node: string | null, quote: string) => void;
 }) {
+  useLocale();
   const openMenu = useContextMenu();
   const panel = useRef<HTMLElement>(null);
   usePanelFocus(panel, true);
@@ -79,7 +81,7 @@ export function Reader({
         }
       }}
       className="reader"
-      aria-label="Source complète"
+      aria-label={t('Source complète')}
       onContextMenu={(event) => {
         if ((event.target as HTMLElement).closest('input, textarea, select, iframe, img')) return;
         const quote = selectedSourceText(event.currentTarget);
@@ -87,8 +89,8 @@ export function Reader({
       }}
     >
       <div className="panel-top">
-        <span>SOURCE · LECTURE SEULE</span>
-        <button className="icon-button" aria-label="Fermer la source" onClick={onClose}>
+        <span>{t('SOURCE · LECTURE SEULE')}</span>
+        <button className="icon-button" aria-label={t('Fermer la source')} onClick={onClose}>
           <X size={16} />
         </button>
       </div>
@@ -100,12 +102,12 @@ export function Reader({
             {s.selectedExcerpt}
           </blockquote>
         )}
-        {error && <p className="error-text">{error}</p>}
+        {error && <p className="error-text">{localizeMessage(error)}</p>}
         {s.kind === 'PDF' ? (
           url ? (
             <iframe title={s.title} src={url + '#page=' + (s.page || 1)} />
           ) : (
-            <p className="hint">Ouverture du PDF…</p>
+            <p className="hint">{t('Ouverture du PDF…')}</p>
           )
         ) : s.kind === 'Image' ? (
           url && <img className="attachment" alt={s.title} src={url} />
@@ -127,7 +129,7 @@ export function Reader({
           <dl className="enrichment-fields reader-fields">
             {fields.map(([key, value]) => (
               <div key={key}>
-                <dt>{key}</dt>
+                <dt>{t(key)}</dt>
                 <dd>
                   {Array.isArray(value)
                     ? value.join(', ')
