@@ -1,6 +1,6 @@
 # Journal des changements
 
-## 0.2.0-alpha.1 — 2026-11-02, préversion sources
+## 0.2.0-alpha.1 — 2026-11-02, version de développement
 
 - Interface disponible en français, anglais et espagnol, avec choix de langue mémorisé.
 - Présentation GitHub en anglais, huit captures natives, film de 46 secondes et projet de démonstration fictif réutilisable.
@@ -11,7 +11,7 @@
 - Import de manuscrits Markdown, DOCX et TextBundle.
 - Organisation des textes dans la bibliothèque, textes de travail hors manuscrit, comparaison et reprise de passages entre versions.
 
-## 0.1.0-alpha.1 — non publiée
+## 0.1.0-alpha.1 — version de développement
 
 Première alpha prévue pour macOS 26+ sur Apple Silicon.
 

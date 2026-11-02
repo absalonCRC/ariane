@@ -10,7 +10,7 @@ The revised 46-second film combines native screenshots, original typographic ani
 
 All people, institutions, interviews and observations in the demo are fictional. The [portable Markdown material](../../examples/the-human-thread) is included in this repository. The complete native project, high-quality film master and editable production files are kept in the local Ariane Showcase folder.
 
-`ariane-film.mp4` is the lightweight 720p/30 fps web copy. The release also includes the 1080p/60 fps master. `film-poster.jpg` is a separate poster; the README leads with the writing page. The film is understandable with sound off; all product claims are on screen. The README does not autoplay animation.
+`ariane-film.mp4` is the lightweight 720p/30 fps web copy. The 1080p/60 fps master is kept in the local production folder; GitHub releases have been removed. `film-poster.jpg` is a separate poster; the README leads with the writing page. The film is understandable with sound off; all product claims are on screen. The README does not autoplay animation.
 
 The light wordmark preserves the original logo’s alpha silhouette with a light fill, for contrast in GitHub’s dark theme.
 

@@ -74,7 +74,7 @@ The project stays local in SQLite with readable Markdown mirrors. Ariane detects
 
 ## See Ariane in action
 
-**[Watch the film · 46 seconds](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)** · [Download the 1080p/60 fps version](https://github.com/absalonCRC/ariane/releases/download/v0.2.0-alpha.1/Ariane-The-Human-Thread-1080p60.mp4)
+**[Watch the film · 46 seconds](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)**
 
 The presentation uses **0.2.0-alpha.1 running natively on macOS**. Product details are enlarged from real captures. *The Human Thread* is a fictional essay about AI and authorship, with four chapters, eight pages, ten research notes and two sample drafts. All people, institutions and interviews are invented.
 
@@ -92,7 +92,7 @@ Ariane is for novels, essays, documented narratives, theses and any long-form wo
 
 **Ariane 0.2.0-alpha.1 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
 
-[Current source-only prerelease: 0.2.0-alpha.1](https://github.com/absalonCRC/ariane/releases/tag/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md)
+There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Browse the source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md)
 
 <details>
 <summary>Build from source</summary>
