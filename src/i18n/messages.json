@@ -83,6 +83,14 @@
     "Collapse",
     "Contraer"
   ],
+  "Afficher les {0} autres sources": [
+    "Show the other {0} sources",
+    "Mostrar las otras {0} fuentes"
+  ],
+  "Ligne {0}, colonne {1}": [
+    "Row {0}, column {1}",
+    "Fila {0}, columna {1}"
+  ],
   "Réduire les sources": [
     "Collapse sources",
     "Contraer las fuentes"

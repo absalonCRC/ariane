@@ -402,8 +402,8 @@ export function History(p: Props) {
                       </option>
                     ))}
                   </select>
-                  <span className="diff-stat-add">+{added} mots</span>
-                  <span className="diff-stat-remove">−{removed} mots</span>
+                  <span className="diff-stat-add">{t('+{0} mots', { 0: added })}</span>
+                  <span className="diff-stat-remove">{t('−{0} mots', { 0: removed })}</span>
                 </div>
                 <div className="history-diff-tools">
                   <div

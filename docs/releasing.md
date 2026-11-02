@@ -1,6 +1,6 @@
 # Préparer une release
 
-La version en cours de développement est `0.2.0-alpha.1`, macOS 26+, arm64. Le dépôt et la CI ne publient rien automatiquement.
+La préversion sources `0.2.0-alpha.1` cible macOS 26+, arm64. Les [notes de version](release-notes-0.2.0-alpha.1.md) décrivent les nouveautés et les fichiers publiés. Le dépôt et la CI ne publient rien automatiquement.
 
 ## Paquet local sans compte Apple payant
 

@@ -334,7 +334,10 @@ class TableWidget extends WidgetType {
       for (const [rowIndex, row] of renderedCells().entries())
         for (const [columnIndex, cell] of row.entries()) {
           cell.tabIndex = view.state.readOnly ? -1 : 0;
-          cell.setAttribute('aria-label', `Ligne ${rowIndex + 1}, colonne ${columnIndex + 1}`);
+          cell.setAttribute(
+            'aria-label',
+            t('Ligne {0}, colonne {1}', { 0: rowIndex + 1, 1: columnIndex + 1 }),
+          );
         }
     };
     wrapper.addEventListener('mousedown', (event) => {

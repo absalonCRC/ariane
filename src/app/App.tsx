@@ -607,7 +607,7 @@ export function App() {
                     aria-label={
                       groupOpen === g.id
                         ? t('Réduire les sources')
-                        : `Afficher les ${g.sources.length - 2} autres sources`
+                        : t('Afficher les {0} autres sources', { 0: g.sources.length - 2 })
                     }
                     onClick={() => setGroupOpen(groupOpen === g.id ? null : g.id)}
                   >

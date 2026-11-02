@@ -6,6 +6,7 @@ import type { Project, Section, Version } from '../src/app/types';
 const request = vi.hoisted(() => vi.fn());
 vi.mock('../src/app/client', () => ({ request }));
 import { History } from '../src/history/History';
+import { setLocale } from '../src/i18n';
 const scene: Section = {
   id: 'a',
   title: 'Le quai',
@@ -64,6 +65,7 @@ afterEach(async () => {
   await act(async () => root.unmount());
   host.remove();
   toolsHost.remove();
+  setLocale('fr');
 });
 async function render() {
   await act(async () =>
@@ -86,6 +88,21 @@ const button = (text: string) =>
   [...host.querySelectorAll('button'), ...toolsHost.querySelectorAll('button')].find((b) =>
     b.textContent?.includes(text),
   )!;
+it.each([
+  ['en', 'words'],
+  ['es', 'palabras'],
+  ['fr', 'mots'],
+] as const)(
+  'localizes comparison counts in %s without translating the draft',
+  async (locale, unit) => {
+    setLocale(locale);
+    await render();
+    expect(host.querySelector('.diff-stat-add')?.textContent).toBe(`+1 ${unit}`);
+    expect(host.querySelector('.diff-stat-remove')?.textContent).toBe(`−1 ${unit}`);
+    expect(host.querySelector('del')?.textContent).toBe('attend');
+    expect(host.querySelector('ins')?.textContent).toBe('revient');
+  },
+);
 it('renders inside the editor and backs up before applying a word-level passage', async () => {
   await render();
   expect(host.querySelector('section.history-editor')).not.toBeNull();

@@ -47,3 +47,7 @@ src/assets/*
 !docs/media/
 !docs/media/ecriture.png
 !docs/media/source.png
+# Public 0.2 presentation assets and media provenance.
+!docs/media/*.jpg
+!docs/media/ariane-film.mp4
+!docs/media/README.md

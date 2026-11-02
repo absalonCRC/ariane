@@ -1,8 +1,10 @@
 # Journal des changements
 
-## 0.2.0-alpha.1 — 2026-11-02, non publiée
+## 0.2.0-alpha.1 — 2026-11-02, préversion sources
 
 - Interface disponible en français, anglais et espagnol, avec choix de langue mémorisé.
+- Présentation GitHub en anglais, huit captures natives, film de 46 secondes et projet de démonstration fictif réutilisable.
+- Traductions complétées pour les compteurs de comparaison et les libellés accessibles des sources et tableaux.
 - Espace d’écriture remanié : bibliothèque repliable, accès aux outils, notifications dans le titre et infobulles communes.
 - Réglages de largeur et d’interligne, aperçus des modes de concentration et de défilement.
 - Tableaux Markdown modifiables, navigation dans les sources et distinction entre citations et mentions.
