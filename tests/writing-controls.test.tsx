@@ -6,6 +6,7 @@ import { WritingModes } from '../src/components/WritingModes';
 import { DepthControl } from '../src/components/DepthControl';
 import { Settings } from '../src/app/Settings';
 import { defaultSettings } from '../src/app/types';
+import { ControlHints } from '../src/components/ControlHints';
 
 let host: HTMLDivElement;
 let root: ReturnType<typeof createRoot>;
@@ -23,28 +24,38 @@ afterEach(async () => {
 });
 it('previews on pointer and keyboard focus without applying the setting', async () => {
   const change = vi.fn();
-  await act(async () => root.render(<WritingModes value={defaultSettings} onChange={change} />));
-  const phrase = [...host.querySelectorAll('button')].find(
-    (button) => button.textContent === 'Phrase',
-  )!;
-  await act(async () => phrase.dispatchEvent(new MouseEvent('pointerover', { bubbles: true })));
-  expect(document.querySelector('[role="tooltip"]')?.textContent).toContain(
-    'Seule la phrase active',
+  const preview = vi.fn();
+  await act(async () =>
+    root.render(
+      <>
+        <ControlHints />
+        <WritingModes value={defaultSettings} onChange={change} onFocusPreview={preview} />
+      </>,
+    ),
   );
+  const phrase = host.querySelector<HTMLButtonElement>('button[aria-label="Phrase"]')!;
+  expect(phrase).not.toBeNull();
+  expect(phrase.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+  expect(phrase.textContent).toBe('');
+  await act(async () => phrase.dispatchEvent(new MouseEvent('pointerover', { bubbles: true })));
+  expect(preview).toHaveBeenLastCalledWith('sentence');
+  await act(async () => new Promise((resolve) => setTimeout(resolve, 400)));
+  expect(document.querySelector('[role="tooltip"]')?.textContent).toBe('Phrase');
   expect(change).not.toHaveBeenCalled();
   await act(async () =>
     phrase.dispatchEvent(
       new MouseEvent('pointerout', { bubbles: true, relatedTarget: document.body }),
     ),
   );
+  expect(preview).toHaveBeenLastCalledWith(null);
   expect(document.querySelector('[role="tooltip"]')).toBeNull();
   await act(async () => phrase.focus());
-  expect(document.querySelector('[role="tooltip"]')).not.toBeNull();
+  expect(preview).toHaveBeenLastCalledWith('sentence');
   expect(change).not.toHaveBeenCalled();
   await act(async () =>
     phrase.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })),
   );
-  expect(document.querySelector('[role="tooltip"]')).toBeNull();
+  expect(preview).toHaveBeenLastCalledWith(null);
   expect(document.activeElement).toBe(phrase);
   await act(async () => phrase.click());
   expect(change).toHaveBeenCalledWith({ focus: 'sentence' });

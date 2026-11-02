@@ -24,6 +24,8 @@
     "@codemirror/state": "^6",
     "@codemirror/view": "^6",
     "@fontsource/eb-garamond": "^5",
+    "@fontsource/figtree": "^5.3.0",
+    "@fontsource/source-code-pro": "^5.3.1",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2",
     "diff": "^8",

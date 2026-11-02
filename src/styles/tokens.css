@@ -9,6 +9,9 @@
   --surface: var(--theme-paper, #fafafa);
   --literary: 'EB Garamond', Georgia, serif;
   --mono: 'SFMono-Regular', Menlo, monospace;
+  --writing-serif: var(--literary);
+  --writing-sans: 'Figtree', sans-serif;
+  --writing-mono: 'Source Code Pro', monospace;
   --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --writing-size: 23px;
   --sidebar-width: 285px;

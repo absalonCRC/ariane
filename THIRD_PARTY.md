@@ -13,7 +13,10 @@ La GPL-3.0-only d’Ariane couvre son code original. Elle ne remplace pas les li
 | GMP | 6.3.0 | LGPL-3.0-or-later ou GPL-2.0-or-later |
 | EmbeddingGemma 300M Q8 GGUF | Révision et SHA-256 dans `resources.lock.json` | Conditions Gemma, pas Apache-2.0 |
 | EB Garamond | Version Fontsource dans `package-lock.json` | SIL Open Font License 1.1 |
+| Figtree, Source Code Pro | Versions Fontsource dans `package-lock.json` | SIL Open Font License 1.1 |
 | Styles APA et Chicago | Fichiers CSL et notices embarqués | CC BY-SA, voir les en-têtes |
+| Sons de frappe de machine à écrire | Extraits adaptés de Joseph Sardin : [touche](https://bigsoundbank.com/typewriter-key-s2842.html), [espace](https://bigsoundbank.com/typewriter-space-s2843.html) et [frappe](https://bigsoundbank.com/typewriter-2-s2835.html) | CC0 1.0 |
+| Son de retour du chariot | Extrait raccourci et accéléré de [ramsamba](https://freesound.org/people/ramsamba/sounds/318686/) | CC0 1.0 |
 
 Les archives natives sont téléchargées depuis le registre public Homebrew, vérifiées et relocalisées sans modification des sources amont. `native-dependencies.lock.json` conserve versions, licences déclarées, empreintes, URL des archives et sources amont. La préparation copie les notices et formules présentes dans ces archives dans `src-tauri/resources/notices/native/` et les embarque dans l’application.
 

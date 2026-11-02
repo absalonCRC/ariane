@@ -34,7 +34,7 @@ import { MemoryReader } from '../enrichment/MemoryReader';
 import { WorkspaceNotices } from './WorkspaceNotices';
 import { useTitleNotices } from './useTitleNotices';
 import { WorkspaceDialogs } from './WorkspaceDialogs';
-import type { Source } from './types';
+import type { Settings as WritingSettings, Source } from './types';
 import { countVaultNotes } from '../sources/countNotes';
 import { VoiceButton } from '../voice/VoiceButton';
 import { Settings } from './Settings';
@@ -63,6 +63,16 @@ export function App() {
   const [textSelection, setTextSelection] = useState<SelectionAnchor | null>(null);
   const [lines, setLines] = useState(1);
   const [characters, setCharacters] = useState(0);
+  const [focusPreview, setFocusPreview] = useState<WritingSettings['focus'] | null>(null);
+  const [fontPreview, setFontPreview] = useState<WritingSettings['font'] | null>(null);
+  const [scrollPreview, setScrollPreview] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (workspace.surface !== 'settings') {
+      setFocusPreview(null);
+      setFontPreview(null);
+      setScrollPreview(null);
+    }
+  }, [workspace.surface]);
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [associated, setAssociated] = useState<Set<string>>(new Set());
   const [associationVersion, setAssociationVersion] = useState(0);
@@ -276,9 +286,12 @@ export function App() {
       ref={setAppRoot}
       style={{ '--column-width': (doc.settings.columnWidth ?? 750) + 'px' } as React.CSSProperties}
       data-scrolling={scrollActivity.scrolling}
+      data-writing-font={
+        (workspace.surface === 'settings' && !workspace.historyMode ? fontPreview : null) ??
+        doc.settings.font
+      }
       className={
         'app ' +
-        (doc.settings.font === 'mono' ? 'mono ' : '') +
         (reader || (memory.view && !memory.origin) ? 'with-reader ' : '') +
         (searching ? 'searching-project ' : '') +
         (workspace.historyMode ? 'versions-mode' : '')
@@ -426,7 +439,10 @@ export function App() {
         aria-busy={workspace.libraryBusy}
         className={
           'writing-layout' +
-          (doc.settings.typewriter ? ' typewriter' : '') +
+          (((surface === 'settings' && !workspace.historyMode ? scrollPreview : null) ??
+          doc.settings.typewriter)
+            ? ' typewriter'
+            : '') +
           (binder ? ' sidebar-open' : '') +
           (workspace.historyMode ? ' history-layout' : '')
         }
@@ -461,6 +477,8 @@ export function App() {
             generation={doc.generation}
             readOnly={workspace.libraryBusy}
             settings={doc.settings}
+            focusPreview={surface === 'settings' && !workspace.historyMode ? focusPreview : null}
+            scrollPreview={surface === 'settings' && !workspace.historyMode ? scrollPreview : null}
             onSelection={setTextSelection}
             onSearchSources={(text) => setSearch(text)}
             onChange={doc.edit}
@@ -944,6 +962,9 @@ export function App() {
               open={surface === 'settings'}
               value={doc.settings}
               onChange={doc.configure}
+              onFocusPreview={setFocusPreview}
+              onFontPreview={setFontPreview}
+              onScrollPreview={setScrollPreview}
               canFormat={scenes.length > 0}
               onFormat={(format) => editor.current?.format(format)}
               onClose={() => {
