@@ -21,7 +21,7 @@ Adjust the reading width, line spacing and focus mode to suit the way you write.
 
 A name in your draft can lead back to a research note. Inspect the source, see where it appears in the manuscript, and insert a reference when it belongs in your work.
 
-![Close-up of the manuscript and the source card opened from a detected mention of Mara Vale](docs/media/sources.jpg)
+![The full Ariane window with a source card opened from a detected mention of Mara Vale](docs/media/sources.jpg)
 
 Use an existing Obsidian vault in **read-only mode**, or create a vault owned by the project. Local semantic retrieval can suggest related notes and passages. You decide what is relevant; a suggestion is not a verified claim.
 
@@ -44,9 +44,9 @@ Compare named drafts, inspect what changed and recover an individual passage. Ar
 
 Chapters, scenes and working notes sit behind the page. Reorder them, read the assembled manuscript or import writing into the open project.
 
-Inside a page, the **outliner** lets you nest ideas, move an entire branch and fold it away. A few keyboard gestures reshape the thought.
+Inside a page, the **outliner** lets you nest ideas, move an entire branch and fold it away. Drag a line above, below or inside another line, or use the keyboard to reshape the thought.
 
-![A close view of Ariane’s outliner with two ideas and their nested children](docs/media/outliner.jpg)
+![Ariane’s native outliner with a moved branch and its nested child](docs/media/outliner.jpg)
 
 **Live Markdown** renders headings, emphasis and tables while you write. Table cells remain directly editable, and the text stays portable.
 
@@ -54,7 +54,7 @@ Inside a page, the **outliner** lets you nest ideas, move an entire branch and f
 
 ## Your pace, your focus
 
-Keep the current **paragraph or sentence** in focus, or use typewriter scrolling to keep your place on the page. Follow the word, character or line count, and start a **25-minute Pomodoro** when it is time to settle into a draft. Optional **local dictation** lets you capture a thought aloud.
+Keep the current **paragraph or sentence** in focus, or use typewriter scrolling to keep your place on the page, with optional mechanical key and carriage-return sounds. Follow the word, character or line count, and start a **25-minute Pomodoro** when it is time to settle into a draft. Optional **local dictation** lets you capture a thought aloud.
 
 ![Paragraph focus in the native editor, with surrounding paragraphs softly dimmed](docs/media/focus.jpg)
 
@@ -86,11 +86,11 @@ The project stays local in SQLite with readable Markdown mirrors. Ariane detects
 
 ## See Ariane in action
 
-**[Watch the film · 48 seconds](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)**
+**[Watch the film · 89 seconds](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)**
 
-The film follows **real interactions in Ariane 0.2.0-alpha.1 on macOS**: writing, sources, live Markdown, outlining, focus, dictation controls, search, counters, Pomodoro and draft comparison. Close camera moves and an English voice-over follow each action.
+The film follows **real interactions in Ariane 0.2.0-alpha.1 on macOS**: writing, sources, live Markdown, outlining, focus, dictation controls, search, counters, Pomodoro and draft comparison. It opens on a line being typed, with Ariane’s typewriter sounds before the music begins. A male English voice-over follows the visible actions, with time to read each result.
 
-*The Human Thread* is fictional demo material about AI and authorship. The film uses a separate three-page project created for the recording. All people, institutions and interviews are invented.
+*The Human Thread* is fictional demo material about AI and authorship. The film uses dedicated demo projects created for the recordings. All people, institutions and interviews are invented.
 
 [Explore the demo material](examples/the-human-thread) · [Media provenance and film transcript](docs/media/README.md)
 
