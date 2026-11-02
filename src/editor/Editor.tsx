@@ -1,3 +1,7 @@
+import { noteCommands, type NoteRef } from './noteCommands';
+import { noteLinks, setNoteLinkData } from './noteLinks';
+import { entityMarks, entityInteractions, setEntityMarks } from './entities';
+import type { EntityBatch, SelectedEntity } from '../enrichment/entityTypes';
 import { t, useLocale } from '../i18n';
 import { editorPhrases } from '../i18n/editor';
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
@@ -14,7 +18,7 @@ import { outlineEditor, type OutlineEditor } from './outline/state';
 import { outlinePresentation } from './outline/view';
 import { prepareTextInsertion } from './insertion';
 import { analyze } from '../revision/diagnostics';
-import { sentenceFocus, paragraphFocus, focusPreviewPosition } from './focus';
+import { sentenceFocus, paragraphFocus, wordFocus, focusPreviewPosition } from './focus';
 import type { SelectionAnchor } from '../components/SelectionToolbar';
 import { useContextMenu } from '../components/ContextMenu';
 import { editorContext } from './contextMenu';
@@ -64,6 +68,15 @@ export interface EditorHandle {
 }
 interface Props {
   sections: Section[];
+  entities?: EntityBatch[];
+  onEntity?: (mention: SelectedEntity) => void;
+  noteLookup?: (query: string) => Promise<NoteRef[]>;
+  noteCreate?: (name: string, context: string) => Promise<NoteRef>;
+  noteResolve?: (ids: string[]) => Promise<NoteRef[]>;
+  sourceVersion?: number;
+  onOpenNote?: (id: string) => void;
+  onNoteError?: (error: unknown) => void;
+  projectPath?: string;
   generation: number;
   readOnly?: boolean;
   settings: Settings;
@@ -380,14 +393,39 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
         ),
         mapping.extensions,
         outline.extensions,
-        outlinePresentation(outline),
         drawSelection(),
         smoothCaret,
         markdown({ base: markdownLanguage }),
         liveMarkdown,
+        noteLinks(
+          (id) => latest.current.onOpenNote?.(id),
+          (ids) => latest.current.noteResolve?.(ids) ?? Promise.resolve([]),
+        ),
+        ...(latest.current.noteLookup && latest.current.noteCreate
+          ? [
+              noteCommands({
+                lookup: (query) => latest.current.noteLookup!(query),
+                create: (name, context) => latest.current.noteCreate!(name, context),
+                isCurrent: (candidate) => view.current === candidate,
+                onError: (error) => latest.current.onNoteError?.(error),
+              }),
+            ]
+          : []),
+        // Note validation must run before the outline Enter binding at the same precedence.
+        outlinePresentation(outline),
         ...(data.spans.length > 1 ? [sceneHeadings(mapping.field)] : []),
         highlightSelectionMatches(),
         textSearchHighlight,
+        entityMarks,
+        entityInteractions((mention) => {
+          const span = spans.current.find((s) => s.id === mention.section);
+          if (span)
+            latest.current.onEntity?.({
+              ...mention,
+              from: mention.from - span.from,
+              to: mention.to - span.from,
+            });
+        }),
         keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
         EditorView.lineWrapping,
         EditorView.scrollMargins.of((view) =>
@@ -607,7 +645,62 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       outlineRef.current = null;
       focusPreviewScroll.current = null;
     };
-  }, [props.generation, props.sections.map((s) => s.id).join(':')]);
+  }, [props.projectPath, props.generation, props.sections.map((s) => s.id).join(':')]);
+  useEffect(() => {
+    view.current?.dispatch({
+      effects: setNoteLinkData.of({
+        colors: props.settings.entityColors ?? {},
+        enabled: props.settings.entityHighlighting !== false,
+        refresh: true,
+      }),
+    });
+  }, [
+    props.settings.entityColors,
+    props.settings.entityHighlighting,
+    props.sourceVersion,
+    props.projectPath,
+    props.generation,
+    props.sections.map((s) => s.id).join(':'),
+  ]);
+  useEffect(() => {
+    const v = view.current;
+    if (!v) return;
+    const mentions: SelectedEntity[] = [];
+    if (props.settings.enrichment) {
+      for (const batch of props.entities ?? []) {
+        const span = spans.current.find((s) => s.id === batch.section);
+        if (
+          !span ||
+          v.state.sliceDoc(span.from, span.to).replace(/\n+$/, '') !==
+            batch.text.replace(/\n+$/, '')
+        )
+          continue;
+        for (const mention of batch.mentions)
+          mentions.push({
+            ...mention,
+            section: batch.section,
+            revision: batch.revision,
+            from: span.from + mention.from,
+            to: span.from + mention.to,
+          });
+      }
+    }
+    v.dispatch({
+      effects: setEntityMarks.of({
+        mentions,
+        colors: props.settings.entityColors ?? {},
+        enabled: props.settings.entityHighlighting !== false,
+      }),
+    });
+  }, [
+    props.entities,
+    props.settings.entityColors,
+    props.settings.entityHighlighting,
+    props.settings.enrichment,
+    props.generation,
+    props.sections.map((s) => s.id).join(':'),
+    locale,
+  ]);
   useEffect(() => {
     const v = view.current;
     if (!v) return;
@@ -634,7 +727,9 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
           ? [sentenceFocus(props.focusPreview != null)]
           : mode === 'paragraph'
             ? [paragraphFocus(props.focusPreview != null)]
-            : []),
+            : mode === 'word'
+              ? [wordFocus(props.focusPreview != null)]
+              : []),
         ...(visualTypewriter ? [typewriterScrolling(props.scrollPreview != null)] : []),
       ]),
     });

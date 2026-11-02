@@ -42,6 +42,7 @@
       "resources/engine/typst",
       "resources/engine/pdf-text",
       "resources/engine/memory.py",
+      "resources/engine/memory-model.txt",
       "resources/engine/checksums.json",
       "resources/engine/*.dylib",
       "resources/engine/*.so",

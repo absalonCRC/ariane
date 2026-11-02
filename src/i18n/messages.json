@@ -551,6 +551,10 @@
     "Paragraph",
     "Párrafo"
   ],
+  "Mot": [
+    "Word",
+    "Palabra"
+  ],
   "Phrase": [
     "Sentence",
     "Frase"
@@ -3750,5 +3754,125 @@
   "{0} · texte{1} de travail, hors manuscrit.": [
     "{0} · working text{1}, outside the manuscript.",
     "{0} · texto{1} de trabajo, fuera del manuscrito."
+  ],
+  "Fiche à créer": [
+    "Card to create",
+    "Ficha por crear"
+  ],
+  "Fiche existante": [
+    "Existing card",
+    "Ficha existente"
+  ],
+  "Cliquer pour consulter": [
+    "Click to view",
+    "Haz clic para consultar"
+  ],
+  "Créer une fiche dans le vault du projet, avec le passage d’origine et ses références liées.": [
+    "Create a card in the project vault, with the original passage and its linked references.",
+    "Crear una ficha en el vault del proyecto, con el pasaje original y sus referencias vinculadas."
+  ],
+  "Création…": [
+    "Creating…",
+    "Creando…"
+  ],
+  "Entités dans le texte": [
+    "Entities in the text",
+    "Entidades en el texto"
+  ],
+  "Colorer les entités reconnues": [
+    "Colour recognised entities",
+    "Colorear las entidades reconocidas"
+  ],
+  "Trait continu : fiche existante. Pointillés : fiche à créer. Cliquez sur un nom pour consulter sa fiche.": [
+    "Solid underline: existing card. Dotted underline: card to create. Click a name to view its card.",
+    "Subrayado continuo: ficha existente. Punteado: ficha por crear. Haz clic en un nombre para consultar su ficha."
+  ],
+  "Couleur · {0}": [
+    "Colour · {0}",
+    "Color · {0}"
+  ],
+  "Rétablir les couleurs": [
+    "Reset colours",
+    "Restablecer los colores"
+  ],
+  "{0} entités repérées": [
+    "{0} entities detected",
+    "{0} entidades detectadas"
+  ],
+  "Le moteur de détection des entités est indisponible.": [
+    "The entity detection engine is unavailable.",
+    "El motor de detección de entidades no está disponible."
+  ],
+  "La note a été créée. Le texte a changé ; retrouvez-la avec @.": [
+    "The note was created. The text changed; find it with @.",
+    "La nota se ha creado. El texto ha cambiado; búscala con @."
+  ],
+  "Aucune note trouvée. Utilisez + suivi du nom pour la créer.": [
+    "No note found. Use + followed by its name to create it.",
+    "No se ha encontrado ninguna nota. Usa + seguido del nombre para crearla."
+  ],
+  "Créer « {0} »": [
+    "Create “{0}”",
+    "Crear «{0}»"
+  ],
+  "Note dans le vault du projet": [
+    "Note in the project vault",
+    "Nota en el vault del proyecto"
+  ],
+  "Entrée : valider · Échap : conserver le texte": [
+    "Enter: confirm · Escape: keep text",
+    "Intro: confirmar · Escape: conservar el texto"
+  ],
+  "Ouvrir la note « {0} »": [
+    "Open note “{0}”",
+    "Abrir la nota «{0}»"
+  ],
+  "La couleur indique le type. Cliquez sur un nom pour consulter sa fiche ou la créer.": [
+    "Colour indicates the type. Click a name to open or create its note.",
+    "El color indica el tipo. Haz clic en un nombre para abrir o crear su nota."
+  ],
+  "Classer automatiquement les nouvelles notes": [
+    "Automatically classify new notes",
+    "Clasificar automáticamente las notas nuevas"
+  ],
+  "Classification locale selon les types, descriptions et exemples ci-dessous. Les cas incertains restent de type Note.": [
+    "Local classification using the types, descriptions and examples below. Uncertain cases remain Notes.",
+    "Clasificación local según los tipos, descripciones y ejemplos siguientes. Los casos inciertos permanecen como Nota."
+  ],
+  "Utiliser ce type pour la classification": [
+    "Use this type for classification",
+    "Usar este tipo para clasificar"
+  ],
+  "Définition · {0}": [
+    "Definition · {0}",
+    "Definición · {0}"
+  ],
+  "Exemples · {0}": [
+    "Examples · {0}",
+    "Ejemplos · {0}"
+  ],
+  "Noms séparés par des virgules": [
+    "Names separated by commas",
+    "Nombres separados por comas"
+  ],
+  "Nouveau type d’entité": [
+    "New entity type",
+    "Nuevo tipo de entidad"
+  ],
+  "Ajouter ce type": [
+    "Add this type",
+    "Añadir este tipo"
+  ],
+  "Choisissez un nom de type unique.": [
+    "Choose a unique type name.",
+    "Elige un nombre de tipo único."
+  ],
+  "Vous pouvez définir jusqu’à 64 types.": [
+    "You can define up to 64 types.",
+    "Puedes definir hasta 64 tipos."
+  ],
+  "Désactivé": [
+    "Disabled",
+    "Desactivado"
   ]
 }

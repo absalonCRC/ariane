@@ -17,6 +17,7 @@
     "test:packaging": "python3 -m unittest discover -s scripts/tests -v"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "^6.20.4",
     "@codemirror/commands": "^6",
     "@codemirror/lang-markdown": "^6",
     "@codemirror/language": "^6",

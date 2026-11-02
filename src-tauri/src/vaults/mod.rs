@@ -1,3 +1,7 @@
+mod classification;
+pub use classification::{classification_types, example_type, predicted_type, apply_note_type};
+mod notes;
+pub use notes::{create_quick_note, suggest_notes, note_references};
 mod browse;
 pub use browse::browse;
 pub mod parse;
@@ -351,6 +355,58 @@ pub fn index(
     }
     Ok(serde_json::json!({"indexed":indexed,"errors":errors,"semantic":semantic}))
 }
+/// Make a newly created project fiche available immediately, without a model or
+/// a full vault scan. The regular indexer can add vectors later.
+pub fn index_created_entity(root: &Path, index: &Path, path: &Path) -> Result<Source> {
+    let vault = list(root, index)?
+        .into_iter()
+        .find(|v| v.owned && v.available)
+        .ok_or("Vault du projet introuvable.")?;
+    let relative = path
+        .strip_prefix(&vault.path)
+        .map_err(|e| e.to_string())?
+        .to_string_lossy();
+    let bytes = fs::read(path).app()?;
+    let mut source = parse::parse(&vault.id, &relative, &String::from_utf8_lossy(&bytes));
+    let hash = project::hash(&format!(
+        "{}:{:x}",
+        bytes.len(),
+        <sha2::Sha256 as sha2::Digest>::digest(&bytes)
+    ));
+    source.fingerprint = hash.clone();
+    let mut c = index_db(index)?;
+    let tx = c.transaction().app()?;
+    tx.execute(
+        "INSERT OR REPLACE INTO sources(id,vault,path,hash,payload) VALUES(?,?,?,?,?)",
+        params![
+            source.id,
+            vault.id,
+            relative,
+            hash,
+            serde_json::to_string(&source).app()?
+        ],
+    )
+    .app()?;
+    tx.execute("DELETE FROM chunks WHERE source=?", [&source.id])
+        .app()?;
+    tx.execute("DELETE FROM search WHERE source=?", [&source.id])
+        .app()?;
+    for chunk in parse::chunks(&source.text) {
+        tx.execute(
+            "INSERT INTO chunks(source,text) VALUES(?,?)",
+            params![source.id, chunk],
+        )
+        .app()?;
+        tx.execute(
+            "INSERT INTO search(text,source) VALUES(?,?)",
+            params![chunk, source.id],
+        )
+        .app()?;
+    }
+    tx.commit().app()?;
+    Ok(source)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

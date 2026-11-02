@@ -1,3 +1,4 @@
+import { EntityColorToggle } from '../components/EntityColorToggle';
 import { t, useLocale } from '../i18n';
 import { useRef } from 'react';
 import { usePanelFocus } from '../components/usePanelFocus';
@@ -89,6 +90,7 @@ export function Settings({
           />
         </label>
       )}
+      <EntityColorToggle value={value} onChange={onChange} compact />
       <ReadingComfort value={value} onChange={onChange} />
     </section>
   );

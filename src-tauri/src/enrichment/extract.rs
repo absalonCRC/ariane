@@ -161,6 +161,25 @@ impl<'a> Catalog<'a> {
             })
             .collect()
     }
+    /// Exact, unambiguous catalog names with byte offsets in the original text.
+    pub(crate) fn inline_mentions(&self, text: &str) -> Vec<(usize, usize, usize)> {
+        let folded = Folded::new(text);
+        self.mentions(&folded.text)
+            .into_iter()
+            .filter_map(|mention| {
+                let owner = mention.owner?;
+                let start = folded.positions.get(mention.start)?.0;
+                let mut end = folded.positions.get(mention.end.checked_sub(1)?)?.1;
+                // Keep trailing decomposed accents attached to the marked name.
+                end += text[end..]
+                    .chars()
+                    .take_while(|c| unicode_normalization::char::is_combining_mark(*c))
+                    .map(char::len_utf8)
+                    .sum::<usize>();
+                Some((start, end, owner))
+            })
+            .collect()
+    }
     pub fn extract(&self, section: &str, text: &str, fence: &mut Option<char>) -> Vec<Evidence> {
         let mut out = vec![];
         let mut seen = HashSet::new();

@@ -8,8 +8,9 @@ function FocusModeIcon({ mode }: { mode: FocusMode }) {
     <svg viewBox="0 0 24 20" width="20" height="18" fill="none" aria-hidden="true">
       <g stroke="currentColor" strokeLinecap="round" strokeWidth="1.5">
         <path d="M3 3.5h18M3 7h14" opacity={mode === 'none' ? 1 : 0.32} />
-        <path d="M3 12h18M3 15.5h14" opacity={mode === 'sentence' ? 0.32 : 1} />
+        <path d="M3 12h18M3 15.5h14" opacity={mode === 'sentence' || mode === 'word' ? 0.32 : 1} />
         {mode === 'sentence' && <path d="M3 12h11" strokeWidth="2.2" />}
+        {mode === 'word' && <path d="M3 12h4" strokeWidth="2.2" />}
       </g>
     </svg>
   );
@@ -47,6 +48,7 @@ export function WritingModes({
               ['none', 'Aucune'],
               ['paragraph', 'Paragraphe'],
               ['sentence', 'Phrase'],
+              ['word', 'Mot'],
             ] as const
           ).map(([mode, label]) => (
             <PreviewButton

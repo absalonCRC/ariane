@@ -1,6 +1,6 @@
 use super::*;
 
-pub const NER_MODEL: &str = "fastino/gliner2-multi-v1@ce747d7+qnnpack-v3:entities-v1";
+pub const NER_MODEL: &str = "fastino/gliner2-multi-v1@ce747d7+qnnpack-v3:entities-v2";
 
 // Separate progress from embeddings: switching Gemma versions must not rerun
 // GLiNER, and an entity result must never overwrite a semantic vector.
