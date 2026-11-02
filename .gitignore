@@ -51,3 +51,4 @@ src/assets/*
 !docs/media/*.jpg
 !docs/media/ariane-film.mp4
 !docs/media/README.md
+!docs/media/ariane-wordmark-light.png

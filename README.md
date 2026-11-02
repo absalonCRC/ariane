@@ -1,5 +1,8 @@
 <div align="center">
-  <img src="src/assets/ariane-wordmark-lowercase.png" alt="ariane" width="230">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/media/ariane-wordmark-light.png">
+    <img src="src/assets/ariane-wordmark-lowercase.png" alt="ariane" width="230">
+  </picture>
   <p><strong>Keep the human thread.</strong></p>
   <p>A quiet, local space for your manuscript and the knowledge around it.</p>
   <p>English · Français · Español</p>
