@@ -155,7 +155,7 @@ pub fn sync_idle(
 ) -> Result<()> {
     let mut c = storage::database(root)?;
     let metadata: Vec<(String, i64, String, String, String)> = {
-        let mut q=c.prepare("SELECT id,revision,mirror,COALESCE(outline,''),title FROM sections WHERE kind='scene'").app()?;
+        let mut q=c.prepare("SELECT id,revision,mirror,COALESCE(outline,''),title FROM sections WHERE kind='scene' AND trashed=0").app()?;
         let rows = q
             .query_map([], |r| {
                 Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?))

@@ -1,3 +1,4 @@
+import { usePanelFocus } from '../components/usePanelFocus';
 import { AnimatedDetails } from '../components/AnimatedDetails';
 import { usePresenceValue } from '../components/Presence';
 import { useSharedPanel } from '../components/useSharedPanel';
@@ -7,7 +8,10 @@ import { X } from 'lucide-react';
 import { request } from '../app/client';
 import type { Workspace } from '../app/useWorkspace';
 import type { Source } from '../app/types';
+import { compose } from '../editor/composite';
 import type { MemoryController, MemoryEntity, MemoryPassage } from './useMemory';
+import { passageExcerpt } from './excerpts';
+import './memory-refinements.css';
 
 interface EntityDetail extends MemoryEntity {
   passages: MemoryPassage[];
@@ -36,6 +40,7 @@ export function MemoryReader({
   const [entity, setEntity] = useState<EntityDetail | null>(null);
   const [entities, setEntities] = useState<MemoryEntity[]>([]);
   const [error, setError] = useState('');
+  const [resumeSource, setResumeSource] = useState<{ source: Source; path: string } | null>(null);
   const shown = usePresenceValue(
     useMemo(
       () => (memory.view ? { view: memory.view, origin: memory.origin } : null),
@@ -46,6 +51,7 @@ export function MemoryReader({
   const origin = shown.value?.origin;
   const floating = !!origin;
   const panel = useSharedPanel(origin, floating && view ? view.kind : null, memory.close);
+  usePanelFocus(panel, !!view && !floating && !shown.exiting);
   useResumeLayout(panel, view?.kind === 'resume', projectMenuOpen, writingMenuOpen);
   const path = workspace.p?.path;
   useEffect(() => {
@@ -73,7 +79,37 @@ export function MemoryReader({
       alive = false;
     };
   }, [view, path]);
+  const sourceId = view?.kind === 'resume' ? memory.resume?.sourceId : null;
+  useEffect(() => {
+    let alive = true;
+    setResumeSource(null);
+    if (sourceId && path)
+      void request<Source>('memorySource', { id: sourceId, fingerprint: null })
+        .then((source) => {
+          if (alive && source.id === sourceId) setResumeSource({ source, path });
+        })
+        .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [sourceId, path]);
   if (!view) return null;
+  const resume = view.kind === 'resume' ? memory.resume : null;
+  const currentSection = workspace.p?.sections.find((s) => s.id === resume?.section);
+  const savedSpan =
+    resume && workspace.scenes?.length
+      ? compose(workspace.scenes).spans.find((span) => span.id === resume.section)
+      : null;
+  const currentOffset =
+    resume?.node || !savedSpan
+      ? (resume?.offset ?? 0)
+      : Math.max(0, (resume?.cursor ?? 0) - savedSpan.from);
+  const currentExcerpt = passageExcerpt(currentSection, resume?.node ?? null, currentOffset);
+  const previous = resume?.recent.find(
+    (p) => p.section !== resume.section || p.node !== resume.node,
+  );
+  const previousSection = workspace.p?.sections.find((s) => s.id === previous?.section);
+  const previousExcerpt = passageExcerpt(previousSection, previous?.node ?? null);
   const locate = (p: { section: string; node: string | null; quote?: string }) => {
     memory.close();
     void workspace.locatePassage(p.section, p.node, p.quote ?? '');
@@ -101,6 +137,13 @@ export function MemoryReader({
   return (
     <aside
       ref={panel}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          memory.close();
+        }
+      }}
       className={'reader memory-reader motion-surface' + (floating ? ' shared-panel' : '')}
       data-phase={shown.exiting ? 'exit' : 'open'}
       inert={shown.exiting}
@@ -230,41 +273,41 @@ export function MemoryReader({
       {view.kind === 'resume' && (
         <div className="resume-content">
           <h2 aria-hidden={projectMenuOpen || writingMenuOpen}>Reprendre le fil</h2>
-          {memory.resume?.section ? (
+          {resume?.section ? (
             <>
-              <button className="search-result" onClick={() => locate(memory.resume!)}>
-                <strong>Dernier passage travaillé</strong>
-                <small>
-                  {workspace.p?.sections.find((s) => s.id === memory.resume?.section)?.title}
-                </small>
-              </button>
-              {memory.resume.sourceId && (
+              <div className="resume-entry resume-current">
+                <span className="resume-kicker">Dernier passage travaillé</span>
+                <p className="resume-section">{currentSection?.title ?? 'Passage du manuscrit'}</p>
+                {currentExcerpt && <blockquote>{currentExcerpt}</blockquote>}
                 <button
-                  className="search-result"
-                  onClick={() =>
-                    void readSource(memory.resume!.sourceId!, memory.resume!.sourcePage ?? null)
-                  }
+                  className="resume-primary"
+                  onClick={() => {
+                    memory.close();
+                    void workspace.locatePassage(resume.section, resume.node, '', resume);
+                  }}
                 >
-                  <strong>Dernière source consultée</strong>
+                  Continuer ici
+                </button>
+              </div>
+              {resume.sourceId &&
+                resumeSource &&
+                resumeSource.path === path &&
+                resumeSource.source.id === resume.sourceId && (
+                  <button
+                    className="resume-entry resume-secondary"
+                    onClick={() => void readSource(resume.sourceId!, resume.sourcePage ?? null)}
+                  >
+                    <span className="resume-kicker">Dernière source consultée</span>
+                    <strong>{resumeSource.source.title}</strong>
+                  </button>
+                )}
+              {previous && (
+                <button className="resume-entry resume-secondary" onClick={() => locate(previous)}>
+                  <span className="resume-kicker">Passage précédent</span>
+                  <strong>{previousSection?.title ?? 'Passage du manuscrit'}</strong>
+                  {previousExcerpt && <span className="resume-quote">{previousExcerpt}</span>}
                 </button>
               )}
-              {memory.resume.recent
-                .filter(
-                  (p) => p.section !== memory.resume?.section || p.node !== memory.resume?.node,
-                )
-                .slice(0, 1)
-                .map((p) => (
-                  <button
-                    className="search-result"
-                    key={p.section + p.node}
-                    onClick={() => locate(p)}
-                  >
-                    <strong>
-                      {workspace.p?.sections.find((s) => s.id === p.section)?.title ??
-                        'Passage précédent'}
-                    </strong>
-                  </button>
-                ))}
             </>
           ) : (
             <p className="hint">

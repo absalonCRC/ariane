@@ -19,6 +19,9 @@ export interface Section {
   status: string;
   goal: number;
   outline?: Outline | null;
+  role?: 'manuscript' | 'note';
+  trashed?: boolean;
+  included?: boolean;
 }
 export interface Project {
   path: string;
@@ -26,12 +29,18 @@ export interface Project {
   sections: Section[];
   settings: Partial<Settings>;
   recovered: boolean;
+  trash?: Section[];
+  canUndoStructure?: boolean;
   conflicts?: string[];
 }
 export interface Settings {
+  collapsed?: string[];
+  libraryView?: 'texts' | 'manuscript' | 'note' | 'sources' | 'trash';
   countMode: 'characters' | 'words' | 'lines';
   font: 'literary' | 'mono';
   fontSize: number;
+  columnWidth?: number;
+  lineHeight?: number;
   focus: 'none' | 'paragraph' | 'sentence';
   typewriter: boolean;
   depth: number;
@@ -47,6 +56,8 @@ export const defaultSettings: Settings = {
   countMode: 'words',
   font: 'literary',
   fontSize: 26,
+  columnWidth: 750,
+  lineHeight: 1.5,
   focus: 'none',
   typewriter: false,
   depth: 3,
@@ -99,10 +110,50 @@ export interface TextPatch {
 }
 export type SaveState = 'saved' | 'editing' | 'saving' | 'error';
 export type Surface =
-  'none' | 'settings' | 'preferences' | 'sources' | 'history' | 'prepare' | 'export' | 'projects';
+  | 'none'
+  | 'settings'
+  | 'preferences'
+  | 'sources'
+  | 'history'
+  | 'prepare'
+  | 'export'
+  | 'projects'
+  | 'import'
+  | 'manuscript';
 
 export interface Enrichment {
-  fields: { field: string; value: string; target: string | null; evidence: string[]; status: 'derived' | 'confirmed' | 'conflict' }[];
-  passages: { id: string; node: string | null; section: string; sectionTitle: string; line: number; quote: string; uncertain: boolean; related: { id: string; title: string }[] }[];
+  fields: {
+    field: string;
+    value: string;
+    target: string | null;
+    evidence: string[];
+    status: 'derived' | 'confirmed' | 'conflict';
+  }[];
+  passages: {
+    id: string;
+    node: string | null;
+    section: string;
+    sectionTitle: string;
+    line: number;
+    quote: string;
+    uncertain: boolean;
+    related: { id: string; title: string }[];
+  }[];
   ignored: number;
+}
+
+export interface ProjectEntry {
+  path: string;
+  name: string;
+  lastOpened: string;
+  pinned: boolean;
+  archived: boolean;
+  available: boolean;
+}
+export interface SourcePage {
+  types?: { kind: string; count: number }[];
+  items: Source[];
+  total: number;
+  kinds: string[];
+  folders: string[];
 }

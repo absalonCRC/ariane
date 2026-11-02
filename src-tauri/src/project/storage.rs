@@ -47,6 +47,11 @@ pub fn database(root: &Path) -> Result<Connection> {
         tx.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('outline_schema_version','1')", []).app()?;
         tx.commit().app()?;
     }
+    for (name, declaration) in [("role", "TEXT NOT NULL DEFAULT 'manuscript'"), ("trashed", "INTEGER NOT NULL DEFAULT 0"), ("included", "INTEGER NOT NULL DEFAULT 1")] {
+        let exists = c.prepare("PRAGMA table_info(sections)").app()?.query_map([], |r| r.get::<_, String>(1)).app()?.collect::<std::result::Result<Vec<_>, _>>().app()?.iter().any(|column| column == name);
+        if !exists { c.execute_batch(&format!("ALTER TABLE sections ADD COLUMN {name} {declaration}")).app()?; }
+    }
+    c.execute_batch("CREATE TABLE IF NOT EXISTS structure_history(id INTEGER PRIMARY KEY AUTOINCREMENT,payload TEXT NOT NULL)").app()?;
     Ok(c)
 }
 pub fn create(root: &Path, name: &str) -> Result<Project> {
@@ -66,14 +71,17 @@ pub fn create(root: &Path, name: &str) -> Result<Project> {
     load(root)
 }
 pub fn sections(c: &Connection) -> Result<Vec<Section>> {
-    let mut q=c.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline FROM sections ORDER BY position,id").app()?;
+    Ok(all_sections(c)?.into_iter().filter(|s| !s.trashed).collect())
+}
+pub fn all_sections(c: &Connection) -> Result<Vec<Section>> {
+    let mut q=c.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections ORDER BY position,id").app()?;
     let rows = q
         .query_map([], row_section)
         .app()?;
     rows.collect::<std::result::Result<Vec<_>, _>>().app()
 }
 pub fn section(c: &Connection, id: &str) -> Result<Option<Section>> {
-    c.query_row("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline FROM sections WHERE id=?", [id], row_section)
+    c.query_row("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE id=? AND trashed=0", [id], row_section)
         .optional().app()
 }
 fn row_section(r: &Row<'_>) -> rusqlite::Result<Section> {
@@ -88,7 +96,7 @@ fn row_section(r: &Row<'_>) -> rusqlite::Result<Section> {
     Ok(Section {
         id: r.get(0)?, parent: r.get(1)?, title: r.get(2)?, kind: r.get(3)?,
         position: r.get(4)?, text: r.get(5)?, revision: r.get(6)?,
-        synopsis: r.get(7)?, status: r.get(8)?, goal: r.get(9)?, outline,
+        synopsis: r.get(7)?, status: r.get(8)?, goal: r.get(9)?, outline, role: r.get(11)?, trashed: r.get(12)?, included: r.get(13)?,
     })
 }
 pub fn load(root: &Path) -> Result<Project> {
@@ -136,6 +144,8 @@ pub fn load(root: &Path) -> Result<Project> {
         sections: all,
         settings: serde_json::from_str(&settings).unwrap_or_default(),
         recovered,
+        trash: all_sections(&c)?.into_iter().filter(|s| s.trashed).collect(),
+        can_undo_structure: c.query_row("SELECT EXISTS(SELECT 1 FROM structure_history)", [], |r| r.get(0)).app()?,
         conflicts,
     })
 }
@@ -230,7 +240,7 @@ pub fn save(root: &Path, patches: Vec<TextPatch>) -> Result<Vec<Section>> {
     tx.commit().app()?;
     let mut all = Vec::new();
     for p in patches {
-        let mut q = c.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline FROM sections WHERE id=?").app()?;
+        let mut q = c.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE id=?").app()?;
         let s = q
             .query_row([p.id], row_section)
             .app()?;
@@ -257,6 +267,7 @@ pub fn add(root: &Path, parent: Option<String>, title: &str, kind: &str) -> Resu
         return Err("Type de section inconnu.".into());
     }
     let c = database(root)?;
+    super::library::validate_parent(&all_sections(&c)?, parent.as_deref(), &std::collections::HashSet::new(), Some(kind))?;
     if let Some(p) = &parent {
         let exists: bool = c
             .query_row(
@@ -320,6 +331,7 @@ pub fn reorder(
             .parent
             .clone()
     }
+    super::library::validate_parent(&all_sections(&c)?, parent.as_deref(), &std::collections::HashSet::from([id.to_owned()]), None)?;
     let tx = c.transaction().app()?;
     for (i, id) in ids.iter().enumerate() {
         tx.execute(

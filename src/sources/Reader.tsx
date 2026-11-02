@@ -1,3 +1,7 @@
+import { usePanelFocus } from '../components/usePanelFocus';
+import { SourceOccurrences } from './SourceOccurrences';
+import type { SourceOccurrence } from './occurrences';
+import type { Section } from '../app/types';
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -9,6 +13,9 @@ import { selectedSourceText, sourceContext } from './contextMenu';
 import { EnrichmentView } from '../enrichment/EnrichmentView';
 export function Reader({
   source: s,
+  sections = [],
+  contentVersion,
+  onOccurrence,
   onClose,
   projectPath,
   onChange,
@@ -17,6 +24,9 @@ export function Reader({
   onCite,
 }: {
   source: Source;
+  sections?: Section[];
+  contentVersion?: string;
+  onOccurrence?: (hit: SourceOccurrence) => void;
   onClose: () => void;
   projectPath: string;
   onChange: (source: Source) => void;
@@ -25,6 +35,8 @@ export function Reader({
   onLocate: (section: string, node: string | null, quote: string) => void;
 }) {
   const openMenu = useContextMenu();
+  const panel = useRef<HTMLElement>(null);
+  usePanelFocus(panel, true);
   const fields = Object.entries(s.fields || {}).filter(
     ([key, value]) =>
       !['nom', 'title', 'titre', 'type'].includes(key.toLocaleLowerCase()) &&
@@ -58,6 +70,14 @@ export function Reader({
   }, [s.id]);
   return (
     <aside
+      ref={panel}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          onClose();
+        }
+      }}
       className="reader"
       aria-label="Source complète"
       onContextMenu={(event) => {
@@ -75,30 +95,6 @@ export function Reader({
       <div className="state-content" key={s.id}>
         <p className="source-path">{s.path}</p>
         <h2>{s.title}</h2>
-        {fields.length > 0 && (
-          <dl className="enrichment-fields reader-fields">
-            {fields.map(([key, value]) => (
-              <div key={key}>
-                <dt>{key}</dt>
-                <dd>
-                  {Array.isArray(value)
-                    ? value.join(', ')
-                    : typeof value === 'object'
-                      ? JSON.stringify(value)
-                      : String(value)}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        )}
-        <EnrichmentView
-          key={s.id}
-          source={s}
-          projectPath={projectPath}
-          onChange={onChange}
-          onRead={onRead}
-          onLocate={onLocate}
-        />
         {s.selectedExcerpt && (
           <blockquote ref={excerpt} className="memory-source-excerpt">
             {s.selectedExcerpt}
@@ -127,6 +123,37 @@ export function Reader({
             </ReactMarkdown>
           </div>
         )}
+        {fields.length > 0 && (
+          <dl className="enrichment-fields reader-fields">
+            {fields.map(([key, value]) => (
+              <div key={key}>
+                <dt>{key}</dt>
+                <dd>
+                  {Array.isArray(value)
+                    ? value.join(', ')
+                    : typeof value === 'object'
+                      ? JSON.stringify(value)
+                      : String(value)}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {onOccurrence && (
+          <SourceOccurrences
+            source={s}
+            sections={sections}
+            contentVersion={contentVersion}
+            onLocate={onOccurrence}
+          />
+        )}
+        <EnrichmentView
+          source={s}
+          projectPath={projectPath}
+          onChange={onChange}
+          onRead={onRead}
+          onLocate={onLocate}
+        />
       </div>
     </aside>
   );

@@ -21,7 +21,7 @@ Le transport `request` a deux adaptateurs. Dans Tauri, toutes les opérations pa
 
 - `platform.rs` conserve les menus natifs et remplace « Quitter » par une demande de sauvegarde à l’éditeur. Le backend ne valide la sortie qu’après confirmation du frontend.
 - `api.rs` définit les requêtes typées et les achemine vers les modules métier, hors du fil d’interface.
-- `project/` gère les transactions SQLite, les révisions, les miroirs Markdown, les conflits et les copies de récupération.
+- `project/` gère les transactions SQLite, les révisions, les miroirs Markdown, les conflits et les copies de récupération. `library.rs` applique les opérations de rangement par lot dans une transaction immédiate et conserve un journal structurel indépendant des textes. `catalog.rs` référence les projets locaux, leur épinglage et leur archivage.
 - `vaults/` lit les dossiers connectés, YAML, tags, alias et PDF. SQLite FTS5 et les chunks sont dans une base d’index distincte des manuscrits.
 - `retrieval/` distingue identification exacte, liens explicites, tags et proximité sémantique. Un prénom ambigu n’identifie pas automatiquement une personne. Les résultats sont filtrés par périmètre du projet. Pendant une occupation du modèle, la recherche interactive garde ses résultats textuels sans attendre la file d’indexation.
 - `inference/` possède le processus llama.cpp, son authentification locale et son cycle de vie. Seule l’adresse de bouclage est utilisée. Le modèle installé est EmbeddingGemma 300M Q8, testé en 768 dimensions ; il ne rédige pas de contenu.
@@ -31,6 +31,8 @@ Le transport `request` a deux adaptateurs. Dans Tauri, toutes les opérations pa
 ## Format de projet
 
 Un dossier contient `ariane.sqlite`, `manuscrit/<identifiant>.md` et, si nécessaire, `recuperation/`. SQLite est le journal durable et la source transactionnelle du projet ; les Markdown sont des miroirs lisibles, réconciliés au démarrage. Une écriture validée en base mais interrompue avant la matérialisation est reprise. Un projet avec conflit externe s’ouvre avec les identifiants en conflit ; une ouverture échouée ne change pas le projet actif du backend. Les modifications externes des Markdown sont détectées ; la résolution conserve une copie de l’autre version, y compris le tampon local non encore sauvegardé. Les fichiers de récupération ne sont pas supprimés automatiquement.
+
+Les sections ont un rôle `manuscript` ou `note` et un état `trashed`. Les sections actives et la corbeille sont transmises séparément ; les snapshots de versions conservent les deux. Les anciens projets reçoivent les valeurs par défaut sans changement de leur texte. Le catalogue `library.sqlite` vit dans les données de l’application et ne remplace pas les bases indépendantes des projets.
 
 Les sauvegardes portent des révisions et ne réécrivent que les scènes modifiées. L’historique automatique est limité en fréquence, pas en nombre de versions. Les snapshots sont locaux ; aucun compte GitHub ni dépôt distant n’est utilisé.
 
@@ -55,3 +57,13 @@ Les migrations de schéma et les changements de modèle devront être explicitem
 `linguistics.ts` analyse le texte visible après temporisation. Le programme Swift `scripts/syntax.swift`, embarqué dans `resources/engine/syntax`, utilise NaturalLanguage et renvoie des positions UTF-16. La révision de style combine répétitions, longueurs de phrases et listes explicites fr/en/de/es ; ces règles ne constituent pas une équivalence avec le dictionnaire d’iA Writer. Les suggestions documentaires automatiques s’activent avec l’affichage des sources.
 
 `src-tauri/src/documents.rs` gère les imports, les pièces jointes et le moteur grammatical. Les images des archives DOCX/ODT/EPUB sont extraites dans un sous-dossier unique du projet. La lecture de pièces jointes refuse les chemins qui sortent du projet après résolution des liens symboliques.
+
+La bibliothèque expose une seule arborescence Textes ; le champ historique `role` reste lisible pour compatibilité et ne sépare plus les documents. `projectSearch.ts` calcule les occurrences sur les textes courants (y compris les modifications non encore enregistrées), dans l’ordre du projet et avec les offsets UTF-16 de l’éditeur. `useUnifiedSearch` interroge indépendamment le moteur des vaults avec temporisation et rejette les réponses périmées après changement de requête ou de projet. La navigation révèle également un passage replié. Pendant une recherche explicite, les résultats des vaults occupent la marge et l’analyse automatique de mémoire est suspendue. `vaults/browse.rs` fournit les types et leurs effectifs dans le périmètre connecté, puis les entités par pages de 50.
+
+### Import, réorganisation et annotations
+
+`import.rs` prépare la conversion avant d’ajouter les textes au projet actif dans une transaction SQLite. Seules les images nécessaires sont copiées dans `assets/import-…`. Aucun nouveau projet, archive des originaux ou manifeste d’import n’est créé. DOCX utilise le Pandoc embarqué avec limites de taille et délai.
+
+`project/manuscript.rs` conserve les commandes de séparation et réunion par copie de texte. Le déplacement de passage, les versions automatiques propres à ces opérations, les contrôles de révision supplémentaires et le transport des notes/identités de passages ont été retirés. Les sauvegardes existantes restent inchangées.
+
+Les annotations sont indépendantes du Markdown et des exports. Elles conservent texte, contexte, statut et révision. Le client ne réattache pas une annotation ambiguë. L’adaptateur navigateur des nouvelles fonctions a été retiré : annotations et réorganisation utilisent l’application native. Le remplacement global n’est plus proposé.

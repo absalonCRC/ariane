@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { save } from '@tauri-apps/plugin-dialog';
 import { native, request } from '../app/client';
 import type { Project } from '../app/types';
-import { ordered, scenesFor } from '../project/tree';
+import { manuscriptSections, scenesFor } from '../project/tree';
 
 // The job outlives its dialog, so writing can continue without losing its result.
 export function useExport() {
@@ -20,8 +20,10 @@ export function useExport() {
           );
         const sections =
           scope === 'project'
-            ? ordered(project.sections)
+            ? manuscriptSections(project.sections)
             : scenesFor(project.sections, active, false);
+        if (!sections.some((s) => s.kind === 'scene'))
+          throw new Error('Aucun texte inclus dans cet export.');
         const text = sections.map((s) => '# ' + s.title + '\n\n' + s.text).join('\n\n');
         const url = URL.createObjectURL(new Blob([text], { type: 'text/markdown' }));
         const link = document.createElement('a');

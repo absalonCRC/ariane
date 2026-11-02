@@ -1,5 +1,5 @@
 import { StateEffect, StateField, type EditorState } from '@codemirror/state';
-import { SearchQuery } from '@codemirror/search';
+import { normalizedMatches } from './normalizedSearch';
 import { Decoration, EditorView } from '@codemirror/view';
 
 type Match = { from: number; to: number };
@@ -19,9 +19,7 @@ export const textSearchHighlight = StateField.define<SearchHighlight | null>({
       const highlight = state.field(field);
       if (!highlight) return Decoration.none;
       const ranges = [];
-      const cursor = new SearchQuery({ search: highlight.text, caseSensitive: false, literal: true }).getCursor(state);
-      for (let result = cursor.next(); !result.done; result = cursor.next()) {
-        const match = result.value;
+      for (const match of normalizedMatches(state.doc.toString(), highlight.text)) {
         const current = match.from === highlight.current.from && match.to === highlight.current.to;
         ranges.push(Decoration.mark({ class: current ? 'cm-text-search-match current' : 'cm-text-search-match' }).range(match.from, match.to));
       }
@@ -35,23 +33,12 @@ export function findTextMatch(
   direction: Direction = 'current',
 ): Match | null {
   if (!text) return null;
-  const query = new SearchQuery({ search: text, caseSensitive: false, literal: true });
+  const matches = normalizedMatches(state.doc.toString(), text);
   const selection = state.selection.main;
-  if (direction === 'previous') {
-    const cursor = query.getCursor(state);
-    let previous: Match | null = null;
-    let last: Match | null = null;
-    for (let result = cursor.next(); !result.done; result = cursor.next()) {
-      last = result.value;
-      if (result.value.from < selection.from) previous = result.value;
-    }
-    return previous ?? last;
-  }
+  if (direction === 'previous')
+    return [...matches].reverse().find(m => m.from < selection.from) ?? matches.at(-1) ?? null;
   const start = direction === 'next' ? selection.to : selection.from;
-  const result = query.getCursor(state, start).next();
-  if (!result.done) return result.value;
-  const wrapped = query.getCursor(state).next();
-  return wrapped.done ? null : wrapped.value;
+  return matches.find(m => m.from >= start) ?? matches[0] ?? null;
 }
 
 export function highlightTextMatch(

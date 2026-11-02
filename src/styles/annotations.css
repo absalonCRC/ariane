@@ -1,0 +1,12 @@
+.annotation-margin { position: fixed; top: 100px; bottom: auto; max-height: calc(100vh - 175px); z-index: 25; padding: 12px; overflow: auto; background: var(--surface); border: 1px solid var(--line, #dedbd4); border-radius: 8px; font-size: 12px; }
+.annotation-margin header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.annotation-margin h2 { font-size: 13px; font-weight: 500; margin: 0; }
+.annotation-margin textarea { width: 100%; min-height: 95px; resize: vertical; box-sizing: border-box; }
+.annotation-margin blockquote { margin: 0 0 12px; padding-left: 9px; border-left: 2px solid var(--line, #dedbd4); }
+.annotation-margin article { padding: 14px 0; border-top: 1px solid var(--line, #dedbd4); }
+.annotation-margin p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.annotation-margin .annotation-quote { display: block; max-width: 100%; text-align: left; font: inherit; opacity: .7; }
+.annotation-filter { display: flex; align-items: center; gap: 6px; margin: 15px 0; }
+.annotation-margin input[type=checkbox] { width: auto; }
+.import-items, .replace-preview { max-height: 30vh; overflow: auto; }
+.replace-preview input[type=checkbox] { width: auto; }

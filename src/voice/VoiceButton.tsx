@@ -466,7 +466,8 @@ export function VoiceButton({
         aria-label={mode === 'continuous' ? 'Arrêter la dictée' : 'Dicter'}
         aria-expanded={open}
         aria-controls="bottom-writing-panel"
-        title="Clic : démarrer ou arrêter · maintenir : dicter pendant l’appui · ⌘ ⇧ M"
+        data-hint="Clic : dicter · maintenir : parler · ⌘ ⇧ M"
+        aria-description="Clic : démarrer ou arrêter. Maintenir : dicter pendant l’appui. ⌘ ⇧ M"
         onPointerDown={(event) => {
           if (event.button !== 0) return;
           event.preventDefault();

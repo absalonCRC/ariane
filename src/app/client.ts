@@ -1,5 +1,8 @@
+import { descendants } from '../project/tree';
 import { invoke, isTauri } from '@tauri-apps/api/core';
 import type { Project, Section, Source, TextPatch, Version, Vault } from './types';
+import { applyLibraryOperation, structureSnapshot, type LibraryOperation, type StructurePosition } from '../project/library';
+import type { ProjectEntry } from './types';
 import { validOutline } from '../editor/outline/model';
 export const native = isTauri();
 export async function request<T>(type: string, args: Record<string, unknown> = {}): Promise<T> {
@@ -61,9 +64,18 @@ export function newSection(
     goal: 0,
   };
 }
+function catalog(): ProjectEntry[] { return JSON.parse(localStorage.getItem('ariane.preview.catalog') || '[]'); }
+function remember(p: Project) {
+  const entries = catalog();
+  const old = entries.find(e => e.path === p.path);
+  const entry: ProjectEntry = { path: p.path, name: p.name, pinned: false, archived: false, available: true, ...old, lastOpened: new Date().toISOString() };
+  localStorage.setItem('ariane.preview.catalog', JSON.stringify([entry, ...entries.filter(e => e.path !== p.path)]));
+}
 function browserRequest(type: string, a: Record<string, unknown>): unknown {
   if (type === 'revisionStatus') return { available: false };
-  if (type === 'bootstrap') return read()[current || ''] || null;
+  if (type === 'bootstrap') { const p = read()[current || '']; if (p) remember(p); return p || null; }
+  if (type === 'projects') return catalog().sort((a,b) => Number(b.pinned)-Number(a.pinned) || b.lastOpened.localeCompare(a.lastOpened));
+  if (type === 'projectCatalog') { const entries = catalog().map(e => e.path === a.path ? { ...e, pinned: !!a.pinned, archived: !!a.archived } : e); localStorage.setItem('ariane.preview.catalog', JSON.stringify(entries)); return entries; }
   if (type === 'engineStatus')
     return { available: false, model: 'Disponible dans l’application macOS', local: true };
   if (type === 'create') {
@@ -75,6 +87,7 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
       recovered: false,
     };
     store(p);
+    remember(p);
     makePreviewVault(p.path);
     current = p.path;
     localStorage.setItem('ariane.preview.current', current);
@@ -83,9 +96,30 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
   if (type === 'open') {
     current = String(a.path);
     localStorage.setItem('ariane.preview.current', current);
-    return project();
+    const p = project(); remember(p); return p;
   }
   const p = project();
+  if (['annotations', 'addAnnotation', 'updateAnnotation', 'manuscriptOperation'].includes(type))
+    throw new Error('Cette fonction est disponible dans l’application Mac.');
+  if (type === 'libraryOperation') {
+    const op = a.operation as LibraryOperation;
+    const key = 'ariane.preview.structure.' + p.path;
+    const history: StructurePosition[][] = JSON.parse(localStorage.getItem(key) || '[]');
+    const result = applyLibraryOperation(p, op, history.at(-1));
+    if (op.action === 'undo') history.pop(); else history.push(structureSnapshot(p));
+    for (const copy of result.copies) localStorage.setItem('ariane.preview.links.' + p.path + '.' + copy.to, localStorage.getItem('ariane.preview.links.' + p.path + '.' + copy.from) || '[]');
+    result.project.canUndoStructure = history.length > 0;
+    store(result.project);
+    localStorage.setItem(key, JSON.stringify(history));
+    return result.project;
+  }
+  if (type === 'browseSources') {
+    const all = previewSources(p.path).filter(s => !a.vault || s.vaultId === a.vault);
+    const query = String(a.query || '').toLocaleLowerCase();
+    const values = all.filter(s => (!a.kind || s.kind === a.kind) && (!a.folder || s.path.startsWith(String(a.folder) + '/')) && (s.title.toLocaleLowerCase().includes(query) || s.text.toLocaleLowerCase().includes(query)));
+    const offset = Number(a.offset || 0);
+    return { types: [...new Set(all.map(s => s.kind))].sort().map(kind => ({ kind, count: all.filter(s => s.kind === kind).length })), items: values.slice(offset,offset+50), total: values.length, kinds: [...new Set(all.map(s => s.kind))].sort(), folders: [...new Set(all.map(s => s.path.split('/').slice(0,-1).join('/')).filter(Boolean))].sort() };
+  }
   if (type === 'save') {
     const patches = a.patches as TextPatch[];
     const ids = new Set<string>();
@@ -112,16 +146,8 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     }));
   }
   if (type === 'add') {
-    p.sections.push(
-      newSection(
-        String(a.title),
-        a.parent as string | null,
-        a.kind as Section['kind'],
-        p.sections.length,
-      ),
-    );
-    store(p);
-    return p.sections;
+    const result = browserRequest('libraryOperation', { operation: { action: 'add', target: a.parent, title: a.title, kind: a.kind, role: a.role } }) as Project;
+    return result.sections;
   }
   if (type === 'update') {
     const incoming = a.section as Section;
@@ -140,6 +166,7 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     return p.sections;
   }
   if (type === 'reorder') {
+    applyLibraryOperation(p, { action: 'move', ids: [String(a.id)], target: a.parent as string | null });
     p.sections = (a.ids as string[]).map((id, i) => ({
       ...p.sections.find((s) => s.id === id)!,
       position: i,
@@ -215,7 +242,7 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
       name: String(a.name),
       created: new Date().toISOString(),
       scope: a.scope as string | null,
-      sections: p.sections,
+      sections: a.scope ? descendants([...p.sections, ...(p.trash || [])], String(a.scope)) : [...p.sections, ...(p.trash || [])],
     };
     versions.unshift(v);
     localStorage.setItem(versionKey, JSON.stringify(versions));
@@ -225,8 +252,15 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     const versions = JSON.parse(localStorage.getItem(versionKey) || '[]') as Version[];
     const v = versions.find((v) => v.id === a.id);
     if (!v) throw new Error('Version introuvable');
-    browserRequest('capture', { name: 'Avant restauration', scope: null });
-    p.sections = v.sections;
+    browserRequest('capture', { name: 'Avant restauration', scope: v.scope });
+    const previous = [...p.sections, ...(p.trash || [])];
+    const snapshot = v.scope ? descendants(v.sections, v.scope) : v.sections;
+    const affected = new Set(v.scope ? [...descendants(previous, v.scope), ...snapshot].map(s => s.id) : previous.map(s => s.id));
+    const restored = [...previous.filter(s => !affected.has(s.id)), ...snapshot];
+    p.sections = restored.filter(s => !s.trashed);
+    p.trash = restored.filter(s => s.trashed);
+    p.canUndoStructure = false;
+    localStorage.removeItem('ariane.preview.structure.' + p.path);
     store(p);
     return p;
   }

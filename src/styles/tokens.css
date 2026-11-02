@@ -1,12 +1,12 @@
 :root {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #262626;
-  background: #fff;
+  color: var(--theme-ink, #262626);
+  background: var(--theme-paper, #fff);
   font-synthesis: none;
-  --ink: #252525;
-  --quiet: #96989a;
-  --line: #e9e9e9;
-  --surface: #fafafa;
+  --ink: var(--theme-ink, #252525);
+  --quiet: var(--theme-quiet, #96989a);
+  --line: var(--theme-hover, #e9e9e9);
+  --surface: var(--theme-paper, #fafafa);
   --literary: 'EB Garamond', Georgia, serif;
   --mono: 'SFMono-Regular', Menlo, monospace;
   --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -40,7 +40,7 @@ button {
   border-radius: 5px;
   padding: 8px 11px;
   transition: background 0.16s;
-  color: #555;
+  color: var(--theme-secondary, #555);
   font-size: 12px;
   display: inline-flex;
   align-items: center;
@@ -48,8 +48,8 @@ button {
   gap: 7px;
 }
 button:hover {
-  background: #f1f1f1;
-  color: #222;
+  background: var(--theme-hover, #f1f1f1);
+  color: var(--theme-ink, #222);
 }
 button:disabled {
   opacity: 0.4;
@@ -57,15 +57,15 @@ button:disabled {
 }
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid #8b8b8b;
+  outline: 2px solid var(--theme-muted, #8b8b8b);
   outline-offset: 3px;
 }
 input:not([type='range']):not([type='checkbox']),
 textarea,
 select {
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--theme-line, #e0e0e0);
   border-radius: 5px;
-  background: white;
+  background: var(--theme-paper, white);
   padding: 11px 12px;
   font-size: 13px;
   outline: none;
@@ -74,12 +74,12 @@ select {
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: #aaa;
+  border-color: var(--theme-quiet, #aaa);
 }
 label {
   display: block;
   font-size: 12px;
-  color: #777;
+  color: var(--theme-muted, #777);
   margin: 22px 0;
 }
 label input,
@@ -90,7 +90,7 @@ label select {
 }
 label small {
   font-weight: 400;
-  color: #999;
+  color: var(--theme-quiet, #999);
   font-size: 10px;
 }
 textarea {
@@ -118,33 +118,33 @@ svg {
   flex-shrink: 0;
 }
 .primary {
-  background: #2c2c2c !important;
-  color: white !important;
+  background: var(--theme-ink, #2c2c2c) !important;
+  color: var(--theme-paper, white) !important;
   padding: 10px 17px;
 }
 .primary:hover {
-  background: #454545 !important;
+  background: var(--theme-ink, #454545) !important;
 }
 .icon-button {
   width: 30px;
   height: 30px;
   padding: 6px;
-  color: #85878a;
+  color: var(--theme-muted, #85878a);
 }
 .hint {
   font-size: 11px;
   line-height: 1.8;
-  color: #999;
+  color: var(--theme-quiet, #999);
 }
 .empty-state {
-  color: #999;
+  color: var(--theme-quiet, #999);
   font-size: 13px;
   line-height: 1.9;
   padding: 30px 0;
 }
 .floating {
-  background: #fff;
-  border: 1px solid #e9e9e9;
+  background: var(--theme-paper, #fff);
+  border: 1px solid var(--theme-hover, #e9e9e9);
   box-shadow: 0 8px 35px #00000008;
   border-radius: 7px;
 }
@@ -159,18 +159,18 @@ svg {
 }
 .source-path {
   font: 10px/1.8 var(--ui);
-  color: #a0a0a0;
+  color: var(--theme-quiet, #a0a0a0);
   overflow-wrap: anywhere;
 }
 .error-text {
-  color: #8b4848;
+  color: var(--theme-error, #8b4848);
   font-size: 13px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .boot {
   height: 100vh;
-  background: #fff;
+  background: var(--theme-paper, #fff);
 }
 @media (prefers-reduced-motion: reduce) {
   *,

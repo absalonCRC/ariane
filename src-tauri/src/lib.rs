@@ -3,6 +3,7 @@ mod error;
 mod enrichment;
 mod export;
 mod history;
+mod import;
 mod inference;
 mod model;
 mod memory;
@@ -24,7 +25,7 @@ pub fn run() {
         .on_menu_event(|app, event| {
             if event.id().as_ref() == "quit-after-save" {
                 let _ = app.emit("app-close-requested", ());
-            }
+            } else { let _ = app.emit("app-command", event.id().as_ref()); }
         })
         .setup(|app| {
             #[cfg(not(feature = "performance-harness"))]

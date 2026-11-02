@@ -8,6 +8,7 @@ import {
   type ViewUpdate,
 } from '@codemirror/view';
 import { RangeSetBuilder } from '@codemirror/state';
+import { liveTables } from './liveTables';
 const delimiters = new Set([
   'HeaderMark',
   'EmphasisMark',
@@ -30,9 +31,10 @@ class FootnoteMarker extends WidgetType {
     const marker = document.createElement('sup');
     marker.className = 'footnote-marker';
     marker.textContent = '†';
-    marker.title = this.definition ? 'Référence de la source' : 'Lire la note de source';
+    marker.dataset.tooltip = this.definition ? 'Référence de la source' : 'Lire la note de source';
     if (!this.definition) {
       marker.setAttribute('role', 'button');
+      marker.setAttribute('aria-label', 'Lire la note de source');
       marker.tabIndex = 0;
       const open = () => {
         const pos = view.state.doc.toString().indexOf(`[^${this.id}]:`);
@@ -52,7 +54,7 @@ class FootnoteMarker extends WidgetType {
     return marker;
   }
 }
-export const liveMarkdown = ViewPlugin.fromClass(
+const inlineMarkdown = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
     constructor(view: EditorView) {
@@ -128,3 +130,4 @@ export const liveMarkdown = ViewPlugin.fromClass(
   },
   { decorations: (v) => v.decorations },
 );
+export const liveMarkdown = [inlineMarkdown, liveTables];

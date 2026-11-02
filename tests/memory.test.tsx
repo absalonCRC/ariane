@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { useMemory, type MemoryController } from '../src/enrichment/useMemory';
 import type { Workspace } from '../src/app/useWorkspace';
+import type { Section } from '../src/app/types';
 import { MemoryReader } from '../src/enrichment/MemoryReader';
 const { request } = vi.hoisted(() => ({ request: vi.fn() }));
 vi.mock('../src/app/client', () => ({ native: true, request }));
@@ -154,6 +155,78 @@ it('opens derived evidence without citation actions or a fabricated source', asy
   expect(host.textContent).not.toContain('Citer');
   await act(async () => host.querySelector<HTMLButtonElement>('.memory-date')!.click());
   expect(w.locatePassage).toHaveBeenCalledWith('s', 'n', 'Louise arrive.');
+});
+
+it('resumes with the exact passage, previous passage, and fetched source title', async () => {
+  const w = workspace();
+  const passage = 'La porte était close.\n\nÉlise attendait.';
+  w.p!.sections = [
+    {
+      id: 's',
+      title: 'Scène',
+      text: passage,
+      outline: {
+        version: 1,
+        nodes: [
+          { id: 'a', parent: null, start: 0 },
+          { id: 'n', parent: null, start: passage.indexOf('Élise') },
+        ],
+      },
+    },
+    { id: 'old', title: 'Avant', text: 'Le voyage avait commencé.' },
+  ] as Section[];
+  const model = {
+    view: { kind: 'resume' },
+    close: vi.fn(),
+    resume: {
+      section: 's',
+      node: 'n',
+      offset: 0,
+      cursor: 23,
+      sourceId: 'source-1',
+      sourcePage: 2,
+      recent: [
+        { section: 's', node: 'n' },
+        { section: 'old', node: null },
+      ],
+    },
+  } as unknown as MemoryController;
+  request.mockImplementation((type: string) =>
+    Promise.resolve(
+      type === 'memorySource' ? { id: 'source-1', title: 'Carnet de terrain' } : true,
+    ),
+  );
+  await act(async () => root.render(<MemoryReader memory={model} workspace={w} />));
+  expect(host.textContent).toContain('Élise attendait.');
+  expect(host.textContent).toContain('Carnet de terrain');
+  expect(host.textContent).toContain('Le voyage avait commencé.');
+  await act(async () => host.querySelector<HTMLButtonElement>('.resume-primary')!.click());
+  expect(w.locatePassage).toHaveBeenCalledWith(
+    's',
+    'n',
+    '',
+    expect.objectContaining({ ...position, cursor: 23 }),
+  );
+});
+
+it('does not show a source title returned for a former project', async () => {
+  const finish: ((value: unknown) => void)[] = [];
+  request.mockImplementation((type: string) =>
+    type === 'memorySource'
+      ? new Promise((resolve) => finish.push(resolve))
+      : Promise.resolve(true),
+  );
+  const model = {
+    view: { kind: 'resume' },
+    close: vi.fn(),
+    resume: { ...position, sourceId: 'source-1', recent: [] },
+  } as unknown as MemoryController;
+  await act(async () => root.render(<MemoryReader memory={model} workspace={workspace('a')} />));
+  await act(async () => root.render(<MemoryReader memory={model} workspace={workspace('b')} />));
+  await act(async () => finish[0]({ id: 'source-1', title: 'Ancien projet' }));
+  expect(host.textContent).not.toContain('Ancien projet');
+  await act(async () => finish[1]({ id: 'source-1', title: 'Projet actuel' }));
+  expect(host.textContent).toContain('Projet actuel');
 });
 
 it('publishes fast detections before requesting the shared semantic model', async () => {

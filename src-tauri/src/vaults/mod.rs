@@ -1,3 +1,5 @@
+mod browse;
+pub use browse::browse;
 pub mod parse;
 mod owned;
 pub use owned::{create_entity, create_owned, create_project};

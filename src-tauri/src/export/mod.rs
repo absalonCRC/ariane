@@ -1,4 +1,5 @@
 mod resources;
+pub(crate) mod footnotes;
 use crate::{
     error::{AppResult, Result},
     history, project,
@@ -31,8 +32,20 @@ pub fn export_with_cancel(
     let sections = if let Some(id) = scope {
         history::descendants(&p.sections, &id)
     } else {
-        p.sections
+        let by_id: std::collections::HashMap<_, _> = p.sections.iter().map(|s| (s.id.as_str(), s)).collect();
+        let mut included = std::collections::HashSet::new();
+        for s in p.sections.iter().filter(|s| s.kind == "scene" && s.included) {
+            let mut current = Some(s);
+            while let Some(node) = current {
+                if !included.insert(node.id.as_str()) { break; }
+                current = node.parent.as_deref().and_then(|id| by_id.get(id).copied());
+            }
+        }
+        p.sections.iter().filter(|s| included.contains(s.id.as_str())).cloned().collect()
     };
+    if !sections.iter().any(|s| s.kind == "scene") {
+        return Err("Aucun texte inclus dans cet export.".into());
+    }
     let c = project::database(root)?;
     let mut query = c.prepare("SELECT payload FROM citations").app()?;
     let records = query.query_map([], |r| r.get::<_, String>(0)).app()?;
@@ -65,16 +78,22 @@ pub fn export_with_cancel(
         serde_json::to_string(&references).app()?
     );
     let citation_style = p.settings["citationStyle"].as_str().unwrap_or("notes");
-    fn append(all: &[crate::model::Section], parent: Option<&str>, depth: usize, out: &mut String) {
+    fn append(all: &[crate::model::Section], parent: Option<&str>, depth: usize, out: &mut String) -> Result<()> {
         for s in all.iter().filter(|s| s.parent.as_deref() == parent) {
+            let text = if s.kind == "scene" {
+                footnotes::namespace(&s.text, &s.id, &s.title)?
+            } else {
+                s.text.clone()
+            };
             out.push_str(&format!(
                 "{} {}\n\n{}\n\n",
                 "#".repeat(depth.min(6)),
                 s.title,
-                s.text
+                text
             ));
-            append(all, Some(&s.id), depth + 1, out)
+            append(all, Some(&s.id), depth + 1, out)?
         }
+        Ok(())
     }
     let selected_ids: std::collections::HashSet<_> =
         sections.iter().map(|s| s.id.as_str()).collect();
@@ -87,7 +106,7 @@ pub fn export_with_cancel(
             s.parent = None
         }
     }
-    append(&top, None, 1, &mut md);
+    append(&top, None, 1, &mut md)?;
     let parent = target.parent().ok_or("Destination invalide")?;
     if !parent.is_dir() {
         return Err("Le dossier de destination n’est plus accessible".into());
@@ -189,6 +208,28 @@ pub fn export(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn repeated_scene_footnote_labels_render_distinct_notes() {
+        use std::io::Read;
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("projet");
+        let p = project::create(&root, "Notes distinctes").unwrap();
+        let first = p.sections[0].id.clone();
+        let second = project::add(&root, None, "Deuxième", "scene").unwrap().last().unwrap().id.clone();
+        project::save(&root, vec![
+            crate::model::TextPatch { id: first, revision: 0, text: "La première[^1].\n\n[^1]: Note du premier chapitre.".into(), outline: None },
+            crate::model::TextPatch { id: second, revision: 0, text: "La seconde[^1].\n\n[^1]: Note du second chapitre.".into(), outline: None },
+        ]).unwrap();
+        let resources = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources");
+        let docx = temp.path().join("notes.docx");
+        export(&root, &resources, &docx, "docx", None).unwrap();
+        let mut archive = zip::ZipArchive::new(fs::File::open(&docx).unwrap()).unwrap();
+        let mut footnotes = String::new();
+        archive.by_name("word/footnotes.xml").unwrap().read_to_string(&mut footnotes).unwrap();
+        assert!(footnotes.contains("Note du premier chapitre"), "{footnotes}");
+        assert!(footnotes.contains("Note du second chapitre"), "{footnotes}");
+        assert_eq!(footnotes.matches("<w:footnote w:id=").count(), 2, "{footnotes}");
+    }
     #[test]
     fn rejects_reference_images_outside_the_project_before_conversion() {
         let d = tempfile::tempdir().unwrap();
