@@ -42,9 +42,21 @@ Compare named drafts, inspect what changed and recover an individual passage. Ar
 
 ## A structure that stays out of the way
 
-Chapters, scenes and working notes sit behind the page. Reorder them, read the assembled manuscript or import writing into the open project. Markdown tables are directly editable, so comparisons stay readable while the text remains portable.
+Chapters, scenes and working notes sit behind the page. Reorder them, read the assembled manuscript or import writing into the open project.
+
+Inside a page, the **outliner** lets you nest ideas, move an entire branch and fold it away. A few keyboard gestures reshape the thought.
+
+![A close view of Ariane’s outliner with two ideas and their nested children](docs/media/outliner.jpg)
+
+**Live Markdown** renders headings, emphasis and tables while you write. Table cells remain directly editable, and the text stays portable.
 
 <p align="center"><img src="docs/media/tables.jpg" alt="A close-up of an editable Markdown table: writing task, useful assistance and human decision" width="720"></p>
+
+## Your pace, your focus
+
+Keep the current **paragraph or sentence** in focus, or use typewriter scrolling to keep your place on the page. Follow the word, character or line count, and start a **25-minute Pomodoro** when it is time to settle into a draft. Optional **local dictation** lets you capture a thought aloud.
+
+![Paragraph focus in the native editor, with surrounding paragraphs softly dimmed](docs/media/focus.jpg)
 
 ## Daylight. Late night. Your language.
 
@@ -74,9 +86,11 @@ The project stays local in SQLite with readable Markdown mirrors. Ariane detects
 
 ## See Ariane in action
 
-**[Watch the film · 46 seconds](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)**
+**[Watch the film · 48 seconds](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)**
 
-The presentation uses **0.2.0-alpha.1 running natively on macOS**. Product details are enlarged from real captures. *The Human Thread* is a fictional essay about AI and authorship, with four chapters, eight pages, ten research notes and two sample drafts. All people, institutions and interviews are invented.
+The film follows **real interactions in Ariane 0.2.0-alpha.1 on macOS**: writing, sources, live Markdown, outlining, focus, dictation controls, search, counters, Pomodoro and draft comparison. Close camera moves and an English voice-over follow each action.
+
+*The Human Thread* is fictional demo material about AI and authorship. The film uses a separate three-page project created for the recording. All people, institutions and interviews are invented.
 
 [Explore the demo material](examples/the-human-thread) · [Media provenance and film transcript](docs/media/README.md)
 
