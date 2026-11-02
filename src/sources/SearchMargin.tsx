@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale } from '../i18n';
 import type { Source } from '../app/types';
 export function SearchMargin({
   sources,
@@ -10,20 +11,21 @@ export function SearchMargin({
   error: string;
   onOpen: (source: Source, element: HTMLButtonElement) => void;
 }) {
+  useLocale();
   return (
     <aside
       className="vault-search-margin"
-      aria-label="Résultats des vaults dans la marge"
+      aria-label={t('Résultats des vaults dans la marge')}
       aria-busy={busy}
     >
-      <p className="hint">Dans les vaults</p>
+      <p className="hint">{t('Dans les vaults')}</p>
       {busy ? (
         <p role="status" className="hint">
-          Recherche…
+          {t('Recherche…')}
         </p>
       ) : error ? (
         <p role="alert" className="hint">
-          Recherche des vaults indisponible. {error}
+          {t('Recherche des vaults indisponible. {0}', { 0: localizeMessage(error) })}
         </p>
       ) : sources.length ? (
         sources.map((source) => (
@@ -33,13 +35,13 @@ export function SearchMargin({
             onClick={(event) => onOpen(source, event.currentTarget)}
           >
             <span>{source.title}</span>
-            <small>{source.kind}</small>
+            <small>{t(source.kind)}</small>
             <small className="search-source-excerpt">{source.text.slice(0, 180)}</small>
           </button>
         ))
       ) : (
         <p role="status" className="hint">
-          Aucune source correspondante.
+          {t('Aucune source correspondante.')}
         </p>
       )}
     </aside>

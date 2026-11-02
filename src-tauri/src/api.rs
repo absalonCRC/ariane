@@ -41,6 +41,7 @@ pub struct AppState {
 )]
 pub enum Request {
     Bootstrap,
+    AppLanguage { value: String },
     Annotations { project_path: String },
     AddAnnotation { project_path: String, section: String, revision: i64, from: usize, to: usize, note: String },
     UpdateAnnotation { project_path: String, id: String, revision: i64, note: String, done: bool },
@@ -55,6 +56,7 @@ pub enum Request {
         path: String,
         name: String,
         vault_path: Option<String>,
+        initial_title: Option<String>,
     },
     Open {
         path: String,
@@ -211,6 +213,11 @@ pub fn handle(
 ) -> Result<serde_json::Value> {
     let index = state.data.join("sources.sqlite");
     match request {
+        Request::AppLanguage { value } => {
+            if !["fr", "en", "es"].contains(&value.as_str()) { return Err("Unsupported application language".into()); }
+            app.set_menu(crate::platform::menu_for_language(app, &value).app()?).app()?;
+            Ok(json!(true))
+        }
         Request::ImportPreview { source } => json(crate::import::preview(&state.resources, Path::new(&source))?),
         Request::Projects => json(project::catalog::list(&state.data)?),
         Request::ProjectCatalog { path, pinned, archived } => json(project::catalog::update(&state.data, &path, pinned, archived)?),
@@ -231,9 +238,15 @@ pub fn handle(
             }
             Ok(serde_json::Value::Null)
         }
-        Request::Create { path, name, vault_path } => {
+        Request::Create { path, name, vault_path, initial_title } => {
             let root = Path::new(&path);
             vaults::create_project(root, &name, vault_path.as_deref().map(Path::new))?;
+            if let Some(title) = initial_title.filter(|title| !title.trim().is_empty()) {
+                if let Some(mut first) = project::load(root)?.sections.into_iter().find(|s| s.kind == "scene") {
+                    first.title = title;
+                    project::update(root, &first)?;
+                }
+            }
             json(activate(state, root)?)
         }
         Request::Open { path } => json(activate(state, Path::new(&path))?),

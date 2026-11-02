@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useId, useState } from 'react';
 
 const levels = [
@@ -22,10 +23,12 @@ export function DepthControl({
   value: number;
   onChange: (value: number) => void;
 }) {
+  useLocale();
   const [open, setOpen] = useState(false);
   const id = useId();
   const level = Math.max(0, Math.min(5, Math.round(value)));
-  const { label, detail } = levels[level];
+  const label = t(levels[level].label),
+    detail = t(levels[level].detail);
   return (
     <div
       className="depth-control"
@@ -50,7 +53,7 @@ export function DepthControl({
     >
       <button
         className="depth-label"
-        aria-label={`Profondeur ${level} : ${detail} Régler la profondeur`}
+        aria-label={t('Profondeur {0} : {1} Régler la profondeur', { 0: level, 1: detail })}
         aria-expanded={open}
         aria-controls={id}
         title={detail}
@@ -61,8 +64,8 @@ export function DepthControl({
       <div id={id} className="depth-slider" aria-hidden={!open} inert={!open}>
         <span aria-hidden="true">{level}</span>
         <input
-          aria-label="Profondeur des sources"
-          aria-valuetext={`Niveau ${level} : ${label}. ${detail}`}
+          aria-label={t('Profondeur des sources')}
+          aria-valuetext={t('Niveau {0} : {1}. {2}', { 0: level, 1: label, 2: detail })}
           type="range"
           min="0"
           max="5"

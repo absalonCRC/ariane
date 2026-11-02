@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useMemo, useState } from 'react';
 import type { Section, Source } from '../app/types';
 import { sourceOccurrences, type SourceOccurrence } from './occurrences';
@@ -12,6 +13,7 @@ export function SourceOccurrences({
   contentVersion?: string;
   onLocate: (hit: SourceOccurrence) => void;
 }) {
+  useLocale();
   const matches = useMemo(
     () => sourceOccurrences(sections, source),
     [sections, source, contentVersion],
@@ -30,7 +32,7 @@ export function SourceOccurrences({
       ))}
       {hits.length > limit && (
         <button className="occurrences-more" onClick={more}>
-          Afficher les suivantes
+          {t('Afficher les suivantes')}
         </button>
       )}
     </>
@@ -38,18 +40,22 @@ export function SourceOccurrences({
   return (
     <details className="source-occurrences">
       <summary>
-        Références explicites <span>{references.length}</span> · Mentions du nom{' '}
-        <span>{mentions.length}</span>
+        {t('Références explicites')}
+        <span>{references.length}</span> {t('· Mentions du nom')} <span>{mentions.length}</span>
       </summary>
       <p className="hint">
-        Les références sont des citations insérées dans le texte. Les mentions sont des noms ou
-        alias repérés littéralement : elles ne confirment ni l’identité ni une association au
-        projet.
+        {t(
+          'Les références sont des citations insérées dans le texte. Les mentions sont des noms ou alias repérés littéralement : elles ne confirment ni l’identité ni une association au projet.',
+        )}
       </p>
-      {!matches.length && <p className="hint">Aucune occurrence dans les textes actuels.</p>}
-      {references.length > 0 && <p className="hint">Références explicites · {references.length}</p>}
+      {!matches.length && <p className="hint">{t('Aucune occurrence dans les textes actuels.')}</p>}
+      {references.length > 0 && (
+        <p className="hint">{t('Références explicites · {0}', { 0: references.length })}</p>
+      )}
       {show(references, referenceLimit, () => setReferenceLimit((n) => n + 12))}
-      {mentions.length > 0 && <p className="hint">Mentions du nom · {mentions.length}</p>}
+      {mentions.length > 0 && (
+        <p className="hint">{t('Mentions du nom · {0}', { 0: mentions.length })}</p>
+      )}
       {show(mentions, mentionLimit, () => setMentionLimit((n) => n + 12))}
     </details>
   );

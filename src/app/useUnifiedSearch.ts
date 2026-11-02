@@ -1,12 +1,14 @@
+import { useLocale } from '../i18n';
 import { useEffect, useMemo, useState } from 'react';
 import { request } from './client';
 import type { Project, Source } from './types';
 import { searchManuscript } from './projectSearch';
 export function useUnifiedSearch(project: Project | null, query: string, version = 0) {
+  const locale = useLocale();
   const term = query.trim();
   const manuscript = useMemo(
     () => searchManuscript(project?.sections ?? [], term),
-    [project?.sections, term],
+    [project?.sections, term, locale],
   );
   const [result, setResult] = useState<{
     path: string;

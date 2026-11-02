@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { ArrowUpRight, Copy, Quote, Link2 } from 'lucide-react';
 import type { Source } from '../app/types';
 import type { MenuAction, MenuContent } from '../components/ContextMenu';
@@ -30,19 +31,22 @@ export function sourceContext(
     copy: MenuAction[] = [];
   const quote = options.quote ?? sourceExcerpt(source);
   if (options.onRead)
-    actions.push({ label: 'Ouvrir la note', icon: ArrowUpRight, run: options.onRead });
+    actions.push({ label: t('Ouvrir la note'), icon: ArrowUpRight, run: options.onRead });
   if (quote && options.onCite)
-    actions.push({ label: 'Citer l’extrait', icon: Quote, run: () => options.onCite!(quote) });
+    actions.push({ label: t('Citer l’extrait'), icon: Quote, run: () => options.onCite!(quote) });
   if (options.onAssociate)
-    actions.push({ label: 'Associer à la préparation', icon: Link2, run: options.onAssociate });
+    actions.push({ label: t('Associer à la préparation'), icon: Link2, run: options.onAssociate });
   if (typeof navigator.clipboard?.writeText === 'function') {
     if (quote)
       copy.push({
-        label: 'Copier l’extrait',
+        label: t('Copier l’extrait'),
         icon: Copy,
         run: () => navigator.clipboard.writeText(quote),
       });
-    copy.push({ label: 'Copier le titre', run: () => navigator.clipboard.writeText(source.title) });
+    copy.push({
+      label: t('Copier le titre'),
+      run: () => navigator.clipboard.writeText(source.title),
+    });
   }
   return { title: source.title, detail: source.kind, groups: [actions, copy] };
 }

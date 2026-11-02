@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { X } from 'lucide-react';
 import type { Settings as Values } from './types';
 import { FormattingToolbar } from '../components/FormattingToolbar';
@@ -17,42 +18,45 @@ export function Settings({
   onFormat: (format: MarkdownFormat) => void;
   canFormat: boolean;
 }) {
+  useLocale();
   return (
     <section
       id="writing-settings"
       className="settings floating"
-      aria-label="Réglages d’écriture"
+      aria-label={t('Réglages d’écriture')}
       aria-hidden={!open}
       inert={!open}
     >
       <div className="panel-top">
-        <h2>Écriture et lecture</h2>
-        <button className="icon-button" aria-label="Fermer les réglages" onClick={onClose}>
+        <h2>{t('Écriture et lecture')}</h2>
+        <button className="icon-button" aria-label={t('Fermer les réglages')} onClick={onClose}>
           <X size={15} />
         </button>
       </div>
       <FormattingToolbar onFormat={onFormat} disabled={!canFormat} />
-      <div className="settings-row" role="group" aria-label="Typographie">
-        <span className="settings-label">Typographie</span>
+      <div className="settings-row" role="group" aria-label={t('Typographie')}>
+        <span className="settings-label">{t('Typographie')}</span>
         <div className="segmented">
           <button
             className={value.font === 'literary' ? 'active' : ''}
             onClick={() => onChange({ font: 'literary' })}
           >
-            Littéraire
+            {t('Littéraire')}
           </button>
           <button
             className={value.font === 'mono' ? 'active' : ''}
             onClick={() => onChange({ font: 'mono' })}
           >
-            Chasse fixe
+            {t('Chasse fixe')}
           </button>
         </div>
       </div>
       <label className="settings-row">
-        <span className="settings-label">Taille du texte · {value.fontSize} px</span>
+        <span className="settings-label">
+          {t('Taille du texte · {0} px', { 0: value.fontSize })}
+        </span>
         <input
-          aria-label="Taille du texte"
+          aria-label={t('Taille du texte')}
           type="range"
           min="17"
           max="30"
@@ -61,30 +65,30 @@ export function Settings({
         />
       </label>
       <label className="settings-row">
-        <span className="settings-label">Concentration</span>
+        <span className="settings-label">{t('Concentration')}</span>
         <select
           value={value.focus}
           onChange={(e) => onChange({ focus: e.target.value as Values['focus'] })}
         >
-          <option value="none">Aucune</option>
-          <option value="paragraph">Paragraphe</option>
-          <option value="sentence">Phrase</option>
+          <option value="none">{t('Aucune')}</option>
+          <option value="paragraph">{t('Paragraphe')}</option>
+          <option value="sentence">{t('Phrase')}</option>
         </select>
       </label>
-      <div className="settings-row" role="group" aria-label="Défilement">
-        <span className="settings-label">Défilement</span>
+      <div className="settings-row" role="group" aria-label={t('Défilement')}>
+        <span className="settings-label">{t('Défilement')}</span>
         <div className="segmented">
           <button
             className={!value.typewriter ? 'active' : ''}
             onClick={() => onChange({ typewriter: false })}
           >
-            Classique
+            {t('Classique')}
           </button>
           <button
             className={value.typewriter ? 'active' : ''}
             onClick={() => onChange({ typewriter: true })}
           >
-            Machine à écrire
+            {t('Machine à écrire')}
           </button>
         </div>
       </div>

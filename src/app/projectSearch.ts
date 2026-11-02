@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { Section } from './types';
 import { ordered } from '../project/tree';
 import { normalizedMatches } from '../editor/normalizedSearch';
@@ -24,7 +25,7 @@ export function searchManuscript(sections: Section[], query: string) {
         items.push({
           key: section.id + ':' + from,
           section: section.id,
-          title: section.title || 'Sans titre',
+          title: section.title || t('Sans titre'),
           from,
           to,
           excerpt:
@@ -42,7 +43,7 @@ export function searchManuscript(sections: Section[], query: string) {
           title: section.title,
           from: null,
           to: null,
-          excerpt: 'Titre du texte ou du dossier',
+          excerpt: t('Titre du texte ou du dossier'),
         });
     }
   }

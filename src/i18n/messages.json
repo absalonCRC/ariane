@@ -1,0 +1,3470 @@
+{
+  "Ouverture du projet": [
+    "Opening project",
+    "Abriendo el proyecto"
+  ],
+  "Revenir au projet": [
+    "Back to project",
+    "Volver al proyecto"
+  ],
+  "Dans votre manuscrit": [
+    "In your manuscript",
+    "En tu manuscrito"
+  ],
+  "Fiche du manuscrit": [
+    "Manuscript entry",
+    "Ficha del manuscrito"
+  ],
+  "Déplier la sidebar": [
+    "Expand sidebar",
+    "Desplegar la barra lateral"
+  ],
+  "Ouvrir la sidebar": [
+    "Open sidebar",
+    "Abrir la barra lateral"
+  ],
+  "Menu du projet": [
+    "Project menu",
+    "Menú del proyecto"
+  ],
+  "Exporter le manuscrit": [
+    "Export manuscript",
+    "Exportar el manuscrito"
+  ],
+  "Sources du projet": [
+    "Project sources",
+    "Fuentes del proyecto"
+  ],
+  "Créer une variante / Voir les versions": [
+    "Create a variant / View versions",
+    "Crear una variante / Ver versiones"
+  ],
+  "Créer un projet": [
+    "Create a project",
+    "Crear un proyecto"
+  ],
+  "Ouvrir un projet": [
+    "Open a project",
+    "Abrir un proyecto"
+  ],
+  "Texte de travail · Hors manuscrit": [
+    "Working text · Outside manuscript",
+    "Texto de trabajo · Fuera del manuscrito"
+  ],
+  "Aucun texte inclus dans le manuscrit.": [
+    "No texts included in the manuscript.",
+    "No hay textos incluidos en el manuscrito."
+  ],
+  "Choisir les textes dans la bibliothèque": [
+    "Choose texts in the library",
+    "Elegir textos en la biblioteca"
+  ],
+  "Ajouter une scène à cette section": [
+    "Add a scene to this section",
+    "Añadir una escena a esta sección"
+  ],
+  "Ouverture des versions…": [
+    "Opening versions…",
+    "Abriendo las versiones…"
+  ],
+  "associée à cette section": [
+    "linked to this section",
+    "vinculada a esta sección"
+  ],
+  "mention détectée": [
+    "mention detected",
+    "mención detectada"
+  ],
+  "lien entre sources": [
+    "link between sources",
+    "enlace entre fuentes"
+  ],
+  "Réduire": [
+    "Collapse",
+    "Contraer"
+  ],
+  "Réduire les sources": [
+    "Collapse sources",
+    "Contraer las fuentes"
+  ],
+  "Sources dans la marge": [
+    "Sources in the margin",
+    "Fuentes en el margen"
+  ],
+  "Reprendre le fil": [
+    "Pick up where you left off",
+    "Retomar el hilo"
+  ],
+  "Passage suggéré": [
+    "Suggested passage",
+    "Pasaje sugerido"
+  ],
+  "Ouvrir la fiche": [
+    "Open entry",
+    "Abrir la ficha"
+  ],
+  "Voir le passage": [
+    "View passage",
+    "Ver el pasaje"
+  ],
+  "Copier l’extrait": [
+    "Copy excerpt",
+    "Copiar el fragmento"
+  ],
+  "Depuis votre texte": [
+    "From your text",
+    "Desde tu texto"
+  ],
+  "Passage à confronter": [
+    "Passage to compare",
+    "Pasaje para contrastar"
+  ],
+  "Enregistrement…": [
+    "Saving…",
+    "Guardando…"
+  ],
+  "Modifications non enregistrées": [
+    "Unsaved changes",
+    "Cambios sin guardar"
+  ],
+  "Modifications en cours": [
+    "Editing",
+    "Edición en curso"
+  ],
+  "Sans titre": [
+    "Untitled",
+    "Sin título"
+  ],
+  "Scène": [
+    "Scene",
+    "Escena"
+  ],
+  "Chapitre": [
+    "Chapter",
+    "Capítulo"
+  ],
+  "Section": [
+    "Section",
+    "Sección"
+  ],
+  "Fiches du manuscrit": [
+    "Manuscript entries",
+    "Fichas del manuscrito"
+  ],
+  "Rechercher dans les sources": [
+    "Search sources",
+    "Buscar en las fuentes"
+  ],
+  "Outils des versions": [
+    "Version tools",
+    "Herramientas de versiones"
+  ],
+  "Réglages d’écriture": [
+    "Writing settings",
+    "Ajustes de escritura"
+  ],
+  "Préparation des sources · {0} / {1}": [
+    "Preparing sources · {0} / {1}",
+    "Preparando las fuentes · {0} / {1}"
+  ],
+  "Suspendre": [
+    "Pause",
+    "Pausar"
+  ],
+  "Fermer la recherche": [
+    "Close search",
+    "Cerrar la búsqueda"
+  ],
+  "Rechercher dans les textes et les vaults": [
+    "Search texts and vaults",
+    "Buscar en los textos y los vaults"
+  ],
+  "Rechercher une section": [
+    "Go to a section",
+    "Ir a una sección"
+  ],
+  "Rechercher une section…": [
+    "Search for a section…",
+    "Buscar una sección…"
+  ],
+  "Rechercher dans les textes et les vaults…": [
+    "Search texts and vaults…",
+    "Buscar en los textos y los vaults…"
+  ],
+  "Aucun résultat": [
+    "No results",
+    "Sin resultados"
+  ],
+  "Résultats de recherche": [
+    "Search results",
+    "Resultados de búsqueda"
+  ],
+  "{0} résultat{1} dans les textes": [
+    "{0} result{1} in texts",
+    "{0} resultado{1} en los textos"
+  ],
+  "Aucun passage dans les textes": [
+    "No passages found in texts",
+    "No hay pasajes en los textos"
+  ],
+  " · {0} affichés, précisez la recherche": [
+    " · {0} shown, refine your search",
+    " · {0} mostrados, concreta la búsqueda"
+  ],
+  "Passages du projet": [
+    "Project passages",
+    "Pasajes del proyecto"
+  ],
+  "Paramètres": [
+    "Settings",
+    "Configuración"
+  ],
+  "Catégories de paramètres": [
+    "Settings categories",
+    "Categorías de configuración"
+  ],
+  "Apparence": [
+    "Appearance",
+    "Apariencia"
+  ],
+  "Une interface calme, adaptée à votre lumière. Le thème s’applique à toute l’application.": [
+    "A calm interface that suits your lighting. The theme applies throughout the application.",
+    "Una interfaz tranquila, adaptada a la luz de tu entorno. El tema se aplica a toda la aplicación."
+  ],
+  "Thème": [
+    "Theme",
+    "Tema"
+  ],
+  "Clair": [
+    "Light",
+    "Claro"
+  ],
+  "Sombre": [
+    "Dark",
+    "Oscuro"
+  ],
+  "Système": [
+    "System",
+    "Sistema"
+  ],
+  "Texte de ce projet": [
+    "Text in this project",
+    "Texto de este proyecto"
+  ],
+  "Typographie": [
+    "Typography",
+    "Tipografía"
+  ],
+  "Littéraire · EB Garamond": [
+    "Literary · EB Garamond",
+    "Literaria · EB Garamond"
+  ],
+  "Chasse fixe": [
+    "Monospace",
+    "Monoespaciada"
+  ],
+  "Taille du texte ·": [
+    "Text size ·",
+    "Tamaño del texto ·"
+  ],
+  "px": [
+    "px",
+    "px"
+  ],
+  "Taille du texte": [
+    "Text size",
+    "Tamaño del texto"
+  ],
+  "La page s’ouvre. Une phrase trouve son rythme.": [
+    "The page opens. A sentence finds its rhythm.",
+    "La página se abre. Una frase encuentra su ritmo."
+  ],
+  "Écriture": [
+    "Writing",
+    "Escritura"
+  ],
+  "Ces réglages sont conservés avec le projet.": [
+    "These settings are saved with the project.",
+    "Estos ajustes se guardan con el proyecto."
+  ],
+  "Concentration": [
+    "Focus",
+    "Concentración"
+  ],
+  "Aucune": [
+    "None",
+    "Ninguna"
+  ],
+  "Paragraphe actif": [
+    "Active paragraph",
+    "Párrafo activo"
+  ],
+  "Phrase active": [
+    "Active sentence",
+    "Frase activa"
+  ],
+  "Machine à écrire": [
+    "Typewriter",
+    "Máquina de escribir"
+  ],
+  "Garder la ligne active au centre pendant la saisie.": [
+    "Keep the active line centred while typing.",
+    "Mantener la línea activa en el centro al escribir."
+  ],
+  "Révision": [
+    "Revision",
+    "Revisión"
+  ],
+  "Afficher les repères de révision dans l’éditeur.": [
+    "Show revision markers in the editor.",
+    "Mostrar las marcas de revisión en el editor."
+  ],
+  "Compteur": [
+    "Counter",
+    "Contador"
+  ],
+  "Mots": [
+    "Words",
+    "Palabras"
+  ],
+  "Caractères": [
+    "Characters",
+    "Caracteres"
+  ],
+  "Lignes": [
+    "Lines",
+    "Líneas"
+  ],
+  "Langue du document": [
+    "Document language",
+    "Idioma del documento"
+  ],
+  "Français": [
+    "Français",
+    "Français"
+  ],
+  "English": [
+    "English",
+    "English"
+  ],
+  "Español": [
+    "Español",
+    "Español"
+  ],
+  "Deutsch": [
+    "Deutsch",
+    "Deutsch"
+  ],
+  "Italiano": [
+    "Italiano",
+    "Italiano"
+  ],
+  "Sources et références": [
+    "Sources and references",
+    "Fuentes y referencias"
+  ],
+  "Profondeur de recherche ·": [
+    "Search depth ·",
+    "Profundidad de búsqueda ·"
+  ],
+  "Profondeur des sources": [
+    "Source depth",
+    "Profundidad de las fuentes"
+  ],
+  "0 · Notes détectées dans le texte — 5 · Exploration des liens": [
+    "0 · Notes detected in the text — 5 · Explore links",
+    "0 · Notas detectadas en el texto — 5 · Exploración de enlaces"
+  ],
+  "Style des citations": [
+    "Citation style",
+    "Estilo de citas"
+  ],
+  "Notes simples": [
+    "Simple notes",
+    "Notas simples"
+  ],
+  "Bibliographie · APA": [
+    "Bibliography · APA",
+    "Bibliografía · APA"
+  ],
+  "Bibliographie · Chicago": [
+    "Bibliography · Chicago",
+    "Bibliografía · Chicago"
+  ],
+  "Enrichir les fiches pendant l’écriture": [
+    "Enrich entries while writing",
+    "Enriquecer las fichas al escribir"
+  ],
+  "Analyse locale après une pause, conservée dans ce projet.": [
+    "Local analysis after a pause, saved in this project.",
+    "Análisis local tras una pausa, guardado en este proyecto."
+  ],
+  "Disponible dans l’application macOS.": [
+    "Available in the macOS application.",
+    "Disponible en la aplicación para macOS."
+  ],
+  "Enrichissement suspendu : {0}": [
+    "Enrichment paused: {0}",
+    "Enriquecimiento pausado: {0}"
+  ],
+  "Vaults connectés": [
+    "Connected vaults",
+    "Vaults conectados"
+  ],
+  "Projet et données": [
+    "Project and data",
+    "Proyecto y datos"
+  ],
+  "Projet": [
+    "Project",
+    "Proyecto"
+  ],
+  "Emplacement": [
+    "Location",
+    "Ubicación"
+  ],
+  "Aperçu local de ce navigateur": [
+    "Local preview in this browser",
+    "Vista previa local de este navegador"
+  ],
+  "Textes": [
+    "Texts",
+    "Textos"
+  ],
+  "{0} textes · {1} inclus dans le manuscrit": [
+    "{0} texts · {1} included in the manuscript",
+    "{0} textos · {1} incluidos en el manuscrito"
+  ],
+  "Enregistrement": [
+    "Saving",
+    "Guardado"
+  ],
+  "Les modifications sont enregistrées automatiquement. Les versions permettent de conserver un état nommé et de revenir sur une révision.": [
+    "Changes are saved automatically. Versions let you keep a named snapshot and revisit a revision.",
+    "Los cambios se guardan automáticamente. Las versiones permiten conservar un estado con nombre y volver a una revisión."
+  ],
+  "Ouvrir les versions": [
+    "Open versions",
+    "Abrir las versiones"
+  ],
+  "Confidentialité": [
+    "Privacy",
+    "Privacidad"
+  ],
+  "La recherche et l’analyse s’exécutent localement dans l’application macOS. Les vaults externes restent en lecture seule.": [
+    "Search and analysis run locally in the macOS application. External vaults remain read-only.",
+    "La búsqueda y el análisis se ejecutan localmente en la aplicación para macOS. Los vaults externos permanecen en modo de solo lectura."
+  ],
+  "Raccourcis": [
+    "Keyboard shortcuts",
+    "Atajos de teclado"
+  ],
+  "Rechercher textes et sources": [
+    "Search texts and sources",
+    "Buscar textos y fuentes"
+  ],
+  "Rejoindre une section": [
+    "Go to a section",
+    "Ir a una sección"
+  ],
+  "Commandes": [
+    "Commands",
+    "Comandos"
+  ],
+  "Ouvrir ou replier la sidebar": [
+    "Open or collapse sidebar",
+    "Abrir o contraer la barra lateral"
+  ],
+  "Enregistrer": [
+    "Save",
+    "Guardar"
+  ],
+  "Exporter": [
+    "Export",
+    "Exportar"
+  ],
+  "Dicter": [
+    "Dictate",
+    "Dictar"
+  ],
+  "Parcourir la bibliothèque": [
+    "Browse the library",
+    "Explorar la biblioteca"
+  ],
+  "Replier / déplier une branche": [
+    "Collapse / expand a branch",
+    "Contraer / desplegar una rama"
+  ],
+  "Renommer dans la bibliothèque": [
+    "Rename in the library",
+    "Renombrar en la biblioteca"
+  ],
+  "Sélectionner plusieurs textes": [
+    "Select multiple texts",
+    "Seleccionar varios textos"
+  ],
+  "Annuler un rangement, dans la bibliothèque": [
+    "Undo organisation in the library",
+    "Deshacer la organización en la biblioteca"
+  ],
+  "Écriture et lecture": [
+    "Writing and reading",
+    "Escritura y lectura"
+  ],
+  "Fermer les réglages": [
+    "Close settings",
+    "Cerrar los ajustes"
+  ],
+  "Littéraire": [
+    "Literary",
+    "Literaria"
+  ],
+  "Taille du texte · {0} px": [
+    "Text size · {0} px",
+    "Tamaño del texto · {0} px"
+  ],
+  "Paragraphe": [
+    "Paragraph",
+    "Párrafo"
+  ],
+  "Phrase": [
+    "Sentence",
+    "Frase"
+  ],
+  "Défilement": [
+    "Scrolling",
+    "Desplazamiento"
+  ],
+  "Classique": [
+    "Classic",
+    "Clásico"
+  ],
+  "Enregistrer le projet dans…": [
+    "Save project in…",
+    "Guardar el proyecto en…"
+  ],
+  "Ouvrir un projet Ariane": [
+    "Open an Ariane project",
+    "Abrir un proyecto de Ariane"
+  ],
+  "Un espace pour écrire.": [
+    "A space to write.",
+    "Un espacio para escribir."
+  ],
+  "Tout reste sur ce Mac.": [
+    "Everything stays on this Mac.",
+    "Todo se queda en este Mac."
+  ],
+  "Nouveau projet": [
+    "New project",
+    "Nuevo proyecto"
+  ],
+  "Nom du projet": [
+    "Project name",
+    "Nombre del proyecto"
+  ],
+  "Le titre de votre projet": [
+    "Your project title",
+    "El título de tu proyecto"
+  ],
+  "Annuler": [
+    "Cancel",
+    "Cancelar"
+  ],
+  "Créer le projet": [
+    "Create project",
+    "Crear el proyecto"
+  ],
+  "Choisir un dossier…": [
+    "Choose a folder…",
+    "Elegir una carpeta…"
+  ],
+  "Ouverture…": [
+    "Opening…",
+    "Abriendo…"
+  ],
+  "Vos projets": [
+    "Your projects",
+    "Tus proyectos"
+  ],
+  "Ouvrir un dossier…": [
+    "Open a folder…",
+    "Abrir una carpeta…"
+  ],
+  "Fermer le message de rangement": [
+    "Dismiss organisation message",
+    "Cerrar el mensaje de organización"
+  ],
+  "Export en cours…": [
+    "Exporting…",
+    "Exportando…"
+  ],
+  "Votre manuscrit est prêt.": [
+    "Your manuscript is ready.",
+    "Tu manuscrito está listo."
+  ],
+  "L’export n’a pas abouti.": [
+    "The export could not be completed.",
+    "No se ha podido completar la exportación."
+  ],
+  "Voir l’export": [
+    "View export",
+    "Ver la exportación"
+  ],
+  "Fermer": [
+    "Close",
+    "Cerrar"
+  ],
+  "Votre texte a été récupéré.": [
+    "Your text has been recovered.",
+    "Tu texto se ha recuperado."
+  ],
+  "Reprendre l’écriture": [
+    "Resume writing",
+    "Volver a escribir"
+  ],
+  "Voir les versions": [
+    "View versions",
+    "Ver las versiones"
+  ],
+  "Ce texte a été modifié ailleurs. Une copie sera conservée avant résolution.": [
+    "This text was modified elsewhere. A copy will be kept before resolving the conflict.",
+    "Este texto se ha modificado en otro lugar. Se conservará una copia antes de resolver el conflicto."
+  ],
+  "Lire la version externe": [
+    "Read external version",
+    "Leer la versión externa"
+  ],
+  "Conserver mon texte": [
+    "Keep my text",
+    "Conservar mi texto"
+  ],
+  "Réessayer": [
+    "Retry",
+    "Reintentar"
+  ],
+  "Fermer le message": [
+    "Dismiss message",
+    "Cerrar el mensaje"
+  ],
+  "Ouvrez un projet pour continuer.": [
+    "Open a project to continue.",
+    "Abre un proyecto para continuar."
+  ],
+  "Disponible dans l’application macOS": [
+    "Available in the macOS application",
+    "Disponible en la aplicación para macOS"
+  ],
+  "Cette fonction est disponible dans l’application Mac.": [
+    "This feature is available in the Mac application.",
+    "Esta función está disponible en la aplicación para Mac."
+  ],
+  "Version de texte périmée.": [
+    "Text version is out of date.",
+    "La versión del texto está desactualizada."
+  ],
+  "Section répétée dans la sauvegarde.": [
+    "Duplicate section in save.",
+    "Sección repetida al guardar."
+  ],
+  "Structure de passages invalide.": [
+    "Invalid passage structure.",
+    "Estructura de pasajes no válida."
+  ],
+  "Ce projet possède déjà un vault.": [
+    "This project already has a vault.",
+    "Este proyecto ya tiene un vault."
+  ],
+  "Créez un vault Ariane.": [
+    "Create an Ariane vault.",
+    "Crea un vault de Ariane."
+  ],
+  "Nom ou type de fiche invalide.": [
+    "Invalid entry name or type.",
+    "Nombre o tipo de ficha no válido."
+  ],
+  "Cette fiche existe déjà.": [
+    "This entry already exists.",
+    "Esta ficha ya existe."
+  ],
+  "Version introuvable": [
+    "Version not found",
+    "Versión no encontrada"
+  ],
+  "Cette fonction utilise le moteur Rust et les fichiers locaux. Ouvrez l’application macOS.": [
+    "This feature uses the Rust engine and local files. Open the macOS application.",
+    "Esta función utiliza el motor Rust y los archivos locales. Abre la aplicación para macOS."
+  ],
+  "Titre du texte ou du dossier": [
+    "Text or folder title",
+    "Título del texto o de la carpeta"
+  ],
+  "Ouvrir le classeur": [
+    "Open binder",
+    "Abrir el archivador"
+  ],
+  "Annoter la sélection / Voir les annotations": [
+    "Annotate selection / View annotations",
+    "Anotar la selección / Ver anotaciones"
+  ],
+  "Importer un manuscrit": [
+    "Import a manuscript",
+    "Importar un manuscrito"
+  ],
+  "Séparer ou réunir des scènes": [
+    "Split or join scenes",
+    "Separar o unir escenas"
+  ],
+  "Préparer cette section": [
+    "Prepare this section",
+    "Preparar esta sección"
+  ],
+  "Indenter le passage": [
+    "Indent passage",
+    "Sangrar el pasaje"
+  ],
+  "Désindenter le passage": [
+    "Outdent passage",
+    "Reducir la sangría del pasaje"
+  ],
+  "Monter la branche": [
+    "Move branch up",
+    "Subir la rama"
+  ],
+  "Descendre la branche": [
+    "Move branch down",
+    "Bajar la rama"
+  ],
+  "Replier ou déplier le passage": [
+    "Collapse or expand passage",
+    "Contraer o desplegar el pasaje"
+  ],
+  "Lire le manuscrit entier": [
+    "Read the whole manuscript",
+    "Leer el manuscrito completo"
+  ],
+  "Ajouter une scène": [
+    "Add a scene",
+    "Añadir una escena"
+  ],
+  "Le texte a changé. Replacez le curseur puis réessayez.": [
+    "The text has changed. Reposition the cursor and try again.",
+    "El texto ha cambiado. Vuelve a colocar el cursor e inténtalo de nuevo."
+  ],
+  "Texte réorganisé.": [
+    "Text reorganised.",
+    "Texto reorganizado."
+  ],
+  "Le texte a changé. Relancez la comparaison.": [
+    "The text has changed. Run the comparison again.",
+    "El texto ha cambiado. Vuelve a ejecutar la comparación."
+  ],
+  "Cette action n’a pas pu aboutir. Vérifiez notamment l’accès au presse-papiers.": [
+    "This action could not be completed. Check clipboard access.",
+    "No se ha podido completar esta acción. Comprueba el acceso al portapapeles."
+  ],
+  "Cette action n’a pas pu aboutir.": [
+    "This action could not be completed.",
+    "No se ha podido completar esta acción."
+  ],
+  "Profondeur {0} : {1} Régler la profondeur": [
+    "Depth {0}: {1} Adjust depth",
+    "Profundidad {0}: {1} Ajustar la profundidad"
+  ],
+  "Niveau {0} : {1}. {2}": [
+    "Level {0}: {1}. {2}",
+    "Nivel {0}: {1}. {2}"
+  ],
+  "Titre de la section": [
+    "Section title",
+    "Título de la sección"
+  ],
+  "Titre de la page": [
+    "Page title",
+    "Título de la página"
+  ],
+  "Titre": [
+    "Title",
+    "Título"
+  ],
+  "Modifier le titre": [
+    "Edit title",
+    "Modificar el título"
+  ],
+  "Copier le titre": [
+    "Copy title",
+    "Copiar el título"
+  ],
+  "Formatage Markdown": [
+    "Markdown formatting",
+    "Formato Markdown"
+  ],
+  "Formatage": [
+    "Formatting",
+    "Formato"
+  ],
+  "Niveau de titre": [
+    "Heading level",
+    "Nivel de encabezado"
+  ],
+  "Titre…": [
+    "Heading…",
+    "Encabezado…"
+  ],
+  "Texte normal": [
+    "Normal text",
+    "Texto normal"
+  ],
+  "Titre {0}": [
+    "Heading {0}",
+    "Encabezado {0}"
+  ],
+  "Mise en forme du texte": [
+    "Text formatting",
+    "Formato del texto"
+  ],
+  "Annoter la sélection": [
+    "Annotate selection",
+    "Anotar la selección"
+  ],
+  "Mettre en forme la sélection": [
+    "Format selection",
+    "Dar formato a la selección"
+  ],
+  "Thème sombre": [
+    "Dark theme",
+    "Tema oscuro"
+  ],
+  "Passer au thème clair": [
+    "Switch to light theme",
+    "Cambiar al tema claro"
+  ],
+  "Passer au thème sombre": [
+    "Switch to dark theme",
+    "Cambiar al tema oscuro"
+  ],
+  "Revenir au texte": [
+    "Back to text",
+    "Volver al texto"
+  ],
+  "Pause": [
+    "Break",
+    "Descanso"
+  ],
+  "Pause longue": [
+    "Long break",
+    "Descanso largo"
+  ],
+  "caractère": [
+    "character",
+    "carácter"
+  ],
+  "caractères": [
+    "characters",
+    "caracteres"
+  ],
+  "ligne": [
+    "line",
+    "línea"
+  ],
+  "lignes": [
+    "lines",
+    "líneas"
+  ],
+  "mot": [
+    "word",
+    "palabra"
+  ],
+  "mots": [
+    "words",
+    "palabras"
+  ],
+  "note": [
+    "note",
+    "nota"
+  ],
+  "notes": [
+    "notes",
+    "notas"
+  ],
+  "Recherche des notes du vault en cours": [
+    "Searching vault notes",
+    "Buscando notas del vault"
+  ],
+  "Nombre de notes du vault indisponible": [
+    "Vault note count unavailable",
+    "Número de notas del vault no disponible"
+  ],
+  "suggérée": [
+    "suggested",
+    "sugerida"
+  ],
+  "suggérées": [
+    "suggested",
+    "sugeridas"
+  ],
+  "{0} {1} du vault {2} pour le passage affiché": [
+    "{0} vault {1} {2} for the displayed passage",
+    "{0} {1} del vault {2} para el pasaje mostrado"
+  ],
+  "pause ": [
+    "break ",
+    "descanso "
+  ],
+  " en pause": [
+    " paused",
+    " en pausa"
+  ],
+  "Compteur et Pomodoro": [
+    "Counter and Pomodoro",
+    "Contador y Pomodoro"
+  ],
+  "Mettre le minuteur en pause": [
+    "Pause timer",
+    "Pausar el temporizador"
+  ],
+  "Démarrer le minuteur": [
+    "Start timer",
+    "Iniciar el temporizador"
+  ],
+  "Recommencer le cycle Pomodoro": [
+    "Restart Pomodoro cycle",
+    "Reiniciar el ciclo Pomodoro"
+  ],
+  "Manuscrit": [
+    "Manuscript",
+    "Manuscrito"
+  ],
+  "Couper": [
+    "Cut",
+    "Cortar"
+  ],
+  "Copier": [
+    "Copy",
+    "Copiar"
+  ],
+  "Coller": [
+    "Paste",
+    "Pegar"
+  ],
+  "Rétablir": [
+    "Redo",
+    "Rehacer"
+  ],
+  "Gras": [
+    "Bold",
+    "Negrita"
+  ],
+  "Italique": [
+    "Italic",
+    "Cursiva"
+  ],
+  "Monter le passage": [
+    "Move passage up",
+    "Subir el pasaje"
+  ],
+  "Descendre le passage": [
+    "Move passage down",
+    "Bajar el pasaje"
+  ],
+  "Déplier les sous-passages": [
+    "Expand subpassages",
+    "Desplegar los subpasajes"
+  ],
+  "Replier les sous-passages": [
+    "Collapse subpassages",
+    "Contraer los subpasajes"
+  ],
+  "Sélection": [
+    "Selection",
+    "Selección"
+  ],
+  "Passage": [
+    "Passage",
+    "Pasaje"
+  ],
+  "{0} mot{1} sélectionné{2}": [
+    "{0} word{1} selected",
+    "{0} palabra{1} seleccionada{2}"
+  ],
+  "description de l’image": [
+    "image description",
+    "descripción de la imagen"
+  ],
+  "texte du lien": [
+    "link text",
+    "texto del enlace"
+  ],
+  "Texte de la note": [
+    "Note text",
+    "Texto de la nota"
+  ],
+  "Tableau Markdown modifiable": [
+    "Editable Markdown table",
+    "Tabla Markdown editable"
+  ],
+  "Modifier le tableau": [
+    "Edit table",
+    "Modificar la tabla"
+  ],
+  "Ajouter une ligne": [
+    "Add row",
+    "Añadir una fila"
+  ],
+  "Supprimer la ligne": [
+    "Delete row",
+    "Eliminar la fila"
+  ],
+  "Ajouter une colonne": [
+    "Add column",
+    "Añadir una columna"
+  ],
+  "Supprimer la colonne": [
+    "Delete column",
+    "Eliminar la columna"
+  ],
+  "Modifier la cellule ligne {0}, colonne {1}": [
+    "Edit cell in row {0}, column {1}",
+    "Modificar la celda de la fila {0}, columna {1}"
+  ],
+  "Référence de la source": [
+    "Source reference",
+    "Referencia de la fuente"
+  ],
+  "Lire la note de source": [
+    "Read source note",
+    "Leer la nota de la fuente"
+  ],
+  "Image": [
+    "Image",
+    "Imagen"
+  ],
+  "Enrichissements du manuscrit": [
+    "Manuscript enrichment",
+    "Enriquecimiento del manuscrito"
+  ],
+  "Références liées": [
+    "Linked references",
+    "Referencias vinculadas"
+  ],
+  "Un même passage, affiché ici depuis le manuscrit. Modifiez l’original pour le retrouver à jour dans ses références.": [
+    "The same passage, shown here from the manuscript. Edit the original to keep its references up to date.",
+    "El mismo pasaje, mostrado aquí desde el manuscrito. Modifica el original para mantener sus referencias actualizadas."
+  ],
+  "À vérifier · valeurs différentes": [
+    "Check · different values",
+    "Por verificar · valores diferentes"
+  ],
+  "Déjà dans la fiche": [
+    "Already in the entry",
+    "Ya está en la ficha"
+  ],
+  "Complété depuis le manuscrit": [
+    "Added from the manuscript",
+    "Completado desde el manuscrito"
+  ],
+  "{0} · ligne {1}": [
+    "{0} · line {1}",
+    "{0} · línea {1}"
+  ],
+  "Les formulations incertaines, négatives ou citées restent du contexte ; elles ne remplissent pas de champ.": [
+    "Uncertain, negative or quoted statements remain context; they do not populate fields.",
+    "Las formulaciones inciertas, negativas o citadas se conservan como contexto; no rellenan campos."
+  ],
+  "Mentionnés dans le même passage : {0}": [
+    "Mentioned in the same passage: {0}",
+    "Mencionados en el mismo pasaje: {0}"
+  ],
+  "Masquer cette instance": [
+    "Hide this occurrence",
+    "Ocultar esta aparición"
+  ],
+  "{0} instance{1} liée{2}": [
+    "{0} linked occurrence{1}",
+    "{0} aparición(es) vinculada{2}"
+  ],
+  "Rétablir les instances masquées ({0})": [
+    "Restore hidden occurrences ({0})",
+    "Restablecer las apariciones ocultas ({0})"
+  ],
+  "Cette source a changé. Le rapprochement sera recalculé.": [
+    "This source has changed. The connection will be recalculated.",
+    "Esta fuente ha cambiado. La relación se volverá a calcular."
+  ],
+  "Mémoire du manuscrit": [
+    "Manuscript memory",
+    "Memoria del manuscrito"
+  ],
+  "REPRENDRE LE FIL": [
+    "PICK UP WHERE YOU LEFT OFF",
+    "RETOMAR EL HILO"
+  ],
+  "DEPUIS VOTRE TEXTE": [
+    "FROM YOUR TEXT",
+    "DESDE TU TEXTO"
+  ],
+  "Fermer la mémoire": [
+    "Close memory",
+    "Cerrar la memoria"
+  ],
+  "Au fil du manuscrit": [
+    "Through the manuscript",
+    "A lo largo del manuscrito"
+  ],
+  "Les fiches se constituent à partir de vos passages, sans modifier vos sources.": [
+    "Entries are built from your passages, without modifying your sources.",
+    "Las fichas se crean a partir de tus pasajes, sin modificar tus fuentes."
+  ],
+  "{0} passage(s)": [
+    "{0} passage(s)",
+    "{0} pasaje(s)"
+  ],
+  "Les noms et les lieux reconnus apparaîtront ici après une pause d’écriture.": [
+    "Recognised names and places will appear here after a pause in writing.",
+    "Los nombres y lugares reconocidos aparecerán aquí tras una pausa en la escritura."
+  ],
+  "L’analyse locale est momentanément indisponible. Les informations déjà enregistrées restent accessibles.": [
+    "Local analysis is temporarily unavailable. Previously saved information remains accessible.",
+    "El análisis local no está disponible temporalmente. La información ya guardada sigue siendo accesible."
+  ],
+  "Informations dérivées du manuscrit · chaque passage reste la référence.": [
+    "Information derived from the manuscript · each passage remains the reference.",
+    "Información derivada del manuscrito · cada pasaje sigue siendo la referencia."
+  ],
+  "Vers ": [
+    "Around ",
+    "Hacia "
+  ],
+  "Repères dans le temps": [
+    "Timeline",
+    "Cronología"
+  ],
+  "Passages liés": [
+    "Linked passages",
+    "Pasajes vinculados"
+  ],
+  "Rejoindre le passage": [
+    "Go to passage",
+    "Ir al pasaje"
+  ],
+  "Masquer ce rapprochement": [
+    "Hide this connection",
+    "Ocultar esta relación"
+  ],
+  "Passage à confronter à votre texte. Ce rapprochement ne constitue pas une confirmation.": [
+    "Compare this passage with your text. This connection does not constitute confirmation.",
+    "Contrasta este pasaje con tu texto. Esta relación no constituye una confirmación."
+  ],
+  "Page {0}": [
+    "Page {0}",
+    "Página {0}"
+  ],
+  "Lire dans la source": [
+    "Read in source",
+    "Leer en la fuente"
+  ],
+  "Dernier passage travaillé": [
+    "Last passage edited",
+    "Último pasaje trabajado"
+  ],
+  "Dernière source consultée": [
+    "Last source consulted",
+    "Última fuente consultada"
+  ],
+  "Passage précédent": [
+    "Previous passage",
+    "Pasaje anterior"
+  ],
+  "Le contexte de cette session sera conservé pendant votre travail.": [
+    "This session’s context will be saved as you work.",
+    "El contexto de esta sesión se conservará mientras trabajas."
+  ],
+  "L’export n’a pas abouti": [
+    "The export could not be completed",
+    "No se ha podido completar la exportación"
+  ],
+  "Contenu": [
+    "Content",
+    "Contenido"
+  ],
+  "Manuscrit entier": [
+    "Whole manuscript",
+    "Manuscrito completo"
+  ],
+  "Section actuelle": [
+    "Current section",
+    "Sección actual"
+  ],
+  "Titres, texte Markdown et notes de bas de page seront assemblés dans l’ordre du projet. Les textes exclus sont omis du manuscrit entier ; l’export de la section actuelle les conserve.": [
+    "Headings, Markdown text and footnotes will be assembled in project order. Excluded texts are omitted from the whole manuscript; exporting the current section keeps them.",
+    "Los títulos, el texto Markdown y las notas al pie se unirán en el orden del proyecto. Los textos excluidos se omiten del manuscrito completo; la exportación de la sección actual los conserva."
+  ],
+  "Préparation du document…": [
+    "Preparing document…",
+    "Preparando el documento…"
+  ],
+  "Vous pouvez fermer cette fenêtre et continuer à écrire.": [
+    "You can close this window and keep writing.",
+    "Puedes cerrar esta ventana y seguir escribiendo."
+  ],
+  "Annuler l’export": [
+    "Cancel export",
+    "Cancelar la exportación"
+  ],
+  "Nouvel export": [
+    "New export",
+    "Nueva exportación"
+  ],
+  "Les exports PDF, Word et EPUB sont disponibles dans l’application macOS.": [
+    "PDF, Word and EPUB exports are available in the macOS application.",
+    "Las exportaciones a PDF, Word y EPUB están disponibles en la aplicación para macOS."
+  ],
+  "Aucun texte inclus dans cet export.": [
+    "No texts included in this export.",
+    "No hay textos incluidos en esta exportación."
+  ],
+  "Avant reprise de passage": [
+    "Before applying passage",
+    "Antes de recuperar el pasaje"
+  ],
+  "Versions du texte": [
+    "Text versions",
+    "Versiones del texto"
+  ],
+  "Versions": [
+    "Versions",
+    "Versiones"
+  ],
+  "Fermer les outils des versions": [
+    "Close version tools",
+    "Cerrar las herramientas de versiones"
+  ],
+  "Conserver une version": [
+    "Save a version",
+    "Guardar una versión"
+  ],
+  "Parcourir les modifications": [
+    "Browse changes",
+    "Explorar los cambios"
+  ],
+  "Chargement…": [
+    "Loading…",
+    "Cargando…"
+  ],
+  "{0} passages modifiés": [
+    "{0} changed passages",
+    "{0} pasajes modificados"
+  ],
+  "Modification précédente": [
+    "Previous change",
+    "Cambio anterior"
+  ],
+  "Précédente": [
+    "Previous",
+    "Anterior"
+  ],
+  "Modification suivante": [
+    "Next change",
+    "Cambio siguiente"
+  ],
+  "Suivante": [
+    "Next",
+    "Siguiente"
+  ],
+  "Textes modifiés uniquement": [
+    "Changed texts only",
+    "Solo textos modificados"
+  ],
+  "Restaurer cette version…": [
+    "Restore this version…",
+    "Restaurar esta versión…"
+  ],
+  "Une sauvegarde est conservée avant chaque reprise ou restauration.": [
+    "A backup is kept before each passage is applied or version restored.",
+    "Se conserva una copia antes de recuperar un pasaje o restaurar una versión."
+  ],
+  "Nom": [
+    "Name",
+    "Nombre"
+  ],
+  "Avant révision, autre début…": [
+    "Before revision, another opening…",
+    "Antes de la revisión, otro comienzo…"
+  ],
+  "Portée": [
+    "Scope",
+    "Ámbito"
+  ],
+  "Tout le projet": [
+    "Whole project",
+    "Todo el proyecto"
+  ],
+  "Section actuelle et ses scènes": [
+    "Current section and its scenes",
+    "Sección actual y sus escenas"
+  ],
+  "Conserver": [
+    "Save",
+    "Conservar"
+  ],
+  "Aucune version enregistrée": [
+    "No saved versions",
+    "No hay versiones guardadas"
+  ],
+  "Conservez un état du texte pour comparer vos révisions côte à côte et reprendre les passages de votre choix.": [
+    "Save a snapshot to compare revisions side by side and recover the passages you choose.",
+    "Conserva un estado del texto para comparar tus revisiones en paralelo y recuperar los pasajes que elijas."
+  ],
+  "Conserver la première version": [
+    "Save the first version",
+    "Conservar la primera versión"
+  ],
+  "Aucun texte": [
+    "No text",
+    "Sin texto"
+  ],
+  " · Ajouté": [
+    " · Added",
+    " · Añadido"
+  ],
+  " · Retiré": [
+    " · Removed",
+    " · Retirado"
+  ],
+  "Texte comparé": [
+    "Compared text",
+    "Texto comparado"
+  ],
+  "+{0} mots": [
+    "+{0} words",
+    "+{0} palabras"
+  ],
+  "−{0} mots": [
+    "−{0} words",
+    "−{0} palabras"
+  ],
+  "Version de référence": [
+    "Reference version",
+    "Versión de referencia"
+  ],
+  "Texte actuel": [
+    "Current text",
+    "Texto actual"
+  ],
+  "Comparer avec": [
+    "Compare with",
+    "Comparar con"
+  ],
+  "Version comparée": [
+    "Compared version",
+    "Versión comparada"
+  ],
+  "pour sa section": [
+    "for its section",
+    "para su sección"
+  ],
+  "pour tout le projet": [
+    "for the whole project",
+    "para todo el proyecto"
+  ],
+  "Restaurer « {0} » {1} ? L’état actuel sera conservé avant restauration.": [
+    "Restore “{0}” {1}? The current state will be saved before restoration.",
+    "¿Restaurar «{0}» {1}? El estado actual se conservará antes de la restauración."
+  ],
+  "Confirmer la restauration": [
+    "Confirm restoration",
+    "Confirmar la restauración"
+  ],
+  "Chargement des versions…": [
+    "Loading versions…",
+    "Cargando las versiones…"
+  ],
+  "Ces versions concernent des sections différentes. Comparez chacune avec le texte actuel.": [
+    "These versions cover different sections. Compare each one with the current text.",
+    "Estas versiones corresponden a secciones diferentes. Compara cada una con el texto actual."
+  ],
+  "Le texte est identique ; les changements de structure figurent ci-dessus.": [
+    "The text is identical; structural changes are shown above.",
+    "El texto es idéntico; los cambios de estructura se muestran arriba."
+  ],
+  "Ce texte est vide dans les deux versions.": [
+    "This text is empty in both versions.",
+    "Este texto está vacío en ambas versiones."
+  ],
+  "Aucun texte dans cette sélection.": [
+    "No text in this selection.",
+    "No hay texto en esta selección."
+  ],
+  "Retrait": [
+    "Removal",
+    "Eliminación"
+  ],
+  "Ajout": [
+    "Addition",
+    "Adición"
+  ],
+  "Reprendre le passage de référence": [
+    "Apply reference passage",
+    "Recuperar el pasaje de referencia"
+  ],
+  "Passages comparés": [
+    "Compared passages",
+    "Pasajes comparados"
+  ],
+  "Les reprises de passages modifient le texte actuel. Une version est conservée avant chaque reprise.": [
+    "Applying passages changes the current text. A version is saved before each change.",
+    "Al recuperar pasajes se modifica el texto actual. Se conserva una versión antes de cada cambio."
+  ],
+  "Comparaison de deux instantanés. Choisissez « Texte actuel » à droite pour reprendre un passage.": [
+    "Comparing two snapshots. Choose “Current text” on the right to apply a passage.",
+    "Comparación de dos instantáneas. Elige «Texto actual» a la derecha para recuperar un pasaje."
+  ],
+  "Comparaison des versions": [
+    "Version comparison",
+    "Comparación de versiones"
+  ],
+  "Élément retiré": [
+    "Item removed",
+    "Elemento retirado"
+  ],
+  "Élément ajouté": [
+    "Item added",
+    "Elemento añadido"
+  ],
+  "Titre modifié": [
+    "Title changed",
+    "Título modificado"
+  ],
+  "Emplacement modifié": [
+    "Location changed",
+    "Ubicación modificada"
+  ],
+  "Ordre modifié": [
+    "Order changed",
+    "Orden modificado"
+  ],
+  "Espace modifié": [
+    "Space changed",
+    "Espacio modificado"
+  ],
+  "Inclusion dans le manuscrit modifiée": [
+    "Manuscript inclusion changed",
+    "Inclusión en el manuscrito modificada"
+  ],
+  "Synopsis modifié": [
+    "Synopsis changed",
+    "Sinopsis modificada"
+  ],
+  "Statut modifié": [
+    "Status changed",
+    "Estado modificado"
+  ],
+  "Objectif modifié": [
+    "Goal changed",
+    "Objetivo modificado"
+  ],
+  "Plan du texte modifié": [
+    "Text outline changed",
+    "Esquema del texto modificado"
+  ],
+  "Le passage a changé. Sélectionnez-le à nouveau pour l’annoter.": [
+    "The passage has changed. Select it again to annotate it.",
+    "El pasaje ha cambiado. Selecciónalo de nuevo para anotarlo."
+  ],
+  "Annotations du manuscrit": [
+    "Manuscript annotations",
+    "Anotaciones del manuscrito"
+  ],
+  "Annotations": [
+    "Annotations",
+    "Anotaciones"
+  ],
+  "Fermer les annotations": [
+    "Close annotations",
+    "Cerrar las anotaciones"
+  ],
+  "À vérifier ou à faire": [
+    "To check or do",
+    "Por verificar o hacer"
+  ],
+  "Ajouter l’annotation": [
+    "Add annotation",
+    "Añadir la anotación"
+  ],
+  "Afficher les annotations résolues": [
+    "Show resolved annotations",
+    "Mostrar las anotaciones resueltas"
+  ],
+  "Tout est résolu.": [
+    "Everything is resolved.",
+    "Todo está resuelto."
+  ],
+  "Sélectionnez un passage puis choisissez Annoter.": [
+    "Select a passage, then choose Annotate.",
+    "Selecciona un pasaje y elige Anotar."
+  ],
+  "Passage modifié ou introuvable": [
+    "Passage changed or not found",
+    "Pasaje modificado o no encontrado"
+  ],
+  "Annotation": [
+    "Annotation",
+    "Anotación"
+  ],
+  "Modifier": [
+    "Edit",
+    "Modificar"
+  ],
+  "Rouvrir": [
+    "Reopen",
+    "Reabrir"
+  ],
+  "Marquer comme résolu": [
+    "Mark as resolved",
+    "Marcar como resuelto"
+  ],
+  "Nouvelle section": [
+    "New section",
+    "Nueva sección"
+  ],
+  "Nouveau chapitre": [
+    "New chapter",
+    "Nuevo capítulo"
+  ],
+  "Nouvelle scène": [
+    "New scene",
+    "Nueva escena"
+  ],
+  "Aucun texte à inclure": [
+    "No texts to include",
+    "No hay textos para incluir"
+  ],
+  "Inclusion partielle · ": [
+    "Partly included · ",
+    "Inclusión parcial · "
+  ],
+  "Exclure du manuscrit": [
+    "Exclude from manuscript",
+    "Excluir del manuscrito"
+  ],
+  "Inclure dans le manuscrit": [
+    "Include in manuscript",
+    "Incluir en el manuscrito"
+  ],
+  "Inclus dans le manuscrit": [
+    "Included in manuscript",
+    "Incluido en el manuscrito"
+  ],
+  "Nom de la section": [
+    "Section name",
+    "Nombre de la sección"
+  ],
+  "Nom du chapitre": [
+    "Chapter name",
+    "Nombre del capítulo"
+  ],
+  "Nom de la scène": [
+    "Scene name",
+    "Nombre de la escena"
+  ],
+  "Valider le nom": [
+    "Confirm name",
+    "Confirmar el nombre"
+  ],
+  "Ouvrir": [
+    "Open",
+    "Abrir"
+  ],
+  "Renommer": [
+    "Rename",
+    "Renombrar"
+  ],
+  "Réunir avec « {0} »": [
+    "Join with “{0}”",
+    "Unir con «{0}»"
+  ],
+  "Déplier": [
+    "Expand",
+    "Desplegar"
+  ],
+  "Replier": [
+    "Collapse",
+    "Contraer"
+  ],
+  "Restaurer": [
+    "Restore",
+    "Restaurar"
+  ],
+  "Déplacer vers…": [
+    "Move to…",
+    "Mover a…"
+  ],
+  "Dupliquer": [
+    "Duplicate",
+    "Duplicar"
+  ],
+  "Mettre à la corbeille": [
+    "Move to trash",
+    "Mover a la papelera"
+  ],
+  "Nouvelle scène après celle-ci": [
+    "New scene after this one",
+    "Nueva escena después de esta"
+  ],
+  "Exclure les textes du manuscrit": [
+    "Exclude texts from manuscript",
+    "Excluir los textos del manuscrito"
+  ],
+  "Inclure les textes dans le manuscrit": [
+    "Include texts in manuscript",
+    "Incluir los textos en el manuscrito"
+  ],
+  "Un chapitre ne peut pas contenir un autre chapitre.": [
+    "A chapter cannot contain another chapter.",
+    "Un capítulo no puede contener otro capítulo."
+  ],
+  "Impossible de déplacer un élément dans sa propre branche.": [
+    "An item cannot be moved into its own branch.",
+    "No se puede mover un elemento dentro de su propia rama."
+  ],
+  "Déplier ": [
+    "Expand ",
+    "Desplegar "
+  ],
+  "Replier ": [
+    "Collapse ",
+    "Contraer "
+  ],
+  "Nouveau titre": [
+    "New title",
+    "Nuevo título"
+  ],
+  "Ajouter dans ": [
+    "Add in ",
+    "Añadir en "
+  ],
+  "Ajouter au projet": [
+    "Add to project",
+    "Añadir al proyecto"
+  ],
+  "Replier la sidebar": [
+    "Collapse sidebar",
+    "Contraer la barra lateral"
+  ],
+  "Créer ou ouvrir un projet…": [
+    "Create or open a project…",
+    "Crear o abrir un proyecto…"
+  ],
+  "Contenu du projet": [
+    "Project content",
+    "Contenido del proyecto"
+  ],
+  "Sources": [
+    "Sources",
+    "Fuentes"
+  ],
+  "Ajouter une section, un chapitre ou une scène": [
+    "Add a section, chapter or scene",
+    "Añadir una sección, un capítulo o una escena"
+  ],
+  "Lire le manuscrit": [
+    "Read manuscript",
+    "Leer el manuscrito"
+  ],
+  "Restaurez un document pour le retrouver à son emplacement.": [
+    "Restore a document to return it to its location.",
+    "Restaura un documento para devolverlo a su ubicación."
+  ],
+  "Actions de sélection": [
+    "Selection actions",
+    "Acciones de selección"
+  ],
+  "{0} sélectionné{1}": [
+    "{0} selected",
+    "{0} seleccionado{1}"
+  ],
+  "Déplacer…": [
+    "Move…",
+    "Mover…"
+  ],
+  "Dupliquer la sélection": [
+    "Duplicate selection",
+    "Duplicar la selección"
+  ],
+  "Mettre la sélection à la corbeille": [
+    "Move selection to trash",
+    "Mover la selección a la papelera"
+  ],
+  "Documents supprimés": [
+    "Deleted documents",
+    "Documentos eliminados"
+  ],
+  "Textes du projet": [
+    "Project texts",
+    "Textos del proyecto"
+  ],
+  "La corbeille est vide.": [
+    "The trash is empty.",
+    "La papelera está vacía."
+  ],
+  "Vos textes apparaîtront ici.": [
+    "Your texts will appear here.",
+    "Tus textos aparecerán aquí."
+  ],
+  "Dans": [
+    "Inside",
+    "Dentro de"
+  ],
+  "Avant": [
+    "Before",
+    "Antes de"
+  ],
+  "Après": [
+    "After",
+    "Después de"
+  ],
+  "Déposer à la racine": [
+    "Drop at root",
+    "Soltar en la raíz"
+  ],
+  "Corbeille": [
+    "Trash",
+    "Papelera"
+  ],
+  "Annuler le dernier rangement": [
+    "Undo last organisation change",
+    "Deshacer el último cambio de organización"
+  ],
+  "Options de la bibliothèque": [
+    "Library options",
+    "Opciones de la biblioteca"
+  ],
+  "Bibliothèque": [
+    "Library",
+    "Biblioteca"
+  ],
+  "Gérer les vaults…": [
+    "Manage vaults…",
+    "Gestionar los vaults…"
+  ],
+  "Déplacer la sélection": [
+    "Move selection",
+    "Mover la selección"
+  ],
+  "Destination": [
+    "Destination",
+    "Destino"
+  ],
+  "Textes · Racine": [
+    "Texts · Root",
+    "Textos · Raíz"
+  ],
+  "Textes / {0}": [
+    "Texts / {0}",
+    "Textos / {0}"
+  ],
+  "Déplacer": [
+    "Move",
+    "Mover"
+  ],
+  "Dossier Markdown ou TextBundle": [
+    "Markdown or TextBundle folder",
+    "Carpeta Markdown o TextBundle"
+  ],
+  "Markdown, dossier de textes, DOCX ou TextBundle. Les textes sont ajoutés au projet ouvert.": [
+    "Markdown, text folders, DOCX or TextBundle. Texts are added to the open project.",
+    "Markdown, carpeta de textos, DOCX o TextBundle. Los textos se añaden al proyecto abierto."
+  ],
+  "Choisir un fichier…": [
+    "Choose a file…",
+    "Elegir un archivo…"
+  ],
+  "L’import est disponible dans l’application Mac.": [
+    "Import is available in the Mac application.",
+    "La importación está disponible en la aplicación para Mac."
+  ],
+  "Ouvrez ou créez un projet pour y importer ces textes.": [
+    "Open or create a project to import these texts.",
+    "Abre o crea un proyecto para importar estos textos."
+  ],
+  "{0} textes · {1} ressources copiées": [
+    "{0} texts · {1} resources copied",
+    "{0} textos · {1} recursos copiados"
+  ],
+  "Les textes sont ajoutés au projet courant ; les fichiers source restent à leur emplacement.": [
+    "Texts are added to the current project; source files stay in their original location.",
+    "Los textos se añaden al proyecto actual; los archivos de origen permanecen en su ubicación."
+  ],
+  "Import en cours…": [
+    "Importing…",
+    "Importando…"
+  ],
+  "Écrire dans ce projet": [
+    "Write in this project",
+    "Escribir en este proyecto"
+  ],
+  "Importer dans ce projet": [
+    "Import into this project",
+    "Importar en este proyecto"
+  ],
+  "Import terminé": [
+    "Import complete",
+    "Importación terminada"
+  ],
+  "Réorganiser le texte": [
+    "Reorganise text",
+    "Reorganizar el texto"
+  ],
+  "Opération": [
+    "Operation",
+    "Operación"
+  ],
+  "Séparer au curseur": [
+    "Split at cursor",
+    "Separar en el cursor"
+  ],
+  "Réunir avec la scène suivante": [
+    "Join with next scene",
+    "Unir con la escena siguiente"
+  ],
+  "Titre de la nouvelle scène": [
+    "New scene title",
+    "Título de la nueva escena"
+  ],
+  "« {0} » sera ajoutée à la fin. Sa scène d’origine restera dans la corbeille.": [
+    "“{0}” will be appended. Its original scene will stay in the trash.",
+    "«{0}» se añadirá al final. Su escena original permanecerá en la papelera."
+  ],
+  "Aucune scène suivante dans ce dossier.": [
+    "No next scene in this folder.",
+    "No hay una escena siguiente en esta carpeta."
+  ],
+  "Appliquer": [
+    "Apply",
+    "Aplicar"
+  ],
+  "Arborescence du projet": [
+    "Project tree",
+    "Árbol del proyecto"
+  ],
+  "Hiérarchie de la page courante": [
+    "Current page hierarchy",
+    "Jerarquía de la página actual"
+  ],
+  "Nouvelle page": [
+    "New page",
+    "Nueva página"
+  ],
+  "Préparation": [
+    "Preparation",
+    "Preparación"
+  ],
+  "Synopsis": [
+    "Synopsis",
+    "Sinopsis"
+  ],
+  "Ce que cette section doit raconter…": [
+    "What this section should tell…",
+    "Lo que debe contar esta sección…"
+  ],
+  "Statut": [
+    "Status",
+    "Estado"
+  ],
+  "Brouillon": [
+    "Draft",
+    "Borrador"
+  ],
+  "En cours": [
+    "In progress",
+    "En curso"
+  ],
+  "À relire": [
+    "To review",
+    "Por revisar"
+  ],
+  "Terminé": [
+    "Complete",
+    "Terminado"
+  ],
+  "Objectif de mots": [
+    "Word goal",
+    "Objetivo de palabras"
+  ],
+  "Fiches du projet": [
+    "Project entries",
+    "Fichas del proyecto"
+  ],
+  "Ces fiches sont propres au projet. Les notes du vault restent inchangées.": [
+    "These entries belong to the project. Vault notes remain unchanged.",
+    "Estas fichas pertenecen al proyecto. Las notas del vault permanecen sin cambios."
+  ],
+  "Notes sur ": [
+    "Notes on ",
+    "Notas sobre "
+  ],
+  "Bibliothèque de projets": [
+    "Project library",
+    "Biblioteca de proyectos"
+  ],
+  "Filtrer les projets": [
+    "Filter projects",
+    "Filtrar los proyectos"
+  ],
+  "Retrouver un projet…": [
+    "Find a project…",
+    "Buscar un proyecto…"
+  ],
+  "Récents": [
+    "Recent",
+    "Recientes"
+  ],
+  "Projets": [
+    "Projects",
+    "Proyectos"
+  ],
+  "Archives": [
+    "Archives",
+    "Archivados"
+  ],
+  "Aucun projet correspondant.": [
+    "No matching projects.",
+    "No hay proyectos coincidentes."
+  ],
+  "Aucun projet archivé.": [
+    "No archived projects.",
+    "No hay proyectos archivados."
+  ],
+  "Les projets créés ou ouverts apparaîtront ici.": [
+    "Projects you create or open will appear here.",
+    "Los proyectos que crees o abras aparecerán aquí."
+  ],
+  "Épinglés": [
+    "Pinned",
+    "Fijados"
+  ],
+  "Dossier introuvable · Ouvrez son nouvel emplacement": [
+    "Folder not found · Open its new location",
+    "Carpeta no encontrada · Abre su nueva ubicación"
+  ],
+  "Épinglé": [
+    "Pinned",
+    "Fijado"
+  ],
+  "Désépingler ": [
+    "Unpin ",
+    "Desfijar "
+  ],
+  "Épingler ": [
+    "Pin ",
+    "Fijar "
+  ],
+  "Désarchiver ": [
+    "Unarchive ",
+    "Desarchivar "
+  ],
+  "Archiver ": [
+    "Archive ",
+    "Archivar "
+  ],
+  "Les projets archivés restent sur ce Mac.": [
+    "Archived projects stay on this Mac.",
+    "Los proyectos archivados permanecen en este Mac."
+  ],
+  "Aucune opération à annuler.": [
+    "No operation to undo.",
+    "No hay ninguna operación que deshacer."
+  ],
+  "Sélection introuvable.": [
+    "Selection not found.",
+    "Selección no encontrada."
+  ],
+  "Destination introuvable.": [
+    "Destination not found.",
+    "Destino no encontrado."
+  ],
+  "Impossible de déplacer un dossier dans sa propre branche.": [
+    "A folder cannot be moved into its own branch.",
+    "No se puede mover una carpeta dentro de su propia rama."
+  ],
+  "Choisissez un dossier ou un chapitre.": [
+    "Choose a folder or chapter.",
+    "Elige una carpeta o un capítulo."
+  ],
+  "Un chapitre ne peut pas être placé dans un autre chapitre.": [
+    "A chapter cannot be placed inside another chapter.",
+    "Un capítulo no se puede colocar dentro de otro capítulo."
+  ],
+  "Inclusion manquante.": [
+    "Missing inclusion setting.",
+    "Falta el ajuste de inclusión."
+  ],
+  "Dernière modification de la bibliothèque annulée.": [
+    "Last library change undone.",
+    "Se ha deshecho el último cambio de la biblioteca."
+  ],
+  "texte": [
+    "text",
+    "texto"
+  ],
+  "élément": [
+    "item",
+    "elemento"
+  ],
+  "{0} placé{1} dans la corbeille.": [
+    "{0} moved to trash.",
+    "{0} enviado{1} a la papelera."
+  ],
+  "{0} restauré{1}.": [
+    "{0} restored.",
+    "{0} restaurado{1}."
+  ],
+  "{0} dupliqué{1}.": [
+    "{0} duplicated.",
+    "{0} duplicado{1}."
+  ],
+  "à la racine": [
+    "at root",
+    "en la raíz"
+  ],
+  "avant": [
+    "before",
+    "antes de"
+  ],
+  "après": [
+    "after",
+    "después de"
+  ],
+  "dans": [
+    "inside",
+    "dentro de"
+  ],
+  "{0} déplacé{1} {2}.": [
+    "{0} moved {2}.",
+    "{0} movido{1} {2}."
+  ],
+  "Place le curseur dans un passage ou sélectionne du texte dans une seule scène.": [
+    "Place the cursor in a passage or select text within a single scene.",
+    "Coloca el cursor en un pasaje o selecciona texto dentro de una sola escena."
+  ],
+  "Sélectionne un passage de 800 caractères maximum.": [
+    "Select a passage of up to 800 characters.",
+    "Selecciona un pasaje de 800 caracteres como máximo."
+  ],
+  "Le texte a changé ; relance la révision.": [
+    "The text has changed; run the revision again.",
+    "El texto ha cambiado; vuelve a ejecutar la revisión."
+  ],
+  "Les moteurs de révision sont indisponibles.": [
+    "Revision engines are unavailable.",
+    "Los motores de revisión no están disponibles."
+  ],
+  "Un des moteurs est indisponible ; résultats partiels.": [
+    "One engine is unavailable; partial results.",
+    "Uno de los motores no está disponible; resultados parciales."
+  ],
+  "Aucune suggestion disponible pour ce passage.": [
+    "No suggestions available for this passage.",
+    "No hay sugerencias para este pasaje."
+  ],
+  "La révision locale est indisponible.": [
+    "Local revision is unavailable.",
+    "La revisión local no está disponible."
+  ],
+  "Correction appliquée.": [
+    "Correction applied.",
+    "Corrección aplicada."
+  ],
+  "Révision locale": [
+    "Local revision",
+    "Revisión local"
+  ],
+  "Analyse…": [
+    "Analysing…",
+    "Analizando…"
+  ],
+  "Réviser le passage": [
+    "Review passage",
+    "Revisar el pasaje"
+  ],
+  "Réviser la sélection ou la ligne active (800 caractères maximum)": [
+    "Review selection or active line (up to 800 characters)",
+    "Revisar la selección o la línea activa (800 caracteres como máximo)"
+  ],
+  "Moteurs locaux indisponibles.": [
+    "Local engines unavailable.",
+    "Motores locales no disponibles."
+  ],
+  "IA locale": [
+    "Local AI",
+    "IA local"
+  ],
+  "Appliquer cette suggestion": [
+    "Apply this suggestion",
+    "Aplicar esta sugerencia"
+  ],
+  "Suggestions de révision": [
+    "Revision suggestions",
+    "Sugerencias de revisión"
+  ],
+  "Répétition rapprochée de « {0} ».": [
+    "“{0}” repeated nearby.",
+    "Repetición cercana de «{0}»."
+  ],
+  "Phrase de plus de 40 mots.": [
+    "Sentence longer than 40 words.",
+    "Frase de más de 40 palabras."
+  ],
+  "Suggestion locale": [
+    "Local suggestion",
+    "Sugerencia local"
+  ],
+  "Vault": [
+    "Vault",
+    "Vault"
+  ],
+  "Tous les vaults": [
+    "All vaults",
+    "Todos los vaults"
+  ],
+  "Aucune entité indexée. Ajoutez des sources ou actualisez le vault.": [
+    "No indexed entities. Add sources or refresh the vault.",
+    "No hay entidades indexadas. Añade fuentes o actualiza el vault."
+  ],
+  "Sans type": [
+    "No type",
+    "Sin tipo"
+  ],
+  "Précédent": [
+    "Previous",
+    "Anterior"
+  ],
+  "Suivant": [
+    "Next",
+    "Siguiente"
+  ],
+  "Indexation suspendue.": [
+    "Indexing paused.",
+    "Indexación pausada."
+  ],
+  "Les sources sont prêtes.": [
+    "Sources are ready.",
+    "Las fuentes están listas."
+  ],
+  "Connectez vos dossiers de sources depuis l’application macOS.": [
+    "Connect your source folders from the macOS application.",
+    "Conecta tus carpetas de fuentes desde la aplicación para macOS."
+  ],
+  "Choisir un dossier de sources (vault Obsidian)": [
+    "Choose a source folder (Obsidian vault)",
+    "Elegir una carpeta de fuentes (vault de Obsidian)"
+  ],
+  "Fiches issues du manuscrit": [
+    "Entries from the manuscript",
+    "Fichas del manuscrito"
+  ],
+  "Ajouter un dossier de sources": [
+    "Add a source folder",
+    "Añadir una carpeta de fuentes"
+  ],
+  "Créer mon dossier de sources": [
+    "Create my source folder",
+    "Crear mi carpeta de fuentes"
+  ],
+  "Nouvelle fiche": [
+    "New entry",
+    "Nueva ficha"
+  ],
+  "Actualiser l’index": [
+    "Refresh index",
+    "Actualizar el índice"
+  ],
+  "Type": [
+    "Type",
+    "Tipo"
+  ],
+  "Personne": [
+    "Person",
+    "Persona"
+  ],
+  "Lieu": [
+    "Place",
+    "Lugar"
+  ],
+  "Organisation": [
+    "Organisation",
+    "Organización"
+  ],
+  "Événement": [
+    "Event",
+    "Evento"
+  ],
+  "Concept": [
+    "Concept",
+    "Concepto"
+  ],
+  "Croyance ou tradition": [
+    "Belief or tradition",
+    "Creencia o tradición"
+  ],
+  "Œuvre": [
+    "Work",
+    "Obra"
+  ],
+  "Document ou source": [
+    "Document or source",
+    "Documento o fuente"
+  ],
+  "Objet": [
+    "Object",
+    "Objeto"
+  ],
+  "Description": [
+    "Description",
+    "Descripción"
+  ],
+  "Créer la fiche": [
+    "Create entry",
+    "Crear la ficha"
+  ],
+  "Dossier Ariane": [
+    "Ariane folder",
+    "Carpeta de Ariane"
+  ],
+  "Lecture seule": [
+    "Read-only",
+    "Solo lectura"
+  ],
+  "Dossier introuvable": [
+    "Folder not found",
+    "Carpeta no encontrada"
+  ],
+  "Déconnecter ": [
+    "Disconnect ",
+    "Desconectar "
+  ],
+  "Emplacement du dossier": [
+    "Folder location",
+    "Ubicación de la carpeta"
+  ],
+  "Dossiers inclus": [
+    "Included folders",
+    "Carpetas incluidas"
+  ],
+  "— dossiers ou fichiers, un par ligne": [
+    "— folders or files, one per line",
+    "— carpetas o archivos, uno por línea"
+  ],
+  "Dossiers inclus dans ": [
+    "Included folders in ",
+    "Carpetas incluidas en "
+  ],
+  "Tous les dossiers": [
+    "All folders",
+    "Todas las carpetas"
+  ],
+  "Ajoutez un dossier de sources (vault), ou glissez-le depuis le Finder. Le projet reste indépendant de ses sources.": [
+    "Add a source folder (vault), or drag one from Finder. The project remains independent of its sources.",
+    "Añade una carpeta de fuentes (vault) o arrástrala desde Finder. El proyecto sigue siendo independiente de sus fuentes."
+  ],
+  "Markdown et PDF textuels. Les images restent consultables sans reconnaissance du texte.": [
+    "Markdown and text-based PDFs. Images can be viewed without text recognition.",
+    "Markdown y PDF con texto. Las imágenes se pueden consultar sin reconocimiento de texto."
+  ],
+  "Détails de la recherche locale": [
+    "Local search details",
+    "Detalles de la búsqueda local"
+  ],
+  "Aperçu navigateur : les fiches sont enregistrées dans ce navigateur, sans créer de fichiers. ": [
+    "Browser preview: entries are saved in this browser without creating files. ",
+    "Vista previa del navegador: las fichas se guardan en este navegador sin crear archivos. "
+  ],
+  "EmbeddingGemma 300M · Q8 · Recherche locale multilingue": [
+    "EmbeddingGemma 300M · Q8 · Local multilingual search",
+    "EmbeddingGemma 300M · Q8 · Búsqueda local multilingüe"
+  ],
+  "Moteur sémantique non disponible dans cet environnement.": [
+    "Semantic engine unavailable in this environment.",
+    "Motor semántico no disponible en este entorno."
+  ],
+  "Source complète": [
+    "Full source",
+    "Fuente completa"
+  ],
+  "SOURCE · LECTURE SEULE": [
+    "SOURCE · READ-ONLY",
+    "FUENTE · SOLO LECTURA"
+  ],
+  "Fermer la source": [
+    "Close source",
+    "Cerrar la fuente"
+  ],
+  "Ouverture du PDF…": [
+    "Opening PDF…",
+    "Abriendo el PDF…"
+  ],
+  "Résultats des vaults dans la marge": [
+    "Vault results in the margin",
+    "Resultados de los vaults en el margen"
+  ],
+  "Dans les vaults": [
+    "In vaults",
+    "En los vaults"
+  ],
+  "Recherche…": [
+    "Searching…",
+    "Buscando…"
+  ],
+  "Recherche des vaults indisponible. {0}": [
+    "Vault search unavailable. {0}",
+    "Búsqueda en los vaults no disponible. {0}"
+  ],
+  "Aucune source correspondante.": [
+    "No matching sources.",
+    "No hay fuentes coincidentes."
+  ],
+  "Fiche ": [
+    "Entry ",
+    "Ficha "
+  ],
+  "Fermer la fiche": [
+    "Close entry",
+    "Cerrar la ficha"
+  ],
+  " · manuscrit": [
+    " · manuscript",
+    " · manuscrito"
+  ],
+  "Tags": [
+    "Tags",
+    "Etiquetas"
+  ],
+  "Cette source est une pièce jointe.": [
+    "This source is an attachment.",
+    "Esta fuente es un archivo adjunto."
+  ],
+  " · valeurs à vérifier": [
+    " · values to check",
+    " · valores por verificar"
+  ],
+  "Références liées · {0} instance(s){1}": [
+    "Linked references · {0} occurrence(s){1}",
+    "Referencias vinculadas · {0} aparición(es){1}"
+  ],
+  "Associer à la préparation": [
+    "Link to preparation",
+    "Vincular a la preparación"
+  ],
+  "Ouvrir la note": [
+    "Open note",
+    "Abrir la nota"
+  ],
+  "Citer": [
+    "Cite",
+    "Citar"
+  ],
+  "Insérer une référence": [
+    "Insert reference",
+    "Insertar una referencia"
+  ],
+  "Afficher les suivantes": [
+    "Show more",
+    "Mostrar las siguientes"
+  ],
+  "Références explicites": [
+    "Explicit references",
+    "Referencias explícitas"
+  ],
+  "· Mentions du nom": [
+    "· Name mentions",
+    "· Menciones del nombre"
+  ],
+  "Les références sont des citations insérées dans le texte. Les mentions sont des noms ou alias repérés littéralement : elles ne confirment ni l’identité ni une association au projet.": [
+    "References are citations inserted in the text. Mentions are names or aliases found literally; they do not confirm identity or an association with the project.",
+    "Las referencias son citas insertadas en el texto. Las menciones son nombres o alias detectados literalmente; no confirman la identidad ni una asociación con el proyecto."
+  ],
+  "Aucune occurrence dans les textes actuels.": [
+    "No occurrences in the current texts.",
+    "No hay apariciones en los textos actuales."
+  ],
+  "Références explicites · {0}": [
+    "Explicit references · {0}",
+    "Referencias explícitas · {0}"
+  ],
+  "Mentions du nom · {0}": [
+    "Name mentions · {0}",
+    "Menciones del nombre · {0}"
+  ],
+  "Citer l’extrait": [
+    "Cite excerpt",
+    "Citar el fragmento"
+  ],
+  "Une partie de la dictée n’a pas pu être transcrite.": [
+    "Part of the dictation could not be transcribed.",
+    "No se ha podido transcribir una parte del dictado."
+  ],
+  "Le texte a changé pendant la dictée. Copiez la transcription ci-dessous.": [
+    "The text changed during dictation. Copy the transcription below.",
+    "El texto ha cambiado durante el dictado. Copia la transcripción de abajo."
+  ],
+  "La dictée est disponible dans l’application macOS.": [
+    "Dictation is available in the macOS application.",
+    "El dictado está disponible en la aplicación para macOS."
+  ],
+  "Les modèles de dictée locale ne sont pas disponibles.": [
+    "Local dictation models are unavailable.",
+    "Los modelos de dictado local no están disponibles."
+  ],
+  "Microphone indisponible.": [
+    "Microphone unavailable.",
+    "Micrófono no disponible."
+  ],
+  "Arrêter la dictée": [
+    "Stop dictation",
+    "Detener el dictado"
+  ],
+  "Clic : démarrer ou arrêter · maintenir : dicter pendant l’appui · ⌘ ⇧ M": [
+    "Click: start or stop · hold: dictate while pressed · ⌘ ⇧ M",
+    "Clic: iniciar o detener · mantener: dictar mientras se pulsa · ⌘ ⇧ M"
+  ],
+  "Préparation…": [
+    "Preparing…",
+    "Preparando…"
+  ],
+  "Durée de l’enregistrement": [
+    "Recording duration",
+    "Duración de la grabación"
+  ],
+  "Dictée en cours": [
+    "Dictating",
+    "Dictado en curso"
+  ],
+  "Transcription…": [
+    "Transcribing…",
+    "Transcribiendo…"
+  ],
+  "Clic pour dicter · maintenir pour parler": [
+    "Click to dictate · hold to speak",
+    "Clic para dictar · mantener para hablar"
+  ],
+  "Transcription à copier": [
+    "Transcription to copy",
+    "Transcripción para copiar"
+  ],
+  "Ce passage contient des enfants repliés. Dépliez le parent pour modifier ce contenu.": [
+    "This passage contains collapsed children. Expand the parent to edit this content.",
+    "Este pasaje contiene subpasajes contraídos. Despliega el pasaje principal para modificar este contenido."
+  ],
+  "Déplier le passage": [
+    "Expand passage",
+    "Desplegar el pasaje"
+  ],
+  "Replier le passage": [
+    "Collapse passage",
+    "Contraer el pasaje"
+  ],
+  "Déplacer le passage": [
+    "Move passage",
+    "Mover el pasaje"
+  ],
+  "replié": [
+    "collapsed",
+    "contraído"
+  ],
+  "déplié": [
+    "expanded",
+    "desplegado"
+  ],
+  "Glisser pour déplacer · cliquer pour replier ou déplier": [
+    "Drag to move · click to collapse or expand",
+    "Arrastrar para mover · clic para contraer o desplegar"
+  ],
+  "Glisser pour déplacer le passage": [
+    "Drag to move passage",
+    "Arrastrar para mover el pasaje"
+  ],
+  "Langue de l’application": [
+    "Application language",
+    "Idioma de la aplicación"
+  ],
+  "Notes reconnues": [
+    "Recognised notes",
+    "Notas reconocidas"
+  ],
+  "Notes dont le nom ou un alias est reconnu dans le texte.": [
+    "Notes whose name or alias is recognised in the text.",
+    "Notas cuyo nombre o alias se reconoce en el texto."
+  ],
+  "Notes et liens": [
+    "Notes and links",
+    "Notas y enlaces"
+  ],
+  "Notes reconnues et notes auxquelles elles renvoient.": [
+    "Recognised notes and the notes they link to.",
+    "Notas reconocidas y las notas a las que enlazan."
+  ],
+  "Liens et thèmes": [
+    "Links and themes",
+    "Enlaces y temas"
+  ],
+  "Notes reconnues, liens directs et thèmes partagés.": [
+    "Recognised notes, direct links and shared themes.",
+    "Notas reconocidas, enlaces directos y temas compartidos."
+  ],
+  "Recherche associée": [
+    "Related search",
+    "Búsqueda relacionada"
+  ],
+  "Liens et thèmes, avec une recherche de sources associées.": [
+    "Links and themes, with a search for related sources.",
+    "Enlaces y temas, con una búsqueda de fuentes relacionadas."
+  ],
+  "Liens étendus": [
+    "Extended links",
+    "Enlaces ampliados"
+  ],
+  "Recherche associée et liens supplémentaires au deuxième degré.": [
+    "Related search and additional second-degree links.",
+    "Búsqueda relacionada y enlaces adicionales de segundo grado."
+  ],
+  "Exploration élargie": [
+    "Broader exploration",
+    "Exploración ampliada"
+  ],
+  "Liens étendus et recherche associée plus large.": [
+    "Extended links and a broader related search.",
+    "Enlaces ampliados y una búsqueda relacionada más amplia."
+  ],
+  "Barré": [
+    "Strikethrough",
+    "Tachado"
+  ],
+  "Code en ligne": [
+    "Inline code",
+    "Código en línea"
+  ],
+  "Lien": [
+    "Link",
+    "Enlace"
+  ],
+  "Liste à puces": [
+    "Bullet list",
+    "Lista con viñetas"
+  ],
+  "Liste numérotée": [
+    "Numbered list",
+    "Lista numerada"
+  ],
+  "Liste de tâches": [
+    "Task list",
+    "Lista de tareas"
+  ],
+  "Citation": [
+    "Quotation",
+    "Cita"
+  ],
+  "Bloc de code": [
+    "Code block",
+    "Bloque de código"
+  ],
+  "Insérer un séparateur": [
+    "Insert separator",
+    "Insertar un separador"
+  ],
+  "Insérer un tableau": [
+    "Insert table",
+    "Insertar una tabla"
+  ],
+  "Note de bas de page": [
+    "Footnote",
+    "Nota al pie"
+  ],
+  "Mentionnés dans le même passage :": [
+    "Mentioned in the same passage:",
+    "Mencionados en el mismo pasaje:"
+  ],
+  "Ouvrir la barre": [
+    "Open toolbar",
+    "Abrir la barra"
+  ],
+  "{0} inclus dans le manuscrit.": [
+    "{0} included in the manuscript.",
+    "{0} incluido(s) en el manuscrito."
+  ],
+  "{0} exclu{1} du manuscrit.": [
+    "{0} excluded from the manuscript.",
+    "{0} excluido{1} del manuscrito."
+  ],
+  "{0} mot(s) sélectionné(s)": [
+    "{0} word(s) selected",
+    "{0} palabra(s) seleccionada(s)"
+  ],
+  "{0} instance liée": [
+    "{0} linked occurrence",
+    "{0} aparición vinculada"
+  ],
+  "{0} instances liées": [
+    "{0} linked occurrences",
+    "{0} apariciones vinculadas"
+  ],
+  "Fichier": [
+    "File",
+    "Archivo"
+  ],
+  "Édition": [
+    "Edit",
+    "Edición"
+  ],
+  "Présentation": [
+    "View",
+    "Visualización"
+  ],
+  "Fenêtre": [
+    "Window",
+    "Ventana"
+  ],
+  "Aide": [
+    "Help",
+    "Ayuda"
+  ],
+  "Quitter Ariane": [
+    "Quit Ariane",
+    "Salir de Ariane"
+  ],
+  "Réglages…": [
+    "Settings…",
+    "Configuración…"
+  ],
+  "Nouveau projet…": [
+    "New project…",
+    "Nuevo proyecto…"
+  ],
+  "Ouvrir un projet…": [
+    "Open a project…",
+    "Abrir un proyecto…"
+  ],
+  "Importer un manuscrit…": [
+    "Import a manuscript…",
+    "Importar un manuscrito…"
+  ],
+  "Exporter…": [
+    "Export…",
+    "Exportar…"
+  ],
+  "Versions…": [
+    "Versions…",
+    "Versiones…"
+  ],
+  "Fermer la fenêtre": [
+    "Close window",
+    "Cerrar la ventana"
+  ],
+  "Rechercher…": [
+    "Search…",
+    "Buscar…"
+  ],
+  "Réorganiser le texte…": [
+    "Reorganise text…",
+    "Reorganizar el texto…"
+  ],
+  "Afficher ou masquer le classeur": [
+    "Show or hide binder",
+    "Mostrar u ocultar el archivador"
+  ],
+  "Commandes…": [
+    "Commands…",
+    "Comandos…"
+  ],
+  "Rejoindre une section…": [
+    "Go to a section…",
+    "Ir a una sección…"
+  ],
+  "Sources du projet…": [
+    "Project sources…",
+    "Fuentes del proyecto…"
+  ],
+  "À propos d’Ariane": [
+    "About Ariane",
+    "Acerca de Ariane"
+  ],
+  "Masquer Ariane": [
+    "Hide Ariane",
+    "Ocultar Ariane"
+  ],
+  "Masquer les autres": [
+    "Hide Others",
+    "Ocultar las demás"
+  ],
+  "Tout afficher": [
+    "Show All",
+    "Mostrar todo"
+  ],
+  "Services": [
+    "Services",
+    "Servicios"
+  ],
+  "Réduire la fenêtre": [
+    "Minimise",
+    "Minimizar"
+  ],
+  "Agrandir": [
+    "Zoom",
+    "Ampliar"
+  ],
+  "Plein écran": [
+    "Toggle Full Screen",
+    "Alternar pantalla completa"
+  ],
+  "Tout sélectionner": [
+    "Select All",
+    "Seleccionar todo"
+  ],
+  "Aller à la ligne": [
+    "Go to line",
+    "Ir a la línea"
+  ],
+  "Aller": [
+    "Go",
+    "Ir"
+  ],
+  "Rechercher": [
+    "Find",
+    "Buscar"
+  ],
+  "suivant": [
+    "next",
+    "siguiente"
+  ],
+  "précédent": [
+    "previous",
+    "anterior"
+  ],
+  "Tout": [
+    "all",
+    "todo"
+  ],
+  "Respecter la casse": [
+    "match case",
+    "distinguir mayúsculas"
+  ],
+  "Expression régulière": [
+    "regexp",
+    "expresión regular"
+  ],
+  "Mots entiers": [
+    "by word",
+    "palabras completas"
+  ],
+  "Remplacer": [
+    "Replace",
+    "Reemplazar"
+  ],
+  "Remplacer tout": [
+    "replace all",
+    "reemplazar todo"
+  ],
+  "Remplacer par": [
+    "Replace with",
+    "Reemplazar por"
+  ],
+  "fermer": [
+    "close",
+    "cerrar"
+  ],
+  "Sélection supprimée": [
+    "Selection deleted",
+    "Selección eliminada"
+  ],
+  "Caractère de contrôle": [
+    "Control character",
+    "Carácter de control"
+  ],
+  "correspondance actuelle": [
+    "current match",
+    "coincidencia actual"
+  ],
+  "à la ligne": [
+    "on line",
+    "en la línea"
+  ],
+  "correspondance remplacée à la ligne $": [
+    "replaced match on line $",
+    "coincidencia reemplazada en la línea $"
+  ],
+  "$ correspondances remplacées": [
+    "replaced $ matches",
+    "$ coincidencias reemplazadas"
+  ],
+  "Chemin de ressource invalide.": [
+    "Invalid resource path.",
+    "Ruta de recurso no válida."
+  ],
+  "Le texte « {0} » n’est pas lisible en UTF-8.": [
+    "The text “{0}” cannot be read as UTF-8.",
+    "El texto «{0}» no se puede leer en UTF-8."
+  ],
+  "Les liens symboliques ne sont pas acceptés à l’import.": [
+    "Symbolic links cannot be imported.",
+    "No se pueden importar enlaces simbólicos."
+  ],
+  "Source invalide.": [
+    "Invalid source.",
+    "Fuente no válida."
+  ],
+  "Lien symbolique refusé : {0}": [
+    "Symbolic link rejected: {0}",
+    "Enlace simbólico rechazado: {0}"
+  ],
+  "Fichier spécial refusé : {0}": [
+    "Special file rejected: {0}",
+    "Archivo especial rechazado: {0}"
+  ],
+  "Source trop volumineuse.": [
+    "Source is too large.",
+    "La fuente es demasiado grande."
+  ],
+  "L’import dépasse 500 fichiers ou 100 Mio.": [
+    "Import exceeds 500 files or 100 MiB.",
+    "La importación supera los 500 archivos o los 100 MiB."
+  ],
+  "Aucun Markdown, DOCX ou TextBundle importable dans la source.": [
+    "No importable Markdown, DOCX or TextBundle found in the source.",
+    "No hay archivos Markdown, DOCX o TextBundle importables en la fuente."
+  ],
+  "Image non locale conservée telle quelle : {destination}": [
+    "Non-local image kept as is: {destination}",
+    "Imagen no local conservada sin cambios: {destination}"
+  ],
+  "DOCX trop complexe : plus de 500 éléments.": [
+    "DOCX is too complex: over 500 elements.",
+    "El DOCX es demasiado complejo: más de 500 elementos."
+  ],
+  "DOCX décompressé trop volumineux.": [
+    "Uncompressed DOCX is too large.",
+    "El DOCX descomprimido es demasiado grande."
+  ],
+  "Conversion DOCX interrompue après 30 secondes.": [
+    "DOCX conversion stopped after 30 seconds.",
+    "Conversión DOCX interrumpida tras 30 segundos."
+  ],
+  "Le moteur de révision s’est arrêté au démarrage.": [
+    "The revision engine stopped during startup.",
+    "El motor de revisión se ha detenido al iniciarse."
+  ],
+  "Le moteur de révision n’a pas démarré dans le délai prévu.": [
+    "The revision engine did not start within the time limit.",
+    "El motor de revisión no se ha iniciado dentro del plazo previsto."
+  ],
+  "LanguageTool local n’est pas installé.": [
+    "Local LanguageTool is not installed.",
+    "LanguageTool local no está instalado."
+  ],
+  "Le modèle de révision local n’est pas installé.": [
+    "The local revision model is not installed.",
+    "El modelo de revisión local no está instalado."
+  ],
+  "Modèle local indisponible.": [
+    "Local model unavailable.",
+    "Modelo local no disponible."
+  ],
+  "Langue de révision non prise en charge.": [
+    "Revision language not supported.",
+    "Idioma de revisión no compatible."
+  ],
+  "Sélectionnez un passage de 800 caractères maximum.": [
+    "Select a passage of up to 800 characters.",
+    "Selecciona un pasaje de 800 caracteres como máximo."
+  ],
+  "Réponse LanguageTool invalide.": [
+    "Invalid LanguageTool response.",
+    "Respuesta de LanguageTool no válida."
+  ],
+  "La suggestion du modèle est incomplète.": [
+    "The model’s suggestion is incomplete.",
+    "La sugerencia del modelo está incompleta."
+  ],
+  "Réponse du modèle invalide.": [
+    "Invalid model response.",
+    "Respuesta del modelo no válida."
+  ],
+  "Microphone : entrée du moteur indisponible": [
+    "Microphone: engine input unavailable",
+    "Micrófono: entrada del motor no disponible"
+  ],
+  "La transcription locale a échoué.": [
+    "Local transcription failed.",
+    "La transcripción local ha fallado."
+  ],
+  "Transcription invalide": [
+    "Invalid transcription",
+    "Transcripción no válida"
+  ],
+  "Les modèles de dictée locale ne sont pas installés.": [
+    "Local dictation models are not installed.",
+    "Los modelos de dictado local no están instalados."
+  ],
+  "Enregistrement audio invalide.": [
+    "Invalid audio recording.",
+    "Grabación de audio no válida."
+  ],
+  "Le projet actif a changé.": [
+    "The active project has changed.",
+    "El proyecto activo ha cambiado."
+  ],
+  "Cette source a changé ou n’est plus disponible. Actualisez son index.": [
+    "This source has changed or is no longer available. Refresh its index.",
+    "Esta fuente ha cambiado o ya no está disponible. Actualiza su índice."
+  ],
+  "Une indexation est déjà en cours.": [
+    "Indexing is already in progress.",
+    "Ya hay una indexación en curso."
+  ],
+  "Le fichier dépasse 100 Mo": [
+    "The file exceeds 100 MB",
+    "El archivo supera los 100 MB"
+  ],
+  "Un export est déjà en cours.": [
+    "An export is already in progress.",
+    "Ya hay una exportación en curso."
+  ],
+  "Action invalide": [
+    "Invalid action",
+    "Acción no válida"
+  ],
+  "Plan de scène invalide.": [
+    "Invalid scene outline.",
+    "Esquema de escena no válido."
+  ],
+  "Modèle manquant.": [
+    "Missing model.",
+    "Falta el modelo."
+  ],
+  "Modèle vectoriel incompatible.": [
+    "Incompatible embedding model.",
+    "Modelo vectorial incompatible."
+  ],
+  "Vecteur non normalisé.": [
+    "Vector is not normalised.",
+    "Vector no normalizado."
+  ],
+  "Vecteur de requête invalide.": [
+    "Invalid query vector.",
+    "Vector de consulta no válido."
+  ],
+  "Section de session manquante.": [
+    "Missing session section.",
+    "Falta la sección de la sesión."
+  ],
+  "Section de session introuvable.": [
+    "Session section not found.",
+    "Sección de la sesión no encontrada."
+  ],
+  "La session doit viser une scène.": [
+    "The session must target a scene.",
+    "La sesión debe apuntar a una escena."
+  ],
+  "Nœud de session introuvable.": [
+    "Session node not found.",
+    "Nodo de la sesión no encontrado."
+  ],
+  "Mention hors du passage ou mal alignée.": [
+    "Mention is outside the passage or misaligned.",
+    "La mención está fuera del pasaje o mal alineada."
+  ],
+  "Type d'entité inconnu.": [
+    "Unknown entity type.",
+    "Tipo de entidad desconocido."
+  ],
+  "Nom d'entité vide.": [
+    "Empty entity name.",
+    "Nombre de entidad vacío."
+  ],
+  "Projet Ariane introuvable.": [
+    "Ariane project not found.",
+    "Proyecto de Ariane no encontrado."
+  ],
+  "Résultat GLiNER incompatible.": [
+    "Incompatible GLiNER result.",
+    "Resultado de GLiNER incompatible."
+  ],
+  "Une section ne peut pas être placée dans sa propre branche.": [
+    "A section cannot be placed inside its own branch.",
+    "Una sección no se puede colocar dentro de su propia rama."
+  ],
+  "Cette sélection n’est plus disponible.": [
+    "This selection is no longer available.",
+    "Esta selección ya no está disponible."
+  ],
+  "Type inconnu.": [
+    "Unknown type.",
+    "Tipo desconocido."
+  ],
+  "Opération inconnue.": [
+    "Unknown operation.",
+    "Operación desconocida."
+  ],
+  "Projet absent de la bibliothèque.": [
+    "Project is not in the library.",
+    "El proyecto no está en la biblioteca."
+  ],
+  "Scène introuvable.": [
+    "Scene not found.",
+    "Escena no encontrada."
+  ],
+  "Placez le curseur à l’intérieur du texte.": [
+    "Place the cursor inside the text.",
+    "Coloca el cursor dentro del texto."
+  ],
+  "Scène suivante introuvable.": [
+    "Next scene not found.",
+    "Escena siguiente no encontrada."
+  ],
+  "Choisissez deux scènes consécutives du même emplacement.": [
+    "Choose two consecutive scenes in the same location.",
+    "Elige dos escenas consecutivas de la misma ubicación."
+  ],
+  "Sélection invalide ou trop longue (10 000 caractères maximum).": [
+    "Invalid or overly long selection (10,000 characters maximum).",
+    "Selección no válida o demasiado larga (10 000 caracteres como máximo)."
+  ],
+  "Écrivez une annotation de moins de 20 000 caractères.": [
+    "Write an annotation of fewer than 20,000 characters.",
+    "Escribe una anotación de menos de 20 000 caracteres."
+  ],
+  "Le texte a changé. Sélectionnez à nouveau le passage.": [
+    "The text has changed. Select the passage again.",
+    "El texto ha cambiado. Selecciona el pasaje de nuevo."
+  ],
+  "L’annotation a changé. Rechargez-la.": [
+    "The annotation has changed. Reload it.",
+    "La anotación ha cambiado. Vuelve a cargarla."
+  ],
+  "Le projet doit avoir un nom.": [
+    "The project must have a name.",
+    "El proyecto debe tener un nombre."
+  ],
+  "Ce dossier contient déjà un projet.": [
+    "This folder already contains a project.",
+    "Esta carpeta ya contiene un proyecto."
+  ],
+  "Une section ne peut être sauvegardée deux fois dans le même lot.": [
+    "A section cannot be saved twice in the same batch.",
+    "Una sección no se puede guardar dos veces en el mismo lote."
+  ],
+  "Le texte a changé depuis cette sauvegarde. Rechargez sa version.": [
+    "The text has changed since this save. Reload its version.",
+    "El texto ha cambiado desde que se guardó. Vuelve a cargar su versión."
+  ],
+  "Type de section inconnu.": [
+    "Unknown section type.",
+    "Tipo de sección desconocido."
+  ],
+  "Section parente introuvable.": [
+    "Parent section not found.",
+    "Sección principal no encontrada."
+  ],
+  "Un dossier ne peut pas être placé dans lui-même.": [
+    "A folder cannot be placed inside itself.",
+    "Una carpeta no se puede colocar dentro de sí misma."
+  ],
+  "Section introuvable": [
+    "Section not found",
+    "Sección no encontrada"
+  ],
+  "Plan invalide : version ou nœuds manquants.": [
+    "Invalid outline: missing version or nodes.",
+    "Esquema no válido: faltan la versión o los nodos."
+  ],
+  "Plan invalide : identifiant vide ou répété.": [
+    "Invalid outline: empty or duplicate identifier.",
+    "Esquema no válido: identificador vacío o repetido."
+  ],
+  "Plan invalide : position de nœud hors d'une ligne du texte.": [
+    "Invalid outline: node position is not at the start of a text line.",
+    "Esquema no válido: la posición del nodo no está al principio de una línea del texto."
+  ],
+  "Nom ou description de fiche invalide.": [
+    "Invalid entry name or description.",
+    "Nombre o descripción de ficha no válido."
+  ],
+  "Type de fiche inconnu.": [
+    "Unknown entry type.",
+    "Tipo de ficha desconocido."
+  ],
+  "Ce projet ne possède pas de vault Ariane accessible en écriture.": [
+    "This project has no writable Ariane vault.",
+    "Este proyecto no tiene un vault de Ariane con acceso de escritura."
+  ],
+  "Le dossier de fiches n’est pas accessible en sécurité.": [
+    "The entry folder cannot be accessed safely.",
+    "No se puede acceder a la carpeta de fichas de forma segura."
+  ],
+  "La fiche existe déjà ou ne peut pas être créée ; aucun fichier existant n’a été remplacé.": [
+    "The entry already exists or cannot be created; no existing files were replaced.",
+    "La ficha ya existe o no se puede crear; no se ha reemplazado ningún archivo existente."
+  ],
+  "Le dossier du projet n’est pas vide. Choisissez un autre nom.": [
+    "The project folder is not empty. Choose another name.",
+    "La carpeta del proyecto no está vacía. Elige otro nombre."
+  ],
+  "Le projet doit être créé hors du vault en lecture seule.": [
+    "The project must be created outside the read-only vault.",
+    "El proyecto debe crearse fuera del vault de solo lectura."
+  ],
+  "Périmètre de sources invalide": [
+    "Invalid source scope",
+    "Ámbito de fuentes no válido"
+  ],
+  "Source hors du périmètre du projet": [
+    "Source is outside the project scope",
+    "La fuente está fuera del ámbito del proyecto"
+  ],
+  "Le fichier est hors du vault": [
+    "The file is outside the vault",
+    "El archivo está fuera del vault"
+  ],
+  "PDF illisible ou protégé": [
+    "PDF is unreadable or protected",
+    "El PDF es ilegible o está protegido"
+  ],
+  "Nommez cette version.": [
+    "Name this version.",
+    "Dale un nombre a esta versión."
+  ],
+  "Le moteur de recherche locale n’est pas installé.": [
+    "The local search engine is not installed.",
+    "El motor de búsqueda local no está instalado."
+  ],
+  "Le modèle local n’a pas démarré dans le délai prévu.": [
+    "The local model did not start within the time limit.",
+    "El modelo local no se ha iniciado dentro del plazo previsto."
+  ],
+  "Le modèle a renvoyé un vecteur vide": [
+    "The model returned an empty vector",
+    "El modelo ha devuelto un vector vacío"
+  ],
+  "Dimension inattendue du modèle local": [
+    "Unexpected local model dimension",
+    "Dimensión inesperada del modelo local"
+  ],
+  "La scène « {title} » définit deux fois la note [^{label}].": [
+    "Scene “{title}” defines note [^{label}] twice.",
+    "La escena «{title}» define la nota [^{label}] dos veces."
+  ],
+  "La scène « {title} » utilise la note [^{missing}] sans définition.": [
+    "Scene “{title}” uses note [^{missing}] without a definition.",
+    "La escena «{title}» usa la nota [^{missing}] sin definirla."
+  ],
+  "Export annulé.": [
+    "Export cancelled.",
+    "Exportación cancelada."
+  ],
+  "Format d’export inconnu": [
+    "Unknown export format",
+    "Formato de exportación desconocido"
+  ],
+  "Destination invalide": [
+    "Invalid destination",
+    "Destino no válido"
+  ],
+  "Le dossier de destination n’est plus accessible": [
+    "The destination folder is no longer accessible",
+    "La carpeta de destino ya no es accesible"
+  ],
+  "Le moteur de mémoire locale n’est pas installé.": [
+    "The local memory engine is not installed.",
+    "El motor de memoria local no está instalado."
+  ],
+  "Entrée du moteur indisponible": [
+    "Engine input unavailable",
+    "Entrada del motor no disponible"
+  ],
+  "Analyse locale différée : délai dépassé.": [
+    "Local analysis deferred: timed out.",
+    "Análisis local aplazado: tiempo de espera agotado."
+  ],
+  "Moteur arrêté": [
+    "Engine stopped",
+    "Motor detenido"
+  ],
+  "Le moteur local s’est arrêté.": [
+    "The local engine has stopped.",
+    "El motor local se ha detenido."
+  ],
+  "Ce dossier ne contient pas de projet Ariane.": [
+    "This folder does not contain an Ariane project.",
+    "Esta carpeta no contiene un proyecto de Ariane."
+  ],
+  "+ Ligne": [
+    "+ Row",
+    "+ Fila"
+  ],
+  "− Ligne": [
+    "− Row",
+    "− Fila"
+  ],
+  "+ Colonne": [
+    "+ Column",
+    "+ Columna"
+  ],
+  "− Colonne": [
+    "− Column",
+    "− Columna"
+  ],
+  "Annuler la dernière action": [
+    "Undo",
+    "Deshacer"
+  ],
+  "Prénom": [
+    "First name",
+    "Nombre"
+  ],
+  "Date de naissance": [
+    "Date of birth",
+    "Fecha de nacimiento"
+  ],
+  "Lieu de naissance": [
+    "Place of birth",
+    "Lugar de nacimiento"
+  ],
+  "Date de décès": [
+    "Date of death",
+    "Fecha de fallecimiento"
+  ],
+  "Lieu de décès": [
+    "Place of death",
+    "Lugar de fallecimiento"
+  ],
+  "Contexte": [
+    "Context",
+    "Contexto"
+  ],
+  "Relations": [
+    "Relationships",
+    "Relaciones"
+  ],
+  "Affiliations": [
+    "Affiliations",
+    "Afiliaciones"
+  ],
+  "Œuvres": [
+    "Works",
+    "Obras"
+  ],
+  "Influences": [
+    "Influences",
+    "Influencias"
+  ],
+  "Légende": [
+    "Legend",
+    "Leyenda"
+  ],
+  "Mythologie": [
+    "Mythology",
+    "Mitología"
+  ],
+  "Nature": [
+    "Nature",
+    "Naturaleza"
+  ],
+  "Adresse": [
+    "Address",
+    "Dirección"
+  ],
+  "Ville": [
+    "City",
+    "Ciudad"
+  ],
+  "Région": [
+    "Region",
+    "Región"
+  ],
+  "Pays": [
+    "Country",
+    "País"
+  ],
+  "Lieu parent": [
+    "Parent place",
+    "Lugar superior"
+  ],
+  "Coordonnées": [
+    "Coordinates",
+    "Coordenadas"
+  ],
+  "Période": [
+    "Period",
+    "Período"
+  ],
+  "Date de fondation": [
+    "Foundation date",
+    "Fecha de fundación"
+  ],
+  "Histoire": [
+    "History",
+    "Historia"
+  ],
+  "Culture": [
+    "Culture",
+    "Cultura"
+  ],
+  "Fondateur": [
+    "Founder",
+    "Fundador"
+  ],
+  "Lieu de fondation": [
+    "Place of foundation",
+    "Lugar de fundación"
+  ],
+  "Organisation parente": [
+    "Parent organisation",
+    "Organización superior"
+  ],
+  "Membres": [
+    "Members",
+    "Miembros"
+  ],
+  "Croyances": [
+    "Beliefs",
+    "Creencias"
+  ],
+  "Symboles": [
+    "Symbols",
+    "Símbolos"
+  ],
+  "Date": [
+    "Date",
+    "Fecha"
+  ],
+  "Participants": [
+    "Participants",
+    "Participantes"
+  ],
+  "Sujets": [
+    "Subjects",
+    "Temas"
+  ],
+  "Décisions": [
+    "Decisions",
+    "Decisiones"
+  ],
+  "Résultat": [
+    "Outcome",
+    "Resultado"
+  ],
+  "Catégorie": [
+    "Category",
+    "Categoría"
+  ],
+  "Origine": [
+    "Origin",
+    "Origen"
+  ],
+  "Concepts liés": [
+    "Related concepts",
+    "Conceptos relacionados"
+  ],
+  "Personnes liées": [
+    "Related people",
+    "Personas relacionadas"
+  ],
+  "Auteur": [
+    "Author",
+    "Autor"
+  ],
+  "Branches": [
+    "Branches",
+    "Ramas"
+  ],
+  "Communautés": [
+    "Communities",
+    "Comunidades"
+  ],
+  "Concepts": [
+    "Concepts",
+    "Conceptos"
+  ],
+  "Conclusion": [
+    "Conclusion",
+    "Conclusión"
+  ],
+  "Cote": [
+    "Shelfmark",
+    "Signatura"
+  ],
+  "Date d'apparition": [
+    "Date of emergence",
+    "Fecha de aparición"
+  ],
+  "Date de publication": [
+    "Publication date",
+    "Fecha de publicación"
+  ],
+  "Documents": [
+    "Documents",
+    "Documentos"
+  ],
+  "Dépositaire": [
+    "Custodian",
+    "Depositario"
+  ],
+  "ISBN": [
+    "ISBN",
+    "ISBN"
+  ],
+  "Lieu d'apparition": [
+    "Place of emergence",
+    "Lugar de aparición"
+  ],
+  "Lieux": [
+    "Places",
+    "Lugares"
+  ],
+  "Objets": [
+    "Objects",
+    "Objetos"
+  ],
+  "Organisations": [
+    "Organisations",
+    "Organizaciones"
+  ],
+  "Personnes": [
+    "People",
+    "Personas"
+  ],
+  "Pratiquants": [
+    "Practitioners",
+    "Practicantes"
+  ],
+  "Provenance": [
+    "Provenance",
+    "Procedencia"
+  ],
+  "Rites": [
+    "Rites",
+    "Ritos"
+  ],
+  "Support": [
+    "Medium",
+    "Soporte"
+  ],
+  "Tradition parente": [
+    "Parent tradition",
+    "Tradición superior"
+  ],
+  "Transcription": [
+    "Transcription",
+    "Transcripción"
+  ],
+  "Écrits": [
+    "Writings",
+    "Escritos"
+  ],
+  "Éditeur": [
+    "Publisher",
+    "Editorial"
+  ],
+  "Événements": [
+    "Events",
+    "Eventos"
+  ]
+}

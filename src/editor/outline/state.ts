@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import {
   Annotation,
   EditorSelection,
@@ -110,8 +111,11 @@ export function outlineEditor(
   } {
     const bySection = new Map<string, OutlineEntry[]>();
     const byId = new Map<string, OutlineEntry>();
-    const sameStructure = indexedNodes?.length === nodes.length &&
-      nodes.every((node, i) => node.id === indexedNodes![i].id && node.parent === indexedNodes![i].parent);
+    const sameStructure =
+      indexedNodes?.length === nodes.length &&
+      nodes.every(
+        (node, i) => node.id === indexedNodes![i].id && node.parent === indexedNodes![i].parent,
+      );
     const depths = sameStructure ? cachedIndex.depths : new Map<string, number>();
     const parents = sameStructure ? cachedIndex.parents : new Set<string>();
     for (const node of nodes) {
@@ -499,7 +503,7 @@ export function outlineEditor(
     if (destructive && !tr.isUserEvent('undo') && !tr.isUserEvent('redo'))
       return {
         effects: EditorView.announce.of(
-          'Ce passage contient des enfants repliés. Dépliez le parent pour modifier ce contenu.',
+          t('Ce passage contient des enfants repliés. Dépliez le parent pour modifier ce contenu.'),
         ),
         selection: tr.startState.selection,
         annotations: Transaction.addToHistory.of(false),

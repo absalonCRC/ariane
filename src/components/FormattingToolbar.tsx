@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import {
   Bold,
   Italic,
@@ -41,39 +42,40 @@ export function FormattingToolbar({
   onFormat: (format: MarkdownFormat) => void;
   disabled: boolean;
 }) {
+  useLocale();
   const [hint, setHint] = useState('');
   return (
-    <div className="formatting-panel" role="group" aria-label="Formatage Markdown">
+    <div className="formatting-panel" role="group" aria-label={t('Formatage Markdown')}>
       <div className="formatting-heading">
-        <span>Formatage</span>
+        <span>{t('Formatage')}</span>
         <select
-          aria-label="Niveau de titre"
+          aria-label={t('Niveau de titre')}
           disabled={disabled}
           value=""
           onChange={(event) => {
             if (event.target.value) onFormat(event.target.value as MarkdownFormat);
           }}
         >
-          <option value="">Titre…</option>
-          <option value="paragraph">Texte normal</option>
+          <option value="">{t('Titre…')}</option>
+          <option value="paragraph">{t('Texte normal')}</option>
           {[1, 2, 3, 4, 5, 6].map((level) => (
             <option key={level} value={`heading-${level}`}>
-              Titre {level}
+              {t('Titre {0}', { 0: level })}
             </option>
           ))}
         </select>
       </div>
-      <div className="formatting-actions" role="group" aria-label="Mise en forme du texte">
+      <div className="formatting-actions" role="group" aria-label={t('Mise en forme du texte')}>
         {actions.map(([format, label, Icon]) => (
           <button
             key={format}
             type="button"
-            aria-label={label}
-            title={label}
+            aria-label={t(label)}
+            title={t(label)}
             disabled={disabled}
-            onMouseEnter={() => setHint(label)}
+            onMouseEnter={() => setHint(t(label))}
             onMouseLeave={() => setHint('')}
-            onFocus={() => setHint(label)}
+            onFocus={() => setHint(t(label))}
             onBlur={() => setHint('')}
             onClick={() => onFormat(format)}
           >
@@ -81,7 +83,9 @@ export function FormattingToolbar({
           </button>
         ))}
       </div>
-      <div className="formatting-hint" aria-hidden="true">{hint || " "}</div>
+      <div className="formatting-hint" aria-hidden="true">
+        {hint || ' '}
+      </div>
     </div>
   );
 }

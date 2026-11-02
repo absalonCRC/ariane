@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale } from '../i18n';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Mic } from 'lucide-react';
@@ -102,6 +103,7 @@ export function VoiceButton({
   retainContent?: boolean;
   onActivity?: (active: boolean) => void;
 }) {
+  useLocale();
   const [phase, setPhase] = useState<Phase>('idle');
   const activityCallback = useRef(onActivity);
   activityCallback.current = onActivity;
@@ -169,7 +171,7 @@ export function VoiceButton({
         if (!current.cancelled) {
           current.failed = true;
           current.parts.push({ error });
-          if (alive.current) setMessage('Une partie de la dictée n’a pas pu être transcrite.');
+          if (alive.current) setMessage(t('Une partie de la dictée n’a pas pu être transcrite.'));
         }
       }
     });
@@ -181,7 +183,7 @@ export function VoiceButton({
       const text = sessionStorage.getItem(pendingKey);
       if (text) {
         setPending(text);
-        setMessage('Le texte a changé pendant la dictée. Copiez la transcription ci-dessous.');
+        setMessage(t('Le texte a changé pendant la dictée. Copiez la transcription ci-dessous.'));
       }
     };
     restorePending();
@@ -215,11 +217,11 @@ export function VoiceButton({
     setLevels(Array(26).fill(0));
     setSeconds(0);
     if (!native) {
-      setMessage('La dictée est disponible dans l’application macOS.');
+      setMessage(t('La dictée est disponible dans l’application macOS.'));
       return;
     }
     if (available.current === false) {
-      setMessage('Les modèles de dictée locale ne sont pas disponibles.');
+      setMessage(t('Les modèles de dictée locale ne sont pas disponibles.'));
       return;
     }
     const current: Session = {
@@ -246,8 +248,8 @@ export function VoiceButton({
     try {
       const ready = available.current ?? (await availability.current);
       if (!current.active || current.cancelled || session.current !== current) return;
-      if (!ready) throw new Error('Les modèles de dictée locale ne sont pas disponibles.');
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error('Microphone indisponible.');
+      if (!ready) throw new Error(t('Les modèles de dictée locale ne sont pas disponibles.'));
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error(t('Microphone indisponible.'));
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1 },
         video: false,
@@ -356,13 +358,13 @@ export function VoiceButton({
         current.insertionBlocked = true;
         recover(text);
         if (alive.current)
-          setMessage('Le texte a changé pendant la dictée. Copiez la transcription ci-dessous.');
+          setMessage(t('Le texte a changé pendant la dictée. Copiez la transcription ci-dessous.'));
       }
     }
     if (alive.current) {
-      if (current.failed) setMessage('Une partie de la dictée n’a pas pu être transcrite.');
+      if (current.failed) setMessage(t('Une partie de la dictée n’a pas pu être transcrite.'));
       else if (current.insertionBlocked)
-        setMessage('Le texte a changé pendant la dictée. Copiez la transcription ci-dessous.');
+        setMessage(t('Le texte a changé pendant la dictée. Copiez la transcription ci-dessous.'));
       else if (current.mode === 'continuous') onClose();
       else if (current.parts.some((part) => part.result?.text?.trim())) onClose();
       setPhase('idle');
@@ -463,10 +465,10 @@ export function VoiceButton({
     <div className="voice-control" data-phase={phase} data-open={open}>
       <button
         className="voice-trigger"
-        aria-label={mode === 'continuous' ? 'Arrêter la dictée' : 'Dicter'}
+        aria-label={mode === 'continuous' ? t('Arrêter la dictée') : t('Dicter')}
         aria-expanded={open}
         aria-controls="bottom-writing-panel"
-        title="Clic : démarrer ou arrêter · maintenir : dicter pendant l’appui · ⌘ ⇧ M"
+        title={t('Clic : démarrer ou arrêter · maintenir : dicter pendant l’appui · ⌘ ⇧ M')}
         onPointerDown={(event) => {
           if (event.button !== 0) return;
           event.preventDefault();
@@ -517,7 +519,7 @@ export function VoiceButton({
             role="status"
           >
             {phase === 'preparing' ? (
-              'Préparation…'
+              t('Préparation…')
             ) : phase === 'recording' ? (
               <>
                 <div className="voice-waveform" aria-hidden="true">
@@ -525,10 +527,14 @@ export function VoiceButton({
                     <span key={index} style={{ height: `${3 + level * 20}px` }} />
                   ))}
                 </div>
-                <span className="voice-time" role="timer" aria-label="Durée de l’enregistrement">
+                <span
+                  className="voice-time"
+                  role="timer"
+                  aria-label={t('Durée de l’enregistrement')}
+                >
                   {recordingTime(seconds)}
                 </span>
-                <span>Dictée en cours</span>
+                <span>{t('Dictée en cours')}</span>
                 {lastText && (
                   <span className="voice-last-text" aria-live="polite">
                     {lastText}
@@ -536,13 +542,13 @@ export function VoiceButton({
                 )}
               </>
             ) : phase === 'transcribing' ? (
-              'Transcription…'
+              t('Transcription…')
             ) : (
-              message || 'Clic pour dicter · maintenir pour parler'
+              localizeMessage(message) || t('Clic pour dicter · maintenir pour parler')
             )}
             {pending && (
               <textarea
-                aria-label="Transcription à copier"
+                aria-label={t('Transcription à copier')}
                 readOnly
                 value={pending}
                 onFocus={(event) => event.currentTarget.select()}
@@ -550,7 +556,7 @@ export function VoiceButton({
             )}
             {phase === 'idle' && (
               <button
-                aria-label="Fermer"
+                aria-label={t('Fermer')}
                 onClick={() => {
                   setMessage('');
                   setPending('');

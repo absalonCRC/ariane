@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale } from '../i18n';
 import { ImportProject } from '../project/ImportProject';
 import { ManuscriptDialog } from '../project/ManuscriptDialog';
 import { Presence } from '../components/Presence';
@@ -18,6 +19,7 @@ export function WorkspaceDialogs({
   workspace: Workspace;
   onMemory?: () => void;
 }) {
+  useLocale();
   const [settingsError, setSettingsError] = useState('');
   const settingsFail = useCallback((e: unknown) => setSettingsError(String(e)), []);
   const {
@@ -35,9 +37,18 @@ export function WorkspaceDialogs({
   } = workspace;
   if (!p) return null;
   return (
-    <Suspense fallback={<div className="notice recovery">Ouverture…</div>}>
-      {surface === 'import' && <ImportProject projectPath={p.path} onClose={close} onOpen={workspace.activate} beforeImport={doc.flush} />}
-      {surface === 'manuscript' && workspace.manuscriptSelection && <ManuscriptDialog workspace={workspace} />}
+    <Suspense fallback={<div className="notice recovery">{t('Ouverture…')}</div>}>
+      {surface === 'import' && (
+        <ImportProject
+          projectPath={p.path}
+          onClose={close}
+          onOpen={workspace.activate}
+          beforeImport={doc.flush}
+        />
+      )}
+      {surface === 'manuscript' && workspace.manuscriptSelection && (
+        <ManuscriptDialog workspace={workspace} />
+      )}
       <Presence>
         {surface === 'preferences' && (
           <Preferences
@@ -50,7 +61,7 @@ export function WorkspaceDialogs({
               <>
                 {settingsError && (
                   <p role="alert" className="error-text">
-                    {settingsError}
+                    {localizeMessage(settingsError)}
                   </p>
                 )}
                 <Library
@@ -111,27 +122,30 @@ export function WorkspaceDialogs({
       </Presence>
       <Presence>
         {surface === 'projects' && (
-          <Dialog title="Vos projets" onClose={close}>
+          <Dialog title={t('Vos projets')} onClose={close}>
             <button
               onClick={() => {
                 close();
                 void doc.flush().then(() => setNewProject(true));
               }}
             >
-              Créer un projet
+              {t('Créer un projet')}
             </button>
             {native && (
               <button
                 onClick={async () => {
                   try {
-                    const path = await open({ directory: true, title: 'Ouvrir un projet Ariane' });
+                    const path = await open({
+                      directory: true,
+                      title: t('Ouvrir un projet Ariane'),
+                    });
                     if (typeof path === 'string') await workspace.openProject(path);
                   } catch (e) {
                     fail(e);
                   }
                 }}
               >
-                Ouvrir un dossier…
+                {t('Ouvrir un dossier…')}
               </button>
             )}
             <ProjectCatalog onOpen={workspace.openProject} onError={fail} />

@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale } from '../i18n';
 import { useEffect, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { request } from '../app/client';
@@ -12,6 +13,7 @@ export function SourceBrowser({
   onManage: () => void;
   version?: number;
 }) {
+  useLocale();
   const [vault, setVault] = useState('');
   const [kind, setKind] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
@@ -59,7 +61,7 @@ export function SourceBrowser({
   return (
     <div className="source-browser">
       <select
-        aria-label="Vault"
+        aria-label={t('Vault')}
         value={vault}
         onChange={(e) => {
           setVault(e.target.value);
@@ -68,21 +70,23 @@ export function SourceBrowser({
           setPage(empty);
         }}
       >
-        <option value="">Tous les vaults</option>
+        <option value="">{t('Tous les vaults')}</option>
         {vaults.map((v) => (
           <option key={v.id} value={v.id}>
             {v.owned ? 'Vault Ariane' : v.name + ' · Lecture seule'}
           </option>
         ))}
       </select>
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert">{localizeMessage(error)}</p>}
       {busy && (
         <p className="hint" role="status">
-          Ouverture…
+          {t('Ouverture…')}
         </p>
       )}
       {!busy && !error && !page.kinds.length && (
-        <p className="hint">Aucune entité indexée. Ajoutez des sources ou actualisez le vault.</p>
+        <p className="hint">
+          {t('Aucune entité indexée. Ajoutez des sources ou actualisez le vault.')}
+        </p>
       )}
       {(page.types ?? page.kinds.map((k) => ({ kind: k, count: 0 }))).map((type) => (
         <section className="entity-type" key={type.kind}>
@@ -95,7 +99,7 @@ export function SourceBrowser({
             }}
           >
             <ChevronRight size={13} />
-            <span>{type.kind || 'Sans type'}</span>
+            <span>{t(type.kind) || t('Sans type')}</span>
             <small>{type.count || ''}</small>
           </button>
           {kind === type.kind && !busy && !error && (
@@ -120,7 +124,7 @@ export function SourceBrowser({
               {page.total > 50 && (
                 <div className="library-pagination">
                   <button disabled={!offset} onClick={() => setOffset((v) => Math.max(0, v - 50))}>
-                    Précédent
+                    {t('Précédent')}
                   </button>
                   <span>
                     {Math.floor(offset / 50) + 1} / {Math.ceil(page.total / 50)}
@@ -129,7 +133,7 @@ export function SourceBrowser({
                     disabled={offset + 50 >= page.total}
                     onClick={() => setOffset((v) => v + 50)}
                   >
-                    Suivant
+                    {t('Suivant')}
                   </button>
                 </div>
               )}
@@ -138,7 +142,7 @@ export function SourceBrowser({
         </section>
       ))}
       <button className="library-manage" onClick={onManage}>
-        Gérer les vaults…
+        {t('Gérer les vaults…')}
       </button>
     </div>
   );

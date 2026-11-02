@@ -1,3 +1,4 @@
+import { t, useLocale, localeTag } from '../i18n';
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Presence, usePresenceValue } from '../components/Presence';
 import { panelOrigin } from '../components/useSharedPanel';
@@ -39,8 +40,13 @@ import { sourceContext } from '../sources/contextMenu';
 import { ArianeWordmark } from '../components/ArianeWordmark';
 const History = lazy(() => import('../history/History').then((m) => ({ default: m.History })));
 export function App() {
+  const locale = useLocale();
   const openMenu = useContextMenu();
   const workspace = useWorkspace();
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    if (native) void request('appLanguage', { value: locale }).catch(workspace.fail);
+  }, [locale, workspace.fail]);
   const memory = useMemory(workspace);
   useEffect(() => {
     if (import.meta.env.VITE_PERFORMANCE === '1')
@@ -171,14 +177,14 @@ export function App() {
       alive = false;
     };
   }, [p?.path, active, doc.settings.continuous, associationVersion]);
-  if (!ready) return <div className="boot" aria-label="Ouverture du projet" />;
+  if (!ready) return <div className="boot" aria-label={t('Ouverture du projet')} />;
   if (!p || newProject)
     return (
       <>
         <Welcome onOpen={activate} onError={fail} />
         {newProject && (
           <button className="return-project" onClick={() => setNewProject(false)}>
-            Revenir au projet
+            {t('Revenir au projet')}
           </button>
         )}
         <WorkspaceNotices workspace={workspace} />
@@ -198,10 +204,11 @@ export function App() {
         : '';
   const suggestionTitle =
     memory.suggestion?.kind === 'recall'
-      ? p.sections.find((section) => section.id === recallSection)?.title || 'Dans votre manuscrit'
+      ? p.sections.find((section) => section.id === recallSection)?.title ||
+        t('Dans votre manuscrit')
       : memory.suggestion?.kind === 'evidence'
         ? memory.suggestion.evidence.title
-        : memory.result?.entities[0]?.title || 'Fiche du manuscrit';
+        : memory.result?.entities[0]?.title || t('Fiche du manuscrit');
   const railLeft = workspace.marginBounds
     ? Math.max(workspace.marginBounds.right + 32, innerWidth - 215)
     : 0;
@@ -224,8 +231,8 @@ export function App() {
       {!binder && (
         <button
           className="edge-trigger"
-          aria-label="Déplier la sidebar"
-          title="Ouvrir la sidebar"
+          aria-label={t('Déplier la sidebar')}
+          title={t('Ouvrir la sidebar')}
           aria-controls="project-sidebar"
           aria-expanded={false}
           onClick={() => setBinder(true)}
@@ -240,7 +247,7 @@ export function App() {
           <div className="menu-control" data-open={menu}>
             <button
               className="icon-button menu-trigger"
-              aria-label="Menu du projet"
+              aria-label={t('Menu du projet')}
               aria-expanded={menu}
               aria-controls="project-menu"
               onClick={() => setMenu((v) => !v)}
@@ -250,18 +257,18 @@ export function App() {
             <nav
               id="project-menu"
               className="project-menu floating"
-              aria-label="Menu du projet"
+              aria-label={t('Menu du projet')}
               aria-hidden={!menu}
               inert={!menu}
             >
               {commands
                 .filter((c) =>
                   [
-                    'Exporter le manuscrit',
-                    'Sources du projet',
-                    'Créer une variante / Voir les versions',
-                    'Créer un projet',
-                    'Ouvrir un projet',
+                    t('Exporter le manuscrit'),
+                    t('Sources du projet'),
+                    t('Créer une variante / Voir les versions'),
+                    t('Créer un projet'),
+                    t('Ouvrir un projet'),
                   ].includes(c.label),
                 )
                 .map((c) => (
@@ -373,7 +380,7 @@ export function App() {
             }}
           />
           {!doc.settings.continuous && selected?.included === false && (
-            <p className="working-text-label">Texte de travail · Hors manuscrit</p>
+            <p className="working-text-label">{t('Texte de travail · Hors manuscrit')}</p>
           )}
           <Editor
             ref={editor}
@@ -401,24 +408,24 @@ export function App() {
           {!scenes.length &&
             (doc.settings.continuous ? (
               <div className="empty-manuscript">
-                <p>Aucun texte inclus dans le manuscrit.</p>
+                <p>{t('Aucun texte inclus dans le manuscrit.')}</p>
                 <button
                   onClick={() => {
                     setBinder(true);
                     workspace.setRevealInBinder((v) => v + 1);
                   }}
                 >
-                  Choisir les textes dans la bibliothèque
+                  {t('Choisir les textes dans la bibliothèque')}
                 </button>
               </div>
             ) : (
               <button className="add-first-scene" onClick={() => void createPage(active)}>
-                Ajouter une scène à cette section
+                {t('Ajouter une scène à cette section')}
               </button>
             ))}
         </div>
         {workspace.historyMode && (
-          <Suspense fallback={<p className="history-empty">Ouverture des versions…</p>}>
+          <Suspense fallback={<p className="history-empty">{t('Ouverture des versions…')}</p>}>
             <History
               key={p.path}
               project={p}
@@ -447,15 +454,22 @@ export function App() {
         onFormat={(format) => editor.current?.format(format)}
         onAnnotate={native ? workspace.openAnnotations : undefined}
       />
-      {workspace.annotationsOpen && !workspace.historyMode && <Annotations key={p.path} workspace={workspace}
-        left={railVisible ? railLeft : Math.max(12, innerWidth - 290)} width={railVisible ? railWidth : 270} />}
-      {!workspace.annotationsOpen && !workspace.historyMode &&
+      {workspace.annotationsOpen && !workspace.historyMode && (
+        <Annotations
+          key={p.path}
+          workspace={workspace}
+          left={railVisible ? railLeft : Math.max(12, innerWidth - 290)}
+          width={railVisible ? railWidth : 270}
+        />
+      )}
+      {!workspace.annotationsOpen &&
+        !workspace.historyMode &&
         words > 0 &&
         railVisible &&
         !(reader || (memory.view && !memory.origin) || searching) && (
           <div
             className="source-margin"
-            aria-label="Sources dans la marge"
+            aria-label={t('Sources dans la marge')}
             data-phase={sourcePresence.exiting ? 'exit' : 'open'}
             inert={sourcePresence.exiting}
             aria-hidden={sourcePresence.exiting || undefined}
@@ -502,13 +516,13 @@ export function App() {
                   >
                     <span>{s.title}</span>
                     <small>
-                      {s.kind} ·{' '}
+                      {t(s.kind)} ·{' '}
                       {associated.has(s.id)
-                        ? 'associée à cette section'
+                        ? t('associée à cette section')
                         : s.score === 100
-                          ? 'mention détectée'
+                          ? t('mention détectée')
                           : s.score === 80 || s.score === 40
-                            ? 'lien entre sources'
+                            ? t('lien entre sources')
                             : 'suggestion'}
                     </small>
                   </button>
@@ -519,12 +533,12 @@ export function App() {
                     aria-expanded={groupOpen === g.id}
                     aria-label={
                       groupOpen === g.id
-                        ? 'Réduire les sources'
+                        ? t('Réduire les sources')
                         : `Afficher les ${g.sources.length - 2} autres sources`
                     }
                     onClick={() => setGroupOpen(groupOpen === g.id ? null : g.id)}
                   >
-                    {groupOpen === g.id ? 'Réduire' : '+' + (g.sources.length - 2)}
+                    {groupOpen === g.id ? t('Réduire') : '+' + (g.sources.length - 2)}
                   </button>
                 )}
               </div>
@@ -534,7 +548,7 @@ export function App() {
       <Presence kind="content">
         {!workspace.historyMode && memory.showResume && !memory.view && !reader && !searching && (
           <button className="memory-resume" onClick={() => memory.open({ kind: 'resume' })}>
-            Reprendre le fil
+            {t('Reprendre le fil')}
           </button>
         )}
       </Presence>
@@ -551,11 +565,15 @@ export function App() {
               onContextMenu={(event) => {
                 const suggestion = memory.suggestion!;
                 openMenu(event, {
-                  title: suggestion.kind === 'entity' ? 'Fiche du manuscrit' : 'Passage suggéré',
+                  title:
+                    suggestion.kind === 'entity' ? t('Fiche du manuscrit') : t('Passage suggéré'),
                   groups: [
                     [
                       {
-                        label: suggestion.kind === 'entity' ? 'Ouvrir la fiche' : 'Voir le passage',
+                        label:
+                          suggestion.kind === 'entity'
+                            ? t('Ouvrir la fiche')
+                            : t('Voir le passage'),
                         icon: ArrowUpRight,
                         run: () => {
                           setSurface('none');
@@ -565,7 +583,7 @@ export function App() {
                       ...(suggestionExcerpt && typeof navigator.clipboard?.writeText === 'function'
                         ? [
                             {
-                              label: 'Copier l’extrait',
+                              label: t('Copier l’extrait'),
                               icon: Copy,
                               run: () => navigator.clipboard.writeText(suggestionExcerpt),
                             },
@@ -585,10 +603,10 @@ export function App() {
               <span>{suggestionTitle}</span>
               <small>
                 {memory.suggestion.kind === 'entity'
-                  ? 'Depuis votre texte'
+                  ? t('Depuis votre texte')
                   : memory.suggestion.kind === 'evidence'
-                    ? 'Passage à confronter'
-                    : 'Dans votre manuscrit'}
+                    ? t('Passage à confronter')
+                    : t('Dans votre manuscrit')}
               </small>
               {suggestionExcerpt && (
                 <span className="suggestion-excerpt">
@@ -683,10 +701,10 @@ export function App() {
             {doc.status !== 'saved' && (
               <span className="state-label" key={doc.status}>
                 {doc.status === 'saving'
-                  ? 'Enregistrement…'
+                  ? t('Enregistrement…')
                   : doc.status === 'error'
-                    ? 'Modifications non enregistrées'
-                    : 'Modifications en cours'}
+                    ? t('Modifications non enregistrées')
+                    : t('Modifications en cours')}
               </span>
             )}
           </Presence>
@@ -765,22 +783,27 @@ export function App() {
             commands={
               workspace.palette === 'sections'
                 ? ordered(p.sections).map((section) => ({
-                    label: section.title || 'Sans titre',
+                    label: section.title || t('Sans titre'),
                     detail:
                       section.kind === 'scene'
-                        ? 'Scène'
+                        ? t('Scène')
                         : section.kind === 'chapter'
-                          ? 'Chapitre'
-                          : 'Section',
+                          ? t('Chapitre')
+                          : t('Section'),
                     action: () => void select(section.id),
                   }))
                 : [
                     ...commands,
-                    { label: 'Reprendre le fil', action: () => memory.open({ kind: 'resume' }) },
-                    { label: 'Fiches du manuscrit', action: () => memory.open({ kind: 'list' }) },
+                    { label: t('Reprendre le fil'), action: () => memory.open({ kind: 'resume' }) },
+                    {
+                      label: t('Fiches du manuscrit'),
+                      action: () => memory.open({ kind: 'list' }),
+                    },
                   ].filter(
                     (command) =>
-                      !['Rechercher dans les sources', 'Sources du projet'].includes(command.label),
+                      ![t('Rechercher dans les sources'), t('Sources du projet')].includes(
+                        command.label,
+                      ),
                   )
             }
           />
@@ -798,7 +821,7 @@ export function App() {
             <span className="goal-track">
               <i style={{ width: Math.min(100, (words / selected.goal) * 100) + '%' }} />
             </span>
-            <span>{selected.goal.toLocaleString('fr-FR')}</span>
+            <span>{selected.goal.toLocaleString(localeTag())}</span>
           </div>
         )}
         <DepthControl value={doc.settings.depth} onChange={(depth) => doc.configure({ depth })} />
@@ -806,7 +829,7 @@ export function App() {
           <button
             ref={settingsTrigger}
             className="settings-trigger"
-            aria-label={workspace.historyMode ? 'Outils des versions' : 'Réglages d’écriture'}
+            aria-label={workspace.historyMode ? t('Outils des versions') : t('Réglages d’écriture')}
             aria-expanded={surface === 'settings'}
             aria-controls={workspace.historyMode ? 'version-settings' : 'writing-settings'}
             onClick={() => {
@@ -841,11 +864,11 @@ export function App() {
           <div className="index-strip">
             <progress max={progress.total} value={progress.done} />
             <span>
-              Préparation des sources · {progress.done} / {progress.total}
+              {t('Préparation des sources · {0} / {1}', { 0: progress.done, 1: progress.total })}
             </span>
             <button onClick={() => void request('cancelIndex')}>
               <Pause size={11} />
-              Suspendre
+              {t('Suspendre')}
             </button>
           </div>
         )}

@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { SourceOccurrences } from './SourceOccurrences';
 import type { SourceOccurrence } from './occurrences';
 import type { Section } from '../app/types';
@@ -34,6 +35,7 @@ export function SourceCard({
   onRegister: (s: Source, text: string) => Promise<void>;
   citationStyle: Settings['citationStyle'];
 }) {
+  useLocale();
   const panel = useSharedPanel(origin, s.id, onClose);
   const openMenu = useContextMenu();
   const fields = Object.entries(s.fields || {})
@@ -67,23 +69,27 @@ export function SourceCard({
           }),
         );
       }}
-      aria-label={'Fiche ' + s.title}
+      aria-label={t('Fiche ') + s.title}
     >
       <div className="shared-panel-label" aria-hidden="true">
         {origin?.label ?? s.title}
       </div>
-      <button className="card-close icon-button" aria-label="Fermer la fiche" onClick={onClose}>
+      <button
+        className="card-close icon-button"
+        aria-label={t('Fermer la fiche')}
+        onClick={onClose}
+      >
         <X size={14} />
       </button>
-      <span className="source-kind">{s.kind}</span>
+      <span className="source-kind">{t(s.kind)}</span>
       <h2>{s.title}</h2>
       <dl>
         {fields.map(([k, v]) => (
           <div key={k}>
             <dt>
-              {k}
+              {t(k)}
               {s.enrichment?.fields.some((f) => f.field === k && f.status === 'derived') && (
-                <small className="derived-label"> · manuscrit</small>
+                <small className="derived-label">{t(' · manuscrit')}</small>
               )}
             </dt>
             <dd>
@@ -97,7 +103,7 @@ export function SourceCard({
         ))}
         {s.tags.length > 0 && (
           <div>
-            <dt>Tags</dt>
+            <dt>{t('Tags')}</dt>
             <dd>{s.tags.map((t) => '#' + t).join(' ')}</dd>
           </div>
         )}
@@ -112,12 +118,16 @@ export function SourceCard({
           e.dataTransfer.setData('text/plain', value);
         }}
       >
-        {excerpt || 'Cette source est une pièce jointe.'}
+        {excerpt || t('Cette source est une pièce jointe.')}
       </div>
       {s.enrichment && (
         <button className="enrichment-summary" onClick={onRead}>
-          Références liées · {s.enrichment.passages.length} instance(s)
-          {s.enrichment.fields.some((f) => f.status === 'conflict') && ' · valeurs à vérifier'}
+          {t('Références liées · {0} instance(s){1}', {
+            0: s.enrichment.passages.length,
+            1:
+              s.enrichment.fields.some((f) => f.status === 'conflict') &&
+              t(' · valeurs à vérifier'),
+          })}
         </button>
       )}
       {onOccurrence && (
@@ -134,20 +144,20 @@ export function SourceCard({
         {s.page && ` · p. ${s.page}`}
       </p>
       <button className="associate-source" onClick={onAssociate}>
-        Associer à la préparation
+        {t('Associer à la préparation')}
       </button>
       <div className="source-actions">
         <button onClick={onRead}>
           <ArrowUpRight size={12} />
-          Ouvrir la note
+          {t('Ouvrir la note')}
         </button>
         <button onClick={() => onCite(s, selected())}>
           <Quote size={12} />
-          Citer
+          {t('Citer')}
         </button>
         <button
-          title="Insérer une référence"
-          aria-label="Insérer une référence"
+          title={t('Insérer une référence')}
+          aria-label={t('Insérer une référence')}
           onClick={() => onCite(s, '')}
         >
           <Link2 size={12} />

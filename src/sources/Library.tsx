@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale } from '../i18n';
 import { AnimatedDetails } from '../components/AnimatedDetails';
 import { Presence } from '../components/Presence';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -22,10 +23,11 @@ function LibraryFrame({
   onClose: () => void;
   children: ReactNode;
 }) {
+  useLocale();
   return embedded ? (
     <div className="embedded-library">{children}</div>
   ) : (
-    <Dialog title="Sources du projet" onClose={onClose} wide>
+    <Dialog title={t('Sources du projet')} onClose={onClose} wide>
       {children}
     </Dialog>
   );
@@ -47,6 +49,7 @@ export function Library({
   onBusy: (v: boolean) => void;
   onMemory?: () => void;
 }) {
+  useLocale();
   const [vaults, setVaults] = useState<Vault[]>([]);
   const [busy, setBusy] = useState(false);
   const [report, setReport] = useState<string[]>([]);
@@ -71,7 +74,7 @@ export function Library({
       );
       setReport(result.errors);
       if (!result.errors.length)
-        setReport([result.cancelled ? 'Indexation suspendue.' : 'Les sources sont prêtes.']);
+        setReport([result.cancelled ? t('Indexation suspendue.') : t('Les sources sont prêtes.')]);
       setVaults(await request('vaults'));
       onRefresh();
     } catch (e) {
@@ -91,10 +94,11 @@ export function Library({
   }, [onIndexProgress]);
   async function connect() {
     try {
-      if (!native) throw new Error('Connectez vos dossiers de sources depuis l’application macOS.');
+      if (!native)
+        throw new Error(t('Connectez vos dossiers de sources depuis l’application macOS.'));
       const path = await open({
         directory: true,
-        title: 'Choisir un dossier de sources (vault Obsidian)',
+        title: t('Choisir un dossier de sources (vault Obsidian)'),
       });
       if (typeof path === 'string') {
         setVaults(await request('connectVault', { path }));
@@ -163,32 +167,32 @@ export function Library({
     <LibraryFrame embedded={embedded} onClose={onClose}>
       {onMemory && native && (
         <button className="memory-library" onClick={onMemory}>
-          Fiches issues du manuscrit
+          {t('Fiches issues du manuscrit')}
         </button>
       )}
       <div className="library-toolbar">
         <button onClick={connect}>
           <Plus size={14} />
-          Ajouter un dossier de sources
+          {t('Ajouter un dossier de sources')}
         </button>
         {!owned && (
           <button disabled={busy} onClick={() => void createVault()}>
-            <Plus size={14} /> Créer mon dossier de sources
+            <Plus size={14} /> {t('Créer mon dossier de sources')}
           </button>
         )}
         {owned && (
           <button disabled={busy} onClick={() => setAdding((v) => !v)}>
-            <Plus size={14} /> Nouvelle fiche
+            <Plus size={14} /> {t('Nouvelle fiche')}
           </button>
         )}
         <button disabled={busy || !vaults.length} onClick={() => void index()}>
           <RefreshCw size={13} />
-          Actualiser l’index
+          {t('Actualiser l’index')}
         </button>
         {busy && (
           <button onClick={() => void request('cancelIndex')}>
             <Pause size={13} />
-            Suspendre
+            {t('Suspendre')}
           </button>
         )}
       </div>
@@ -202,25 +206,25 @@ export function Library({
             }}
           >
             <label>
-              Type
+              {t('Type')}
               <select value={entityKind} onChange={(e) => setEntityKind(e.target.value)}>
-                <option value="personne">Personne</option>
-                <option value="lieu">Lieu</option>
-                <option value="organisation">Organisation</option>
-                <option value="evenement">Événement</option>
-                <option value="concept">Concept</option>
-                <option value="croyance">Croyance ou tradition</option>
-                <option value="oeuvre">Œuvre</option>
-                <option value="document">Document ou source</option>
-                <option value="objet">Objet</option>
+                <option value="personne">{t('Personne')}</option>
+                <option value="lieu">{t('Lieu')}</option>
+                <option value="organisation">{t('Organisation')}</option>
+                <option value="evenement">{t('Événement')}</option>
+                <option value="concept">{t('Concept')}</option>
+                <option value="croyance">{t('Croyance ou tradition')}</option>
+                <option value="oeuvre">{t('Œuvre')}</option>
+                <option value="document">{t('Document ou source')}</option>
+                <option value="objet">{t('Objet')}</option>
               </select>
             </label>
             <label>
-              Nom
+              {t('Nom')}
               <input required value={entityName} onChange={(e) => setEntityName(e.target.value)} />
             </label>
             <label>
-              Description
+              {t('Description')}
               <textarea
                 rows={2}
                 value={entityDescription}
@@ -229,10 +233,10 @@ export function Library({
             </label>
             <div className="dialog-actions">
               <button type="button" onClick={() => setAdding(false)}>
-                Annuler
+                {t('Annuler')}
               </button>
               <button className="primary" disabled={busy || !entityName.trim()}>
-                Créer la fiche
+                {t('Créer la fiche')}
               </button>
             </div>
           </form>
@@ -246,13 +250,13 @@ export function Library({
               <strong>{v.name}</strong>
               <small>
                 {v.available
-                  ? `${v.count} document${v.count === 1 ? '' : 's'} · ${v.owned ? 'Dossier Ariane' : 'Lecture seule'}`
-                  : 'Dossier introuvable'}
+                  ? `${v.count} document${v.count === 1 ? '' : 's'} · ${v.owned ? t('Dossier Ariane') : t('Lecture seule')}`
+                  : t('Dossier introuvable')}
               </small>
               {!v.owned && (
                 <button
                   className="icon-button"
-                  aria-label={'Déconnecter ' + v.name}
+                  aria-label={t('Déconnecter ') + v.name}
                   disabled={busy}
                   onClick={() =>
                     void request<Vault[]>('removeVault', { id: v.id })
@@ -264,16 +268,20 @@ export function Library({
                 </button>
               )}
             </div>
-            <AnimatedDetails className="source-details" summary={<>Emplacement du dossier</>}>
+            <AnimatedDetails
+              className="source-details"
+              summary={<>{t('Emplacement du dossier')}</>}
+            >
               <p className="source-path">{v.path}</p>
             </AnimatedDetails>
             <label>
-              Dossiers inclus <small>— dossiers ou fichiers, un par ligne</small>
+              {t('Dossiers inclus')}
+              <small>{t('— dossiers ou fichiers, un par ligne')}</small>
               <textarea
                 rows={2}
                 value={scopes[v.id] ?? v.scope.join('\n')}
-                aria-label={'Dossiers inclus dans ' + v.name}
-                placeholder="Tous les dossiers"
+                aria-label={t('Dossiers inclus dans ') + v.name}
+                placeholder={t('Tous les dossiers')}
                 onChange={(e) => setScopes({ ...scopes, [v.id]: e.target.value })}
                 onBlur={(e) => {
                   void request('vaultScope', {
@@ -292,26 +300,34 @@ export function Library({
         ))
       ) : (
         <Empty>
-          Ajoutez un dossier de sources (vault), ou glissez-le depuis le Finder. Le projet reste
-          indépendant de ses sources.
+          {t(
+            'Ajoutez un dossier de sources (vault), ou glissez-le depuis le Finder. Le projet reste indépendant de ses sources.',
+          )}
         </Empty>
       )}
       <p className="hint">
-        Markdown et PDF textuels. Les images restent consultables sans reconnaissance du texte.
+        {t(
+          'Markdown et PDF textuels. Les images restent consultables sans reconnaissance du texte.',
+        )}
       </p>
-      <AnimatedDetails className="source-details" summary={<>Détails de la recherche locale</>}>
+      <AnimatedDetails
+        className="source-details"
+        summary={<>{t('Détails de la recherche locale')}</>}
+      >
         <p className="hint">
           {!native &&
-            'Aperçu navigateur : les fiches sont enregistrées dans ce navigateur, sans créer de fichiers. '}
+            t(
+              'Aperçu navigateur : les fiches sont enregistrées dans ce navigateur, sans créer de fichiers. ',
+            )}
           {available
-            ? 'EmbeddingGemma 300M · Q8 · Recherche locale multilingue'
-            : 'Moteur sémantique non disponible dans cet environnement.'}
+            ? t('EmbeddingGemma 300M · Q8 · Recherche locale multilingue')
+            : t('Moteur sémantique non disponible dans cet environnement.')}
         </p>
       </AnimatedDetails>
       {report.length > 0 && (
         <div className="index-report">
           {report.slice(0, 12).map((r, i) => (
-            <p key={i}>{r}</p>
+            <p key={i}>{localizeMessage(r)}</p>
           ))}
         </div>
       )}

@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { StateField } from '@codemirror/state';
 import { Decoration, EditorView, WidgetType } from '@codemirror/view';
 import type { Span } from './composite';
@@ -22,7 +23,11 @@ export function sceneHeadings(field: StateField<Span[]>) {
       state
         .field(field)
         .map((s) =>
-          Decoration.widget({ widget: new Heading(s.title || 'Sans titre'), block: true, side: -1 }).range(s.from),
+          Decoration.widget({
+            widget: new Heading(s.title || t('Sans titre')),
+            block: true,
+            side: -1,
+          }).range(s.from),
         ),
     ),
   );

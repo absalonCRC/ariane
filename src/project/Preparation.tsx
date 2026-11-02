@@ -1,3 +1,4 @@
+import { localizeMessage, t, useLocale } from '../i18n';
 import { useState, useEffect } from 'react';
 import type { Section, Source } from '../app/types';
 import { Dialog } from '../components/Dialog';
@@ -11,6 +12,7 @@ export function Preparation({
   onSave: (s: Section) => Promise<void>;
   onClose: () => void;
 }) {
+  useLocale();
   const [value, setValue] = useState({ ...section });
   const [busy, setBusy] = useState(false);
   const [links, setLinks] = useState<Source[]>([]);
@@ -21,7 +23,7 @@ export function Preparation({
       .catch((e) => setError(String(e)));
   }, [section.id]);
   return (
-    <Dialog title="Préparation" onClose={onClose}>
+    <Dialog title={t('Préparation')} onClose={onClose}>
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -39,7 +41,7 @@ export function Preparation({
         }}
       >
         <label>
-          Titre
+          {t('Titre')}
           <input
             required
             value={value.title}
@@ -47,29 +49,29 @@ export function Preparation({
           />
         </label>
         <label>
-          Synopsis
+          {t('Synopsis')}
           <textarea
             value={value.synopsis}
             rows={5}
             onChange={(e) => setValue({ ...value, synopsis: e.target.value })}
-            placeholder="Ce que cette section doit raconter…"
+            placeholder={t('Ce que cette section doit raconter…')}
           />
         </label>
         <div className="form-columns">
           <label>
-            Statut
+            {t('Statut')}
             <select
               value={value.status}
               onChange={(e) => setValue({ ...value, status: e.target.value })}
             >
-              <option>Brouillon</option>
-              <option>En cours</option>
-              <option>À relire</option>
-              <option>Terminé</option>
+              <option value="Brouillon">{t('Brouillon')}</option>
+              <option value="En cours">{t('En cours')}</option>
+              <option value="À relire">{t('À relire')}</option>
+              <option value="Terminé">{t('Terminé')}</option>
             </select>
           </label>
           <label>
-            Objectif de mots
+            {t('Objectif de mots')}
             <input
               type="number"
               min="0"
@@ -80,14 +82,14 @@ export function Preparation({
         </div>
         {links.length > 0 && (
           <div className="preparation-links">
-            <h3>Fiches du projet</h3>
+            <h3>{t('Fiches du projet')}</h3>
             <p className="hint">
-              Ces fiches sont propres au projet. Les notes du vault restent inchangées.
+              {t('Ces fiches sont propres au projet. Les notes du vault restent inchangées.')}
             </p>
             {links.map((source, i) => (
               <div key={source.id}>
                 <label>
-                  {source.kind}
+                  {t(source.kind)}
                   <input
                     value={source.title}
                     onChange={(e) =>
@@ -96,7 +98,7 @@ export function Preparation({
                   />
                 </label>
                 <textarea
-                  aria-label={'Notes sur ' + source.title}
+                  aria-label={t('Notes sur ') + source.title}
                   rows={3}
                   value={source.text}
                   onChange={(e) =>
@@ -107,13 +109,13 @@ export function Preparation({
             ))}
           </div>
         )}
-        {error && <p className="error-text">{error}</p>}
+        {error && <p className="error-text">{localizeMessage(error)}</p>}
         <div className="dialog-actions">
           <button type="button" onClick={onClose}>
-            Annuler
+            {t('Annuler')}
           </button>
           <button className="primary" disabled={busy}>
-            Enregistrer
+            {t('Enregistrer')}
           </button>
         </div>
       </form>

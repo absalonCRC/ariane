@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useRef, useState } from 'react';
 import { FileText, Folder, Plus } from 'lucide-react';
 import type { Project, Section } from '../app/types';
@@ -16,6 +17,7 @@ export function PathMenu({
   onSelect: (id: string) => void;
   onAdd: (parent: string | null) => void;
 }) {
+  useLocale();
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const parent = continuous
@@ -37,7 +39,7 @@ export function PathMenu({
         }}
       >
         {section.kind === 'scene' ? <FileText size={14} /> : <Folder size={14} />}
-        <span>{section.title || 'Sans titre'}</span>
+        <span>{section.title || t('Sans titre')}</span>
       </button>
     ));
   }
@@ -61,18 +63,20 @@ export function PathMenu({
       <button
         className="path-trigger"
         ref={trigger}
-        aria-label="Arborescence du projet"
+        aria-label={t('Arborescence du projet')}
         aria-expanded={open}
         aria-controls="path-tree"
         onClick={(event) => setOpen(event.detail === 0 ? !open : true)}
       >
         {[
           project.name,
-          ...(continuous ? ['Manuscrit entier'] : path.map((section) => section.title || 'Sans titre')),
+          ...(continuous
+            ? [t('Manuscrit entier')]
+            : path.map((section) => section.title || t('Sans titre'))),
         ].join(' / ')}
       </button>
       <div className="path-popover" id="path-tree" aria-hidden={!open} inert={!open}>
-        <nav aria-label="Hiérarchie de la page courante">
+        <nav aria-label={t('Hiérarchie de la page courante')}>
           <div className="path-tree-root">
             <Folder size={14} />
             <span>{project.name}</span>
@@ -81,7 +85,7 @@ export function PathMenu({
           {continuous && (
             <div className="path-tree-root path-tree-manuscript">
               <FileText size={14} />
-              <span>Manuscrit entier</span>
+              <span>{t('Manuscrit entier')}</span>
             </div>
           )}
         </nav>
@@ -92,7 +96,7 @@ export function PathMenu({
             onAdd(parent);
           }}
         >
-          <Plus size={14} /> Nouvelle page
+          <Plus size={14} /> {t('Nouvelle page')}
         </button>
       </div>
     </div>

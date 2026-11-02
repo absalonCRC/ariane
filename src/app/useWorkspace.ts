@@ -1,3 +1,4 @@
+import { t, useLocale } from '../i18n';
 import { useTheme } from './useTheme';
 import {
   libraryOperationMessage,
@@ -22,6 +23,7 @@ import { useUnifiedSearch } from './useUnifiedSearch';
 import type { ManuscriptMatch } from './projectSearch';
 import { useEnrichment } from '../enrichment/useEnrichment';
 export function useWorkspace() {
+  useLocale();
   const exportJob = useExport();
   const appearance = useTheme();
   const [error, setError] = useState('');
@@ -358,82 +360,130 @@ export function useWorkspace() {
   }, [doc.flush, doc.status]);
   const commands: Command[] = p
     ? [
-        { label: 'Ouvrir le classeur', detail: '⌘ ⇧ B', action: () => setBinder((v) => !v) },
-        { label: 'Rejoindre une section', detail: '⌘ P', action: () => setPalette('sections') },
+        { label: t('Ouvrir le classeur'), detail: '⌘ ⇧ B', action: () => setBinder((v) => !v) },
+        { label: t('Rejoindre une section'), detail: '⌘ P', action: () => setPalette('sections') },
         {
-          label: 'Rechercher dans les textes et les vaults',
+          label: t('Rechercher dans les textes et les vaults'),
           detail: '⌘ ⇧ F',
           action: () => setSearch(editor.current?.selection() || ''),
         },
-        ...(native ? [{ label: 'Annoter la sélection / Voir les annotations', action: openAnnotations }] : []),
-        { label: 'Importer un manuscrit', action: () => setSurface('import') },
-        ...(native ? [{ label: 'Séparer ou réunir des scènes', action: () => void prepareManuscript() }] : []),
-        { label: 'Sources du projet', action: () => setSurface('sources') },
-        { label: 'Préparer cette section', action: () => setSurface('prepare') },
-        { label: 'Créer une variante / Voir les versions', action: () => openSurface('history') },
-        { label: 'Exporter le manuscrit', detail: '⌘ ⇧ E', action: () => setSurface('export') },
-        { label: 'Réglages d’écriture', action: () => setSurface('settings') },
-        { label: 'Paramètres', action: () => setSurface('preferences') },
+        ...(native
+          ? [{ label: t('Annoter la sélection / Voir les annotations'), action: openAnnotations }]
+          : []),
+        { label: t('Importer un manuscrit'), action: () => setSurface('import') },
+        ...(native
+          ? [{ label: t('Séparer ou réunir des scènes'), action: () => void prepareManuscript() }]
+          : []),
+        { label: t('Sources du projet'), action: () => setSurface('sources') },
+        { label: t('Préparer cette section'), action: () => setSurface('prepare') },
         {
-          label: 'Indenter le passage',
+          label: t('Créer une variante / Voir les versions'),
+          action: () => openSurface('history'),
+        },
+        { label: t('Exporter le manuscrit'), detail: '⌘ ⇧ E', action: () => setSurface('export') },
+        { label: t('Réglages d’écriture'), action: () => setSurface('settings') },
+        { label: t('Paramètres'), action: () => setSurface('preferences') },
+        {
+          label: t('Indenter le passage'),
           detail: 'Tab',
           action: () => editor.current?.structure('indent'),
         },
         {
-          label: 'Désindenter le passage',
+          label: t('Désindenter le passage'),
           detail: '⇧ Tab',
           action: () => editor.current?.structure('outdent'),
         },
         {
-          label: 'Monter la branche',
+          label: t('Monter la branche'),
           detail: '⌥ ↑',
           action: () => editor.current?.structure('up'),
         },
         {
-          label: 'Descendre la branche',
+          label: t('Descendre la branche'),
           detail: '⌥ ↓',
           action: () => editor.current?.structure('down'),
         },
         {
-          label: 'Replier ou déplier le passage',
+          label: t('Replier ou déplier le passage'),
           detail: '⌘ ⌥ ← / →',
           action: () => editor.current?.structure('fold'),
         },
-        { label: 'Lire le manuscrit entier', action: () => void select(active || '', true) },
+        { label: t('Lire le manuscrit entier'), action: () => void select(active || '', true) },
         {
-          label: 'Ajouter une scène',
+          label: t('Ajouter une scène'),
           action: () => void createPage(selected?.parent || null, selected?.role),
         },
         {
-          label: 'Créer un projet',
+          label: t('Créer un projet'),
           action: () => {
             void doc.flush().then(() => setNewProject(true));
           },
         },
-        { label: 'Ouvrir un projet', action: () => setSurface('projects') },
-        { label: 'Enregistrer', detail: '⌘ S', action: () => void doc.flush().catch(() => {}) },
+        { label: t('Ouvrir un projet'), action: () => setSurface('projects') },
+        { label: t('Enregistrer'), detail: '⌘ S', action: () => void doc.flush().catch(() => {}) },
       ]
     : [];
   const nativeCommand = useRef<(id: string) => void>(() => {});
   nativeCommand.current = (id) => {
     if (libraryLock.current || document.querySelector('dialog[open][aria-modal="true"]')) return;
     if (!p || newProject) return;
-    if (id === 'save') { void doc.flush().catch(fail); return; }
-    if (id === 'new-project') { void doc.flush().then(() => setNewProject(true)).catch(fail); return; }
-    if (id === 'open-project') { setSurface('projects'); return; }
-    if (id === 'annotations') { openAnnotations(); return; }
-    if (id === 'manuscript') { void prepareManuscript(); return; }
-    if (id === 'binder') { setBinder(v => !v); return; }
-    if (id === 'commands') { setPalette('commands'); return; }
-    if (id === 'sections') { setPalette('sections'); return; }
-    if (id === 'search') { setSearch(editor.current?.selection() || ''); return; }
-    if (['import','export','history','preferences','sources'].includes(id)) openSurface(id as Surface);
+    if (id === 'save') {
+      void doc.flush().catch(fail);
+      return;
+    }
+    if (id === 'new-project') {
+      void doc
+        .flush()
+        .then(() => setNewProject(true))
+        .catch(fail);
+      return;
+    }
+    if (id === 'open-project') {
+      setSurface('projects');
+      return;
+    }
+    if (id === 'annotations') {
+      openAnnotations();
+      return;
+    }
+    if (id === 'manuscript') {
+      void prepareManuscript();
+      return;
+    }
+    if (id === 'binder') {
+      setBinder((v) => !v);
+      return;
+    }
+    if (id === 'commands') {
+      setPalette('commands');
+      return;
+    }
+    if (id === 'sections') {
+      setPalette('sections');
+      return;
+    }
+    if (id === 'search') {
+      setSearch(editor.current?.selection() || '');
+      return;
+    }
+    if (['import', 'export', 'history', 'preferences', 'sources'].includes(id))
+      openSurface(id as Surface);
   };
   useEffect(() => {
     if (!native) return;
-    let stop: (() => void) | undefined, disposed = false;
-    void import('@tauri-apps/api/event').then(({listen}) => listen<string>('app-command', e => nativeCommand.current(e.payload))).then(unlisten => { if (disposed) unlisten(); else stop = unlisten; }).catch(fail);
-    return () => { disposed = true; stop?.(); };
+    let stop: (() => void) | undefined,
+      disposed = false;
+    void import('@tauri-apps/api/event')
+      .then(({ listen }) => listen<string>('app-command', (e) => nativeCommand.current(e.payload)))
+      .then((unlisten) => {
+        if (disposed) unlisten();
+        else stop = unlisten;
+      })
+      .catch(fail);
+    return () => {
+      disposed = true;
+      stop?.();
+    };
   }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -520,7 +570,7 @@ export function useWorkspace() {
   }
   function openAnnotations() {
     const passage = editor.current?.passage();
-    const section = doc.ref.current?.sections.find(s => s.id === passage?.section);
+    const section = doc.ref.current?.sections.find((s) => s.id === passage?.section);
     setAnnotationTarget(passage?.text && section ? { ...passage, original: section.text } : null);
     setAnnotationsOpen(true); setCard(null); setReader(null); setSearch(null);
   }
@@ -530,7 +580,8 @@ export function useWorkspace() {
     const text = editor.current?.text();
     try {
       await doc.flush();
-      if (editor.current?.text() !== text) throw new Error('Le texte a changé. Replacez le curseur puis réessayez.');
+      if (editor.current?.text() !== text)
+        throw new Error(t('Le texte a changé. Replacez le curseur puis réessayez.'));
       setManuscriptSelection(selection);
       setSurface('manuscript');
     } catch (e) { fail(e); }
@@ -539,12 +590,28 @@ export function useWorkspace() {
     if (libraryLock.current) return;
     libraryLock.current = true; setLibraryBusy(true);
     try {
-      await doc.flush(); await metadataQueue.current;
-      const next = await request<Project>('manuscriptOperation', { projectPath: doc.ref.current!.path, operation });
-      next.settings = { ...doc.settingsRef.current, active: operation.sourceId, continuous: false, cursor: 0 };
-      doc.activate(next); setSurface('none'); setBinder(true);
-      setLibraryNotice({ message: 'Texte réorganisé.', undo: false });
-    } catch (e) { fail(e); } finally { libraryLock.current = false; setLibraryBusy(false); }
+      await doc.flush();
+      await metadataQueue.current;
+      const next = await request<Project>('manuscriptOperation', {
+        projectPath: doc.ref.current!.path,
+        operation,
+      });
+      next.settings = {
+        ...doc.settingsRef.current,
+        active: operation.sourceId,
+        continuous: false,
+        cursor: 0,
+      };
+      doc.activate(next);
+      setSurface('none');
+      setBinder(true);
+      setLibraryNotice({ message: t('Texte réorganisé.'), undo: false });
+    } catch (e) {
+      fail(e);
+    } finally {
+      libraryLock.current = false;
+      setLibraryBusy(false);
+    }
   }
   async function operate(operation: LibraryOperation) {
     if (libraryLock.current) return;
@@ -647,7 +714,8 @@ export function useWorkspace() {
       const insert = editor.current?.prepareCitation();
       const citation = composeCitation(s, text, doc.settings.citationStyle);
       await registerCitation(s, text);
-      if (!insert?.(citation)) throw new Error('Le texte a changé. Replacez le curseur puis réessayez.');
+      if (!insert?.(citation))
+        throw new Error(t('Le texte a changé. Replacez le curseur puis réessayez.'));
       setCard(null);
     } catch (e) {
       fail(e);
@@ -680,7 +748,7 @@ export function useWorkspace() {
     await doc.flush();
     const current = doc.ref.current!.sections.find((s) => s.id === id)!;
     if (current.revision !== revision)
-      throw new Error('Le texte a changé. Relancez la comparaison.');
+      throw new Error(t('Le texte a changé. Relancez la comparaison.'));
     await request('save', { patches: [{ id, text, revision }] });
     activate(await request('open', { path: p!.path }));
   }

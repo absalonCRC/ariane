@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { EditorState, type ChangeSpec, type TransactionSpec } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
 import type { Span } from './composite';
@@ -160,7 +161,7 @@ function link(state: EditorState, image: boolean): TransactionSpec {
   const prefix = image ? '![' : '[';
   const destination = 'https://';
   if (!text) {
-    const placeholder = image ? 'description de l’image' : 'texte du lien';
+    const placeholder = image ? t('description de l’image') : t('texte du lien');
     const insert = `${prefix}${placeholder}](${destination})`;
     const start = from + prefix.length + placeholder.length + 2;
     return {
@@ -317,7 +318,7 @@ function footnote(state: EditorState, spans: readonly Span[]): TransactionSpec {
   let end = span?.to ?? state.doc.length;
   while (end > referenceAt && state.sliceDoc(end - 1, end) === '\n') end--;
   const prefix = `\n\n[^${number}]: `;
-  const placeholder = 'Texte de la note';
+  const placeholder = t('Texte de la note');
   const definition = prefix + placeholder;
   const changes =
     referenceAt === end

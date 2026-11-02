@@ -1,18 +1,22 @@
+import { t } from '../i18n';
 import { diffArrays, diffWordsWithSpace } from 'diff';
 import type { Section } from '../app/types';
 
 export function sectionChanges(left?: Section, right?: Section): string[] {
-  if (!left || !right) return [left ? 'Élément retiré' : 'Élément ajouté'];
+  if (!left || !right) return [left ? t('Élément retiré') : t('Élément ajouté')];
   const changes: string[] = [];
-  if (left.title !== right.title) changes.push('Titre modifié');
-  if (left.parent !== right.parent) changes.push('Emplacement modifié');
-  if (left.position !== right.position) changes.push('Ordre modifié');
-  if ((left.role || 'manuscript') !== (right.role || 'manuscript')) changes.push('Espace modifié');
-  if ((left.included !== false) !== (right.included !== false)) changes.push('Inclusion dans le manuscrit modifiée');
-  if (left.synopsis !== right.synopsis) changes.push('Synopsis modifié');
-  if (left.status !== right.status) changes.push('Statut modifié');
-  if (left.goal !== right.goal) changes.push('Objectif modifié');
-  if (JSON.stringify(left.outline ?? null) !== JSON.stringify(right.outline ?? null)) changes.push('Plan du texte modifié');
+  if (left.title !== right.title) changes.push(t('Titre modifié'));
+  if (left.parent !== right.parent) changes.push(t('Emplacement modifié'));
+  if (left.position !== right.position) changes.push(t('Ordre modifié'));
+  if ((left.role || 'manuscript') !== (right.role || 'manuscript'))
+    changes.push(t('Espace modifié'));
+  if ((left.included !== false) !== (right.included !== false))
+    changes.push(t('Inclusion dans le manuscrit modifiée'));
+  if (left.synopsis !== right.synopsis) changes.push(t('Synopsis modifié'));
+  if (left.status !== right.status) changes.push(t('Statut modifié'));
+  if (left.goal !== right.goal) changes.push(t('Objectif modifié'));
+  if (JSON.stringify(left.outline ?? null) !== JSON.stringify(right.outline ?? null))
+    changes.push(t('Plan du texte modifié'));
   return changes;
 }
 export function comparePassages(left: string, right: string) {
