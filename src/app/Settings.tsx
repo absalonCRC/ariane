@@ -1,3 +1,7 @@
+import { useRef } from 'react';
+import { usePanelFocus } from '../components/usePanelFocus';
+import { WritingModes } from '../components/WritingModes';
+import { ReadingComfort } from '../components/ReadingComfort';
 import { X } from 'lucide-react';
 import type { Settings as Values } from './types';
 import { FormattingToolbar } from '../components/FormattingToolbar';
@@ -17,8 +21,18 @@ export function Settings({
   onFormat: (format: MarkdownFormat) => void;
   canFormat: boolean;
 }) {
+  const panel = useRef<HTMLElement>(null);
+  usePanelFocus(panel, open);
   return (
     <section
+      ref={panel}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && !event.defaultPrevented) {
+          event.preventDefault();
+          event.stopPropagation();
+          onClose();
+        }
+      }}
       id="writing-settings"
       className="settings floating"
       aria-label="Réglages d’écriture"
@@ -36,12 +50,14 @@ export function Settings({
         <span className="settings-label">Typographie</span>
         <div className="segmented">
           <button
+            aria-pressed={value.font === 'literary'}
             className={value.font === 'literary' ? 'active' : ''}
             onClick={() => onChange({ font: 'literary' })}
           >
             Littéraire
           </button>
           <button
+            aria-pressed={value.font === 'mono'}
             className={value.font === 'mono' ? 'active' : ''}
             onClick={() => onChange({ font: 'mono' })}
           >
@@ -60,34 +76,8 @@ export function Settings({
           onChange={(e) => onChange({ fontSize: +e.target.value })}
         />
       </label>
-      <label className="settings-row">
-        <span className="settings-label">Concentration</span>
-        <select
-          value={value.focus}
-          onChange={(e) => onChange({ focus: e.target.value as Values['focus'] })}
-        >
-          <option value="none">Aucune</option>
-          <option value="paragraph">Paragraphe</option>
-          <option value="sentence">Phrase</option>
-        </select>
-      </label>
-      <div className="settings-row" role="group" aria-label="Défilement">
-        <span className="settings-label">Défilement</span>
-        <div className="segmented">
-          <button
-            className={!value.typewriter ? 'active' : ''}
-            onClick={() => onChange({ typewriter: false })}
-          >
-            Classique
-          </button>
-          <button
-            className={value.typewriter ? 'active' : ''}
-            onClick={() => onChange({ typewriter: true })}
-          >
-            Machine à écrire
-          </button>
-        </div>
-      </div>
+      <WritingModes value={value} onChange={onChange} />
+      <ReadingComfort value={value} onChange={onChange} />
     </section>
   );
 }

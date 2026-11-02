@@ -16,7 +16,7 @@ import { sentenceFocus, paragraphFocus } from './focus';
 import type { SelectionAnchor } from '../components/SelectionToolbar';
 import { useContextMenu } from '../components/ContextMenu';
 import { editorContext } from './contextMenu';
-import { documentScroller, documentBounds } from './scrolling';
+import { documentScroller, documentBounds, MANUSCRIPT_CHROME_INSET } from './scrolling';
 import { typewriterScrolling } from './typewriter';
 import { sceneHeadings } from './sceneHeadings';
 import { smoothCaret } from './smoothCaret';
@@ -316,6 +316,11 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
         textSearchHighlight,
         keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
         EditorView.lineWrapping,
+        EditorView.scrollMargins.of((view) =>
+          documentScroller(view) === view.scrollDOM
+            ? null
+            : { top: MANUSCRIPT_CHROME_INSET, bottom: MANUSCRIPT_CHROME_INSET },
+        ),
         EditorView.contentAttributes.of({
           spellcheck: 'true',
           'aria-label': 'Manuscrit',
@@ -414,6 +419,11 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     let anchor: { pos: number; offset: number } | null = null;
     let frame = 0;
     let width = v.scrollDOM.clientWidth;
+    const typography = () => {
+      const style = getComputedStyle(v.dom);
+      return `${style.fontSize}/${style.lineHeight}/${style.fontFamily}`;
+    };
+    let textStyle = typography();
     const rememberAnchor = () => {
       const bounds = documentBounds(v);
       const pos = v.posAtCoords({
@@ -433,8 +443,10 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
         : new ResizeObserver(() => {
             geometry();
             const nextWidth = v.scrollDOM.clientWidth;
-            if (nextWidth === width) return;
+            const nextStyle = typography();
+            if (nextWidth === width && nextStyle === textStyle) return;
             width = nextWidth;
+            textStyle = nextStyle;
             const previous = anchor;
             if (!previous) {
               rememberLater();
@@ -526,6 +538,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       style={
         {
           '--writing-size': props.settings.fontSize + 'px',
+          '--writing-leading': props.settings.lineHeight ?? 1.5,
           ...(props.sections.length ? {} : { height: 0 }),
         } as React.CSSProperties
       }

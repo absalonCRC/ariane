@@ -85,6 +85,7 @@ export function Palette({
       <button
         className="icon-button header-search-trigger"
         aria-label={open ? 'Fermer la recherche' : 'Rechercher dans les textes et les vaults'}
+        data-tooltip={open ? 'Fermer la recherche' : 'Rechercher'}
         aria-expanded={open}
         aria-controls="bottom-writing-panel"
         onClick={() => (open ? onClose() : onOpen())}

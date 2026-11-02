@@ -1,4 +1,4 @@
-import { documentScroller } from '../scrolling';
+import { documentBounds, documentScroller } from '../scrolling';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
 import {
   Decoration,
@@ -152,7 +152,7 @@ export function outlinePresentation(outline: OutlineEditor) {
       );
       if (this.children) button.setAttribute('aria-expanded', String(!this.folded));
       button.dataset.state = this.children ? (this.folded ? 'replié' : 'déplié') : 'passage';
-      button.title = this.children
+      button.dataset.tooltip = this.children
         ? 'Glisser pour déplacer · cliquer pour replier ou déplier'
         : 'Glisser pour déplacer le passage';
       button.draggable = false;
@@ -282,7 +282,7 @@ export function outlinePresentation(outline: OutlineEditor) {
         target.where,
       );
     }
-    const box = documentScroller(view).getBoundingClientRect();
+    const box = documentBounds(view);
     if (y < box.top + 36) documentScroller(view).scrollTop -= 12;
     else if (y > box.bottom - 36) documentScroller(view).scrollTop += 12;
     return target;

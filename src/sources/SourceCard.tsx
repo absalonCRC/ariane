@@ -146,7 +146,6 @@ export function SourceCard({
           Citer
         </button>
         <button
-          title="Insérer une référence"
           aria-label="Insérer une référence"
           onClick={() => onCite(s, '')}
         >

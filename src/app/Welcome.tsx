@@ -53,7 +53,7 @@ export function Welcome({ onOpen, onError }: {
     } catch (e) { onError(e); }
   }
   return <div className="welcome">
-    <ArianeWordmark />
+    <ArianeWordmark compact />
     <div className="window-title" data-tauri-drag-region aria-hidden="true" />
     <h1>Un espace pour écrire.</h1>
     <div>

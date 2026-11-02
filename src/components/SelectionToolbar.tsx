@@ -70,13 +70,12 @@ export function SelectionToolbar({
         }
       }}
     >
-      {onAnnotate && <button type="button" aria-label="Annoter la sélection" title="Annoter la sélection" onClick={onAnnotate}><MessageSquare size={15} strokeWidth={1.6} /></button>}
+      {onAnnotate && <button type="button" aria-label="Annoter la sélection" onClick={onAnnotate}><MessageSquare size={15} strokeWidth={1.6} /></button>}
       {actions.map(([format, label, Icon]) => (
         <button
           key={format}
           type="button"
           aria-label={label}
-          title={label}
           onClick={() => {
             if (!shown.exiting) onFormat(format);
           }}

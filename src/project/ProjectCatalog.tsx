@@ -120,6 +120,7 @@ export function ProjectCatalog({
                 className="icon-button"
                 disabled={busy}
                 aria-label={(entry.pinned ? 'Désépingler ' : 'Épingler ') + entry.name}
+                data-tooltip={entry.pinned ? 'Désépingler' : 'Épingler'}
                 aria-pressed={entry.pinned}
                 onClick={() => void change(entry, { pinned: !entry.pinned })}
               >
@@ -129,6 +130,7 @@ export function ProjectCatalog({
                 className="icon-button"
                 disabled={busy}
                 aria-label={(entry.archived ? 'Désarchiver ' : 'Archiver ') + entry.name}
+                data-tooltip={entry.archived ? 'Désarchiver' : 'Archiver'}
                 onClick={() => void change(entry, { archived: !entry.archived })}
               >
                 <Archive size={13} />

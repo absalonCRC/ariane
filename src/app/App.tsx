@@ -1,3 +1,4 @@
+import { plainExcerpt } from '../enrichment/excerpts';
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Presence, usePresenceValue } from '../components/Presence';
 import { panelOrigin } from '../components/useSharedPanel';
@@ -11,6 +12,7 @@ import {
   Copy,
   ArrowUpRight,
   GitCompareArrows,
+  X,
 } from 'lucide-react';
 import { Palette } from './Palette';
 import { request, native } from './client';
@@ -29,6 +31,7 @@ import { useWorkspace } from './useWorkspace';
 import { useMemory } from '../enrichment/useMemory';
 import { MemoryReader } from '../enrichment/MemoryReader';
 import { WorkspaceNotices } from './WorkspaceNotices';
+import { useTitleNotices } from './useTitleNotices';
 import { WorkspaceDialogs } from './WorkspaceDialogs';
 import type { Source } from './types';
 import { countVaultNotes } from '../sources/countNotes';
@@ -37,10 +40,15 @@ import { Settings } from './Settings';
 import { useContextMenu } from '../components/ContextMenu';
 import { sourceContext } from '../sources/contextMenu';
 import { ArianeWordmark } from '../components/ArianeWordmark';
+import { useScrollActivity } from '../components/useScrollActivity';
+import { SidebarDock } from '../components/SidebarDock';
+import { useChromeObstructions } from '../components/useChromeObstructions';
 const History = lazy(() => import('../history/History').then((m) => ({ default: m.History })));
 export function App() {
   const openMenu = useContextMenu();
   const workspace = useWorkspace();
+  const titleNotices = useTitleNotices(workspace);
+  const scrollActivity = useScrollActivity();
   const memory = useMemory(workspace);
   useEffect(() => {
     if (import.meta.env.VITE_PERFORMANCE === '1')
@@ -55,6 +63,9 @@ export function App() {
   const [panelNode, setPanelNode] = useState<HTMLDivElement | null>(null);
   const settingsTrigger = useRef<HTMLButtonElement>(null);
   const [versionToolsHost, setVersionToolsHost] = useState<HTMLDivElement | null>(null);
+  const [sidebarActionsHost, setSidebarActionsHost] = useState<HTMLDivElement | null>(null);
+  const [appRoot, setAppRoot] = useState<HTMLDivElement | null>(null);
+  useChromeObstructions(appRoot, workspace.binder, workspace.historyMode);
   const panelMode = workspace.palette ? 'search' : voiceOpen ? 'voice' : 'none';
   const previousPanel = useRef<typeof panelMode>('none');
   const lastPanel = useRef<'search' | 'voice'>('search');
@@ -104,7 +115,6 @@ export function App() {
     if (workspace.palette) {
       setVoiceOpen(false);
       memory.close();
-      if (!workspace.historyMode) workspace.setBinder(false);
       if (workspace.surface === 'settings') workspace.setSurface('none');
     }
   }, [workspace.palette]);
@@ -211,8 +221,53 @@ export function App() {
     !workspace.annotationsOpen && railVisible &&
     contextTop !== null &&
     contextTop + (suggestionExcerpt ? 125 : 80) < (workspace.marginBounds?.bottom ?? 0);
+  const pathNotices = titleNotices.notices.map((notice) => ({
+    id: notice.id,
+    message: notice.message,
+    tone: notice.tone,
+    action:
+      notice.kind === 'library' &&
+      notice.libraryNotice === workspace.libraryNotice &&
+      notice.libraryNotice?.undo &&
+      p.canUndoStructure
+        ? {
+            label: 'Annuler',
+            disabled: workspace.libraryBusy,
+            onClick: () => {
+              titleNotices.dismiss(notice);
+              void workspace.operate({ action: 'undo' });
+            },
+          }
+        : notice.kind === 'error' &&
+            !workspace.error.startsWith('EXTERNAL:') &&
+            doc.status === 'error'
+          ? {
+              label: 'Réessayer',
+              onClick: () => {
+                titleNotices.dismiss(notice);
+                if (doc.status === 'error') void doc.flush().catch(fail);
+              },
+            }
+          : notice.kind === 'export'
+            ? {
+                label: 'Voir',
+                onClick: () => {
+                  titleNotices.dismiss(notice);
+                  setSurface('export');
+                },
+              }
+            : undefined,
+    showDetails:
+      (notice.kind === 'error' &&
+        (workspace.error.startsWith('EXTERNAL:') || doc.status !== 'error')) ||
+      notice.kind === 'recovery',
+    onDismiss: () => titleNotices.dismiss(notice),
+  }));
   return (
     <div
+      ref={setAppRoot}
+      style={{ '--column-width': (doc.settings.columnWidth ?? 750) + 'px' } as React.CSSProperties}
+      data-scrolling={scrollActivity.scrolling}
       className={
         'app ' +
         (doc.settings.font === 'mono' ? 'mono ' : '') +
@@ -225,7 +280,9 @@ export function App() {
         <button
           className="edge-trigger"
           aria-label="Déplier la sidebar"
-          title="Ouvrir la sidebar"
+          data-hint="Bibliothèque · ⌘ ⇧ B"
+          data-hint-placement="sidebar-edge"
+          aria-description="Bibliothèque · ⌘ ⇧ B"
           aria-controls="project-sidebar"
           aria-expanded={false}
           onClick={() => setBinder(true)}
@@ -235,7 +292,7 @@ export function App() {
         </button>
       )}
       <header className="app-header" inert={workspace.libraryBusy}>
-        <ArianeWordmark />
+        <ArianeWordmark compact={!binder} />
         <div className="header-right">
           <div className="menu-control" data-open={menu}>
             <button
@@ -288,16 +345,27 @@ export function App() {
           onAdd={(parent) =>
             void createPage(parent, doc.settings.continuous ? 'manuscript' : selected?.role)
           }
+          notifications={pathNotices}
+          hasPending={titleNotices.hasPending}
+          hasError={titleNotices.hasError}
+          noticeDetails={<WorkspaceNotices workspace={workspace} embedded />}
         />
       </div>
+      <SidebarDock
+        expanded={binder}
+        dark={workspace.appearance.dark}
+        onToggleTheme={() =>
+          workspace.appearance.change(workspace.appearance.dark ? 'light' : 'dark')
+        }
+        busy={workspace.libraryBusy}
+        onActionsHost={setSidebarActionsHost}
+      />
       <Presence kind="sidebar">
         {binder && (
           <Binder
             key={p.path}
-            dark={workspace.appearance.dark}
-            onToggleTheme={() =>
-              workspace.appearance.change(workspace.appearance.dark ? 'light' : 'dark')
-            }
+            historyMode={workspace.historyMode}
+            footerTarget={sidebarActionsHost}
             onOperation={workspace.operate}
             onConfigure={doc.configure}
             onReadSource={read}
@@ -357,10 +425,14 @@ export function App() {
       >
         <div
           className="manuscript-column"
+          onScroll={scrollActivity.onScroll}
+          onScrollEnd={scrollActivity.onScrollEnd}
           hidden={workspace.historyMode}
           inert={workspace.historyMode}
           style={
-            { '--typewriter-line-half': `${doc.settings.fontSize * 0.75}px` } as React.CSSProperties
+            {
+              '--typewriter-line-half': `${(doc.settings.fontSize * (doc.settings.lineHeight ?? 1.5)) / 2}px`,
+            } as React.CSSProperties
           }
         >
           <DocumentTitle
@@ -447,9 +519,16 @@ export function App() {
         onFormat={(format) => editor.current?.format(format)}
         onAnnotate={native ? workspace.openAnnotations : undefined}
       />
-      {workspace.annotationsOpen && !workspace.historyMode && <Annotations key={p.path} workspace={workspace}
-        left={railVisible ? railLeft : Math.max(12, innerWidth - 290)} width={railVisible ? railWidth : 270} />}
-      {!workspace.annotationsOpen && !workspace.historyMode &&
+      {workspace.annotationsOpen && !workspace.historyMode && (
+        <Annotations
+          key={p.path}
+          workspace={workspace}
+          left={railVisible ? railLeft : Math.max(12, innerWidth - 290)}
+          width={railVisible ? railWidth : 270}
+        />
+      )}
+      {!workspace.annotationsOpen &&
+        !workspace.historyMode &&
         words > 0 &&
         railVisible &&
         !(reader || (memory.view && !memory.origin) || searching) && (
@@ -547,55 +626,75 @@ export function App() {
           !reader &&
           !card &&
           !searching && (
-            <button
-              onContextMenu={(event) => {
-                const suggestion = memory.suggestion!;
-                openMenu(event, {
-                  title: suggestion.kind === 'entity' ? 'Fiche du manuscrit' : 'Passage suggéré',
-                  groups: [
-                    [
-                      {
-                        label: suggestion.kind === 'entity' ? 'Ouvrir la fiche' : 'Voir le passage',
-                        icon: ArrowUpRight,
-                        run: () => {
-                          setSurface('none');
-                          memory.open(suggestion);
-                        },
-                      },
-                      ...(suggestionExcerpt && typeof navigator.clipboard?.writeText === 'function'
-                        ? [
-                            {
-                              label: 'Copier l’extrait',
-                              icon: Copy,
-                              run: () => navigator.clipboard.writeText(suggestionExcerpt),
-                            },
-                          ]
-                        : []),
-                    ],
-                  ],
-                });
-              }}
-              className="source-label memory-context"
+            <div
+              className="memory-suggestion"
               style={{ top: contextTop!, left: railLeft, width: railWidth }}
-              onClick={(event) => {
-                setSurface('none');
-                memory.open(memory.suggestion!, panelOrigin(event.currentTarget, suggestionTitle));
-              }}
             >
-              <span>{suggestionTitle}</span>
-              <small>
-                {memory.suggestion.kind === 'entity'
-                  ? 'Depuis votre texte'
-                  : memory.suggestion.kind === 'evidence'
-                    ? 'Passage à confronter'
-                    : 'Dans votre manuscrit'}
-              </small>
-              {suggestionExcerpt && (
-                <span className="suggestion-excerpt">
-                  {suggestionExcerpt.replace(/\s+/g, ' ').trim()}
-                </span>
+              <button
+                onContextMenu={(event) => {
+                  const suggestion = memory.suggestion!;
+                  openMenu(event, {
+                    title: suggestion.kind === 'entity' ? 'Fiche du manuscrit' : 'Passage suggéré',
+                    groups: [
+                      [
+                        {
+                          label:
+                            suggestion.kind === 'entity' ? 'Ouvrir la fiche' : 'Voir le passage',
+                          icon: ArrowUpRight,
+                          run: () => {
+                            setSurface('none');
+                            memory.open(suggestion);
+                          },
+                        },
+                        ...(suggestionExcerpt &&
+                        typeof navigator.clipboard?.writeText === 'function'
+                          ? [
+                              {
+                                label: 'Copier l’extrait',
+                                icon: Copy,
+                                run: () => navigator.clipboard.writeText(suggestionExcerpt),
+                              },
+                            ]
+                          : []),
+                      ],
+                    ],
+                  });
+                }}
+                className="source-label memory-context"
+                onClick={(event) => {
+                  setSurface('none');
+                  memory.open(
+                    memory.suggestion!,
+                    panelOrigin(event.currentTarget, suggestionTitle),
+                  );
+                }}
+              >
+                <span>{suggestionTitle}</span>
+                <small>
+                  {memory.suggestion.kind === 'entity'
+                    ? 'Depuis votre texte'
+                    : memory.suggestion.kind === 'evidence'
+                      ? 'Passage à confronter'
+                      : 'Dans votre manuscrit'}
+                </small>
+                {suggestionExcerpt && (
+                  <span className="suggestion-excerpt">{plainExcerpt(suggestionExcerpt)}</span>
+                )}
+              </button>
+              {memory.suggestion.kind !== 'entity' && (
+                <button
+                  className="dismiss-suggestion"
+                  aria-label="Masquer ce rapprochement"
+                  data-hint="Masquer ce rapprochement"
+                  onClick={() => {
+                    void memory.dismiss().catch(fail);
+                    editor.current?.focus();
+                  }}
+                >
+                  <X size={12} aria-hidden="true" />
+                </button>
               )}
-            </button>
+            </div>
           )}
       </Presence>
       <MemoryReader
@@ -807,6 +906,7 @@ export function App() {
             ref={settingsTrigger}
             className="settings-trigger"
             aria-label={workspace.historyMode ? 'Outils des versions' : 'Réglages d’écriture'}
+            data-tooltip={workspace.historyMode ? 'Outils des versions' : 'Écriture et lecture'}
             aria-expanded={surface === 'settings'}
             aria-controls={workspace.historyMode ? 'version-settings' : 'writing-settings'}
             onClick={() => {
@@ -850,7 +950,6 @@ export function App() {
           </div>
         )}
       </Presence>
-      <WorkspaceNotices workspace={workspace} />
       <WorkspaceDialogs workspace={workspace} onMemory={() => memory.open({ kind: 'list' })} />
     </div>
   );

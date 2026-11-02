@@ -1,4 +1,6 @@
+import { usePanelFocus } from './usePanelFocus';
 import { useEffect, useLayoutEffect, useRef } from 'react';
+import { manuscriptVisibleBounds } from '../editor/scrolling';
 
 export interface PanelOrigin {
   left: number;
@@ -35,6 +37,7 @@ export function useSharedPanel(
   onClose: () => void,
 ) {
   const ref = useRef<HTMLElement>(null);
+  usePanelFocus(ref, !!identity, false);
   const close = useRef(onClose);
   close.current = onClose;
   useLayoutEffect(() => {
@@ -47,12 +50,12 @@ export function useSharedPanel(
     let rightInset = origin?.rightInset ?? (origin ? innerWidth - origin.left - origin.width : 25);
     const animations: Animation[] = [];
     const clip = (top: number, height: number) => {
-      const viewport = scroller?.getBoundingClientRect();
+      const viewport = scroller ? manuscriptVisibleBounds(scroller) : undefined;
       return `inset(${Math.max(0, (viewport?.top ?? 0) - top)}px 0 ${Math.max(0, top + height - (viewport?.bottom ?? innerHeight))}px 0)`;
     };
     const position = () => {
       const height = Math.min(writing?.offsetHeight || 400, innerHeight - 110);
-      const width = Math.min(writing?.offsetWidth || 310, innerWidth - 50);
+      const width = Math.min(writing?.offsetWidth || 310, Math.max(0, innerWidth - 48));
       const top = contentTop - scrollTop();
       element.style.height = `${height}px`;
       element.style.width = `${width}px`;

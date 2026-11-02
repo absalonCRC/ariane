@@ -1,3 +1,6 @@
+import { ReadingComfort } from '../components/ReadingComfort';
+import { WritingModes } from '../components/WritingModes';
+import { depthLevel } from '../components/depthLevels';
 import { useState, type ReactNode } from 'react';
 import type { Settings as Values, Project } from './types';
 import { native } from './client';
@@ -96,11 +99,14 @@ export function Preferences({
                   onChange={(e) => onChange({ fontSize: +e.target.value })}
                 />
               </label>
+              <ReadingComfort value={value} onChange={onChange} />
               <p
                 className="settings-type-preview"
                 style={{
                   fontFamily: value.font === 'mono' ? 'var(--mono)' : 'var(--literary)',
                   fontSize: value.fontSize,
+                  lineHeight: value.lineHeight ?? 1.5,
+                  maxWidth: value.columnWidth ?? 750,
                 }}
               >
                 La page s’ouvre. Une phrase trouve son rythme.
@@ -111,27 +117,7 @@ export function Preferences({
             <>
               <h2>Écriture</h2>
               <p className="settings-description">Ces réglages sont conservés avec le projet.</p>
-              <label>
-                Concentration
-                <select
-                  value={value.focus}
-                  onChange={(e) => onChange({ focus: e.target.value as Values['focus'] })}
-                >
-                  <option value="none">Aucune</option>
-                  <option value="paragraph">Paragraphe actif</option>
-                  <option value="sentence">Phrase active</option>
-                </select>
-              </label>
-              <label className="preference-toggle">
-                <span>
-                  Machine à écrire<small>Garder la ligne active au centre pendant la saisie.</small>
-                </span>
-                <input
-                  type="checkbox"
-                  checked={value.typewriter}
-                  onChange={(e) => onChange({ typewriter: e.target.checked })}
-                />
-              </label>
+              <WritingModes value={value} onChange={onChange} />
               <label className="preference-toggle">
                 <span>
                   Révision<small>Afficher les repères de révision dans l’éditeur.</small>
@@ -175,16 +161,16 @@ export function Preferences({
             <>
               <h2>Sources et références</h2>
               <label>
-                Profondeur de recherche · {value.depth}
+                Profondeur · {depthLevel(value.depth).label}
                 <input
                   aria-label="Profondeur des sources"
+                  aria-valuetext={`Niveau ${depthLevel(value.depth).index} : ${depthLevel(value.depth).label}`}
                   type="range"
                   min="0"
                   max="5"
                   value={value.depth}
                   onChange={(e) => onChange({ depth: +e.target.value })}
                 />
-                <small>0 · Notes détectées dans le texte — 5 · Exploration des liens</small>
               </label>
               <label>
                 Style des citations

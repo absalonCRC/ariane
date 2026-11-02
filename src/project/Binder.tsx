@@ -1,4 +1,5 @@
-import { ThemeSwitcher } from '../components/ThemeSwitcher';
+import { createPortal } from 'react-dom';
+import { SidebarDock } from '../components/SidebarDock';
 import type { MouseEvent, DragEvent, CSSProperties } from 'react';
 import { trackSidebarPointer } from './sidebarPointer';
 import { Dialog } from '../components/Dialog';
@@ -24,6 +25,8 @@ import {
   Trash2,
   Undo2,
   MoreHorizontal,
+  GitCompareArrows,
+  Settings2,
   Check,
   Eye,
   EyeOff,
@@ -31,7 +34,9 @@ import {
 import type { Project, Section, Surface, Source, Settings as ProjectSettings } from '../app/types';
 interface Props {
   dark?: boolean;
+  historyMode?: boolean;
   onToggleTheme?: () => void;
+  footerTarget?: HTMLDivElement | null;
   project: Project;
   active: string | null;
   onSelect: (id: string) => void;
@@ -483,12 +488,20 @@ export function Binder(p: Props) {
           if (p.onPrepare && !trash && ids.length === 1)
             actions.push({ label: 'Préparer cette section', run: () => p.onPrepare!(s.id) });
           if (p.onManuscriptOperation && !trash && s.kind === 'scene' && ids.length === 1) {
-            const siblings = p.project.sections.filter((item) => item.kind === 'scene' && item.parent === s.parent && item.role === s.role);
+            const siblings = p.project.sections.filter(
+              (item) => item.kind === 'scene' && item.parent === s.parent && item.role === s.role,
+            );
             const next = siblings[siblings.findIndex((item) => item.id === s.id) + 1];
-            if (next) actions.push({
-              label: `Réunir avec « ${next.title || 'Sans titre'} »`,
-              run: () => void p.onManuscriptOperation!({ action: 'join', sourceId: s.id, targetId: next.id }),
-            });
+            if (next)
+              actions.push({
+                label: `Réunir avec « ${next.title || 'Sans titre'} »`,
+                run: () =>
+                  void p.onManuscriptOperation!({
+                    action: 'join',
+                    sourceId: s.id,
+                    targetId: next.id,
+                  }),
+              });
           }
           if (s.kind !== 'scene' && p.project.sections.some((child) => child.parent === s.id))
             actions.push({
@@ -665,7 +678,20 @@ export function Binder(p: Props) {
             className="tree-inclusion"
             disabled={p.busy || !p.onOperation || !count.total}
             aria-label={toggleLabel}
-            title={toggleLabel}
+            data-hint={
+              mixed
+                ? 'En partie dans le manuscrit'
+                : fullyIncluded
+                  ? 'Inclus dans le manuscrit et l’export'
+                  : 'Texte de travail · hors manuscrit'
+            }
+            aria-description={
+              mixed
+                ? 'En partie dans le manuscrit'
+                : fullyIncluded
+                  ? 'Inclus dans le manuscrit et l’export'
+                  : 'Texte de travail · hors manuscrit'
+            }
             aria-pressed={mixed ? 'mixed' : fullyIncluded}
             onClick={(event) => {
               event.stopPropagation();
@@ -743,6 +769,7 @@ export function Binder(p: Props) {
           <button
             className="row-add"
             aria-label={'Ajouter dans ' + s.title}
+            data-tooltip="Ajouter"
             aria-haspopup="menu"
             onClick={(event) =>
               openMenu(event, { title: 'Ajouter dans ' + s.title, groups: [addActions(s)] })
@@ -754,6 +781,33 @@ export function Binder(p: Props) {
       </div>
     );
   }
+  const footerActions = (
+    <>
+      <button
+        aria-current={p.historyMode ? 'page' : undefined}
+        aria-label="Versions"
+        data-tooltip="Versions"
+        onClick={() => p.onSurface('history')}
+      >
+        <GitCompareArrows size={17} aria-hidden="true" />
+      </button>
+      <button
+        aria-label="Corbeille"
+        aria-pressed={trash}
+        data-tooltip="Corbeille"
+        onClick={() => changeView('trash')}
+      >
+        <Trash2 size={17} aria-hidden="true" />
+      </button>
+      <button
+        aria-label="Paramètres"
+        data-tooltip="Paramètres"
+        onClick={() => p.onSurface('preferences')}
+      >
+        <Settings2 size={17} aria-hidden="true" />
+      </button>
+    </>
+  );
   return (
     <aside
       id="project-sidebar"
@@ -779,6 +833,8 @@ export function Binder(p: Props) {
         aria-label="Replier la sidebar"
         aria-controls="project-sidebar"
         aria-expanded={true}
+        data-hint-while-expanded
+        data-hint-placement="sidebar-edge"
         onClick={p.onClose}
         onPointerMove={trackSidebarPointer}
       >
@@ -828,21 +884,53 @@ export function Binder(p: Props) {
         <button aria-pressed={view === 'sources'} onClick={() => changeView('sources')}>
           Sources
         </button>
-        {view === 'texts' && (
+        <div className="library-actions" role="group" aria-label="Actions de la bibliothèque">
+          {view === 'texts' && (
+            <button
+              className="library-create icon-button"
+              aria-label="Ajouter une section, un chapitre ou une scène"
+              data-tooltip="Ajouter"
+              aria-haspopup="menu"
+              onClick={(event) =>
+                openMenu(event, {
+                  title: 'Ajouter au projet',
+                  groups: [addActions(null)],
+                })
+              }
+            >
+              <Plus size={15} aria-hidden="true" />
+            </button>
+          )}
+          {p.onOperation && p.project.canUndoStructure && (
+            <button
+              className="icon-button"
+              aria-label="Annuler le dernier rangement"
+              disabled={p.busy}
+              onClick={() => void run({ action: 'undo' })}
+            >
+              <Undo2 size={14} aria-hidden="true" />
+            </button>
+          )}
           <button
-            className="library-create icon-button"
-            aria-label="Ajouter une section, un chapitre ou une scène"
+            className="icon-button"
+            aria-label="Options de la bibliothèque"
             aria-haspopup="menu"
             onClick={(event) =>
               openMenu(event, {
-                title: 'Ajouter au projet',
-                groups: [addActions(null)],
+                title: 'Bibliothèque',
+                groups: [
+                  [
+                    { label: 'Créer ou ouvrir un projet…', run: () => p.onSurface('projects') },
+                    { label: 'Gérer les vaults…', run: () => p.onSurface('sources') },
+                    { label: 'Paramètres', run: () => p.onSurface('preferences') },
+                  ],
+                ],
               })
             }
           >
-            <Plus size={15} />
+            <MoreHorizontal size={17} aria-hidden="true" />
           </button>
-        )}
+        </div>
       </div>
       {view === 'sources' ? (
         <div className="library-scroll">
@@ -887,7 +975,6 @@ export function Binder(p: Props) {
                   </button>
                   <button
                     disabled={p.busy}
-                    title="Dupliquer la sélection"
                     aria-label="Dupliquer la sélection"
                     onClick={() => void run({ action: 'duplicate', ids: picked })}
                   >
@@ -895,7 +982,6 @@ export function Binder(p: Props) {
                   </button>
                   <button
                     disabled={p.busy}
-                    title="Mettre la sélection à la corbeille"
                     aria-label="Mettre la sélection à la corbeille"
                     onClick={() => void run({ action: 'trash', ids: picked })}
                   >
@@ -1066,52 +1152,13 @@ export function Binder(p: Props) {
           )}
         </>
       )}
-      <div className="binder-bottom">
-        <button onClick={() => p.onSurface('history')}>Versions</button>
-        {!!p.project.trash?.length && (
-          <button aria-label="Corbeille" aria-pressed={trash} onClick={() => changeView('trash')}>
-            Corbeille
-          </button>
-        )}
-        <div className="library-footer-tools">
-          {p.onOperation && p.project.canUndoStructure && (
-            <button
-              className="icon-button"
-              aria-label="Annuler le dernier rangement"
-              title="Annuler le dernier rangement"
-              disabled={p.busy}
-              onClick={() => void run({ action: 'undo' })}
-            >
-              <Undo2 size={14} />
-            </button>
-          )}
-          <button
-            className="icon-button"
-            aria-label="Options de la bibliothèque"
-            aria-haspopup="menu"
-            onClick={(event) =>
-              openMenu(event, {
-                title: 'Bibliothèque',
-                groups: [
-                  [
-                  ],
-                  [
-                    { label: 'Créer ou ouvrir un projet…', run: () => p.onSurface('projects') },
-                    { label: 'Gérer les vaults…', run: () => p.onSurface('sources') },
-                    { label: 'Paramètres', run: () => p.onSurface('preferences') },
-                  ],
-                ],
-              })
-            }
-          >
-            <MoreHorizontal size={17} />
-          </button>
-        </div>
-      </div>
-      <div className="binder-preferences">
-        <button onClick={() => p.onSurface('preferences')}>Paramètres</button>
-        {p.onToggleTheme && <ThemeSwitcher dark={!!p.dark} onChange={p.onToggleTheme} />}
-      </div>
+      {p.footerTarget === undefined ? (
+        <SidebarDock expanded dark={!!p.dark} onToggleTheme={p.onToggleTheme} busy={p.busy}>
+          {footerActions}
+        </SidebarDock>
+      ) : (
+        p.footerTarget && createPortal(footerActions, p.footerTarget)
+      )}
       {destination && (
         <Dialog title="Déplacer la sélection" onClose={() => setDestination(null)}>
           <label>

@@ -181,15 +181,42 @@ it('follows the active text selected in the library without remounting the compa
 it('puts version commands in the contextual tools menu and connects them to the comparison', async () => {
   await render();
   expect(toolsHost.querySelector('#version-settings')?.getAttribute('aria-hidden')).toBe('false');
-  expect(host.querySelector('[aria-label="Modification suivante"]')).toBeNull();
-  const next = toolsHost.querySelector<HTMLButtonElement>('[aria-label="Modification suivante"]')!;
+  expect(toolsHost.querySelector('[aria-label="Modification suivante"]')).toBeNull();
+  const next = host.querySelector<HTMLButtonElement>(
+    '.history-diff-summary [aria-label="Modification suivante"]',
+  )!;
   await act(async () => next.click());
   expect(host.querySelector('.is-current-change')).not.toBeNull();
-  expect(toolsHost.textContent).toContain('1 / 1');
+  expect(host.querySelector('.history-change-count')?.textContent).toBe('1 / 1');
   await act(async () =>
     toolsHost.querySelector<HTMLInputElement>('input[type="checkbox"]')!.click(),
   );
   expect(toolsHost.querySelector<HTMLInputElement>('input[type="checkbox"]')!.checked).toBe(true);
   await act(async () => button('Conserver une version').click());
   expect(host.querySelector('form input[required]')).toBe(document.activeElement);
+});
+
+it('dates both version selectors and offers Markdown reading without changing passage actions', async () => {
+  const markdownVersion = {
+    ...version,
+    created: '2026-10-31T12:00:00.000Z',
+    sections: [{ ...scene, text: 'Élise **attend** au quai.' }],
+  };
+  request.mockImplementation(async (cmd: string) =>
+    cmd === 'versions' ? [markdownVersion] : markdownVersion,
+  );
+  await render();
+  const selects = host.querySelectorAll<HTMLSelectElement>('.history-controls select');
+  expect(selects).toHaveLength(2);
+  for (const select of selects) {
+    expect(select.options[1].textContent).toContain('Premier jet · 31 oct. 2026');
+  }
+  expect(host.querySelector('del')).not.toBeNull();
+  await act(async () => button('Lecture').click());
+  expect(host.querySelector('.history-editor')?.getAttribute('data-view')).toBe('reading');
+  expect(host.querySelector('.diff-prose.is-reading strong')?.textContent).toBe('attend');
+  expect(host.querySelector('.history-diff-row.is-changed')).not.toBeNull();
+  expect(button('Reprendre le passage')).not.toBeUndefined();
+  await act(async () => button('Source').click());
+  expect(host.querySelector('del')).not.toBeNull();
 });

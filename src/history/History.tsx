@@ -1,10 +1,32 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { request } from '../app/client';
 import type { Project, Version } from '../app/types';
 import { Plus, ArrowDown, ArrowUp, ArrowRight, ArrowLeft, X } from 'lucide-react';
 import { comparePassages, reprisePassage, sectionChanges } from './comparison';
 import { descendants } from '../project/tree';
+import '../styles/history-refinements.css';
+
+const comparisonMarkdown: Components = {
+  a: ({ children }) => <span>{children}</span>,
+  img: ({ alt }) => <span>{alt || 'Image'}</span>,
+};
+
+function versionLabel(version: Version) {
+  const created = new Date(version.created);
+  const date = Number.isNaN(created.getTime())
+    ? version.created
+    : new Intl.DateTimeFormat('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(created);
+  return `${version.name} · ${date}`;
+}
 interface Props {
   project: Project;
   active: string | null;
@@ -43,6 +65,7 @@ export function History(p: Props) {
     if (activeScene) setScene(activeScene.id);
   }, [p.active, p.project.sections]);
   const [onlyChanged, setOnlyChanged] = useState(false);
+  const [view, setView] = useState<'source' | 'reading'>('source');
   const [confirm, setConfirm] = useState<Version | null>(null);
   const [changeIndex, setChangeIndex] = useState(-1);
   const diffRef = useRef<HTMLDivElement>(null);
@@ -99,9 +122,7 @@ export function History(p: Props) {
       left = descendants(left, selectedScope);
       right = descendants(right, selectedScope);
     }
-    const ids = [
-      ...new Set([...left, ...right].map((s) => s.id)),
-    ];
+    const ids = [...new Set([...left, ...right].map((s) => s.id))];
     return ids.map((id) => {
       const a = left.find((s) => s.id === id),
         b = right.find((s) => s.id === id);
@@ -209,7 +230,7 @@ export function History(p: Props) {
       ?.scrollIntoView({ block: 'center', behavior: 'instant' });
   }
   return (
-    <section className="history-editor" aria-label="Versions du texte">
+    <section className="history-editor" aria-label="Versions du texte" data-view={view}>
       {p.toolsHost &&
         createPortal(
           <section
@@ -239,31 +260,6 @@ export function History(p: Props) {
             >
               <Plus size={14} /> Conserver une version
             </button>
-            <div className="settings-row" role="group" aria-label="Parcourir les modifications">
-              <span className="settings-label">
-                {loading
-                  ? 'Chargement…'
-                  : changeIndex < 0
-                    ? `${changes.length} passages modifiés`
-                    : `${changeIndex + 1} / ${changes.length}`}
-              </span>
-              <div className="version-change-navigation">
-                <button
-                  disabled={loading || !!error || !!incompatible || !changes.length}
-                  aria-label="Modification précédente"
-                  onClick={() => nextChange(-1)}
-                >
-                  <ArrowUp size={14} /> Précédente
-                </button>
-                <button
-                  disabled={loading || !!error || !!incompatible || !changes.length}
-                  aria-label="Modification suivante"
-                  onClick={() => nextChange(1)}
-                >
-                  Suivante <ArrowDown size={14} />
-                </button>
-              </div>
-            </div>
             <label className="settings-row version-filter">
               <span className="settings-label">Textes modifiés uniquement</span>
               <input
@@ -349,8 +345,42 @@ export function History(p: Props) {
             </div>
           ) : (
             <>
+              <div className="history-controls">
+                <label>
+                  Version de référence
+                  <select
+                    aria-label="Version de référence"
+                    value={leftId}
+                    disabled={busy || !leftId}
+                    onChange={(e) => setLeftId(e.target.value)}
+                  >
+                    <option value="current">Texte actuel</option>
+                    {versions.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {versionLabel(v)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Comparer avec
+                  <select
+                    aria-label="Version comparée"
+                    value={rightId}
+                    disabled={busy}
+                    onChange={(e) => setRightId(e.target.value)}
+                  >
+                    <option value="current">Texte actuel</option>
+                    {versions.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {versionLabel(v)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
               <div className="history-diff-summary">
-                <div>
+                <div className="history-diff-identity">
                   <select
                     className="history-scene-title"
                     aria-label="Texte comparé"
@@ -372,41 +402,57 @@ export function History(p: Props) {
                   <span className="diff-stat-add">+{added} mots</span>
                   <span className="diff-stat-remove">−{removed} mots</span>
                 </div>
-              </div>
-
-              <div className="history-controls">
-                <label>
-                  Version de référence
-                  <select
-                    aria-label="Version de référence"
-                    value={leftId}
-                    disabled={busy || !leftId}
-                    onChange={(e) => setLeftId(e.target.value)}
+                <div className="history-diff-tools">
+                  <div
+                    className="history-view-switch"
+                    role="group"
+                    aria-label="Affichage de la comparaison"
                   >
-                    <option value="current">Texte actuel</option>
-                    {versions.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Comparer avec
-                  <select
-                    aria-label="Version comparée"
-                    value={rightId}
-                    disabled={busy}
-                    onChange={(e) => setRightId(e.target.value)}
+                    <button
+                      type="button"
+                      aria-pressed={view === 'source'}
+                      onClick={() => setView('source')}
+                    >
+                      Source
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={view === 'reading'}
+                      onClick={() => setView('reading')}
+                    >
+                      Lecture
+                    </button>
+                  </div>
+                  <div
+                    className="history-inline-navigation"
+                    role="group"
+                    aria-label="Parcourir les modifications"
                   >
-                    <option value="current">Texte actuel</option>
-                    {versions.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                    <span className="history-change-count" aria-live="polite">
+                      {loading
+                        ? 'Chargement…'
+                        : changeIndex < 0
+                          ? `${changes.length} passage${changes.length > 1 ? 's' : ''} modifié${changes.length > 1 ? 's' : ''}`
+                          : `${changeIndex + 1} / ${changes.length}`}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={loading || !!error || !!incompatible || !changes.length}
+                      aria-label="Modification précédente"
+                      onClick={() => nextChange(-1)}
+                    >
+                      <ArrowUp size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={loading || !!error || !!incompatible || !changes.length}
+                      aria-label="Modification suivante"
+                      onClick={() => nextChange(1)}
+                    >
+                      <ArrowDown size={14} />
+                    </button>
+                  </div>
+                </div>
               </div>
               {error && (
                 <p className="workspace-error" role="alert">
@@ -451,7 +497,9 @@ export function History(p: Props) {
                     {!rows.length && (
                       <p className="history-empty">
                         {selected
-                          ? metadata.length ? 'Le texte est identique ; les changements de structure figurent ci-dessus.' : 'Ce texte est vide dans les deux versions.'
+                          ? metadata.length
+                            ? 'Le texte est identique ; les changements de structure figurent ci-dessus.'
+                            : 'Ce texte est vide dans les deux versions.'
                           : 'Aucun texte dans cette sélection.'}
                       </p>
                     )}
@@ -478,16 +526,25 @@ export function History(p: Props) {
                             {row.changed && row.left.length ? '−' : ''}
                             <small>{row.left.length ? row.leftStart + 1 : ''}</small>
                           </span>
-                          <div className="diff-prose">
-                            {row.words
-                              .filter((w) => !w.added)
-                              .map((w, i) =>
-                                w.removed ? (
-                                  <del key={i}>{w.value}</del>
-                                ) : (
-                                  <span key={i}>{w.value}</span>
-                                ),
-                              )}
+                          <div className={'diff-prose' + (view === 'reading' ? ' is-reading' : '')}>
+                            {view === 'reading' ? (
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={comparisonMarkdown}
+                              >
+                                {row.left.join('\n\n')}
+                              </ReactMarkdown>
+                            ) : (
+                              row.words
+                                .filter((w) => !w.added)
+                                .map((w, i) =>
+                                  w.removed ? (
+                                    <del key={i}>{w.value}</del>
+                                  ) : (
+                                    <span key={i}>{w.value}</span>
+                                  ),
+                                )
+                            )}
                           </div>
                         </div>
                         <div
@@ -503,16 +560,25 @@ export function History(p: Props) {
                             {row.changed && row.right.length ? '+' : ''}
                             <small>{row.right.length ? row.rightStart + 1 : ''}</small>
                           </span>
-                          <div className="diff-prose">
-                            {row.words
-                              .filter((w) => !w.removed)
-                              .map((w, i) =>
-                                w.added ? (
-                                  <ins key={i}>{w.value}</ins>
-                                ) : (
-                                  <span key={i}>{w.value}</span>
-                                ),
-                              )}
+                          <div className={'diff-prose' + (view === 'reading' ? ' is-reading' : '')}>
+                            {view === 'reading' ? (
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={comparisonMarkdown}
+                              >
+                                {row.right.join('\n\n')}
+                              </ReactMarkdown>
+                            ) : (
+                              row.words
+                                .filter((w) => !w.removed)
+                                .map((w, i) =>
+                                  w.added ? (
+                                    <ins key={i}>{w.value}</ins>
+                                  ) : (
+                                    <span key={i}>{w.value}</span>
+                                  ),
+                                )
+                            )}
                           </div>
                         </div>
                         {row.changed && rightId === 'current' && selected?.right && (

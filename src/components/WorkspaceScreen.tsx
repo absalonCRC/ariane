@@ -20,7 +20,10 @@ export function WorkspaceScreen({
     dialog.showModal();
     return () => {
       dialog.close();
-      if (previous?.isConnected) previous.focus({ preventScroll: true });
+      const destination = previous?.isConnected
+        ? previous
+        : document.querySelector<HTMLElement>('.cm-content');
+      destination?.focus({ preventScroll: true });
     };
   }, []);
   return (

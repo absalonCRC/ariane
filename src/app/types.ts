@@ -39,6 +39,8 @@ export interface Settings {
   countMode: 'characters' | 'words' | 'lines';
   font: 'literary' | 'mono';
   fontSize: number;
+  columnWidth?: number;
+  lineHeight?: number;
   focus: 'none' | 'paragraph' | 'sentence';
   typewriter: boolean;
   depth: number;
@@ -54,6 +56,8 @@ export const defaultSettings: Settings = {
   countMode: 'words',
   font: 'literary',
   fontSize: 26,
+  columnWidth: 750,
+  lineHeight: 1.5,
   focus: 'none',
   typewriter: false,
   depth: 3,
@@ -106,7 +110,16 @@ export interface TextPatch {
 }
 export type SaveState = 'saved' | 'editing' | 'saving' | 'error';
 export type Surface =
-  'none' | 'settings' | 'preferences' | 'sources' | 'history' | 'prepare' | 'export' | 'projects' | 'import' | 'manuscript';
+  | 'none'
+  | 'settings'
+  | 'preferences'
+  | 'sources'
+  | 'history'
+  | 'prepare'
+  | 'export'
+  | 'projects'
+  | 'import'
+  | 'manuscript';
 
 export interface Enrichment {
   fields: {

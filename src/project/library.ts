@@ -198,8 +198,8 @@ export function libraryOperationMessage(project: Project, op: LibraryOperation):
   if (op.action === 'duplicate') return `${label} dupliqué${plural}.`;
   if (op.action === 'include')
     return op.included
-      ? `${label} inclus dans le manuscrit.`
-      : `${label} exclu${plural} du manuscrit.`;
+      ? `${label} inclus dans le manuscrit et l’export.`
+      : `${label} · texte${plural} de travail, hors manuscrit.`;
   const target = all.find((s) => s.id === op.target);
   const destination = !target
     ? 'à la racine'

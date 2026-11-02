@@ -36,6 +36,24 @@ afterEach(() => {
 });
 
 describe('tableaux Markdown dans le manuscrit', () => {
+  it('présente des outils compacts avec infobulles et un conteneur pour les tableaux larges', () => {
+    const view = editor('| Nom | Valeur |\n| --- | --- |\n| Alpha | Deux |', 0);
+    const wrapper = view.dom.querySelector('.markdown-table-preview')!;
+    expect(wrapper.querySelector('.markdown-table-viewport table')).not.toBeNull();
+    const buttons = [...wrapper.querySelectorAll<HTMLButtonElement>('.markdown-table-actions button')];
+    expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Ajouter une ligne',
+      'Supprimer la ligne',
+      'Ajouter une colonne',
+      'Supprimer la colonne',
+    ]);
+    expect(buttons.every((button) =>
+      button.dataset.tooltip === button.getAttribute('aria-label') &&
+      !button.textContent &&
+      button.querySelector('svg[aria-hidden="true"]'),
+    )).toBe(true);
+  });
+
   it('permet de modifier une cellule directement et de retrouver le Markdown avec annulation', () => {
     const source = 'Intro\n\n| Nom | Valeur |\n| --- | --- |\n| Alpha | **deux** |\n\nFin';
     const view = editor(source, 0);

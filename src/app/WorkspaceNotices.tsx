@@ -3,7 +3,15 @@ import type { Workspace } from './useWorkspace';
 import { request } from './client';
 import type { Project } from './types';
 import { X } from 'lucide-react';
-export function WorkspaceNotices({ workspace }: { workspace: Workspace }) {
+import { useContextMenuNotice } from '../components/ContextMenu';
+export function WorkspaceNotices({
+  workspace,
+  embedded = false,
+}: {
+  workspace: Workspace;
+  embedded?: boolean;
+}) {
+  const contextNotice = useContextMenuNotice();
   const {
     recovery,
     setRecovery,
@@ -19,7 +27,7 @@ export function WorkspaceNotices({ workspace }: { workspace: Workspace }) {
   return (
     <>
       <Presence kind="notice">
-        {workspace.libraryNotice && !error && !recovery && (
+        {!embedded && workspace.libraryNotice && !error && !recovery && (
           <div className="notice library-notice" role="status">
             <span>{workspace.libraryNotice.message}</span>
             {workspace.libraryNotice.undo && doc.project?.canUndoStructure && (
@@ -42,7 +50,7 @@ export function WorkspaceNotices({ workspace }: { workspace: Workspace }) {
       </Presence>
       <Presence kind="notice">
         {surface !== 'export' && exportJob.state !== 'ready' && (
-          <div className="notice recovery" role="status">
+          <div className={embedded ? 'path-notice-detail' : 'notice recovery'} role="status">
             <span>
               {exportJob.state === 'working'
                 ? 'Export en cours…'
@@ -57,7 +65,7 @@ export function WorkspaceNotices({ workspace }: { workspace: Workspace }) {
       </Presence>
       <Presence kind="notice">
         {recovery && (
-          <div className="notice recovery">
+          <div className={embedded ? 'path-notice-detail' : 'notice recovery'}>
             <span>Votre texte a été récupéré.</span>
             <button onClick={() => setRecovery(false)}>Reprendre l’écriture</button>
             <button
@@ -73,7 +81,10 @@ export function WorkspaceNotices({ workspace }: { workspace: Workspace }) {
       </Presence>
       <Presence kind="notice">
         {error && (
-          <div className="notice error-notice" role="alert">
+          <div
+            className={embedded ? 'path-notice-detail path-notice-error' : 'notice error-notice'}
+            role="alert"
+          >
             <span>
               {error.startsWith('EXTERNAL:')
                 ? 'Ce texte a été modifié ailleurs. Une copie sera conservée avant résolution.'
@@ -118,16 +129,16 @@ export function WorkspaceNotices({ workspace }: { workspace: Workspace }) {
                   Conserver mon texte
                 </button>
               </>
-            ) : (
+            ) : doc.status === 'error' ? (
               <button
                 onClick={() => {
                   setError('');
-                  if (doc.status === 'error') void doc.flush().catch(() => {});
+                  void doc.flush().catch(fail);
                 }}
               >
                 Réessayer
               </button>
-            )}
+            ) : null}
             <button
               className="icon-button"
               aria-label="Fermer le message"
@@ -138,6 +149,16 @@ export function WorkspaceNotices({ workspace }: { workspace: Workspace }) {
           </div>
         )}
       </Presence>
+      {!embedded && (
+        <Presence kind="notice">
+          {contextNotice.message && (
+            <div className="notice recovery" role="alert">
+              <span>{contextNotice.message}</span>
+              <button onClick={contextNotice.clear}>Fermer</button>
+            </div>
+          )}
+        </Presence>
+      )}
     </>
   );
 }

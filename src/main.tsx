@@ -6,10 +6,17 @@ import '@fontsource/eb-garamond/latin-700.css';
 import '@fontsource/eb-garamond/latin-700-italic.css';
 import { App } from './app/App';
 import { ContextMenuProvider } from './components/ContextMenu';
+import { ControlHints } from './components/ControlHints';
 import './styles/tokens.css';
 import './styles/editor.css';
 import './styles/surfaces.css';
 import './styles/motion.css';
 import './styles/workspace.css';
 import './styles/theme.css';
-createRoot(document.getElementById('root')!).render(<ContextMenuProvider><App /></ContextMenuProvider>);
+import './styles/interaction-refinements.css';
+createRoot(document.getElementById('root')!).render(
+  <ContextMenuProvider>
+    <ControlHints />
+    <App />
+  </ContextMenuProvider>,
+);

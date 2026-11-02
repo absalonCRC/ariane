@@ -31,9 +31,10 @@ class FootnoteMarker extends WidgetType {
     const marker = document.createElement('sup');
     marker.className = 'footnote-marker';
     marker.textContent = '†';
-    marker.title = this.definition ? 'Référence de la source' : 'Lire la note de source';
+    marker.dataset.tooltip = this.definition ? 'Référence de la source' : 'Lire la note de source';
     if (!this.definition) {
       marker.setAttribute('role', 'button');
+      marker.setAttribute('aria-label', 'Lire la note de source');
       marker.tabIndex = 0;
       const open = () => {
         const pos = view.state.doc.toString().indexOf(`[^${this.id}]:`);

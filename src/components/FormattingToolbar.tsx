@@ -14,7 +14,6 @@ import {
   Table2,
   NotebookText,
 } from 'lucide-react';
-import { useState } from 'react';
 import type { MarkdownFormat } from '../editor/formatMarkdown';
 
 const actions = [
@@ -41,7 +40,6 @@ export function FormattingToolbar({
   onFormat: (format: MarkdownFormat) => void;
   disabled: boolean;
 }) {
-  const [hint, setHint] = useState('');
   return (
     <div className="formatting-panel" role="group" aria-label="Formatage Markdown">
       <div className="formatting-heading">
@@ -69,19 +67,13 @@ export function FormattingToolbar({
             key={format}
             type="button"
             aria-label={label}
-            title={label}
             disabled={disabled}
-            onMouseEnter={() => setHint(label)}
-            onMouseLeave={() => setHint('')}
-            onFocus={() => setHint(label)}
-            onBlur={() => setHint('')}
             onClick={() => onFormat(format)}
           >
             <Icon size={15} strokeWidth={1.7} />
           </button>
         ))}
       </div>
-      <div className="formatting-hint" aria-hidden="true">{hint || " "}</div>
     </div>
   );
 }

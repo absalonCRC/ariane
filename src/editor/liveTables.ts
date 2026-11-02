@@ -75,6 +75,36 @@ function tableMarkup(source: string) {
   return template.content.querySelector('table');
 }
 
+type TableAction = 'add-row' | 'remove-row' | 'add-column' | 'remove-column';
+
+function tableActionIcon(action: TableAction) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const icon = document.createElementNS(ns, 'svg');
+  for (const [name, value] of Object.entries({
+    viewBox: '0 0 24 24',
+    width: '16',
+    height: '16',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': '1.6',
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'aria-hidden': 'true',
+  })) icon.setAttribute(name, value);
+  const outline = document.createElementNS(ns, 'rect');
+  for (const [name, value] of Object.entries({
+    x: '2.5', y: '5', width: '12.5', height: '14', rx: '2',
+  }))
+    outline.setAttribute(name, value);
+  icon.append(outline);
+  const path = document.createElementNS(ns, 'path');
+  const division = action.endsWith('row') ? 'M2.5 12h12.5' : 'M8.75 5v14';
+  const sign = action.startsWith('add') ? 'M17 12h5 M19.5 9.5v5' : 'M17 12h5';
+  path.setAttribute('d', `${division} ${sign}`);
+  icon.append(path);
+  return icon;
+}
+
 type ActiveCell = { row: number; column: number; input: HTMLInputElement; range: Cell };
 type Controller = {
   widget: TableWidget;
@@ -126,22 +156,34 @@ class TableWidget extends WidgetType {
     toolbar.setAttribute('role', 'toolbar');
     toolbar.setAttribute('aria-label', 'Modifier le tableau');
     const actions = [
-      ['add-row', 'Ajouter une ligne', '+ Ligne'],
-      ['remove-row', 'Supprimer la ligne', '− Ligne'],
-      ['add-column', 'Ajouter une colonne', '+ Colonne'],
-      ['remove-column', 'Supprimer la colonne', '− Colonne'],
+      ['add-row', 'Ajouter une ligne'],
+      ['remove-row', 'Supprimer la ligne'],
+      ['add-column', 'Ajouter une colonne'],
+      ['remove-column', 'Supprimer la colonne'],
     ] as const;
-    for (const [action, label, text] of actions) {
+    for (const [index, [action, label]] of actions.entries()) {
+      if (index === 2) {
+        const separator = document.createElement('span');
+        separator.className = 'markdown-table-action-separator';
+        separator.setAttribute('aria-hidden', 'true');
+        toolbar.append(separator);
+      }
       const button = document.createElement('button');
       button.type = 'button';
       button.dataset.action = action;
+      button.dataset.tooltip = label;
       button.setAttribute('aria-label', label);
-      button.textContent = text;
+      button.append(tableActionIcon(action));
       toolbar.append(button);
     }
     if (!view.state.readOnly) wrapper.append(toolbar);
     const rendered = tableMarkup(this.source);
-    if (rendered) wrapper.append(rendered);
+    if (rendered) {
+      const viewport = document.createElement('div');
+      viewport.className = 'markdown-table-viewport';
+      viewport.append(rendered);
+      wrapper.append(viewport);
+    }
 
     const renderedCells = () =>
       Array.from(wrapper.querySelectorAll('tr')).map(

@@ -111,6 +111,7 @@ export function useWorkspace() {
     section: string;
     node: string | null;
     quote: string;
+    position?: { offset: number; cursor: number };
   } | null>(null);
   const close = useCallback(() => setSurface('none'), []);
   const activate = useCallback(
@@ -240,16 +241,24 @@ export function useWorkspace() {
     },
     [doc.flush, doc.configure],
   );
-  async function locatePassage(section: string, node: string | null, quote: string) {
+  async function locatePassage(
+    section: string,
+    node: string | null,
+    quote: string,
+    position?: { offset: number; cursor: number },
+  ) {
     setHistoryMode(false);
     if (!(await select(section, false, true))) return;
-    setPendingPassage({ section, node, quote });
+    setPendingPassage({ section, node, quote, position });
   }
   useEffect(() => {
     if (!pendingPassage || active !== pendingPassage.section) return;
     const frame = requestAnimationFrame(() => {
-      if (!pendingPassage.node || !editor.current?.revealNode(pendingPassage.node))
+      const restored = pendingPassage.position &&
+        editor.current?.restoreContext({ ...pendingPassage, ...pendingPassage.position });
+      if (!restored && (!pendingPassage.node || !editor.current?.revealNode(pendingPassage.node)))
         editor.current?.findText(pendingPassage.quote);
+      editor.current?.focus();
       setPendingPassage(null);
     });
     return () => cancelAnimationFrame(frame);
@@ -471,7 +480,7 @@ export function useWorkspace() {
       }
     };
     const escape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !e.defaultPrevented) {
         setCard(null);
         setReader(null);
         setSearch(null);

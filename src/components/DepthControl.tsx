@@ -1,19 +1,5 @@
-import { useId, useState } from 'react';
-
-const levels = [
-  { label: 'Notes reconnues', detail: 'Notes dont le nom ou un alias est reconnu dans le texte.' },
-  { label: 'Notes et liens', detail: 'Notes reconnues et notes auxquelles elles renvoient.' },
-  { label: 'Liens et thèmes', detail: 'Notes reconnues, liens directs et thèmes partagés.' },
-  {
-    label: 'Recherche associée',
-    detail: 'Liens et thèmes, avec une recherche de sources associées.',
-  },
-  {
-    label: 'Liens étendus',
-    detail: 'Recherche associée et liens supplémentaires au deuxième degré.',
-  },
-  { label: 'Exploration élargie', detail: 'Liens étendus et recherche associée plus large.' },
-] as const;
+import { useId, useRef, useState } from 'react';
+import { depthLevel } from './depthLevels';
 
 export function DepthControl({
   value,
@@ -24,8 +10,8 @@ export function DepthControl({
 }) {
   const [open, setOpen] = useState(false);
   const id = useId();
-  const level = Math.max(0, Math.min(5, Math.round(value)));
-  const { label, detail } = levels[level];
+  const trigger = useRef<HTMLButtonElement>(null);
+  const { index: level, label } = depthLevel(value);
   return (
     <div
       className="depth-control"
@@ -42,6 +28,7 @@ export function DepthControl({
       }}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
+          trigger.current?.focus();
           setOpen(false);
           event.preventDefault();
           event.stopPropagation();
@@ -49,11 +36,11 @@ export function DepthControl({
       }}
     >
       <button
+        ref={trigger}
         className="depth-label"
-        aria-label={`Profondeur ${level} : ${detail} Régler la profondeur`}
+        aria-label={`Profondeur ${level} : ${label}. Régler la profondeur`}
         aria-expanded={open}
         aria-controls={id}
-        title={detail}
         onClick={() => setOpen(true)}
       >
         {label}
@@ -62,7 +49,7 @@ export function DepthControl({
         <span aria-hidden="true">{level}</span>
         <input
           aria-label="Profondeur des sources"
-          aria-valuetext={`Niveau ${level} : ${label}. ${detail}`}
+          aria-valuetext={`Niveau ${level} : ${label}`}
           type="range"
           min="0"
           max="5"

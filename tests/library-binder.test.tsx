@@ -96,6 +96,10 @@ it('selects ranges and moves, trashes and restores a batch through visible contr
     await click('Restaurer');
     expect(project.trash).toHaveLength(0);
     expect(project.sections).toHaveLength(3);
+    expect(button('Corbeille')).toBeDefined();
+    expect(host.textContent).toContain('La corbeille est vide.');
+    await click('Textes');
+    expect(host.querySelectorAll('.tree-row')).toHaveLength(3);
   } finally {
     await act(async () => root.unmount());
     host.remove();

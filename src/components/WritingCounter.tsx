@@ -1,7 +1,7 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { Play, Pause, RotateCcw } from 'lucide-react';
+import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
+import { AlignLeft, CaseSensitive, Play, Pause, RotateCcw, WholeWord } from 'lucide-react';
 import { usePomodoro } from '../timer/usePomodoro';
-import { formatTime } from '../timer/pomodoro';
+import { durations, formatTime } from '../timer/pomodoro';
 import type { Settings } from '../app/types';
 
 type Mode = Settings['countMode'];
@@ -61,7 +61,9 @@ export function WritingCounter({
   const phase =
     timer.phase === 'focus' ? 'Concentration' : timer.phase === 'break' ? 'Pause' : 'Pause longue';
   const running = timer.deadline !== null;
-  const started = running || timer.completed > 0 || timer.remainingMs !== 25 * 60_000;
+  const started = running || timer.completed > 0 || timer.remainingMs !== durations.focus;
+  const progress = Math.max(0, Math.min(1, 1 - ms / durations[timer.phase]));
+  const timerHue = Math.round((8 + 132 * progress) * 100) / 100;
   const id = useId();
   const count = mode === 'characters' ? characters : mode === 'lines' ? lines : words;
   const unit =
@@ -91,6 +93,7 @@ export function WritingCounter({
       className="writing-counter"
       data-open={open}
       data-timer-active={started}
+      style={started ? ({ '--timer-hue': `${timerHue}deg` } as CSSProperties) : undefined}
       data-mode={mode}
       onPointerEnter={(e) => {
         if (e.pointerType !== 'touch') setOpen(true);
@@ -112,6 +115,7 @@ export function WritingCounter({
       }}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
+          root.current?.querySelector<HTMLButtonElement>('.counter-value')?.focus();
           setOpen(false);
           e.preventDefault();
           e.stopPropagation();
@@ -120,6 +124,8 @@ export function WritingCounter({
     >
       <button
         className="counter-value"
+        data-hint="Compteur et minuteur · survoler ou cliquer"
+        aria-description="Compteur et minuteur · survoler ou cliquer"
         aria-label={`${count.toLocaleString('fr-FR')} ${unit} · ${noteDescription}${started ? ` · ${phase} ${formatTime(ms)}${running ? '' : ' en pause'}` : ''} · Ouvrir la barre`}
         aria-expanded={open}
         aria-controls={id}
@@ -146,20 +152,24 @@ export function WritingCounter({
       >
         {(
           [
-            ['characters', 'Caractères'],
-            ['words', 'Mots'],
-            ['lines', 'Lignes'],
+            ['characters', 'Caractères', CaseSensitive],
+            ['words', 'Mots', WholeWord],
+            ['lines', 'Lignes', AlignLeft],
           ] as const
-        ).map(([value, label]) => (
+        ).map(([value, label, Icon]) => (
           <button
             key={value}
+            className="counter-mode"
+            aria-label={label}
+            data-tooltip={label}
             aria-pressed={mode === value}
             onClick={() => {
               onChange(value);
+              root.current?.querySelector<HTMLButtonElement>('.counter-value')?.focus();
               setOpen(false);
             }}
           >
-            {label}
+            <Icon size={15} strokeWidth={1.6} aria-hidden="true" />
           </button>
         ))}
         <span className="pomodoro-time" title={phase} aria-label={`${phase} : ${formatTime(ms)}`}>

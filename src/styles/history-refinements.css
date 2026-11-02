@@ -1,0 +1,157 @@
+.history-editor .history-modebar {
+  padding: 12px 4px 8px;
+}
+
+.history-editor .history-controls {
+  column-gap: 28px;
+  padding: 4px 4px 12px;
+}
+
+.history-editor .history-controls label {
+  gap: 3px;
+}
+
+.history-editor .history-controls select {
+  font: 16px/1.3 var(--literary);
+  padding: 4px 20px 7px 0;
+}
+
+.history-editor .history-diff-summary {
+  align-items: center;
+  gap: 12px 24px;
+  padding: 8px 4px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.history-editor .history-diff-identity {
+  flex: 1 1 240px;
+  min-width: 0;
+  align-items: center;
+}
+
+.history-editor .history-scene-title {
+  width: auto;
+  max-width: min(440px, 100%);
+  font: 23px/1.25 var(--literary);
+  padding: 0 16px 0 0;
+}
+
+.history-editor .history-diff-tools {
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+}
+
+.history-editor .history-view-switch,
+.history-editor .history-inline-navigation {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.history-editor .history-view-switch button {
+  padding: 4px 6px;
+  color: var(--workspace-muted);
+  font: 10px var(--ui);
+  border-radius: 0;
+}
+
+.history-editor .history-view-switch button[aria-pressed='true'] {
+  color: var(--ink);
+  box-shadow: inset 0 -1px var(--ink);
+}
+
+.history-editor .history-inline-navigation {
+  gap: 2px;
+}
+
+.history-editor .history-change-count {
+  margin-right: 5px;
+  font: 10px var(--ui);
+  color: var(--workspace-muted);
+}
+
+.history-editor .history-inline-navigation button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+
+.history-editor .history-inline-navigation button:disabled {
+  opacity: 0.4;
+}
+
+.history-editor .history-metadata {
+  padding: 10px 4px;
+}
+
+.history-editor .history-diff-scroll {
+  padding-top: 10px;
+}
+
+.history-editor[data-view='reading'] .history-diff-row.is-changed .diff-removed {
+  background: var(--diff-remove-bg);
+}
+
+.history-editor[data-view='reading'] .history-diff-row.is-changed .diff-added {
+  background: var(--diff-add-bg);
+}
+
+.history-editor .diff-prose.is-reading {
+  white-space: normal;
+}
+
+.history-editor .diff-prose.is-reading > :first-child {
+  margin-top: 0;
+}
+
+.history-editor .diff-prose.is-reading > :last-child {
+  margin-bottom: 0;
+}
+
+.history-editor .diff-prose.is-reading :is(h1, h2, h3, h4, h5, h6) {
+  font: inherit;
+  font-weight: 600;
+}
+
+.history-editor .diff-prose.is-reading :is(pre, code) {
+  font: 0.7em/1.5 var(--ui);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.history-editor .diff-prose.is-reading table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 0.65em/1.4 var(--ui);
+}
+
+.history-editor .diff-prose.is-reading :is(td, th) {
+  border: 1px solid var(--line);
+  padding: 4px 7px;
+}
+
+@media (max-width: 850px) {
+  .history-editor .history-controls {
+    padding: 4px 4px 12px;
+    column-gap: 16px;
+  }
+
+  .history-editor .history-diff-summary {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 8px 4px 12px;
+  }
+
+  .history-editor .history-diff-tools {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+}

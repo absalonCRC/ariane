@@ -37,9 +37,17 @@ export function SourceOccurrences({
   );
   return (
     <details className="source-occurrences">
-      <summary>
-        Références explicites <span>{references.length}</span> · Mentions du nom{' '}
-        <span>{mentions.length}</span>
+      <summary
+        aria-label={`Dans le manuscrit : ${references.length} référence${references.length > 1 ? 's' : ''} explicite${references.length > 1 ? 's' : ''} et ${mentions.length} mention${mentions.length > 1 ? 's' : ''} du nom`}
+      >
+        Dans le manuscrit ·{' '}
+        <span>
+          {references.length} référence{references.length > 1 ? 's' : ''}
+        </span>{' '}
+        ·{' '}
+        <span>
+          {mentions.length} mention{mentions.length > 1 ? 's' : ''}
+        </span>
       </summary>
       <p className="hint">
         Les références sont des citations insérées dans le texte. Les mentions sont des noms ou
@@ -47,9 +55,9 @@ export function SourceOccurrences({
         projet.
       </p>
       {!matches.length && <p className="hint">Aucune occurrence dans les textes actuels.</p>}
-      {references.length > 0 && <p className="hint">Références explicites · {references.length}</p>}
+      {references.length > 0 && <p className="hint">Références explicites</p>}
       {show(references, referenceLimit, () => setReferenceLimit((n) => n + 12))}
-      {mentions.length > 0 && <p className="hint">Mentions du nom · {mentions.length}</p>}
+      {mentions.length > 0 && <p className="hint">Mentions du nom</p>}
       {show(mentions, mentionLimit, () => setMentionLimit((n) => n + 12))}
     </details>
   );

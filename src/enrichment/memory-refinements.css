@@ -1,0 +1,44 @@
+.resume-content .resume-entry {
+  display: block;
+  width: 100%;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+.resume-content .resume-kicker {
+  display: block;
+  color: var(--theme-muted, #777);
+  font: 11px var(--ui);
+  letter-spacing: 0.02em;
+}
+.resume-content .resume-section,
+.resume-content .resume-secondary strong {
+  display: block;
+  margin: 7px 0 0;
+  font: 18px var(--literary);
+}
+.resume-content .resume-current blockquote {
+  margin: 10px 0 14px;
+  font: 17px/1.45 var(--literary);
+  white-space: normal;
+}
+.resume-content .resume-secondary .resume-quote {
+  display: block;
+  margin-top: 7px;
+  color: var(--theme-secondary, #666);
+  font: 15px/1.4 var(--literary);
+}
+.resume-content .resume-primary {
+  padding: 7px 12px;
+  border-radius: 7px;
+  background: var(--theme-ink, #292929);
+  color: var(--theme-paper, #fff);
+  font: 12px var(--ui);
+}
+.resume-content .resume-primary:hover {
+  background: var(--theme-secondary, #555);
+  color: var(--theme-paper, #fff);
+}
+.reader.memory-reader[data-partitioned='true'] .resume-content .resume-entry {
+  padding: 10px 0;
+}

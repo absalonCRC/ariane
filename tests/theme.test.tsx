@@ -31,13 +31,23 @@ it('follows the system until chosen explicitly, persists the switch, and restore
   try {
     await act(async () => root.render(<Harness />));
     expect(document.documentElement.dataset.theme).toBe('light');
+    expect(host.querySelector('[role="switch"]')?.getAttribute('aria-label')).toBe('Thème sombre');
+    expect(host.querySelector('[role="switch"]')?.getAttribute('data-tooltip')).toBe(
+      'Passer au thème sombre',
+    );
     await act(async () => {
       media.matches = true;
       listener();
     });
     expect(host.querySelector('button')?.getAttribute('aria-checked')).toBe('true');
+    expect(host.querySelector('[role="switch"]')?.getAttribute('data-tooltip')).toBe(
+      'Passer au thème clair',
+    );
     await act(async () => host.querySelector('button')!.click());
     expect(localStorage.getItem('ariane.theme')).toBe('light');
+    expect(host.querySelector('[role="switch"]')?.getAttribute('data-tooltip')).toBe(
+      'Passer au thème sombre',
+    );
     await act(async () => listener());
     expect(theme.dark).toBe(false);
     await act(async () => root.render(null));
