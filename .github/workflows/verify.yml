@@ -42,6 +42,10 @@ jobs:
           cat "$RUNNER_TEMP/ariane-engine.log"
           exit 1
       - run: npm run verify
+        env:
+          # Native integration tests each launch the real embedding model.
+          # Share the runner's limited CPU/GPU by running Rust tests serially.
+          RUST_TEST_THREADS: '1'
       - name: Build local app (ad hoc, no publication)
         run: npm run tauri build -- --bundles app
       - name: Check bundled resources
