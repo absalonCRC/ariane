@@ -1,6 +1,6 @@
 [package]
 name = "ariane"
-version = "0.2.0-alpha.1"
+version = "0.2.1"
 edition = "2021"
 license = "GPL-3.0-only"
 authors = ["Axel de Saint-Germain"]
@@ -14,10 +14,11 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = ["protocol-asset"] }
 tauri-plugin-dialog = "2"
+tokio = { version = "1", features = ["sync"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-serde_yaml = "0.9"
-rusqlite = { version = "0.32", features = ["bundled"] }
+serde-saphyr = { version = "2.1", default-features = false, features = ["serialize", "deserialize"] }
+rusqlite = { version = "0.32", features = ["bundled", "functions"] }
 uuid = { version = "1", features = ["v4"] }
 sha2 = "0.10"
 walkdir = "2"
@@ -29,7 +30,7 @@ reqwest = { version = "0.12", default-features = false, features = ["blocking", 
 base64 = "0.22"
 libc = "0.2"
 tempfile = "3"
-zip = { version = "2", default-features = false, features = ["deflate"] }
+zip = { version = "9", default-features = false, features = ["deflate"] }
 [profile.dev]
 debug = 0
 incremental = false

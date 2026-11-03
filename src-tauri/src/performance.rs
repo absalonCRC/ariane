@@ -121,7 +121,7 @@ fn prepare(state: &AppState) -> Result<Value> {
             .collect();
         let norm = v.iter().map(|x| x * x).sum::<f32>().sqrt();
         let v: Vec<f32> = v.into_iter().map(|x| x / norm).collect();
-        tx.execute("INSERT INTO chunks(source,page,text,vector,model) VALUES(?,NULL,?,?,'embeddinggemma-300M-Q8_0')",params![source.id,source.text,serde_json::to_string(&v).app()?]).app()?;
+        tx.execute("INSERT INTO chunks(source,page,text,vector,model) VALUES(?,NULL,?,?,'embeddinggemma-300M-Q8_0')",params![source.id,source.text,crate::vectors::encode(&v)]).app()?;
         tx.execute(
             "INSERT INTO search(text,source,page) VALUES(?,?,NULL)",
             params![source.text, source.id],
@@ -129,6 +129,7 @@ fn prepare(state: &AppState) -> Result<Value> {
         .app()?;
     }
     tx.commit().app()?;
+    project::catalog::remember(&state.data,&root,"Mesure native — données synthétiques")?;
     Ok(json!({"path":root,"scenes":scenes,"sources":sources,"memoryTest":memory_test,"entitiesTest":crate::memory_engine::EntityEngine::available(&state.data,&state.resources)}))
 }
 #[tauri::command]

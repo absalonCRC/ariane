@@ -2,7 +2,7 @@ use crate::{
     error::{AppResult, Result},
     project,
 };
-use serde_yaml::{Mapping, Value};
+use serde_json::{Map as Mapping, Value};
 use std::{
     fs::{self, OpenOptions},
     io::Write,
@@ -183,30 +183,27 @@ const CATEGORIES: &[Category] = &[
 ];
 fn template(category: &Category, name: Option<&str>, description: &str) -> Result<String> {
     let mut fields = Mapping::new();
-    fields.insert(
-        Value::String("type".into()),
+    fields.insert("type".into(),
         Value::String(category.id.into()),
     );
-    fields.insert(
-        Value::String("Nom".into()),
+    fields.insert("Nom".into(),
         name.map(|x| Value::String(x.into())).unwrap_or(Value::Null),
     );
-    fields.insert(Value::String("Fictif".into()), Value::Null);
-    fields.insert(Value::String("Alias".into()), Value::Sequence(vec![]));
+    fields.insert("Fictif".into(), Value::Null);
+    fields.insert("Alias".into(), Value::Array(vec![]));
     for field in category.fields {
-        fields.insert(Value::String((*field).into()), Value::Null);
+        fields.insert((*field).into(), Value::Null);
     }
-    fields.insert(
-        Value::String("Description".into()),
+    fields.insert("Description".into(),
         if description.is_empty() {
             Value::Null
         } else {
             Value::String(description.into())
         },
     );
-    fields.insert(Value::String("Sources".into()), Value::Sequence(vec![]));
-    fields.insert(Value::String("Fiabilité".into()), Value::Null);
-    let yaml = serde_yaml::to_string(&fields).app()?;
+    fields.insert("Sources".into(), Value::Array(vec![]));
+    fields.insert("Fiabilité".into(), Value::Null);
+    let yaml = serde_saphyr::to_string(&fields).app()?;
     let body = name
         .map(|title| format!("# {title}\n\n{description}\n"))
         .unwrap_or_default();

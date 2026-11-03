@@ -222,10 +222,13 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
       s.outline = outline;
     }
     store(p);
-    return patches.map((x) => ({
-      id: x.id,
-      revision: p.sections.find((s) => s.id === x.id)!.revision,
-    }));
+    return {
+      mirrorErrors: [],
+      sections: patches.map((x) => ({
+        id: x.id,
+        revision: p.sections.find((s) => s.id === x.id)!.revision,
+      })),
+    };
   }
   if (type === 'add') {
     const result = browserRequest('libraryOperation', {
@@ -323,7 +326,11 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     return (JSON.parse(localStorage.getItem(versionKey) || '[]') as Version[]).find(
       (v) => v.id === a.id,
     );
-  if (type === 'versions') return JSON.parse(localStorage.getItem(versionKey) || '[]');
+  if (type === 'versions')
+    return JSON.parse(localStorage.getItem(versionKey) || '[]').slice(
+      Number(a.offset || 0),
+      Number(a.offset || 0) + 50,
+    );
   if (type === 'capture') {
     const versions = JSON.parse(localStorage.getItem(versionKey) || '[]') as Version[];
     const v = {

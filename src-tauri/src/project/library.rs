@@ -48,18 +48,7 @@ fn snapshot(all: &[Section]) -> Result<String> {
     .app()
 }
 fn branch(all: &[Section], roots: &HashSet<String>) -> HashSet<String> {
-    let mut ids = roots.clone();
-    loop {
-        let old = ids.len();
-        for s in all {
-            if s.parent.as_ref().is_some_and(|p| ids.contains(p)) {
-                ids.insert(s.id.clone());
-            }
-        }
-        if old == ids.len() {
-            return ids;
-        }
-    }
+    super::tree::descendant_ids(all, roots.iter().map(String::as_str))
 }
 pub(super) fn validate_parent(
     all: &[Section],
@@ -90,6 +79,9 @@ pub(super) fn validate_parent(
     Ok(())
 }
 pub fn apply(root: &Path, op: Operation) -> Result<Project> {
+    super::with_lock(root, || apply_unlocked(root, op))
+}
+fn apply_unlocked(root: &Path, op: Operation) -> Result<Project> {
     let mut c = super::database(root)?;
     let tx = c
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
@@ -337,7 +329,7 @@ pub fn apply(root: &Path, op: Operation) -> Result<Project> {
             .app()?;
     }
     tx.commit().app()?;
-    super::load(root)
+    super::load_unlocked(root)
 }
 
 #[cfg(test)]
@@ -404,7 +396,7 @@ mod tests {
         let historical = crate::history::restore(d.path(), &version.id).unwrap();
         assert!(!historical.sections.iter().find(|s| s.id == child).unwrap().included);
         let c = project::database(d.path()).unwrap();
-        c.execute("ALTER TABLE sections DROP COLUMN included", []).unwrap();
+        c.execute_batch("PRAGMA user_version=0; ALTER TABLE sections DROP COLUMN included").unwrap();
         drop(c);
         assert!(project::load(d.path()).unwrap().sections.iter().all(|s| s.included));
         let mut legacy = serde_json::to_value(&historical.sections[0]).unwrap();

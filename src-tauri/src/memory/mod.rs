@@ -63,19 +63,17 @@ fn section_passages(s: &Section) -> Result<Vec<Passage>> {
         return Ok(vec![]);
     }
     let nodes: Vec<(Option<String>, usize, usize)> = if let Some(outline) = &s.outline {
-        let mut out = Vec::new();
-        for (i, node) in outline.nodes.iter().enumerate() {
-            let start = utf16_byte(&s.text, node.start)?;
-            let end = if let Some(next) = outline.nodes.get(i + 1) {
-                utf16_byte(&s.text, next.start)?
-            } else {
-                s.text.len()
-            };
-            if start > end {
-                return Err("Plan de scène invalide.".into());
-            }
-            out.push((Some(node.id.clone()), start, end));
+        crate::project::validate_outline(outline, &s.text)?;
+        let mut bytes = Vec::with_capacity(outline.nodes.len() + 1);
+        let mut offset = 0;
+        let mut next = 0;
+        for (byte, ch) in s.text.char_indices() {
+            if outline.nodes.get(next).is_some_and(|n| n.start == offset) { bytes.push(byte); next += 1; }
+            offset += ch.len_utf16();
         }
+        if outline.nodes.get(next).is_some_and(|n| n.start == offset) { bytes.push(s.text.len()); }
+        bytes.push(s.text.len());
+        let out = outline.nodes.iter().enumerate().map(|(i,n)| (Some(n.id.clone()),bytes[i],bytes[i+1])).collect();
         out
     } else {
         vec![(None, 0, s.text.len())]

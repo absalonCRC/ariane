@@ -1,0 +1,295 @@
+/* WOFF2-only, matching the original latin / latin-ext families and weights. */
+/* eb-garamond-latin-400-normal */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-400-normal.woff2) format('woff2');
+}
+/* eb-garamond-latin-400-italic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-400-italic.woff2) format('woff2');
+}
+/* eb-garamond-latin-500-normal */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-500-normal.woff2) format('woff2');
+}
+/* eb-garamond-latin-500-italic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-500-italic.woff2) format('woff2');
+}
+/* eb-garamond-latin-700-normal */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-700-normal.woff2) format('woff2');
+}
+/* eb-garamond-latin-700-italic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-700-italic.woff2) format('woff2');
+}
+/* eb-garamond-latin-ext-400-normal */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-ext-400-normal.woff2) format('woff2');
+}
+/* eb-garamond-latin-ext-400-italic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-ext-400-italic.woff2) format('woff2');
+}
+/* eb-garamond-latin-ext-500-normal */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-ext-500-normal.woff2) format('woff2');
+}
+/* eb-garamond-latin-ext-500-italic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-ext-500-italic.woff2) format('woff2');
+}
+/* eb-garamond-latin-ext-700-normal */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-ext-700-normal.woff2) format('woff2');
+}
+/* eb-garamond-latin-ext-700-italic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/eb-garamond/files/eb-garamond-latin-ext-700-italic.woff2) format('woff2');
+}
+/* figtree-latin-400-normal */
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/figtree/files/figtree-latin-400-normal.woff2) format('woff2');
+}
+/* figtree-latin-400-italic */
+@font-face {
+  font-family: 'Figtree';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/figtree/files/figtree-latin-400-italic.woff2) format('woff2');
+}
+/* figtree-latin-500-normal */
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/figtree/files/figtree-latin-500-normal.woff2) format('woff2');
+}
+/* figtree-latin-500-italic */
+@font-face {
+  font-family: 'Figtree';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/figtree/files/figtree-latin-500-italic.woff2) format('woff2');
+}
+/* figtree-latin-700-normal */
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/figtree/files/figtree-latin-700-normal.woff2) format('woff2');
+}
+/* figtree-latin-700-italic */
+@font-face {
+  font-family: 'Figtree';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/figtree/files/figtree-latin-700-italic.woff2) format('woff2');
+}
+/* figtree-latin-ext-400-normal */
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/figtree/files/figtree-latin-ext-400-normal.woff2) format('woff2');
+}
+/* figtree-latin-ext-400-italic */
+@font-face {
+  font-family: 'Figtree';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/figtree/files/figtree-latin-ext-400-italic.woff2) format('woff2');
+}
+/* figtree-latin-ext-500-normal */
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/figtree/files/figtree-latin-ext-500-normal.woff2) format('woff2');
+}
+/* figtree-latin-ext-500-italic */
+@font-face {
+  font-family: 'Figtree';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/figtree/files/figtree-latin-ext-500-italic.woff2) format('woff2');
+}
+/* figtree-latin-ext-700-normal */
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/figtree/files/figtree-latin-ext-700-normal.woff2) format('woff2');
+}
+/* figtree-latin-ext-700-italic */
+@font-face {
+  font-family: 'Figtree';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/figtree/files/figtree-latin-ext-700-italic.woff2) format('woff2');
+}
+/* source-code-pro-latin-400-normal */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-400-normal.woff2) format('woff2');
+}
+/* source-code-pro-latin-400-italic */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-400-italic.woff2) format('woff2');
+}
+/* source-code-pro-latin-500-normal */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-500-normal.woff2) format('woff2');
+}
+/* source-code-pro-latin-500-italic */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-500-italic.woff2) format('woff2');
+}
+/* source-code-pro-latin-700-normal */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-700-normal.woff2) format('woff2');
+}
+/* source-code-pro-latin-700-italic */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-700-italic.woff2) format('woff2');
+}
+/* source-code-pro-latin-ext-400-normal */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-ext-400-normal.woff2)
+    format('woff2');
+}
+/* source-code-pro-latin-ext-400-italic */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 400;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-ext-400-italic.woff2)
+    format('woff2');
+}
+/* source-code-pro-latin-ext-500-normal */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-ext-500-normal.woff2)
+    format('woff2');
+}
+/* source-code-pro-latin-ext-500-italic */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 500;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-ext-500-italic.woff2)
+    format('woff2');
+}
+/* source-code-pro-latin-ext-700-normal */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-ext-700-normal.woff2)
+    format('woff2');
+}
+/* source-code-pro-latin-ext-700-italic */
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: italic;
+  font-display: swap;
+  font-weight: 700;
+  src: url(@fontsource/source-code-pro/files/source-code-pro-latin-ext-700-italic.woff2)
+    format('woff2');
+}

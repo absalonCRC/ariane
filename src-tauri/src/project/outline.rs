@@ -5,16 +5,9 @@ pub fn validate(outline: &Outline, text: &str) -> Result<()> {
     if outline.version != 1 || outline.nodes.is_empty() {
         return Err("Plan invalide : version ou nœuds manquants.".into());
     }
-    let mut boundaries = HashSet::from([0usize]);
-    let mut after_newline = HashSet::new();
+    let mut chars = text.chars();
     let mut offset = 0usize;
-    for ch in text.chars() {
-        offset += ch.len_utf16();
-        boundaries.insert(offset);
-        if ch == '\n' {
-            after_newline.insert(offset);
-        }
-    }
+    let mut after_newline = false;
     let mut ids = HashSet::new();
     let mut ancestors: Vec<&str> = Vec::new();
     let mut previous = None;
@@ -22,10 +15,13 @@ pub fn validate(outline: &Outline, text: &str) -> Result<()> {
         if node.id.trim().is_empty() || !ids.insert(node.id.as_str()) {
             return Err("Plan invalide : identifiant vide ou répété.".into());
         }
-        if !boundaries.contains(&node.start)
-            || node.start > offset
+        while offset < node.start {
+            let Some(ch) = chars.next() else { break; };
+            offset += ch.len_utf16(); after_newline = ch == '\n';
+        }
+        if node.start != offset
             || (previous.is_none() && node.start != 0)
-            || previous.is_some_and(|start| node.start <= start || !after_newline.contains(&node.start))
+            || previous.is_some_and(|start| node.start <= start || !after_newline)
         {
             return Err("Plan invalide : position de nœud hors d'une ligne du texte.".into());
         }

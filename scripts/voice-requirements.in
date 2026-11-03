@@ -1,0 +1,4 @@
+# Runtime target: CPython 3.11, macOS Apple Silicon.
+parakeet-mlx==0.5.3
+# Fixes the MLX file-loader advisories without changing Parakeet.
+mlx==0.29.4

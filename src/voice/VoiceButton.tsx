@@ -1,3 +1,5 @@
+import { encodeAudio } from './encodeAudio';
+import captureWorklet from './capture.worklet.js?url';
 import { localizeMessage, t, useLocale } from '../i18n';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -25,7 +27,8 @@ type Session = {
   parts: Part[];
   stream?: MediaStream;
   context?: AudioContext;
-  processor?: ScriptProcessorNode;
+  processor?: AudioNode;
+  flushAudio?: () => Promise<void>;
   language: string;
   samples: number;
   sampleRate?: number;
@@ -35,44 +38,6 @@ type Session = {
   insertionBlocked: boolean;
   failed: boolean;
 };
-
-function wav(chunks: Float32Array[], sampleRate: number): ArrayBuffer {
-  const length = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
-  const data = new ArrayBuffer(44 + length * 2);
-  const view = new DataView(data);
-  const write = (offset: number, text: string) => {
-    for (let i = 0; i < text.length; i++) view.setUint8(offset + i, text.charCodeAt(i));
-  };
-  write(0, 'RIFF');
-  view.setUint32(4, 36 + length * 2, true);
-  write(8, 'WAVE');
-  write(12, 'fmt ');
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, 1, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-  write(36, 'data');
-  view.setUint32(40, length * 2, true);
-  let offset = 44;
-  for (const chunk of chunks)
-    for (const sample of chunk) {
-      const value = Math.max(-1, Math.min(1, sample));
-      view.setInt16(offset, value < 0 ? value * 32768 : value * 32767, true);
-      offset += 2;
-    }
-  return data;
-}
-
-function base64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.length; i += 0x8000)
-    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  return btoa(binary);
-}
 
 function release(current: Session) {
   current.processor?.disconnect();
@@ -141,11 +106,12 @@ export function VoiceButton({
     current.segmentSamples = 0;
     current.speechSamples = 0;
     current.silenceSamples = 0;
-    const audio = base64(wav(chunks, sampleRate));
     // The queue owns a fresh PCM snapshot, so capture can continue during transcription.
     current.queue = current.queue.then(async () => {
       if (current.cancelled) return;
       try {
+        const audio = await encodeAudio(chunks, sampleRate);
+        if (current.cancelled) return;
         const result = await request<Result>('voiceTranscribe', {
           audio,
           language: current.language,
@@ -263,13 +229,10 @@ export function VoiceButton({
       current.context = context;
       current.sampleRate = context.sampleRate;
       const source = context.createMediaStreamSource(stream);
-      const processor = context.createScriptProcessor(4096, 1, 1);
-      current.processor = processor;
       const silence = context.createGain();
       silence.gain.value = 0;
-      processor.onaudioprocess = (event) => {
+      const acceptAudio = (chunk: Float32Array) => {
         if (!current.active || current.cancelled) return;
-        const chunk = new Float32Array(event.inputBuffer.getChannelData(0));
         current.chunks.push(chunk);
         current.samples += chunk.length;
         current.segmentSamples += chunk.length;
@@ -305,6 +268,39 @@ export function VoiceButton({
           queuePart(current, context.sampleRate);
         }
       };
+      let processor: AudioNode;
+      if (context.audioWorklet && typeof AudioWorkletNode !== 'undefined') {
+        await context.audioWorklet.addModule(captureWorklet);
+        const capture = new AudioWorkletNode(context, 'ariane-capture');
+        let flushed: (() => void) | undefined;
+        capture.port.onmessage = (event: MessageEvent<Float32Array | 'flushed'>) => {
+          if (event.data === 'flushed') flushed?.();
+          else acceptAudio(event.data);
+        };
+        current.flushAudio = () =>
+          new Promise((resolve, reject) => {
+            const timeout = setTimeout(
+              () => reject(new Error('La fin de l’enregistrement est indisponible.')),
+              1000,
+            );
+            flushed = () => {
+              clearTimeout(timeout);
+              resolve();
+            };
+            capture.port.postMessage('flush');
+          });
+        processor = capture;
+      } else {
+        const legacy = context.createScriptProcessor(4096, 1, 1);
+        legacy.onaudioprocess = (event) =>
+          acceptAudio(new Float32Array(event.inputBuffer.getChannelData(0)));
+        processor = legacy;
+      }
+      current.processor = processor;
+      if (!current.active || current.cancelled) {
+        release(current);
+        return;
+      }
       source.connect(processor);
       processor.connect(silence);
       silence.connect(context.destination);
@@ -327,13 +323,23 @@ export function VoiceButton({
   async function stop(cancel = false) {
     const current = session.current;
     if (!current) return;
-    current.active = false;
     current.cancelled = cancel;
     session.current = null;
+    finishing.current = true;
+    if (!cancel && current.flushAudio) {
+      try {
+        await current.flushAudio();
+      } catch (error) {
+        current.failed = true;
+        current.parts.push({ error });
+      }
+    }
+    current.active = false;
     setMode('press');
     const sampleRate = current.sampleRate;
     release(current);
     if (cancel || !sampleRate) {
+      finishing.current = false;
       if (alive.current) setPhase('idle');
       if (!cancel && alive.current) onClose();
       return;

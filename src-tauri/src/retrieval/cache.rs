@@ -95,7 +95,9 @@ struct Cache {
     path: PathBuf,
     connection: Connection,
     scope: String,
-    version: i64,
+    catalog_version: i64,
+    vector_version: i64,
+    streaming: bool,
     sources: Arc<Sources>,
     chunks: Option<Arc<Vec<Chunk>>>,
     used: Instant,
@@ -106,8 +108,8 @@ pub struct Snapshot {
     pub chunks: Option<Arc<Vec<Chunk>>>,
 }
 
-/// A persistent connection's data_version changes for every external commit, including
-/// reindexing, deletion and direct SQLite edits. Scope is checked on every request.
+/// Catalog and vector generations are maintained by SQLite triggers, including
+/// external edits. Scope is checked on every request.
 pub fn snapshot(root: &Path, index: &Path, vectors: bool) -> Result<Snapshot> {
     let mut slot = CACHE.lock().map_err(|e| e.to_string())?;
     snapshot_in(&mut slot, root, index, vectors)
@@ -130,73 +132,31 @@ fn snapshot_in(
             path: index.into(),
             connection,
             scope: String::new(),
-            version: -1,
+            catalog_version: -1,
+            vector_version: -1,
+            streaming: false,
             sources: Arc::new(Sources::new(vec![])?),
             chunks: None,
             used: Instant::now(),
         });
     }
     let cache = slot.as_mut().unwrap();
-    let version = cache
-        .connection
-        .query_row("PRAGMA data_version", [], |r| r.get::<_, i64>(0))
-        .app()?;
-    // Read all rows for a rebuild in the same SQLite snapshot.
     let tx = cache.connection.unchecked_transaction().app()?;
-    if version != cache.version || scope != cache.scope {
-        let mut query = tx.prepare("SELECT payload FROM sources").app()?;
-        let rows = query.query_map([], |r| r.get::<_, String>(0)).app()?;
-        let mut all = vec![];
-        for row in rows {
-            let s: Source = serde_json::from_str(&row.app()?).app()?;
-            if vaults::allowed(&s, &vaults) {
-                all.push(s);
-            }
-        }
+    let (catalog_version, vector_version): (i64,i64) = tx.query_row("SELECT catalog,vectors FROM index_generations WHERE singleton=1",[],|r|Ok((r.get(0)?,r.get(1)?))).app()?;
+    if catalog_version != cache.catalog_version || scope != cache.scope {
+        let mut query = tx.prepare(&format!("SELECT payload FROM sources s WHERE {} ORDER BY s.id", vaults::SCOPE_SQL)).app()?;
+        let rows = query.query_map([vaults::scope_json(&vaults)?], |r| r.get::<_, String>(0)).app()?;
+        let all = rows.map(|row|serde_json::from_str(&row.app()?).app()).collect::<Result<Vec<_>>>()?;
         cache.sources = Arc::new(Sources::new(all)?);
-        cache.chunks = None;
-        cache.scope = scope;
-        cache.version = version;
+        cache.chunks = None; cache.streaming = false;
+        cache.scope = scope; cache.catalog_version = catalog_version;
     }
+    if vector_version != cache.vector_version { cache.chunks = None; cache.streaming = false; cache.vector_version = vector_version; }
     let mut chunks = cache.chunks.clone();
-    if vectors && chunks.is_none() {
-        let mut query=tx.prepare("SELECT source,page,text,vector FROM chunks WHERE vector IS NOT NULL AND model=?").app()?;
-        let rows = query
-            .query_map([crate::inference::MODEL_ID], |r| {
-                Ok((
-                    r.get::<_, String>(0)?,
-                    r.get::<_, Option<i64>>(1)?,
-                    r.get::<_, String>(2)?,
-                    r.get::<_, String>(3)?,
-                ))
-            })
-            .app()?;
-        let mut values = vec![];
-        let mut bytes = 0;
-        for row in rows {
-            let (id, page, text, encoded) = row.app()?;
-            if let Some(&source) = cache.sources.by_id.get(&id) {
-                let vector: Vec<f32> = serde_json::from_str(&encoded).unwrap_or_default();
-                if vector.len() != 768 || vector.iter().any(|v| !v.is_finite()) {
-                    continue;
-                }
-                bytes += vector.len() * std::mem::size_of::<f32>()
-                    + text.len()
-                    + std::mem::size_of::<Chunk>();
-                values.push(Chunk {
-                    source,
-                    page,
-                    text,
-                    vector,
-                });
-            }
-        }
-        let values = Arc::new(values);
-        // Larger indexes still work, but do not remain resident between requests.
-        if bytes <= 128 * 1024 * 1024 {
-            cache.chunks = Some(values.clone());
-        }
-        chunks = Some(values);
+    if vectors && chunks.is_none() && !cache.streaming {
+        chunks = resident_chunks(&tx, &cache.sources, 128 * 1024 * 1024)?;
+        cache.streaming = chunks.is_none();
+        cache.chunks = chunks.clone();
     }
     tx.commit().app()?;
     cache.used = Instant::now();
@@ -204,6 +164,36 @@ fn snapshot_in(
         sources: cache.sources.clone(),
         chunks,
     })
+}
+fn resident_chunks(c: &Connection, sources: &Sources, budget: usize) -> Result<Option<Arc<Vec<Chunk>>>> {
+    let mut values = Vec::new();
+    let mut bytes = 0;
+    visit_rows(c, sources, |chunk| {
+        bytes += chunk.vector.len() * 4 + chunk.text.len() + std::mem::size_of::<Chunk>();
+        if bytes > budget { return false; }
+        values.push(chunk);
+        true
+    })?;
+    Ok((bytes <= budget).then(|| Arc::new(values)))
+}
+fn visit_rows(c: &Connection, sources: &Sources, mut visit: impl FnMut(Chunk) -> bool) -> Result<()> {
+    // ids are transported as JSON rather than an unbounded number of SQL parameters.
+    let ids = serde_json::to_string(&sources.all.iter().map(|s|&s.id).collect::<Vec<_>>()).app()?;
+    let mut q=c.prepare("SELECT source,page,text,vector FROM chunks WHERE source IN (SELECT value FROM json_each(?1)) AND vector IS NOT NULL AND model=?2 AND length(vector)<=65536 ORDER BY id").app()?;
+    let mut rows=q.query(rusqlite::params![ids,crate::inference::MODEL_ID]).app()?;
+    while let Some(row) = rows.next().app()? {
+        let id: String=row.get(0).app()?;
+        if let (Some(&source),Some(vector)) = (sources.by_id.get(&id),crate::vectors::decode(row.get_ref(3).app()?)) {
+            if !visit(Chunk { source, page:row.get(1).app()?, text:row.get(2).app()?, vector }) { break; }
+        }
+    }
+    Ok(())
+}
+/// For indexes above the resident budget, only one row/vector is decoded at a time.
+pub fn visit_chunks(snapshot: &Snapshot, index: &Path, mut visit: impl FnMut(&Chunk)) -> Result<()> {
+    if let Some(chunks) = &snapshot.chunks { for chunk in chunks.iter() { visit(chunk); } }
+    else { let c=vaults::index_db(index)?; visit_rows(&c,&snapshot.sources,|chunk| {visit(&chunk);true})?; }
+    Ok(())
 }
 pub fn release_if_idle() {
     if let Ok(mut slot) = CACHE.try_lock() {
@@ -221,6 +211,33 @@ mod tests {
     use super::*;
     use crate::project;
     use rusqlite::params;
+    #[test]
+    fn streaming_over_budget_preserves_all_chunks_and_scores_without_a_partial_cache() {
+        let temp = tempfile::tempdir().unwrap();
+        let index = temp.path().join("index.sqlite");
+        let c = vaults::index_db(&index).unwrap();
+        let sources = Arc::new(Sources::new((0..5).map(|i|
+            parse::parse("vault", &format!("{i}.md"), &format!("Source {i}"))
+        ).collect()).unwrap());
+        for i in 0..80 {
+            let mut vector = vec![0.01f32; 768];
+            vector[i] = 0.8;
+            c.execute("INSERT INTO chunks(source,page,text,vector,model) VALUES(?,?,?,?,?)",
+                params![sources.all[i % 5].id, i as i64, format!("Passage {i}"), crate::vectors::encode(&vector), crate::inference::MODEL_ID]).unwrap();
+        }
+        let resident = Snapshot { sources: sources.clone(), chunks: resident_chunks(&c, &sources, 1024 * 1024).unwrap() };
+        assert_eq!(resident.chunks.as_ref().unwrap().len(), 80);
+        let streamed = Snapshot { sources: sources.clone(), chunks: resident_chunks(&c, &sources, 4096).unwrap() };
+        assert!(streamed.chunks.is_none(), "An incomplete resident cache must never stand in for the full index");
+        let query = vec![0.02; 768];
+        let scores = |snapshot: &Snapshot| {
+            let mut scores = vec![];
+            visit_chunks(snapshot, &index, |chunk| scores.push((chunk.source, chunk.page, chunk.text.clone(), crate::inference::cosine(&query, &chunk.vector)))).unwrap();
+            scores
+        };
+        assert_eq!(scores(&resident), scores(&streamed));
+        assert_eq!(scores(&streamed).len(), 80);
+    }
     #[test]
     fn caches_vectors_and_invalidates_external_commits_and_scope_changes() {
         let temp = tempfile::tempdir().unwrap();
@@ -264,6 +281,12 @@ mod tests {
             warm.chunks.as_ref().unwrap(),
             second.chunks.as_ref().unwrap()
         ));
+        connection.execute("UPDATE chunks SET vector=? WHERE model=?",params![crate::vectors::encode(&vec![0.03;768]),crate::inference::MODEL_ID]).unwrap();
+        let backfill=snapshot_in(&mut slot,&root,&index,true).unwrap();
+        assert!(Arc::ptr_eq(&first.sources,&backfill.sources));
+        assert!(!Arc::ptr_eq(warm.chunks.as_ref().unwrap(),backfill.chunks.as_ref().unwrap()));
+        connection.execute("INSERT INTO sources VALUES('foreign','another-project','bad.md','x','invalid JSON')",[]).unwrap();
+        assert_eq!(snapshot_in(&mut slot,&root,&index,false).unwrap().sources.all.len(),1);
         source.title = "Lyon".into();
         connection
             .execute(

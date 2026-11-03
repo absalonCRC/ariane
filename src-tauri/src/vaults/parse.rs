@@ -19,9 +19,9 @@ fn field<'a>(fields: &'a serde_json::Value, key: &str) -> &'a serde_json::Value 
 pub fn parse(vault: &str, path: &str, raw: &str) -> Source {
     let (fields, text) = if let Some(t) = raw.strip_prefix("---\n") {
         if let Some((yaml, body)) = t.split_once("\n---") {
-            let val: serde_yaml::Value = serde_yaml::from_str(yaml).unwrap_or_default();
+            let val: serde_json::Value = crate::yaml::from_str(yaml).unwrap_or_default();
             (
-                serde_json::to_value(val).unwrap_or_default(),
+                val,
                 body.trim().to_owned(),
             )
         } else {

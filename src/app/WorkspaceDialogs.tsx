@@ -4,7 +4,7 @@ import { ManuscriptDialog } from '../project/ManuscriptDialog';
 import { Presence } from '../components/Presence';
 import { lazy, Suspense, useState, useCallback } from 'react';
 import type { Workspace } from './useWorkspace';
-import { open } from '@tauri-apps/plugin-dialog';
+import { choosePath } from './choosePath';
 import { native } from './client';
 import { ProjectCatalog } from '../project/ProjectCatalog';
 const Library = lazy(() => import('../sources/Library').then((m) => ({ default: m.Library })));
@@ -135,8 +135,7 @@ export function WorkspaceDialogs({
               <button
                 onClick={async () => {
                   try {
-                    const path = await open({
-                      directory: true,
+                    const path = await choosePath('open', {
                       title: t('Ouvrir un projet Ariane'),
                     });
                     if (typeof path === 'string') await workspace.openProject(path);

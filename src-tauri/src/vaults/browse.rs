@@ -23,77 +23,24 @@ pub fn browse(
     folder: Option<&str>,
     offset: usize,
 ) -> Result<SourcePage> {
-    let vaults = list(root, index)?;
+    let selected = list(root, index)?.into_iter().filter(|v|vault.is_none_or(|id|id==v.id)).collect::<Vec<_>>();
     let c = index_db(index)?;
-    let mut q = c.prepare("SELECT id,vault,path,json_extract(payload,'$.title'),json_extract(payload,'$.kind'),CASE WHEN ?='' THEN '' ELSE json_extract(payload,'$.text') END FROM sources ORDER BY json_extract(payload,'$.title') COLLATE NOCASE,path,id").app()?;
-    let rows = q
-        .query_map([query], |r| {
-            Ok((
-                r.get::<_, String>(0)?,
-                r.get::<_, String>(1)?,
-                r.get::<_, String>(2)?,
-                r.get::<_, String>(3)?,
-                r.get::<_, String>(4)?,
-                r.get::<_, String>(5)?,
-            ))
-        })
-        .app()?;
-    let term = query.trim().to_lowercase();
-    let mut ids = Vec::new();
-    let mut kinds = std::collections::BTreeMap::new();
-    let mut folders = std::collections::BTreeSet::new();
-    let mut total = 0;
-    for row in rows {
-        let (id, v, path, title, source_kind, text) = row.app()?;
-        if !vaults.iter().any(|item| {
-            item.id == v
-                && (item.scope.is_empty()
-                    || item.scope.iter().any(|s| Path::new(&path).starts_with(s)))
-        }) || vault.is_some_and(|selected| selected != v)
-        {
-            continue;
-        }
-        let dir = Path::new(&path)
-            .parent()
-            .unwrap_or(Path::new(""))
-            .to_string_lossy()
-            .into_owned();
-        *kinds.entry(source_kind.clone()).or_insert(0usize) += 1;
-        if !dir.is_empty() {
-            folders.insert(dir);
-        }
-        if kind.is_some_and(|k| k != source_kind)
-            || folder.is_some_and(|f| !Path::new(&path).starts_with(f))
-        {
-            continue;
-        }
-        if !term.is_empty()
-            && !title.to_lowercase().contains(&term)
-            && !text.to_lowercase().contains(&term)
-        {
-            continue;
-        }
-        if total >= offset && ids.len() < 50 {
-            ids.push(id);
-        }
-        total += 1;
-    }
-    let mut items = Vec::new();
-    for id in ids {
-        let mut s = source(index, &id, &vaults)?;
-        s.text = s.text.chars().take(240).collect();
-        items.push(s);
-    }
-    Ok(SourcePage {
-        items,
-        total,
-        kinds: kinds.keys().cloned().collect(),
-        types: kinds
-            .into_iter()
-            .map(|(kind, count)| EntityType { kind, count })
-            .collect(),
-        folders: folders.into_iter().collect(),
-    })
+    let flags=rusqlite::functions::FunctionFlags::SQLITE_UTF8 | rusqlite::functions::FunctionFlags::SQLITE_DETERMINISTIC | rusqlite::functions::FunctionFlags::SQLITE_INNOCUOUS;
+    c.create_scalar_function("ariane_lower",1,flags,|ctx|Ok(ctx.get::<String>(0)?.to_lowercase())).app()?;
+    c.create_scalar_function("ariane_dir",1,flags,|ctx|Ok(Path::new(&ctx.get::<String>(0)?).parent().unwrap_or(Path::new("")).to_string_lossy().to_string())).app()?;
+    let scope=scope_json(&selected)?;
+    let scoped=format!("WITH scoped AS MATERIALIZED (SELECT s.* FROM sources s WHERE {SCOPE_SQL})");
+    let mut q=c.prepare(&format!("{scoped} SELECT json_extract(payload,'$.kind'),count(*) FROM scoped GROUP BY 1 ORDER BY 1")).app()?;
+    let types=q.query_map([&scope],|r|Ok(EntityType {kind:r.get(0)?,count:r.get(1)?})).app()?.collect::<std::result::Result<Vec<_>,_>>().app()?;
+    let mut q=c.prepare(&format!("{scoped} SELECT DISTINCT ariane_dir(path) AS folder FROM scoped WHERE folder<>'' ORDER BY folder")).app()?;
+    let folders=q.query_map([&scope],|r|r.get::<_,String>(0)).app()?.collect::<std::result::Result<Vec<_>,_>>().app()?;
+    let filter="(?2 IS NULL OR json_extract(payload,'$.kind')=?2) AND (?3 IS NULL OR path=?3 OR substr(path,1,length(?3)+1)=?3||'/') AND (?4='' OR instr(ariane_lower(json_extract(payload,'$.title')),?4)>0 OR instr(ariane_lower(json_extract(payload,'$.text')),?4)>0)";
+    let term=query.trim().to_lowercase();
+    let total=c.query_row(&format!("{scoped} SELECT count(*) FROM scoped WHERE {filter}"),params![scope,kind,folder,term],|r|r.get(0)).app()?;
+    let mut q=c.prepare(&format!("{scoped} SELECT json_set(payload,'$.text',substr(json_extract(payload,'$.text'),1,240)) FROM scoped WHERE {filter} ORDER BY json_extract(payload,'$.title') COLLATE NOCASE,path,id LIMIT 50 OFFSET ?5")).app()?;
+    let rows=q.query_map(params![scope,kind,folder,term,i64::try_from(offset).unwrap_or(i64::MAX)],|r|r.get::<_,String>(0)).app()?;
+    let items=rows.map(|r|serde_json::from_str(&r.app()?).app()).collect::<Result<Vec<Source>>>()?;
+    Ok(SourcePage {items,total,kinds:types.iter().map(|t|t.kind.clone()).collect(),types,folders})
 }
 
 #[cfg(test)]

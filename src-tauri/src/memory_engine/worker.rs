@@ -1,14 +1,14 @@
 //! GLiNER-only child. No engine mutex or database transaction is held during inference.
 use super::{Activity, critical_memory_pressure};
-use crate::error::{AppResult, Result};
+use crate::{error::{AppResult, Result}, worker_output::WorkerOutput};
 use serde_json::{json, Value};
-use std::{io::{BufRead, BufReader, Write}, path::Path, process::{Child, ChildStdin, Command, Stdio}, sync::mpsc, time::{Duration, Instant}};
+use std::{io::Write, path::Path, process::{Child, ChildStdin, Command, Stdio}, sync::mpsc, time::{Duration, Instant}};
 
 #[derive(Default)]
 pub struct EntityEngine {
     child: Option<Child>,
     input: Option<ChildStdin>,
-    output: Option<mpsc::Receiver<String>>,
+    output: Option<WorkerOutput>,
     used: Option<Instant>,
     serial: u64,
 }
@@ -50,20 +50,7 @@ impl EntityEngine {
         activity.signal();
         self.input = child.stdin.take();
         let stdout = child.stdout.take().ok_or("Sortie du moteur indisponible")?;
-        let (send, receive) = mpsc::channel();
-        std::thread::spawn(move || {
-            for line in BufReader::new(stdout).lines() {
-                match line {
-                    Ok(line) if line.len() <= 2_000_000 => {
-                        if send.send(line).is_err() {
-                            break;
-                        }
-                    }
-                    _ => break,
-                }
-            }
-        });
-        self.output = Some(receive);
+        self.output = Some(WorkerOutput::start(stdout, 2_000_000, 2));
         self.child = Some(child);
         Ok(())
     }
@@ -112,9 +99,13 @@ impl EntityEngine {
                 .recv_timeout(Duration::from_millis(100));
             match result {
                 Ok(line) => {
-                    let value: Value = serde_json::from_str(&line).app()?;
+                    let value: Value = match serde_json::from_str(&line) {
+                        Ok(value) => value,
+                        Err(_) => { self.shutdown(activity); return Err("Protocole du moteur local invalide.".into()); }
+                    };
                     if value["id"].as_u64() != Some(id) {
-                        continue;
+                        self.shutdown(activity);
+                        return Err("Réponse inattendue du moteur local.".into());
                     }
                     self.used = Some(Instant::now());
                     if !value["error"].is_null() {

@@ -27,45 +27,38 @@ fn unpack(payload: &str) -> Result<Snapshot> {
     }
 }
 pub fn descendants(all: &[Section], id: &str) -> Vec<Section> {
-    let mut ids = std::collections::HashSet::from([id.to_owned()]);
-    loop {
-        let old = ids.len();
-        for s in all {
-            if s.parent.as_ref().is_some_and(|p| ids.contains(p)) {
-                ids.insert(s.id.clone());
-            }
-        }
-        if ids.len() == old {
-            break;
-        }
-    }
+    let ids = project::tree::descendant_ids(all, [id]);
     all.iter()
         .filter(|s| ids.contains(&s.id))
         .cloned()
         .collect()
 }
 pub fn capture(root: &Path, name: &str, scope: Option<String>) -> Result<Version> {
+    crate::project::with_lock(root, || {
     let c = project::database(root)?;
-    let all = project::all_sections(&c)?;
-    let sections = scope
-        .as_ref()
-        .map_or(all.clone(), |id| descendants(&all, id));
+    let sections = if let Some(id) = &scope {
+        project::validate_id(id)?;
+        let mut q = c.prepare("WITH RECURSIVE chosen(id) AS (SELECT id FROM sections WHERE id=? UNION SELECT s.id FROM sections s JOIN chosen ON s.parent=chosen.id) SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE id IN chosen ORDER BY position,id").app()?;
+        let rows = q.query_map([id], project::row_section).app()?;
+        rows.collect::<std::result::Result<Vec<_>,_>>().app()?
+    } else { project::all_sections(&c)? };
     let settings: String = c
         .query_row("SELECT value FROM meta WHERE key='settings'", [], |r| {
             r.get(0)
         })
         .unwrap_or("{}".into());
-    let mut query = c.prepare("SELECT id,payload FROM citations").app()?;
+    let ids=serde_json::to_string(&sections.iter().map(|s|&s.id).collect::<Vec<_>>()).app()?;
+    let mut query = c.prepare("SELECT id,payload FROM citations WHERE ?1 IS NULL OR EXISTS(SELECT 1 FROM sections WHERE id IN (SELECT value FROM json_each(?2)) AND instr(text,citations.id)>0)").app()?;
     let citations = query
-        .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))
+        .query_map(params![scope,ids], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))
         .app()?
         .collect::<std::result::Result<Vec<_>, _>>()
         .app()?;
     let mut query = c
-        .prepare("SELECT section,source,payload FROM links")
+        .prepare("SELECT section,source,payload FROM links WHERE section IN (SELECT value FROM json_each(?1))")
         .app()?;
     let links = query
-        .query_map([], |r| {
+        .query_map([&ids], |r| {
             Ok((
                 r.get::<_, String>(0)?,
                 r.get::<_, String>(1)?,
@@ -74,10 +67,7 @@ pub fn capture(root: &Path, name: &str, scope: Option<String>) -> Result<Version
         })
         .app()?
         .collect::<std::result::Result<Vec<_>, _>>()
-        .app()?
-        .into_iter()
-        .filter(|(id, _, _)| sections.iter().any(|s| s.id == *id))
-        .collect();
+        .app()?;
     let payload = serde_json::to_string(&Snapshot {
         sections: sections.clone(),
         settings: serde_json::from_str(&settings).app()?,
@@ -101,15 +91,18 @@ pub fn capture(root: &Path, name: &str, scope: Option<String>) -> Result<Version
     )
     .app()?;
     Ok(v)
+    })
 }
 // The list deliberately excludes manuscript payloads; a version is loaded on demand.
-pub fn list(root: &Path) -> Result<Vec<Version>> {
+#[cfg(test)]
+pub fn list(root: &Path) -> Result<Vec<Version>> { list_page(root, 0) }
+pub fn list_page(root: &Path, offset: usize) -> Result<Vec<Version>> {
     let c = project::database(root)?;
     let mut q = c
-        .prepare("SELECT id,name,created,scope FROM versions ORDER BY created DESC")
+        .prepare("SELECT id,name,created,scope FROM versions ORDER BY created DESC,id DESC LIMIT 50 OFFSET ?")
         .app()?;
     let rows = q
-        .query_map([], |r| {
+        .query_map([i64::try_from(offset).unwrap_or(i64::MAX)], |r| {
             Ok(Version {
                 id: r.get(0)?,
                 name: r.get(1)?,
@@ -147,10 +140,16 @@ pub fn get(root: &Path, id: &str) -> Result<Version> {
     Ok(v)
 }
 pub fn restore(root: &Path, id: &str) -> Result<Project> {
+    crate::project::with_lock(root, || {
     if let Some(id) = project::load(root)?.conflicts.first() {
         return Err(format!("EXTERNAL:{id}"));
     }
     let v = get(root, id)?;
+    for section in &v.sections {
+        project::validate_id(&section.id)?;
+        if let Some(parent) = &section.parent { project::validate_id(parent)?; }
+        if let Some(outline) = &section.outline { project::validate_outline(outline,&section.text)?; }
+    }
     capture(root, "Avant restauration", v.scope.clone())?;
     let mut c = project::database(root)?;
     let payload: String = c
@@ -159,6 +158,11 @@ pub fn restore(root: &Path, id: &str) -> Result<Project> {
         })
         .app()?;
     let snapshot = unpack(&payload)?;
+    for section in &snapshot.sections {
+        project::validate_id(&section.id)?;
+        if let Some(parent) = &section.parent { project::validate_id(parent)?; }
+        if let Some(outline) = &section.outline { project::validate_outline(outline, &section.text)?; }
+    }
     let before = project::all_sections(&c)?;
     let affected = if let Some(scope) = &v.scope {
         descendants(&before, scope)
@@ -208,6 +212,7 @@ pub fn restore(root: &Path, id: &str) -> Result<Project> {
     tx.execute("DELETE FROM structure_history", []).app()?;
     tx.commit().app()?;
     project::load(root)
+    })
 }
 #[cfg(test)]
 mod tests {

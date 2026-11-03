@@ -17,12 +17,19 @@ export function useProject(onError: (e: unknown) => void) {
   const settingsRef = useRef(settings);
   const [status, setStatus] = useState<SaveState>('saved');
   const [generation, setGeneration] = useState(0);
+  const editListeners = useRef(new Set<() => void>());
+  const subscribeEdits = useCallback((listener: () => void) => {
+    editListeners.current.add(listener);
+    return () => {
+      editListeners.current.delete(listener);
+    };
+  }, []);
   const dirty = useRef(new Map<string, SectionDraft>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saving = useRef<Promise<void> | null>(null);
   const activate = useCallback((p: Project) => {
     ref.current = p;
-    sectionIndex.current = new Map(p.sections.map(section => [section.id, section]));
+    sectionIndex.current = new Map(p.sections.map((section) => [section.id, section]));
     setProject(p);
     const s = { ...defaultSettings, ...p.settings };
     // Preserve projects that briefly used the second typography's earlier identifier.
@@ -50,13 +57,21 @@ export function useProject(onError: (e: unknown) => void) {
     setStatus('saving');
     const task = (async () => {
       try {
-        const result = await request<{ id: string; revision: number }[]>('save', { patches });
-        for (const ack of result) {
+        const result = await request<{
+          sections: { id: string; revision: number }[];
+          mirrorErrors: { id: string; message: string }[];
+        }>('save', { patches });
+        for (const ack of result.sections) {
           const s = sectionIndex.current.get(ack.id);
           if (s) s.revision = ack.revision;
           if (dirty.current.get(ack.id) === values.get(ack.id)) dirty.current.delete(ack.id);
         }
         setStatus(dirty.current.size ? 'editing' : 'saved');
+        if (result.mirrorErrors.length)
+          onError(
+            'Texte sauvegardé. Copie Markdown à réparer : ' +
+              result.mirrorErrors.map((e) => e.message).join('; '),
+          );
       } catch (e) {
         setStatus('error');
         onError(e);
@@ -80,6 +95,7 @@ export function useProject(onError: (e: unknown) => void) {
         }
         dirty.current.set(id, () => ({ text, outline }));
       }
+      for (const listener of editListeners.current) listener();
       setStatus('editing');
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => void flush().catch(() => {}), 650);
@@ -93,6 +109,7 @@ export function useProject(onError: (e: unknown) => void) {
         if (section) stageDraft(section, draft);
         dirty.current.set(id, draft);
       }
+      for (const listener of editListeners.current) listener();
       setStatus('editing');
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => void flush().catch(() => {}), 650);
@@ -111,24 +128,32 @@ export function useProject(onError: (e: unknown) => void) {
     },
     [onError],
   );
-  const replaceSections = useCallback((sections: Section[], reset = true, canUndoStructure?: boolean) => {
-    if (ref.current) {
-      if (!reset) {
-        sections = sections.map((s) => {
-          const live = ref.current!.sections.find((v) => v.id === s.id);
-          return live
-            ? { ...s, text: live.text, outline: live.outline, revision: live.revision }
-            : s;
-        });
+  const replaceSections = useCallback(
+    (sections: Section[], reset = true, canUndoStructure?: boolean) => {
+      if (ref.current) {
+        if (!reset) {
+          sections = sections.map((s) => {
+            const live = ref.current!.sections.find((v) => v.id === s.id);
+            return live
+              ? { ...s, text: live.text, outline: live.outline, revision: live.revision }
+              : s;
+          });
+        }
+        ref.current = {
+          ...ref.current,
+          sections,
+          canUndoStructure: canUndoStructure ?? ref.current.canUndoStructure,
+        };
+        sectionIndex.current = new Map(sections.map((section) => [section.id, section]));
+        setProject(ref.current);
+        if (reset) setGeneration((x) => x + 1);
       }
-      ref.current = { ...ref.current, sections, canUndoStructure: canUndoStructure ?? ref.current.canUndoStructure };
-      sectionIndex.current = new Map(sections.map(section => [section.id, section]));
-      setProject(ref.current);
-      if (reset) setGeneration((x) => x + 1);
-    }
-  }, []);
+    },
+    [],
+  );
   return {
     project,
+    subscribeEdits,
     ref,
     activate,
     settings,

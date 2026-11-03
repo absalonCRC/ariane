@@ -78,21 +78,18 @@ pub fn export_with_cancel(
         serde_json::to_string(&references).app()?
     );
     let citation_style = p.settings["citationStyle"].as_str().unwrap_or("notes");
-    fn append(all: &[crate::model::Section], parent: Option<&str>, depth: usize, out: &mut String) -> Result<()> {
-        for s in all.iter().filter(|s| s.parent.as_deref() == parent) {
-            let text = if s.kind == "scene" {
-                footnotes::namespace(&s.text, &s.id, &s.title)?
-            } else {
-                s.text.clone()
-            };
-            out.push_str(&format!(
-                "{} {}\n\n{}\n\n",
-                "#".repeat(depth.min(6)),
-                s.title,
-                text
-            ));
-            append(all, Some(&s.id), depth + 1, out)?
+    fn append(all: &[crate::model::Section], out: &mut String) -> Result<()> {
+        let mut children: std::collections::HashMap<Option<&str>,Vec<&crate::model::Section>> = Default::default();
+        for section in all { children.entry(section.parent.as_deref()).or_default().push(section); }
+        let mut pending: Vec<_> = children.get(&None).into_iter().flatten().rev().map(|s|(*s,1usize)).collect();
+        let mut visited = std::collections::HashSet::new();
+        while let Some((s,depth)) = pending.pop() {
+            if !visited.insert(&s.id) { return Err("Arbre de sections cyclique".into()); }
+            let text = if s.kind == "scene" { footnotes::namespace(&s.text, &s.id, &s.title)? } else { s.text.clone() };
+            out.push_str(&format!("{} {}\n\n{}\n\n", "#".repeat(depth.min(6)), s.title, text));
+            if let Some(next) = children.get(&Some(s.id.as_str())) { pending.extend(next.iter().rev().map(|s|(*s,depth+1))); }
         }
+        if visited.len() != all.len() { return Err("Arbre de sections incomplet ou cyclique".into()); }
         Ok(())
     }
     let selected_ids: std::collections::HashSet<_> =
@@ -106,7 +103,7 @@ pub fn export_with_cancel(
             s.parent = None
         }
     }
-    append(&top, None, 1, &mut md)?;
+    append(&top, &mut md)?;
     let parent = target.parent().ok_or("Destination invalide")?;
     if !parent.is_dir() {
         return Err("Le dossier de destination n’est plus accessible".into());
@@ -266,7 +263,7 @@ mod tests {
         let output = d.path().join("local.docx");
         export(&root, &resources, &output, "docx", None).unwrap();
         let archive = zip::ZipArchive::new(fs::File::open(output).unwrap()).unwrap();
-        assert!(archive.file_names().any(|name| name.starts_with("word/media/")));
+        assert!(archive.file_names().any(|name| name.is_ok_and(|name| name.starts_with("word/media/"))));
         for text in [
             "![externe](linked.png)",
             "![externe](%2e%2e/outside.png)",

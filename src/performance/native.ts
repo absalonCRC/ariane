@@ -152,6 +152,28 @@ async function run() {
   await frame();
   report.binderOpenMs = performance.now() - binderStart;
   report.binderDOMRows = document.querySelectorAll('.binder .tree-row').length;
+  const manuscriptStart = performance.now();
+  let paintedFrames = 0,
+    watching = true;
+  const watch = () => {
+    if (watching) {
+      paintedFrames++;
+      requestAnimationFrame(watch);
+    }
+  };
+  requestAnimationFrame(watch);
+  current.setSearch('mémoire');
+  await until(() => current.unifiedSearch.manuscript.total > 0 && !current.unifiedSearch.busy);
+  watching = false;
+  report.manuscriptSearch = {
+    ms: performance.now() - manuscriptStart,
+    paintedFrames,
+    total: current.unifiedSearch.manuscript.total,
+    visible: current.unifiedSearch.manuscript.items.length,
+  };
+  if (paintedFrames < 2 || current.unifiedSearch.manuscript.items.length > 200)
+    throw new Error('Manuscript worker responsiveness failed');
+  current.setSearch(null);
   report.documentCharacters = current.editor.current!.text().length;
   report.sourceStatus = current.sourceStatus;
   report.errors = current.error;

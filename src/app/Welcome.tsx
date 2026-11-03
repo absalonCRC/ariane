@@ -4,7 +4,7 @@ import { ProjectCatalog } from '../project/ProjectCatalog';
 import { Presence } from '../components/Presence';
 import { useState, useEffect, useRef } from 'react';
 import { Dialog } from '../components/Dialog';
-import { open } from '@tauri-apps/plugin-dialog';
+import { choosePath } from './choosePath';
 import { native, request } from './client';
 import type { Project } from './types';
 import { ArianeWordmark } from '../components/ArianeWordmark';
@@ -45,7 +45,7 @@ export function Welcome({
     try {
       let path = 'browser:' + crypto.randomUUID();
       if (native) {
-        const folder = await open({ directory: true, title: t('Enregistrer le projet dans…') });
+        const folder = await choosePath('create', { title: t('Enregistrer le projet dans…') });
         if (typeof folder !== 'string') return;
         path = folder + '/' + name.trim().replace(/[/:\\]/g, '-');
       }
@@ -76,7 +76,7 @@ export function Welcome({
   }
   async function chooseFolder() {
     try {
-      const path = await open({ directory: true, title: t('Ouvrir un projet Ariane') });
+      const path = await choosePath('open', { title: t('Ouvrir un projet Ariane') });
       if (typeof path === 'string') await openProject(path);
     } catch (e) {
       onError(e);
