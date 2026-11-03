@@ -3874,5 +3874,17 @@
   "Désactivé": [
     "Disabled",
     "Desactivado"
+  ],
+  "Charger les versions précédentes": [
+    "Load older versions",
+    "Cargar versiones anteriores"
+  ],
+  "Chargement du texte…": [
+    "Loading text…",
+    "Cargando el texto…"
+  ],
+  "Pages de la source": [
+    "Source pages",
+    "Páginas de la fuente"
   ]
 }

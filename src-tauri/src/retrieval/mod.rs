@@ -86,24 +86,29 @@ pub fn search(
                 )
                 .ok()
         });
-        if let (Some(vector), Some(chunks)) = (vector, snapshot.chunks) {
-            for chunk in chunks.iter() {
+        if let Some(vector) = vector {
+            let mut scores = vec![0f64; data.all.len()];
+            for (id,hit) in &hits { if let Some(&i)=data.by_id.get(id) { scores[i]=hit.score; } }
+            let mut best: Vec<_> = hits.into_values().collect();
+            best.sort_by(|a,b|b.score.total_cmp(&a.score).then(a.title.cmp(&b.title)));
+            best.truncate(20);
+            cache::visit_chunks(&snapshot,index,|chunk| {
                 let source = &data.all[chunk.source];
-                let score = cosine(&vector, &chunk.vector);
-                if score < 0.48 {
-                    continue;
+                let score = cosine(&vector,&chunk.vector);
+                if score < 0.48 { return; }
+                let combined = score * 4. + scores[chunk.source].min(2.);
+                if combined <= scores[chunk.source] { return; }
+                scores[chunk.source] = combined;
+                if let Some(i)=best.iter().position(|s|s.id==source.id) { best.remove(i); }
+                if best.len()<20 || best.last().is_some_and(|s|combined>s.score || (combined==s.score && source.title<s.title)) {
+                    let mut s=source.clone();s.text=chunk.text.clone();s.page=chunk.page;s.score=combined;
+                    best.push(s);best.sort_by(|a,b|b.score.total_cmp(&a.score).then(a.title.cmp(&b.title)));best.truncate(20);
                 }
-                let combined = score * 4. + hits.get(&source.id).map_or(0., |s| s.score.min(2.));
-                if hits.get(&source.id).is_none_or(|s| s.score < combined) {
-                    let mut s = source.clone();
-                    s.text = chunk.text.clone();
-                    s.page = chunk.page;
-                    s.score = combined;
-                    hits.insert(s.id.clone(), s);
-                }
-            }
+            })?;
+            return Ok(best);
         }
     }
+
     let mut out: Vec<_> = hits.into_values().collect();
     out.sort_by(|a, b| b.score.total_cmp(&a.score).then(a.title.cmp(&b.title)));
     out.truncate(20);

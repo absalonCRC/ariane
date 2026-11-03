@@ -3,6 +3,8 @@ pub use classification::{classification_types, example_type, predicted_type, app
 mod notes;
 pub use notes::{create_quick_note, suggest_notes, note_references};
 mod browse;
+mod pdf;
+mod scan;
 pub use browse::browse;
 pub mod parse;
 mod owned;
@@ -15,18 +17,38 @@ use crate::{
 };
 use rusqlite::{params, Connection};
 use std::{
-    collections::HashSet,
     fs,
     path::{Path, PathBuf},
     sync::{
-        atomic::{AtomicBool, Ordering},
+        atomic::AtomicBool,
         Mutex,
     },
 };
 pub fn index_db(path: &Path) -> Result<Connection> {
     let c = Connection::open(path).app()?;
     c.busy_timeout(std::time::Duration::from_secs(10)).app()?;
-    c.execute_batch("PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS sources(id TEXT PRIMARY KEY,vault TEXT,path TEXT,hash TEXT,payload TEXT);CREATE TABLE IF NOT EXISTS chunks(id INTEGER PRIMARY KEY,source TEXT,page INTEGER,text TEXT,vector TEXT,model TEXT);CREATE INDEX IF NOT EXISTS chunk_source ON chunks(source);CREATE VIRTUAL TABLE IF NOT EXISTS search USING fts5(text,source UNINDEXED,page UNINDEXED);").app()?;
+    c.execute_batch("PRAGMA journal_mode=WAL;
+        CREATE TABLE IF NOT EXISTS sources(id TEXT PRIMARY KEY,vault TEXT,path TEXT,hash TEXT,payload TEXT);
+        CREATE INDEX IF NOT EXISTS sources_vault_path ON sources(vault,path);
+        CREATE TABLE IF NOT EXISTS chunks(id INTEGER PRIMARY KEY,source TEXT,page INTEGER,text TEXT,vector TEXT,model TEXT);
+        CREATE INDEX IF NOT EXISTS chunk_source ON chunks(source);
+        CREATE VIRTUAL TABLE IF NOT EXISTS search USING fts5(text,source UNINDEXED,page UNINDEXED);
+        CREATE TABLE IF NOT EXISTS source_file_state(source TEXT PRIMARY KEY,signature TEXT NOT NULL,verified INTEGER NOT NULL DEFAULT 0);
+        CREATE TABLE IF NOT EXISTS index_generations(singleton INTEGER PRIMARY KEY CHECK(singleton=1),catalog INTEGER NOT NULL,vectors INTEGER NOT NULL);
+        INSERT OR IGNORE INTO index_generations VALUES(1,0,0);
+        CREATE TRIGGER IF NOT EXISTS sources_generation_insert AFTER INSERT ON sources BEGIN UPDATE index_generations SET catalog=catalog+1 WHERE singleton=1; END;
+        CREATE TRIGGER IF NOT EXISTS sources_generation_update AFTER UPDATE ON sources BEGIN UPDATE index_generations SET catalog=catalog+1 WHERE singleton=1; END;
+        CREATE TRIGGER IF NOT EXISTS sources_generation_delete AFTER DELETE ON sources BEGIN UPDATE index_generations SET catalog=catalog+1 WHERE singleton=1; END;
+        CREATE TRIGGER IF NOT EXISTS chunks_generation_insert AFTER INSERT ON chunks BEGIN UPDATE index_generations SET vectors=vectors+1 WHERE singleton=1; END;
+        CREATE TRIGGER IF NOT EXISTS chunks_generation_update AFTER UPDATE ON chunks BEGIN UPDATE index_generations SET vectors=vectors+1 WHERE singleton=1; END;
+        CREATE TRIGGER IF NOT EXISTS chunks_generation_delete AFTER DELETE ON chunks BEGIN UPDATE index_generations SET vectors=vectors+1 WHERE singleton=1; END;").app()?;
+    let has_verified = {
+        let mut columns = c.prepare("PRAGMA table_info(source_file_state)").app()?;
+        let mut rows = columns.query_map([], |r| r.get::<_, String>(1)).app()?;
+        rows.any(|row| row.is_ok_and(|name| name == "verified"))
+    };
+    if !has_verified { c.execute("ALTER TABLE source_file_state ADD COLUMN verified INTEGER NOT NULL DEFAULT 0", []).app()?; }
+    crate::vectors::migrate_batch(&c)?;
     Ok(c)
 }
 pub fn list(root: &Path, index: &Path) -> Result<Vec<Vault>> {
@@ -109,19 +131,18 @@ pub fn allowed(s: &Source, vaults: &[Vault]) -> bool {
                     .any(|scope| Path::new(&s.path).starts_with(scope)))
     })
 }
-pub fn all(index: &Path, vaults: &[Vault]) -> Result<Vec<Source>> {
-    let c = index_db(index)?;
-    let mut q = c.prepare("SELECT payload FROM sources").app()?;
-    let rows = q.query_map([], |r| r.get::<_, String>(0)).app()?;
-    let mut out = vec![];
-    for r in rows {
-        let s: Source = serde_json::from_str(&r.app()?).app()?;
-        if allowed(&s, vaults) {
-            out.push(s)
-        }
-    }
-    Ok(out)
+/// Scope predicate uses only indexed metadata; foreign payloads are never parsed.
+pub(crate) const SCOPE_SQL: &str = "EXISTS(SELECT 1 FROM json_each(?1) v WHERE json_extract(v.value,'$.id')=s.vault AND (json_array_length(v.value,'$.scope')=0 OR EXISTS(SELECT 1 FROM json_each(v.value,'$.scope') f WHERE s.path=f.value OR substr(s.path,1,length(f.value)+1)=f.value||'/')))";
+pub(crate) fn scope_json(vaults: &[Vault]) -> Result<String> {
+    serde_json::to_string(&vaults.iter().map(|v| serde_json::json!({"id":v.id,"scope":v.scope})).collect::<Vec<_>>()).app()
 }
+pub fn all(index: &Path, vaults: &[Vault]) -> Result<Vec<Source>> {
+    let c=index_db(index)?;
+    let mut q=c.prepare(&format!("SELECT payload FROM sources s WHERE {SCOPE_SQL}")).app()?;
+    let rows=q.query_map([scope_json(vaults)?],|r|r.get::<_,String>(0)).app()?;
+    rows.map(|r|serde_json::from_str(&r.app()?).app()).collect()
+}
+
 pub fn source(index: &Path, id: &str, vaults: &[Vault]) -> Result<Source> {
     let c = index_db(index)?;
     let payload: String = c
@@ -146,6 +167,8 @@ pub fn file(index: &Path, id: &str, vaults: &[Vault]) -> Result<PathBuf> {
     }
     Ok(path)
 }
+/// Compatibility entry point for callers without interactive activity tracking.
+#[cfg(any(test, feature = "performance-harness"))]
 pub fn index(
     root: &Path,
     index: &Path,
@@ -154,206 +177,20 @@ pub fn index(
     cancel: &AtomicBool,
     progress: impl Fn(serde_json::Value),
 ) -> Result<serde_json::Value> {
-    let vaults = list(root, index)?;
-    let mut total = 0;
-    let mut errors = vec![];
-    let mut indexed = 0;
-    let mut semantic = true;
-    for v in &vaults {
-        if !v.available {
-            errors.push(format!("{} : dossier introuvable", v.name));
-            continue;
-        }
-        let paths: Vec<_> = walkdir::WalkDir::new(&v.path)
-            .follow_links(false)
-            .into_iter()
-            .filter_entry(|e| {
-                let name = e.file_name().to_string_lossy();
-                let template_folder = e.depth() == 1 && e.file_type().is_dir()
-                    && ["template", "templates", "modele", "modeles"].contains(&parse::normalize(&name).as_str());
-                (e.depth() == 0 || !name.starts_with('.')) && !template_folder
-            })
-            .filter_map(|e| e.ok())
-            .filter(|e| e.file_type().is_file())
-            .map(|e| e.into_path())
-            .filter(|p| {
-                p.extension().is_some_and(|x| {
-                    ["md", "pdf", "png", "jpg", "jpeg", "webp"]
-                        .contains(&x.to_string_lossy().to_lowercase().as_str())
-                })
-            })
-            .collect();
-        total += paths.len();
-        let mut seen = HashSet::new();
-        for path in paths {
-            if cancel.load(Ordering::Relaxed) {
-                return Ok(serde_json::json!({"cancelled":true,"indexed":indexed,"errors":errors}));
-            }
-            let rel = path
-                .strip_prefix(&v.path)
-                .unwrap()
-                .to_string_lossy()
-                .to_string();
-            let id = project::hash(&format!("{}/{rel}", v.id));
-            seen.insert(id.clone());
-            let result = (|| -> Result<()> {
-                let bytes = fs::read(&path).app()?;
-                if bytes.len() > 100_000_000 {
-                    return Err("Document trop volumineux (100 Mo maximum)".into());
-                }
-                let hash = project::hash(&format!(
-                    "{}:{}",
-                    bytes.len(),
-                    format_args!("{:x}", <sha2::Sha256 as sha2::Digest>::digest(&bytes))
-                ));
-                let mut c = index_db(index)?;
-                let old: String = c
-                    .query_row("SELECT hash FROM sources WHERE id=?", [&id], |r| r.get(0))
-                    .unwrap_or_default();
-                let missing: i64 = c
-                    .query_row(
-                        "SELECT count(*) FROM chunks WHERE source=? AND (vector IS NULL OR model IS NULL OR model<>?)",
-                        params![id, crate::inference::MODEL_ID],
-                        |r| r.get(0),
-                    )
-                    .app()?;
-                if old == hash {
-                    if missing == 0 || !semantic { return Ok(()); }
-                    let pending = {
-                        let mut q = c.prepare("SELECT id,text FROM chunks WHERE source=? AND (vector IS NULL OR model IS NULL OR model<>?)").app()?;
-                        let rows = q.query_map(params![id, crate::inference::MODEL_ID], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?))).app()?;
-                        rows.collect::<std::result::Result<Vec<_>,_>>().app()?
-                    };
-                    for (chunk_id, text) in pending {
-                        if cancel.load(Ordering::Relaxed) { return Err("Indexation suspendue.".into()); }
-                        match engine.lock().map_err(|e| e.to_string())?.embed(resources, &text, false) {
-                            Ok(vector) => { c.execute("UPDATE chunks SET vector=?,model=? WHERE id=? AND source=? AND (vector IS NULL OR model IS NULL OR model<>?)", params![serde_json::to_string(&vector).app()?,crate::inference::MODEL_ID,chunk_id,id,crate::inference::MODEL_ID]).app()?; }
-                            Err(e) => { errors.push(format!("{rel} : {e}")); semantic=false; break; }
-                        }
-                    }
-                    return Ok(());
-                }
-                let ext = path.extension().unwrap().to_string_lossy().to_lowercase();
-                let mut pages = vec![];
-                let mut s = if ext == "md" {
-                    parse::parse(
-                        &v.id,
-                        &rel,
-                        &String::from_utf8_lossy(&bytes).replace("\r\n", "\n"),
-                    )
-                } else if ext == "pdf" {
-                    let output = std::process::Command::new(resources.join("engine/pdf-text"))
-                        .arg(&path)
-                        .output()
-                        .app()?;
-                    if !output.status.success() {
-                        return Err("PDF illisible ou protégé".into());
-                    }
-                    pages = serde_json::from_slice::<Vec<String>>(&output.stdout).app()?;
-                    parse::parse(&v.id, &rel, &pages.join("\n\n"))
-                } else {
-                    let mut s = parse::parse(&v.id, &rel, "");
-                    s.kind = "Image".into();
-                    s
-                };
-                s.fingerprint = hash.clone();
-                if ext == "pdf" {
-                    s.kind = "PDF".into()
-                }
-                let mut records = vec![];
-                let inputs = if ext == "pdf" {
-                    pages
-                        .iter()
-                        .enumerate()
-                        .flat_map(|(i, p)| {
-                            parse::chunks(p)
-                                .into_iter()
-                                .map(move |t| (Some(i as i64 + 1), t))
-                        })
-                        .collect::<Vec<_>>()
-                } else {
-                    parse::chunks(&s.text)
-                        .into_iter()
-                        .map(|t| (None, t))
-                        .collect()
-                };
-                for (page, text) in inputs {
-                    if cancel.load(Ordering::Relaxed) {
-                        return Err("Indexation suspendue.".into());
-                    }
-                    let vec = if semantic {
-                        match engine
-                            .lock()
-                            .map_err(|e| e.to_string())?
-                            .embed(resources, &text, false)
-                        {
-                            Ok(v) => Some(serde_json::to_string(&v).app()?),
-                            Err(e) => {
-                                errors.push(format!("{rel} : {e}"));
-                                semantic = false;
-                                None
-                            }
-                        }
-                    } else {
-                        None
-                    };
-                    records.push((page, text, vec));
-                }
-                let tx = c.transaction().app()?;
-                tx.execute("DELETE FROM search WHERE source=?", [&id])
-                    .app()?;
-                tx.execute("DELETE FROM chunks WHERE source=?", [&id])
-                    .app()?;
-                tx.execute(
-                    "INSERT OR REPLACE INTO sources VALUES(?,?,?,?,?)",
-                    params![s.id, v.id, rel, hash, serde_json::to_string(&s).app()?],
-                )
-                .app()?;
-                for (page, text, vec) in records {
-                    tx.execute(
-                        "INSERT INTO chunks(source,page,text,vector,model) VALUES(?,?,?,?,?)",
-                        params![id, page, text, vec, crate::inference::MODEL_ID],
-                    )
-                    .app()?;
-                    tx.execute(
-                        "INSERT INTO search(text,source,page) VALUES(?,?,?)",
-                        params![text, id, page],
-                    )
-                    .app()?;
-                }
-                tx.commit().app()?;
-                Ok(())
-            })();
-            if cancel.load(Ordering::Relaxed) {
-                return Ok(serde_json::json!({"cancelled":true,"indexed":indexed,"errors":errors}));
-            }
-            if let Err(e) = result {
-                errors.push(format!("{rel} : {e}"))
-            }
-            indexed += 1;
-            progress(
-                serde_json::json!({"done":indexed,"total":total,"file":rel,"semantic":semantic}),
-            );
-        }
-        let mut c = index_db(index)?;
-        let ids = {
-            let mut q = c.prepare("SELECT id FROM sources WHERE vault=?").app()?;
-            let r = q.query_map([&v.id], |r| r.get::<_, String>(0)).app()?;
-            r.collect::<std::result::Result<Vec<_>, _>>().app()?
-        };
-        let tx = c.transaction().app()?;
-        for id in ids {
-            if !seen.contains(&id) {
-                tx.execute("DELETE FROM search WHERE source=?", [&id])
-                    .app()?;
-                tx.execute("DELETE FROM chunks WHERE source=?", [&id])
-                    .app()?;
-                tx.execute("DELETE FROM sources WHERE id=?", [&id]).app()?;
-            }
-        }
-        tx.commit().app()?;
-    }
-    Ok(serde_json::json!({"indexed":indexed,"errors":errors,"semantic":semantic}))
+    scan::run(root, index, resources, engine, cancel, None, progress)
+}
+
+/// Index while yielding to editor activity and foreground inference.
+pub fn index_with_activity(
+    root: &Path,
+    index: &Path,
+    resources: &Path,
+    engine: &Mutex<Engine>,
+    cancel: &AtomicBool,
+    activity: &crate::memory_engine::Activity,
+    progress: impl Fn(serde_json::Value),
+) -> Result<serde_json::Value> {
+    scan::run(root, index, resources, engine, cancel, Some(activity), progress)
 }
 /// Make a newly created project fiche available immediately, without a model or
 /// a full vault scan. The regular indexer can add vectors later.
@@ -427,14 +264,14 @@ mod tests {
         let db = index_db(&path).unwrap();
         let records = {
             let mut q = db.prepare("SELECT id,vector FROM chunks ORDER BY id").unwrap();
-            q.query_map([], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?))).unwrap().collect::<std::result::Result<Vec<_>,_>>().unwrap()
+            q.query_map([], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,Vec<u8>>(1)?))).unwrap().collect::<std::result::Result<Vec<_>,_>>().unwrap()
         };
         assert!(records.len() >= 2);
         db.execute("UPDATE chunks SET vector=NULL WHERE id=?", [records[0].0]).unwrap();
         index(&root,&path,&resources,&engine,&cancel, |_| {}).unwrap();
         let restored = {
             let mut q = db.prepare("SELECT id,vector FROM chunks ORDER BY id").unwrap();
-            q.query_map([], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?))).unwrap().collect::<std::result::Result<Vec<_>,_>>().unwrap()
+            q.query_map([], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,Vec<u8>>(1)?))).unwrap().collect::<std::result::Result<Vec<_>,_>>().unwrap()
         };
         assert_eq!(records,restored);
         db.execute("UPDATE chunks SET model='embeddinggemma-2-Q8_0',vector='[1]'", []).unwrap();

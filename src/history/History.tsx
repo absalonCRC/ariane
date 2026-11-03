@@ -44,6 +44,8 @@ interface Props {
 export function History(p: Props) {
   const locale = useLocale();
   const [versions, setVersions] = useState<Version[]>([]);
+  const [moreVersions, setMoreVersions] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [leftId, setLeftId] = useState('');
   const [rightId, setRightId] = useState('current');
   const [loaded, setLoaded] = useState<{ left: Version | null; right: Version | null }>({
@@ -79,6 +81,7 @@ export function History(p: Props) {
       .then((values) => {
         if (alive) {
           setVersions(values);
+          setMoreVersions(values.length === 50);
           setLeftId(values[0]?.id ?? 'current');
         }
       })
@@ -382,6 +385,30 @@ export function History(p: Props) {
                   </select>
                 </label>
               </div>
+              {moreVersions && versions.length >= 50 && (
+                <button
+                  disabled={loadingMore}
+                  onClick={async () => {
+                    setLoadingMore(true);
+                    try {
+                      const page = await request<Version[]>('versions', {
+                        offset: versions.length,
+                      });
+                      setVersions((old) => [
+                        ...old,
+                        ...page.filter((v) => !old.some((item) => item.id === v.id)),
+                      ]);
+                      setMoreVersions(page.length === 50);
+                    } catch (e) {
+                      setError(String(e));
+                    } finally {
+                      setLoadingMore(false);
+                    }
+                  }}
+                >
+                  {t('Charger les versions précédentes')}
+                </button>
+              )}
               <div className="history-diff-summary">
                 <div className="history-diff-identity">
                   <select

@@ -1,6 +1,6 @@
 import { t, useLocale } from '../i18n';
 import { useState } from 'react';
-import { save } from '@tauri-apps/plugin-dialog';
+import { choosePath } from '../app/choosePath';
 import { native, request } from '../app/client';
 import type { Project } from '../app/types';
 import { manuscriptSections, scenesFor } from '../project/tree';
@@ -37,10 +37,10 @@ export function useExport() {
         setState('done');
         return;
       }
-      const path = await save({
+      const path = await choosePath('export', {
         title: t('Exporter le manuscrit'),
-        defaultPath: project.name + '.' + format,
-        filters: [{ name: format.toUpperCase(), extensions: [format] }],
+        name: project.name + '.' + format,
+        format,
       });
       if (!path) return;
       setState('working');

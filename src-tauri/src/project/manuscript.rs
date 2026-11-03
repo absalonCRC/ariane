@@ -22,6 +22,7 @@ fn byte_offset(text: &str, utf16: usize) -> Result<usize> {
     if count == utf16 { Ok(text.len()) } else { Err("Position de texte invalide.".into()) }
 }
 pub fn apply(root: &Path, op: Operation) -> Result<Project> {
+    crate::project::with_lock(root, || {
     let mut c = super::database(root)?;
     let tx = c.transaction_with_behavior(TransactionBehavior::Immediate).app()?;
     let mut all = super::all_sections(&tx)?;
@@ -58,6 +59,7 @@ pub fn apply(root: &Path, op: Operation) -> Result<Project> {
     super::annotations::relocate(&tx,&op,&before,&all)?;
     tx.commit().app()?;
     let mut p = super::load(root)?; p.recovered = false; Ok(p)
+    })
 }
 #[cfg(test)]
 mod tests {

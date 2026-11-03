@@ -169,11 +169,29 @@ export function outlineEditor(
     const oldSpans = tr.startState.field(sectionField);
     const intent = tr.annotation(splitIntent);
     // Ordinary typing cannot change parentage or passage starts relative to lines.
-    if (!changesLines(tr) && !intent)
-      return previous.map((node) => {
-        const from = tr.changes.mapPos(node.from, -1);
-        return from === node.from ? node : { ...node, from };
+    if (!changesLines(tr) && !intent) {
+      let first = Infinity;
+      tr.changes.iterChangedRanges((from) => {
+        first = Math.min(first, from);
       });
+      let low = 0,
+        high = previous.length;
+      while (low < high) {
+        const mid = (low + high) >>> 1;
+        if (previous[mid].from <= first) low = mid + 1;
+        else high = mid;
+      }
+      let mapped: OutlineEntry[] | undefined;
+      for (let i = low; i < previous.length; i++) {
+        const node = previous[i],
+          from = tr.changes.mapPos(node.from, -1);
+        if (from !== node.from) {
+          mapped ??= previous.slice();
+          mapped[i] = { ...node, from };
+        }
+      }
+      return mapped ?? previous.slice();
+    }
     const removed = new Set<string>();
     const merged = new Map<string, string>();
     tr.changes.iterChangedRanges((from, to) => {

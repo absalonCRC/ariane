@@ -8,50 +8,55 @@ use std::{fs, path::Path};
 pub fn hash(s: &str) -> String {
     format!("{:x}", Sha256::digest(s.as_bytes()))
 }
+const SCHEMA_VERSION: i64 = 1;
+/// SQLite itself refuses symlink filenames. Files used by the mirror protocol are
+/// opened relative to a verified directory descriptor in `io`.
 pub fn database(root: &Path) -> Result<Connection> {
-    let mut c = Connection::open(root.join("ariane.sqlite")).app()?;
+    let directory = super::io::Dir::open(root)?;
+    directory.child("manuscrit", false)?;
+    directory.child("recuperation", false)?;
+    // Validate the database independently, before SQLite opens it. SQLite's
+    // NOFOLLOW flag also covers replacement of its final path component.
+    for filename in ["ariane.sqlite","ariane.sqlite-wal","ariane.sqlite-shm","ariane.sqlite-journal"] {
+        directory.open_file(filename, libc::O_RDONLY, 0)?;
+    }
+    let path = root.canonicalize().app()?.join("ariane.sqlite");
+    let flags = rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE
+        | rusqlite::OpenFlags::SQLITE_OPEN_CREATE
+        | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX
+        | rusqlite::OpenFlags::SQLITE_OPEN_NOFOLLOW;
+    let mut c = Connection::open_with_flags(path, flags).app()?;
     c.busy_timeout(std::time::Duration::from_secs(5)).app()?;
-    c.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;
- CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+    c.execute_batch("PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;").app()?;
+    let schema: i64 = c.pragma_query_value(None, "user_version", |r| r.get(0)).app()?;
+    if schema > SCHEMA_VERSION { return Err("Ce projet nécessite une version plus récente d’Ariane.".into()); }
+    if schema < SCHEMA_VERSION {
+        // Recheck under SQLite's write lock: another process might have migrated
+        // between the first check and this transaction.
+        let tx = c.transaction_with_behavior(TransactionBehavior::Immediate).app()?;
+        let current: i64 = tx.pragma_query_value(None, "user_version", |r| r.get(0)).app()?;
+        if current < SCHEMA_VERSION {
+            tx.execute_batch("CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS sections(id TEXT PRIMARY KEY,parent TEXT,title TEXT NOT NULL,kind TEXT NOT NULL,position INTEGER NOT NULL,text TEXT NOT NULL DEFAULT '',revision INTEGER NOT NULL DEFAULT 0,synopsis TEXT NOT NULL DEFAULT '',status TEXT NOT NULL DEFAULT 'Brouillon',goal INTEGER NOT NULL DEFAULT 0,mirror TEXT NOT NULL DEFAULT '');
  CREATE TABLE IF NOT EXISTS versions(id TEXT PRIMARY KEY,name TEXT NOT NULL,created TEXT NOT NULL,scope TEXT,payload TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS vaults(id TEXT PRIMARY KEY,path TEXT UNIQUE NOT NULL,scope TEXT NOT NULL DEFAULT '[]');
  CREATE TABLE IF NOT EXISTS links(section TEXT,source TEXT,payload TEXT,PRIMARY KEY(section,source));
- CREATE TABLE IF NOT EXISTS citations(id TEXT PRIMARY KEY,payload TEXT NOT NULL);").app()?;
-    let has_outline = c
-        .prepare("PRAGMA table_info(sections)")
-        .app()?
-        .query_map([], |r| r.get::<_, String>(1))
-        .app()?
-        .collect::<std::result::Result<Vec<_>, _>>()
-        .app()?
-        .iter()
-        .any(|name| name == "outline");
-    let marker: Option<String> = c.query_row(
-        "SELECT value FROM meta WHERE key='outline_schema_version'", [], |r| r.get(0),
-    ).optional().app()?;
-    if !has_outline || marker.as_deref() != Some("1") {
-        let tx = c.transaction_with_behavior(TransactionBehavior::Immediate).app()?;
-        let column_now_exists = tx
-            .prepare("PRAGMA table_info(sections)")
-            .app()?
-            .query_map([], |r| r.get::<_, String>(1))
-            .app()?
-            .collect::<std::result::Result<Vec<_>, _>>()
-            .app()?
-            .iter()
-            .any(|name| name == "outline");
-        if !column_now_exists {
-            tx.execute("ALTER TABLE sections ADD COLUMN outline TEXT", []).app()?;
+ CREATE TABLE IF NOT EXISTS citations(id TEXT PRIMARY KEY,payload TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS structure_history(id INTEGER PRIMARY KEY AUTOINCREMENT,payload TEXT NOT NULL);
+ CREATE TABLE IF NOT EXISTS mirror_pending(id TEXT PRIMARY KEY,base TEXT NOT NULL,FOREIGN KEY(id) REFERENCES sections(id) ON DELETE CASCADE);").app()?;
+            let columns = tx.prepare("PRAGMA table_info(sections)").app()?.query_map([], |r| r.get::<_, String>(1)).app()?.collect::<std::result::Result<std::collections::HashSet<_>, _>>().app()?;
+            for (name, declaration) in [("outline", "TEXT"), ("role", "TEXT NOT NULL DEFAULT 'manuscript'"), ("trashed", "INTEGER NOT NULL DEFAULT 0"), ("included", "INTEGER NOT NULL DEFAULT 1")] {
+                if !columns.contains(name) { tx.execute_batch(&format!("ALTER TABLE sections ADD COLUMN {name} {declaration}")).app()?; }
+            }
+            tx.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('outline_schema_version','1')", []).app()?;
+            tx.execute_batch("CREATE INDEX IF NOT EXISTS versions_created ON versions(created DESC,id DESC);
+ CREATE INDEX IF NOT EXISTS versions_scope_name_created ON versions(scope,name,created DESC);
+ CREATE INDEX IF NOT EXISTS sections_parent ON sections(parent);").app()?;
+            tx.pragma_update(None, "user_version", SCHEMA_VERSION).app()?;
         }
-        tx.execute("INSERT OR REPLACE INTO meta(key,value) VALUES('outline_schema_version','1')", []).app()?;
         tx.commit().app()?;
+        c.pragma_update(None, "journal_mode", "WAL").app()?;
     }
-    for (name, declaration) in [("role", "TEXT NOT NULL DEFAULT 'manuscript'"), ("trashed", "INTEGER NOT NULL DEFAULT 0"), ("included", "INTEGER NOT NULL DEFAULT 1")] {
-        let exists = c.prepare("PRAGMA table_info(sections)").app()?.query_map([], |r| r.get::<_, String>(1)).app()?.collect::<std::result::Result<Vec<_>, _>>().app()?.iter().any(|column| column == name);
-        if !exists { c.execute_batch(&format!("ALTER TABLE sections ADD COLUMN {name} {declaration}")).app()?; }
-    }
-    c.execute_batch("CREATE TABLE IF NOT EXISTS structure_history(id INTEGER PRIMARY KEY AUTOINCREMENT,payload TEXT NOT NULL)").app()?;
     Ok(c)
 }
 pub fn create(root: &Path, name: &str) -> Result<Project> {
@@ -71,7 +76,9 @@ pub fn create(root: &Path, name: &str) -> Result<Project> {
     load(root)
 }
 pub fn sections(c: &Connection) -> Result<Vec<Section>> {
-    Ok(all_sections(c)?.into_iter().filter(|s| !s.trashed).collect())
+    let mut q = c.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE trashed=0 ORDER BY position,id").app()?;
+    let rows = q.query_map([], row_section).app()?;
+    rows.collect::<std::result::Result<Vec<_>, _>>().app()
 }
 pub fn all_sections(c: &Connection) -> Result<Vec<Section>> {
     let mut q=c.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections ORDER BY position,id").app()?;
@@ -81,10 +88,13 @@ pub fn all_sections(c: &Connection) -> Result<Vec<Section>> {
     rows.collect::<std::result::Result<Vec<_>, _>>().app()
 }
 pub fn section(c: &Connection, id: &str) -> Result<Option<Section>> {
+    super::validate_id(id)?;
     c.query_row("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE id=? AND trashed=0", [id], row_section)
         .optional().app()
 }
-fn row_section(r: &Row<'_>) -> rusqlite::Result<Section> {
+pub(crate) fn row_section(r: &Row<'_>) -> rusqlite::Result<Section> {
+    let id: String = r.get(0)?;
+    super::validate_id(&id).map_err(|message| rusqlite::Error::FromSqlConversionFailure(0, rusqlite::types::Type::Text, Box::new(std::io::Error::new(std::io::ErrorKind::InvalidData, message))))?;
     let raw: Option<String> = r.get(10)?;
     let outline = raw
         .map(|json| {
@@ -94,160 +104,156 @@ fn row_section(r: &Row<'_>) -> rusqlite::Result<Section> {
         })
         .transpose()?;
     Ok(Section {
-        id: r.get(0)?, parent: r.get(1)?, title: r.get(2)?, kind: r.get(3)?,
+        id, parent: r.get(1)?, title: r.get(2)?, kind: r.get(3)?,
         position: r.get(4)?, text: r.get(5)?, revision: r.get(6)?,
         synopsis: r.get(7)?, status: r.get(8)?, goal: r.get(9)?, outline, role: r.get(11)?, trashed: r.get(12)?, included: r.get(13)?,
     })
 }
 pub fn load(root: &Path) -> Result<Project> {
-    if !root.join("ariane.sqlite").is_file() {
+    super::with_lock(root, || load_unlocked(root))
+}
+pub(crate) fn load_unlocked(root: &Path) -> Result<Project> {
+    let root_dir = super::io::Dir::open(root)?;
+    if root_dir.open_file("ariane.sqlite", libc::O_RDONLY, 0)?.is_none() {
         return Err("Ce dossier ne contient pas de projet Ariane.".into());
     }
     let c = database(root)?;
     let mut recovered = false;
     let mut conflicts = vec![];
-    let all = sections(&c)?;
+    // Read each section only once, including trash. It is important that all
+    // ids are validated before any mirror is touched.
+    let all = all_sections(&c)?;
     let mirrors = {
-        let mut query = c.prepare("SELECT id,mirror FROM sections").app()?;
-        let rows = query.query_map([], |r| Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?))).app()?;
+        let mut query = c.prepare("SELECT s.id,s.mirror,p.base FROM sections s LEFT JOIN mirror_pending p ON p.id=s.id").app()?;
+        let rows = query.query_map([], |r| Ok((r.get::<_,String>(0)?, (r.get::<_,String>(1)?,r.get::<_,Option<String>>(2)?)))).app()?;
         rows.collect::<std::result::Result<std::collections::HashMap<_,_>,_>>().app()?
     };
-    for s in &all {
-        if s.kind != "scene" {
-            continue;
-        }
-        let file = root.join("manuscrit").join(format!("{}.md", s.id));
-        let stored = mirrors.get(&s.id).map(String::as_str).unwrap_or_default();
-        if file.exists() {
-            let disk = fs::read_to_string(&file).app()?;
-            if hash(&disk) != stored && !stored.is_empty() {
+    for s in all.iter().filter(|s| !s.trashed && s.kind == "scene") {
+        let (stored, pending) = mirrors.get(&s.id).ok_or("Section introuvable.")?;
+        let disk = scene_disk(&root_dir, &s.id)?;
+        let desired = hash(&s.text);
+        let disk_hash = disk.as_ref().map(|text| hash(text));
+        let base = pending.as_ref().unwrap_or(stored);
+        if let Some(actual) = disk_hash.as_ref() {
+            // A pending write can have reached disk before its DB acknowledgement.
+            if !base.is_empty() && actual != base && (pending.is_none() || actual != &desired) {
+                conflicts.push(s.id.clone());
+                continue;
+            }
+            if pending.is_some() && base.is_empty() && actual != &desired {
                 conflicts.push(s.id.clone());
                 continue;
             }
         }
-        if stored != hash(&s.text) || !file.exists() {
-            mirror(root, &c, s)?;
-            recovered |= !stored.is_empty();
+        if pending.is_some() || stored != &desired || disk.is_none() {
+            mirror(&root_dir, &c, s)?;
+            recovered |= pending.is_some() || !stored.is_empty();
         }
     }
-    let name = c
-        .query_row("SELECT value FROM meta WHERE key='name'", [], |r| r.get(0))
-        .app()?;
-    let settings: String = c
-        .query_row("SELECT value FROM meta WHERE key='settings'", [], |r| {
-            r.get(0)
-        })
-        .unwrap_or("{}".into());
+    let name = c.query_row("SELECT value FROM meta WHERE key='name'", [], |r| r.get(0)).app()?;
+    let settings: String = c.query_row("SELECT value FROM meta WHERE key='settings'", [], |r| r.get(0)).unwrap_or("{}".into());
+    let (trash, sections): (Vec<_>, Vec<_>) = all.into_iter().partition(|s| s.trashed);
     Ok(Project {
-        path: root.to_string_lossy().into(),
-        name,
-        sections: all,
-        settings: serde_json::from_str(&settings).unwrap_or_default(),
-        recovered,
-        trash: all_sections(&c)?.into_iter().filter(|s| s.trashed).collect(),
+        path: root.to_string_lossy().into(), name, sections,
+        settings: serde_json::from_str(&settings).unwrap_or_default(), recovered, trash,
         can_undo_structure: c.query_row("SELECT EXISTS(SELECT 1 FROM structure_history)", [], |r| r.get(0)).app()?,
         conflicts,
     })
 }
-fn atomic(path: &Path, text: &str) -> Result<()> {
-    use std::io::Write;
-    let temp = path.with_extension("tmp");
-    let mut f = fs::File::create(&temp).app()?;
-    f.write_all(text.as_bytes()).app()?;
-    f.sync_all().app()?;
-    fs::rename(temp, path).app()?;
-    if let Some(parent) = path.parent() {
-        fs::File::open(parent).and_then(|f| f.sync_all()).app()?;
+fn scene_disk(root: &super::io::Dir, id: &str) -> Result<Option<String>> {
+    super::validate_id(id)?;
+    match root.child("manuscrit", false)? {
+        Some(dir) => dir.read(&format!("{id}.md")),
+        None => Ok(None),
     }
+}
+fn mirror(root: &super::io::Dir, c: &Connection, s: &Section) -> Result<()> {
+    super::validate_id(&s.id)?;
+    let dir = root.child("manuscrit", true)?.ok_or("Dossier manuscrit inaccessible.")?;
+    dir.write_atomic(&format!("{}.md", s.id), &s.text)?;
+    c.execute("UPDATE sections SET mirror=? WHERE id=?", params![hash(&s.text), s.id]).app()?;
+    c.execute("DELETE FROM mirror_pending WHERE id=?", [&s.id]).app()?;
     Ok(())
 }
-fn mirror(root: &Path, c: &Connection, s: &Section) -> Result<()> {
-    fs::create_dir_all(root.join("manuscrit")).app()?;
-    atomic(
-        &root.join("manuscrit").join(format!("{}.md", s.id)),
-        &s.text,
-    )?;
-    c.execute(
-        "UPDATE sections SET mirror=? WHERE id=?",
-        params![hash(&s.text), s.id],
-    )
-    .app()?;
-    Ok(())
-}
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MirrorError { pub id: String, pub message: String }
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SaveReport { pub sections: Vec<Section>, pub mirror_errors: Vec<MirrorError> }
+/// Compatibility wrapper for existing local callers. The app should use
+/// `save_report` so that a durable commit and a failed mirror are distinct.
+#[cfg(any(test, feature = "performance-harness"))]
 pub fn save(root: &Path, patches: Vec<TextPatch>) -> Result<Vec<Section>> {
-    let mut c = database(root)?;
-    // Automatic section history is throttled independently of durable autosave.
-    let mut captures = Vec::new();
-    let mut seen = std::collections::HashSet::new();
-    for patch in &patches {
-        if !seen.insert(&patch.id) {
-            return Err("Une section ne peut être sauvegardée deux fois dans le même lot.".into());
-        }
-        let (rev, old, raw, mir): (i64, String, Option<String>, String) = c
-            .query_row("SELECT revision,text,outline,mirror FROM sections WHERE id=?", [&patch.id], |r| {
-                Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?))
-            })
-            .app()?;
-        if rev != patch.revision {
-            return Err("Le texte a changé depuis cette sauvegarde. Rechargez sa version.".into());
-        }
-        let old_outline = raw.map(|json| serde_json::from_str::<Outline>(&json).app()).transpose()?;
-        let next_outline = effective_outline(patch, &old, old_outline.clone())?;
-        let file = root.join("manuscrit").join(format!("{}.md", patch.id));
-        if file.exists() && !mir.is_empty() && hash(&fs::read_to_string(&file).app()?) != mir {
-            return Err(format!("EXTERNAL:{}", patch.id));
-        }
-        if (old != patch.text && !old.is_empty()) || (old == patch.text && old_outline != next_outline) {
-            let last:String=c.query_row("SELECT created FROM versions WHERE scope=? AND name='Sauvegarde automatique' ORDER BY created DESC LIMIT 1",[&patch.id],|r|r.get(0)).unwrap_or_default();
-            let due = chrono::DateTime::parse_from_rfc3339(&last).map_or(true, |t| {
-                chrono::Utc::now().signed_duration_since(t).num_minutes() >= 5
-            });
-            if due {
-                captures.push(patch.id.clone());
+    Ok(save_report(root, patches)?.sections)
+}
+pub fn save_report(root: &Path, patches: Vec<TextPatch>) -> Result<SaveReport> {
+    save_report_with(root, patches, |_| Ok(()))
+}
+fn save_report_with(root: &Path, patches: Vec<TextPatch>, mut before_mirror: impl FnMut(&Section) -> Result<()>) -> Result<SaveReport> {
+    super::with_lock(root, || {
+        let root_dir = super::io::Dir::open(root)?;
+        let mut c = database(root)?;
+        let mut captures = Vec::new();
+        let mut seen = std::collections::HashSet::new();
+        for patch in &patches {
+            super::validate_id(&patch.id)?;
+            if !seen.insert(&patch.id) { return Err("Une section ne peut être sauvegardée deux fois dans le même lot.".into()); }
+            let (rev, old, raw, mir, pending): (i64, String, Option<String>, String, Option<String>) = c.query_row(
+                "SELECT s.revision,s.text,s.outline,s.mirror,p.base FROM sections s LEFT JOIN mirror_pending p ON p.id=s.id WHERE s.id=?", [&patch.id],
+                |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?))).app()?;
+            if rev != patch.revision { return Err("Le texte a changé depuis cette sauvegarde. Rechargez sa version.".into()); }
+            let old_outline = raw.map(|json| serde_json::from_str::<Outline>(&json).app()).transpose()?;
+            let next_outline = effective_outline(patch, &old, old_outline.clone())?;
+            validate_disk(&root_dir, &patch.id, &old, &mir, pending.as_deref())?;
+            if (old != patch.text && !old.is_empty()) || (old == patch.text && old_outline != next_outline) {
+                let last: String = c.query_row("SELECT created FROM versions WHERE scope=? AND name='Sauvegarde automatique' ORDER BY created DESC LIMIT 1", [&patch.id], |r| r.get(0)).unwrap_or_default();
+                let due = chrono::DateTime::parse_from_rfc3339(&last).map_or(true, |t| chrono::Utc::now().signed_duration_since(t).num_minutes() >= 5);
+                if due { captures.push(patch.id.clone()); }
             }
         }
-    }
-    for id in captures {
-        crate::history::capture(root, "Sauvegarde automatique", Some(id))?;
-    }
-    let tx = c.transaction().app()?;
-    for p in &patches {
-        let (rev, old, raw, mir): (i64, String, Option<String>, String) = tx
-            .query_row(
-                "SELECT revision,text,outline,mirror FROM sections WHERE id=?",
-                [&p.id],
-                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
-            )
-            .app()?;
-        if rev != p.revision {
-            return Err("Le texte a changé depuis cette sauvegarde. Rechargez sa version.".into());
+        for id in captures { crate::history::capture(root, "Sauvegarde automatique", Some(id))?; }
+        let tx = c.transaction_with_behavior(TransactionBehavior::Immediate).app()?;
+        for p in &patches {
+            let (rev, old, raw, mir, pending): (i64, String, Option<String>, String, Option<String>) = tx.query_row(
+                "SELECT s.revision,s.text,s.outline,s.mirror,p.base FROM sections s LEFT JOIN mirror_pending p ON p.id=s.id WHERE s.id=?", [&p.id],
+                |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?))).app()?;
+            if rev != p.revision { return Err("Le texte a changé depuis cette sauvegarde. Rechargez sa version.".into()); }
+            let base = validate_disk(&root_dir, &p.id, &old, &mir, pending.as_deref())?;
+            let old_outline = raw.map(|json| serde_json::from_str::<Outline>(&json).app()).transpose()?;
+            let next_outline = effective_outline(p, &old, old_outline.clone())?;
+            if old != p.text || old_outline != next_outline {
+                let encoded = next_outline.map(|outline| serde_json::to_string(&outline).app()).transpose()?;
+                tx.execute("UPDATE sections SET text=?,outline=?,revision=revision+1 WHERE id=?", params![p.text,encoded,p.id]).app()?;
+            }
+            tx.execute("INSERT INTO mirror_pending(id,base) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET base=excluded.base", params![p.id, base]).app()?;
         }
-        let file = root.join("manuscrit").join(format!("{}.md", p.id));
-        if file.exists() && !mir.is_empty() && hash(&fs::read_to_string(&file).app()?) != mir {
-            return Err(format!("EXTERNAL:{}", p.id));
+        let mut saved = Vec::with_capacity(patches.len());
+        {
+            let mut query = tx.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE id=?").app()?;
+            for p in &patches { saved.push(query.query_row([&p.id], row_section).app()?); }
         }
-        let old_outline = raw.map(|json| serde_json::from_str::<Outline>(&json).app()).transpose()?;
-        let next_outline = effective_outline(p, &old, old_outline.clone())?;
-        if old != p.text || old_outline != next_outline {
-            let encoded = next_outline.map(|outline| serde_json::to_string(&outline).app()).transpose()?;
-            tx.execute(
-                "UPDATE sections SET text=?,outline=?,revision=revision+1 WHERE id=?",
-                params![p.text, encoded, p.id],
-            )
-            .app()?;
+        tx.commit().app()?;
+        let mut mirror_errors = Vec::new();
+        for section in &saved {
+            if let Err(message) = before_mirror(section).and_then(|_| mirror(&root_dir, &c, section)) {
+                mirror_errors.push(MirrorError { id: section.id.clone(), message });
+            }
+        }
+        Ok(SaveReport { sections: saved, mirror_errors })
+    })
+}
+fn validate_disk(root: &super::io::Dir, id: &str, old: &str, mirror: &str, pending: Option<&str>) -> Result<String> {
+    let disk = scene_disk(root, id)?;
+    if let Some(text) = &disk {
+        let actual = hash(text);
+        let expected = pending.unwrap_or(mirror);
+        if (!expected.is_empty() && actual != expected && (pending.is_none() || actual != hash(old)))
+            || (pending.is_some() && expected.is_empty() && actual != hash(old)) {
+            return Err(format!("EXTERNAL:{id}"));
         }
     }
-    tx.commit().app()?;
-    let mut all = Vec::new();
-    for p in patches {
-        let mut q = c.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE id=?").app()?;
-        let s = q
-            .query_row([p.id], row_section)
-            .app()?;
-        mirror(root, &c, &s)?;
-        all.push(s);
-    }
-    Ok(all)
+    Ok(disk.map(|text| hash(&text)).unwrap_or_default())
 }
 fn effective_outline(patch: &TextPatch, old_text: &str, old: Option<Outline>) -> Result<Option<Outline>> {
     let next = if let Some(outline) = &patch.outline {
@@ -263,6 +269,7 @@ fn effective_outline(patch: &TextPatch, old_text: &str, old: Option<Outline>) ->
     Ok(next)
 }
 pub fn add(root: &Path, parent: Option<String>, title: &str, kind: &str) -> Result<Vec<Section>> {
+    crate::project::with_lock(root, || {
     if !["folder", "chapter", "scene"].contains(&kind) {
         return Err("Type de section inconnu.".into());
     }
@@ -293,8 +300,10 @@ pub fn add(root: &Path, parent: Option<String>, title: &str, kind: &str) -> Resu
     )
     .app()?;
     sections(&c)
+    })
 }
 pub fn update(root: &Path, s: &Section) -> Result<Vec<Section>> {
+    crate::project::with_lock(root, || {
     let c = database(root)?;
     c.execute(
         "UPDATE sections SET title=?,synopsis=?,status=?,goal=? WHERE id=?",
@@ -302,6 +311,7 @@ pub fn update(root: &Path, s: &Section) -> Result<Vec<Section>> {
     )
     .app()?;
     sections(&c)
+    })
 }
 pub fn reorder(
     root: &Path,
@@ -309,6 +319,7 @@ pub fn reorder(
     id: &str,
     parent: Option<String>,
 ) -> Result<Vec<Section>> {
+    crate::project::with_lock(root, || {
     let mut c = database(root)?;
     let all = sections(&c)?;
     if ids.len() != all.len()
@@ -347,8 +358,10 @@ pub fn reorder(
     .app()?;
     tx.commit().app()?;
     sections(&c)
+    })
 }
 pub fn settings(root: &Path, value: serde_json::Value) -> Result<()> {
+    crate::project::with_lock(root, || {
     database(root)?
         .execute(
             "INSERT OR REPLACE INTO meta VALUES('settings',?)",
@@ -356,62 +369,35 @@ pub fn settings(root: &Path, value: serde_json::Value) -> Result<()> {
         )
         .app()?;
     Ok(())
+    })
 }
-pub fn resolve_external(
-    root: &Path,
-    id: &str,
-    keep_local: bool,
-    pending: Option<String>,
-) -> Result<Project> {
-    let c = database(root)?;
-    let s = sections(&c)?
-        .into_iter()
-        .find(|s| s.id == id)
-        .ok_or("Section introuvable")?;
-    let file = root.join("manuscrit").join(format!("{}.md", s.id));
-    let disk = fs::read_to_string(&file).app()?;
-    // Preserve both versions before resolution, even if the user chooses one.
-    let dir = root.join("recuperation");
-    fs::create_dir_all(&dir).app()?;
-    atomic(
-        &dir.join(format!(
-            "{}-{}.md",
-            s.id,
-            chrono::Utc::now().timestamp_millis()
-        )),
+pub fn resolve_external(root: &Path, id: &str, keep_local: bool, pending: Option<String>) -> Result<Project> {
+    super::with_lock(root, || {
+        super::validate_id(id)?;
+        let root_dir = super::io::Dir::open(root)?;
+        let mut c = database(root)?;
+        let mut s = section(&c, id)?.ok_or("Section introuvable")?;
+        let disk = scene_disk(&root_dir, id)?.ok_or("Miroir introuvable.")?;
+        // Preserve both versions in a verified recovery directory first.
+        let dir = root_dir.child("recuperation", true)?.ok_or("Dossier de récupération inaccessible.")?;
+        dir.write_atomic(&format!("{}-{}.md", s.id, uuid::Uuid::new_v4()), if keep_local { &disk } else { pending.as_deref().unwrap_or(&s.text) })?;
+        let tx = c.transaction_with_behavior(TransactionBehavior::Immediate).app()?;
         if keep_local {
-            &disk
-        } else {
-            pending.as_deref().unwrap_or(&s.text)
-        },
-    )?;
-    if keep_local {
-        let mut s = s;
-        if let Some(text) = pending {
-            if text != s.text {
-                s.outline = None;
+            if let Some(text) = pending {
+                if text != s.text { s.outline = None; }
+                s.text = text;
+                tx.execute("UPDATE sections SET text=?,outline=?,revision=revision+1 WHERE id=?", params![s.text,s.outline.as_ref().map(serde_json::to_string).transpose().app()?,id]).app()?;
             }
-            s.text = text;
-            c.execute(
-                "UPDATE sections SET text=?,outline=?,revision=revision+1 WHERE id=?",
-                params![s.text, s.outline.as_ref().map(serde_json::to_string).transpose().app()?, id],
-            )
-            .app()?;
-        }
-        mirror(root, &c, &s)?
-    } else {
-        let outline = if disk == s.text {
-            s.outline.as_ref().map(serde_json::to_string).transpose().app()?
+            tx.execute("INSERT INTO mirror_pending(id,base) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET base=excluded.base", params![id, hash(&disk)]).app()?;
         } else {
-            None
-        };
-        c.execute(
-            "UPDATE sections SET text=?,outline=?,mirror=?,revision=revision+1 WHERE id=?",
-            params![disk, outline, hash(&disk), id],
-        )
-        .app()?;
-    }
-    load(root)
+            let outline = if disk == s.text { s.outline.as_ref().map(serde_json::to_string).transpose().app()? } else { None };
+            tx.execute("UPDATE sections SET text=?,outline=?,mirror=?,revision=revision+1 WHERE id=?", params![disk,outline,hash(&disk),id]).app()?;
+            tx.execute("DELETE FROM mirror_pending WHERE id=?", [id]).app()?;
+        }
+        tx.commit().app()?;
+        if keep_local { mirror(&root_dir, &c, &s)?; }
+        load_unlocked(root)
+    })
 }
 #[cfg(test)]
 pub fn scene_path(root: &Path, id: &str) -> std::path::PathBuf {
@@ -420,6 +406,80 @@ pub fn scene_path(root: &Path, id: &str) -> std::path::PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn rejects_database_ids_that_escape_the_project() {
+        let parent = tempfile::tempdir().unwrap();
+        let root = parent.path().join("project");
+        let initial = create(&root, "A").unwrap();
+        let witness = parent.path().join("outside.md");
+        std::fs::write(&witness, "witness").unwrap();
+        let c = database(&root).unwrap();
+        c.execute("UPDATE sections SET id='../outside' WHERE id=?", [&initial.sections[0].id]).unwrap();
+        drop(c);
+        assert!(load(&root).is_err());
+        assert_eq!(std::fs::read_to_string(witness).unwrap(), "witness");
+    }
+    #[cfg(unix)]
+    #[test]
+    fn refuses_redirected_internal_paths_and_ignores_predictable_temp_symlink() {
+        use std::os::unix::fs::symlink;
+        let parent = tempfile::tempdir().unwrap();
+        let root = parent.path().join("project");
+        let id = create(&root, "A").unwrap().sections[0].id.clone();
+        let witness = parent.path().join("witness");
+        std::fs::write(&witness, "witness").unwrap();
+        symlink(&witness, root.join("manuscrit").join(format!("{id}.tmp"))).unwrap();
+        save(&root, vec![TextPatch { id: id.clone(), revision: 0, text: "Texte".into(), outline: None }]).unwrap();
+        assert_eq!(std::fs::read_to_string(&witness).unwrap(), "witness");
+        std::fs::rename(root.join("manuscrit"), root.join("old-manuscrit")).unwrap();
+        symlink(parent.path(), root.join("manuscrit")).unwrap();
+        assert!(load(&root).is_err());
+        assert!(save(&root, vec![TextPatch { id, revision: 1, text: "Autre".into(), outline: None }]).is_err());
+        assert_eq!(std::fs::read_to_string(&witness).unwrap(), "witness");
+    }
+    #[test]
+    fn opened_directory_descriptor_survives_a_path_swap_without_following_it() {
+        use std::os::unix::fs::symlink;
+        let d=tempfile::tempdir().unwrap();let root=d.path().join("project");create(&root,"A").unwrap();
+        let outside=d.path().join("outside");fs::create_dir(&outside).unwrap();fs::write(outside.join("test.md"),"witness").unwrap();
+        let directory=super::super::io::Dir::open(&root).unwrap().child("manuscrit",false).unwrap().unwrap();
+        fs::rename(root.join("manuscrit"),root.join("previous")).unwrap();symlink(&outside,root.join("manuscrit")).unwrap();
+        directory.write_atomic("test.md","new").unwrap();
+        assert_eq!(fs::read_to_string(outside.join("test.md")).unwrap(),"witness");
+        assert_eq!(fs::read_to_string(root.join("previous/test.md")).unwrap(),"new");
+    }
+    #[test]
+    fn mirror_failure_acknowledges_commit_and_recovers_on_next_open() {
+        let d = tempfile::tempdir().unwrap();
+        let id = create(d.path(), "A").unwrap().sections[0].id.clone();
+        let report = save_report_with(d.path(), vec![TextPatch { id: id.clone(), revision: 0, text: "Durable".into(), outline: None }], |_| Err("injected mirror error".into())).unwrap();
+        assert_eq!(report.sections[0].revision, 1);
+        assert_eq!(report.mirror_errors.len(), 1);
+        let loaded = load(d.path()).unwrap();
+        assert_eq!(loaded.sections[0].revision, 1);
+        assert_eq!(loaded.sections[0].text, "Durable");
+        assert!(loaded.conflicts.is_empty());
+        assert_eq!(std::fs::read_to_string(scene_path(d.path(), &id)).unwrap(), "Durable");
+        let saved = save(d.path(), vec![TextPatch { id, revision: 1, text: "Suite".into(), outline: None }]).unwrap();
+        assert_eq!(saved[0].revision, 2);
+    }
+    #[test]
+    fn simultaneous_writers_never_leave_mirrors_behind_committed_revision() {
+        let d = tempfile::tempdir().unwrap();
+        let id = create(d.path(), "A").unwrap().sections[0].id.clone();
+        let barrier = std::sync::Arc::new(std::sync::Barrier::new(3));
+        let mut joins = Vec::new();
+        for text in ["un", "deux"] {
+            let root = d.path().to_owned(); let id = id.clone(); let barrier = barrier.clone();
+            joins.push(std::thread::spawn(move || { barrier.wait(); save(&root, vec![TextPatch { id, revision: 0, text: text.into(), outline: None }]) }));
+        }
+        barrier.wait();
+        let results: Vec<_> = joins.into_iter().map(|j| j.join().unwrap()).collect();
+        assert_eq!(results.iter().filter(|r| r.is_ok()).count(), 1);
+        let loaded = load(d.path()).unwrap();
+        assert!(loaded.conflicts.is_empty());
+        assert_eq!(std::fs::read_to_string(scene_path(d.path(), &id)).unwrap(), loaded.sections[0].text);
+    }
     fn outline(nodes: &[(&str, Option<&str>, usize)]) -> Outline {
         Outline {
             version: 1,

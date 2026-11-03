@@ -1,6 +1,6 @@
 import { localizeMessage, t, useLocale } from '../i18n';
 import { useState } from 'react';
-import { open } from '@tauri-apps/plugin-dialog';
+import { choosePath } from '../app/choosePath';
 import { Dialog } from '../components/Dialog';
 import { native, request } from '../app/client';
 import type { Project } from '../app/types';
@@ -32,12 +32,9 @@ export function ImportProject({
     setBusy(true);
     setError('');
     try {
-      const source = await open({
+      const source = await choosePath('import', {
         directory,
         title: directory ? t('Dossier Markdown ou TextBundle') : t('Importer un manuscrit'),
-        ...(!directory
-          ? { filters: [{ name: t('Textes'), extensions: ['md', 'markdown', 'txt', 'docx'] }] }
-          : {}),
       });
       if (typeof source === 'string') setReport(await request<Report>('importPreview', { source }));
     } catch (e) {

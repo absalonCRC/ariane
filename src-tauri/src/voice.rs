@@ -2,10 +2,9 @@ use crate::error::{AppResult, Result};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use serde::Serialize;
 use std::{
-    io::{BufRead, BufReader, Write},
+    io::Write,
     path::Path,
     process::{Child, ChildStdin, Command, Stdio},
-    sync::mpsc::{self, Receiver},
     time::{Duration, Instant},
 };
 
@@ -38,7 +37,7 @@ impl Drop for Process {
 struct VoiceWorker {
     _process: Process,
     input: ChildStdin,
-    output: Receiver<String>,
+    output: crate::worker_output::WorkerOutput,
 }
 
 impl VoiceWorker {
@@ -67,17 +66,7 @@ impl VoiceWorker {
             .stdout
             .take()
             .ok_or("Microphone : sortie du moteur indisponible")?;
-        let (send, output) = mpsc::channel();
-        std::thread::spawn(move || {
-            for line in BufReader::new(stdout)
-                .lines()
-                .map_while(std::result::Result::ok)
-            {
-                if send.send(line).is_err() {
-                    break;
-                }
-            }
-        });
+        let output = crate::worker_output::WorkerOutput::start(stdout, 1024 * 1024, 4);
         Ok(Self {
             _process: process,
             input,
@@ -112,19 +101,29 @@ fn parse_transcript(line: &str) -> Result<String> {
 pub struct VoiceEngine {
     worker: Option<VoiceWorker>,
     used: Option<Instant>,
+    cleanup: Option<CleanupServer>,
 }
 impl VoiceEngine {
     pub fn shutdown(&mut self) {
         self.worker = None;
+        self.cleanup = None;
         self.used = None;
     }
     pub fn shutdown_if_idle(&mut self) {
+        if crate::memory_engine::critical_memory_pressure() || self.cleanup.as_ref().is_some_and(|s|s.used.elapsed()>Duration::from_secs(30)) { self.cleanup=None; }
         if self
             .used
             .is_some_and(|used| used.elapsed() > Duration::from_secs(300))
         {
             self.shutdown();
         }
+    }
+    fn cleanup_text(&mut self, resources: &Path, voice: &Path, raw: &str) -> Result<String> {
+        if self.cleanup.as_mut().is_some_and(|s| crate::local_http::require_alive(&mut s.process.0).is_err()) { self.cleanup=None; }
+        if self.cleanup.is_none() { self.cleanup=Some(CleanupServer::start(resources,voice)?); }
+        let result=self.cleanup.as_mut().unwrap().complete(raw);
+        if result.is_err() || crate::memory_engine::critical_memory_pressure() { self.cleanup=None; }
+        result
     }
     pub fn transcribe(
         &mut self,
@@ -170,7 +169,7 @@ impl VoiceEngine {
         }
         // Cleanup 1 has not been trained on Italian; preserve the transcript in that case.
         let formatted = if !live && matches!(language, "fr" | "en" | "de" | "es") {
-            cleanup(resources, &data.join("voice"), &raw)
+            self.cleanup_text(resources, &data.join("voice"), &raw)
                 .ok()
                 .filter(|s| plausible_cleanup(&raw, s))
         } else {
@@ -208,12 +207,14 @@ fn plausible_cleanup(raw: &str, cleaned: &str) -> bool {
     shared * 2 >= result.len() && shared * 3 >= original.len()
 }
 
-fn cleanup(resources: &Path, voice: &Path, raw: &str) -> Result<String> {
+struct CleanupServer { process: Process, client: reqwest::blocking::Client, url: String, key: String, used: Instant }
+impl CleanupServer {
+fn start(resources: &Path, voice: &Path) -> Result<Self> {
     let socket = std::net::TcpListener::bind("127.0.0.1:0").app()?;
     let port = socket.local_addr().app()?.port();
     drop(socket);
     let key = uuid::Uuid::new_v4().to_string();
-    let _server = Process(
+    let mut process = Process(
         Command::new(resources.join("engine/llama-server"))
             .arg("-m")
             .arg(voice.join("models/cleanup-1-q8_0.gguf"))
@@ -235,14 +236,13 @@ fn cleanup(resources: &Path, voice: &Path, raw: &str) -> Result<String> {
             .spawn()
             .app()?,
     );
-    let client = reqwest::blocking::Client::builder()
-        .timeout(Duration::from_secs(90))
-        .build()
-        .app()?;
+    let client = crate::local_http::client(90)?;
+    let health = crate::local_http::client(1)?;
     let url = format!("http://127.0.0.1:{port}");
     let start = Instant::now();
     loop {
-        if client
+        crate::local_http::require_alive(&mut process.0)?;
+        if health
             .get(format!("{url}/health"))
             .send()
             .is_ok_and(|r| r.status().is_success())
@@ -254,10 +254,16 @@ fn cleanup(resources: &Path, voice: &Path, raw: &str) -> Result<String> {
         }
         std::thread::sleep(Duration::from_millis(150));
     }
+    Ok(Self { process, client, url, key, used: Instant::now() })
+}
+fn complete(&mut self, raw: &str) -> Result<String> {
+    crate::local_http::require_alive(&mut self.process.0)?;
     let prompt = format!("tone: formal\ntext: {}\nout:", raw.replace('\n', " "));
-    let response: serde_json::Value = client.post(format!("{url}/completion"))
-        .bearer_auth(key).json(&serde_json::json!({"prompt": prompt, "temperature": 0, "n_predict": 1024, "stop": ["<|endoftext|>", "<|im_end|>"]}))
-        .send().app()?.error_for_status().app()?.json().app()?;
+    let response = crate::local_http::json(self.client.post(format!("{}/completion",self.url))
+        .bearer_auth(&self.key).json(&serde_json::json!({"prompt": prompt, "temperature": 0, "n_predict": 1024, "stop": ["<|endoftext|>", "<|im_end|>"]}))
+        .send().app()?)?;
+    crate::local_http::require_alive(&mut self.process.0)?;
+    self.used=Instant::now();
     if response["stopped_limit"].as_bool() == Some(true) {
         return Err("Mise au propre incomplète".into());
     }
@@ -266,6 +272,7 @@ fn cleanup(resources: &Path, voice: &Path, raw: &str) -> Result<String> {
         .ok_or("Mise au propre invalide")?
         .trim()
         .to_owned())
+}
 }
 
 #[cfg(test)]

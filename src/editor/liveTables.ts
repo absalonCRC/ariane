@@ -135,6 +135,7 @@ class TableWidget extends WidgetType {
   }
 
   eq(other: TableWidget) {
+    if (other === this) return true;
     return (
       other.locale === this.locale &&
       other.from === this.from &&
@@ -494,7 +495,10 @@ export function focusTableCell(view: EditorView, position: number) {
   return false;
 }
 
-function tables(state: EditorState): DecorationSet {
+function tables(
+  state: EditorState,
+  reusable = new Map<number, { to: number; widget: TableWidget }>(),
+): DecorationSet {
   const decorations: ReturnType<Decoration['range']>[] = [];
   const hidden = state.facet(tableHiddenRanges).flatMap((getRanges) => getRanges(state));
   syntaxTree(state).iterate({
@@ -503,6 +507,13 @@ function tables(state: EditorState): DecorationSet {
       const from = state.doc.lineAt(node.from).from,
         { to } = node;
       if (hidden.some((range) => range.from < to && range.to > from)) return false;
+      const cached = reusable.get(from);
+      if (cached?.to === to) {
+        decorations.push(
+          Decoration.replace({ widget: cached.widget, block: true }).range(from, to),
+        );
+        return false;
+      }
       const rows = node.node.getChildren('TableHeader').concat(node.node.getChildren('TableRow'));
       const separator = node.node.getChild('TableDelimiter');
       if (!separator || !rows.length) return false;
@@ -531,7 +542,7 @@ function tables(state: EditorState): DecorationSet {
 }
 
 export const liveTables = StateField.define<DecorationSet>({
-  create: tables,
+  create: (state) => tables(state),
   update(value, transaction) {
     const providers = transaction.state.facet(tableHiddenRanges);
     const hiddenChanged = providers.some((getRanges) => {
@@ -544,10 +555,46 @@ export const liveTables = StateField.define<DecorationSet>({
         )
       );
     });
-    return transaction.reconfigured ||
-      transaction.docChanged ||
-      hiddenChanged ||
-      syntaxTree(transaction.startState) !== syntaxTree(transaction.state)
+    if (transaction.reconfigured || hiddenChanged) return tables(transaction.state);
+    if (transaction.docChanged) {
+      const reusable = new Map<number, { to: number; widget: TableWidget }>();
+      value.between(0, transaction.startState.doc.length, (from, to, decoration) => {
+        const widget = decoration.spec.widget as TableWidget;
+        let touched = false;
+        transaction.changes.iterChangedRanges((a, b) => {
+          if (a <= to && b >= from) touched = true;
+        });
+        if (touched) return;
+        const nextFrom = transaction.changes.mapPos(from, 1),
+          nextTo = transaction.changes.mapPos(to, -1);
+        const delta = nextFrom - from;
+        // Untouched block coordinates move uniformly; source text and parsed
+        // cell boundaries remain valid. Lezer still verifies block membership.
+        const shifted =
+          delta === 0
+            ? widget
+            : new TableWidget(
+                widget.source,
+                nextFrom,
+                nextTo,
+                widget.rows.map((row) => ({
+                  ...row,
+                  start: row.start + delta,
+                  end: row.end + delta,
+                  cells: row.cells.map((cell) => ({
+                    ...cell,
+                    from: cell.from + delta,
+                    to: cell.to + delta,
+                  })),
+                })),
+                { from: widget.separator.from + delta, to: widget.separator.to + delta },
+                widget.quoted,
+              );
+        reusable.set(nextFrom, { to: nextTo, widget: shifted });
+      });
+      return tables(transaction.state, reusable);
+    }
+    return syntaxTree(transaction.startState) !== syntaxTree(transaction.state)
       ? tables(transaction.state)
       : value;
   },

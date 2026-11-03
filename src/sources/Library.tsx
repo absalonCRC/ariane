@@ -3,7 +3,7 @@ import { AnimatedDetails } from '../components/AnimatedDetails';
 import { Presence } from '../components/Presence';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Plus, RefreshCw, FolderOpen, Pause, X } from 'lucide-react';
-import { open } from '@tauri-apps/plugin-dialog';
+import { choosePath } from '../app/choosePath';
 import { listen } from '@tauri-apps/api/event';
 import { request, native } from '../app/client';
 import type { Vault } from '../app/types';
@@ -96,8 +96,7 @@ export function Library({
     try {
       if (!native)
         throw new Error(t('Connectez vos dossiers de sources depuis l’application macOS.'));
-      const path = await open({
-        directory: true,
+      const path = await choosePath('vault', {
         title: t('Choisir un dossier de sources (vault Obsidian)'),
       });
       if (typeof path === 'string') {

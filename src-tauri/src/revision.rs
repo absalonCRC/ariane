@@ -39,13 +39,7 @@ pub struct Issue {
     message: String,
     replacements: Vec<String>,
 }
-fn client(seconds: u64) -> Result<reqwest::blocking::Client> {
-    reqwest::blocking::Client::builder()
-        .no_proxy()
-        .timeout(Duration::from_secs(seconds))
-        .build()
-        .app()
-}
+use crate::local_http::client;
 fn port() -> Result<u16> {
     let listener = std::net::TcpListener::bind("127.0.0.1:0").app()?;
     Ok(listener.local_addr().app()?.port())
@@ -87,7 +81,7 @@ impl RevisionEngine {
             self.shutdown();
         }
     }
-    fn language(&mut self, root: &Path) -> Result<&Server> {
+    fn language(&mut self, root: &Path) -> Result<&mut Server> {
         if !alive(&mut self.language) {
             self.language = None;
             let port = port()?;
@@ -120,10 +114,10 @@ impl RevisionEngine {
             )?);
         }
         self.language
-            .as_ref()
+            .as_mut()
             .ok_or_else(|| "LanguageTool indisponible.".into())
     }
-    fn model(&mut self, root: &Path, resources: &Path) -> Result<&Server> {
+    fn model(&mut self, root: &Path, resources: &Path) -> Result<&mut Server> {
         if !alive(&mut self.model) {
             self.model = None;
             let model = root.join("salamandra-q8.gguf");
@@ -166,7 +160,7 @@ impl RevisionEngine {
             )?);
         }
         self.model
-            .as_ref()
+            .as_mut()
             .ok_or_else(|| "Modèle local indisponible.".into())
     }
     pub fn check(
@@ -189,23 +183,23 @@ impl RevisionEngine {
         }
         let root = data.join("revision");
         let language_result = self.language(&root).and_then(|s| {
-            let v: Value = client(40)?
+            crate::local_http::require_alive(&mut s.child)?;
+            let v = crate::local_http::json(client(40)?
                 .post(format!("http://127.0.0.1:{}/v2/check", s.port))
                 .form(&[("language", lt_language), ("text", text)])
                 .send()
-                .app()?
-                .error_for_status()
-                .app()?
-                .json()
-                .app()?;
+                .app()?)?;
+            crate::local_http::require_alive(&mut s.child)?;
             parse_issues(&v)
         });
         let model_result = self.model(&root, resources).and_then(|s| {
             let prompt = format!("Please fix any mistakes in the following {name} sentence or keep it unedited if it's correct.\nSentence: {text}\nCorrected:");
-            let v: Value = client(90)?.post(format!("http://127.0.0.1:{}/v1/chat/completions", s.port))
+            crate::local_http::require_alive(&mut s.child)?;
+            let v = crate::local_http::json(client(90)?.post(format!("http://127.0.0.1:{}/v1/chat/completions", s.port))
                 .bearer_auth(s.key.as_deref().unwrap_or_default())
                 .json(&json!({"model":"salamandra","messages":[{"role":"user","content":prompt}],"temperature":0,"max_tokens":512}))
-                .send().app()?.error_for_status().app()?.json().app()?;
+                .send().app()?)?;
+            crate::local_http::require_alive(&mut s.child)?;
             parse_model(&v)
         });
         let (issues, language_error) = match language_result {

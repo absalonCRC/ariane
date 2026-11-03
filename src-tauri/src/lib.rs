@@ -1,4 +1,11 @@
 mod api;
+mod ipc;
+mod path_grants;
+mod source_files;
+mod local_http;
+mod worker_output;
+mod yaml;
+mod vectors;
 mod error;
 mod enrichment;
 mod export;
@@ -21,6 +28,12 @@ use tauri::{Emitter, Manager};
 pub fn run() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .register_asynchronous_uri_scheme_protocol("source-file", |context, request, responder| {
+            static READS: std::sync::LazyLock<std::sync::Arc<tokio::sync::Semaphore>> = std::sync::LazyLock::new(|| std::sync::Arc::new(tokio::sync::Semaphore::new(2)));
+            let Ok(permit)=READS.clone().try_acquire_owned() else {responder.respond(tauri::http::Response::builder().status(503).body(Vec::<u8>::new()).unwrap());return;};
+            let app=context.app_handle().clone();
+            tauri::async_runtime::spawn_blocking(move || {let _permit=permit;let state=app.state::<api::AppState>();responder.respond(state.source_files.respond(&state,request));});
+        })
         .menu(platform::menu)
         .on_menu_event(|app, event| {
             if event.id().as_ref() == "quit-after-save" {
@@ -43,6 +56,9 @@ pub fn run() {
                 data,
                 resources,
                 current: std::sync::Mutex::new(None),
+                source_files: Default::default(),
+                grants: Default::default(),
+                project_guard: Default::default(),
                 engine: Default::default(),
                 revision: Default::default(),
                 voice: Default::default(),
@@ -61,7 +77,14 @@ pub fn run() {
             std::thread::spawn(move || loop {
                 std::thread::sleep(std::time::Duration::from_secs(60));
                 let state = handle.state::<api::AppState>();
+                if state.exit_approved.load(std::sync::atomic::Ordering::Relaxed) { break; }
                 let _ = api::handle(&handle, &state, api::Request::Scan);
+            });
+            let handle = app.handle().clone();
+            std::thread::spawn(move || loop {
+                std::thread::sleep(std::time::Duration::from_secs(15));
+                let state = handle.state::<api::AppState>();
+                if state.exit_approved.load(std::sync::atomic::Ordering::Relaxed) { break; }
                 retrieval::release_if_idle();
                 if let Ok(mut engine) = state.engine.try_lock() {
                     engine.shutdown_if_idle();
@@ -79,9 +102,9 @@ pub fn run() {
             Ok(())
         });
     #[cfg(feature = "performance-harness")]
-    let builder = builder.invoke_handler(tauri::generate_handler![api::dispatch, performance::performance]);
+    let builder = builder.invoke_handler(tauri::generate_handler![api::dispatch, path_grants::choose_path, performance::performance]);
     #[cfg(not(feature = "performance-harness"))]
-    let builder = builder.invoke_handler(tauri::generate_handler![api::dispatch]);
+    let builder = builder.invoke_handler(tauri::generate_handler![api::dispatch, path_grants::choose_path]);
     let application = builder
         .build(tauri::generate_context!())
         .expect("Impossible de démarrer Ariane");

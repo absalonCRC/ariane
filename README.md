@@ -6,7 +6,7 @@
   <p><strong>Keep the human thread.</strong></p>
   <p>A quiet, local space for your manuscript and the knowledge around it.</p>
   <p>English · Français · Español</p>
-  <p><a href="#a-page-with-room-to-think">Discover Ariane</a> · <a href="#see-ariane-in-action">Watch the film</a> · <a href="#try-the-alpha">Try the alpha</a></p>
+  <p><a href="#a-page-with-room-to-think">Discover Ariane</a> · <a href="#see-ariane-in-action">Watch the film</a> · <a href="#try-ariane">Try Ariane</a></p>
 </div>
 
 [![Ariane’s writing page with the sidebar closed, literary typography and discreet source mentions in the margin](docs/media/writing.jpg)](docs/media/writing.jpg)
@@ -106,11 +106,11 @@ Optional local modules add entity detection, dictation and revision assistance. 
 
 Ariane is for novels, essays, documented narratives, theses and any long-form work that grows alongside research. It also works as a quiet place to write with no connected vault.
 
-## Try the alpha
+## Try Ariane
 
-**Ariane 0.2.0-alpha.1 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
+**Ariane 0.2.1 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
 
-There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Browse the source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md)
+There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.2.1 development notes](docs/release-notes-0.2.1.md)
 
 <details>
 <summary>Build from source</summary>
@@ -145,7 +145,7 @@ These experimental modules are installed in Ariane’s local application data. B
 ### Current limits
 
 - Back up **the entire project folder with the application closed**. Built-in history does not replace an independent backup.
-- The alpha has no remote sync, OCR, Windows, Linux or Intel Mac build.
+- Ariane has no remote sync, OCR, Windows, Linux or Intel Mac build.
 - Forced termination at every write stage, low-disk-space handling and every Word rendering scenario are not fully qualified yet.
 - PDF, Word and EPUB exports support images local to the project. Remote resources, escaping symlinks and raw HTML, TeX or Typst fragments are rejected. Markdown export preserves the text.
 

@@ -1,4 +1,10 @@
 mod storage;
+pub(crate) mod tree;
+mod io;
+mod guard;
+pub use guard::ProjectGuard;
+pub(crate) use guard::with_lock;
+pub(crate) use io::validate_id;
 pub mod library;
 mod outline;
 pub use storage::*;

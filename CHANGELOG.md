@@ -1,5 +1,16 @@
 # Journal des changements
 
+## 0.2.1 — 2026-11-03, non publiée
+
+- Sauvegarde : chemins internes vérifiés, fichiers temporaires exclusifs, verrou de projet, accusé SQLite distinct des erreurs de miroir et reprise persistante.
+- Accès natif : permissions explicites, chemins accordés par dialogue, capacité réservée aux sauvegardes et sorties de moteurs bornées.
+- Recherche : worker pour le manuscrit, cache de normalisation, indexation incrémentale et publication textuelle avant les calculs sémantiques.
+- Sources : pagination Markdown et SQL, protocole binaire à jetons pour PDF/images, vecteurs binaires et recherche au-delà du budget de cache sans charger tous les vecteurs.
+- Édition et dictée : réutilisation des tableaux inchangés, remappage réduit du plan, AudioWorklet et encodage déporté, réutilisation brève du moteur de mise au propre.
+- Distribution : polices WOFF2, zip 9, YAML borné, installations Python vérifiées en staging et audits de dépendances en CI.
+
+Voir [les détails et limites de validation](docs/release-notes-0.2.1.md).
+
 ## 0.2.0-alpha.1 — 2026-11-02, version de développement
 
 - Interface disponible en français, anglais et espagnol, avec choix de langue mémorisé.

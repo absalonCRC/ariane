@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use super::*;
 use serde::{Deserialize, Serialize};
 
@@ -130,14 +131,14 @@ pub fn apply_note_type(
     else {
         return Ok(None);
     };
-    let mut fields: serde_yaml::Mapping = serde_yaml::from_str(yaml).app()?;
+    let mut fields: serde_json::Map<String, serde_json::Value> = crate::yaml::from_str(yaml).app()?;
     fields.insert(
-        serde_yaml::Value::String("type".into()),
-        serde_yaml::Value::String(kind.into()),
+        "type".into(),
+        serde_json::Value::String(kind.into()),
     );
     let updated = format!(
         "---\n{}---{}",
-        serde_yaml::to_string(&fields)
+        serde_saphyr::to_string(&fields)
             .app()?
             .trim_start_matches("---\n"),
         body

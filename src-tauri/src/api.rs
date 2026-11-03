@@ -19,6 +19,9 @@ pub struct AppState {
     pub data: PathBuf,
     pub resources: PathBuf,
     pub current: Mutex<Option<PathBuf>>,
+    pub source_files: crate::source_files::Files,
+    pub grants: crate::path_grants::Grants,
+    pub project_guard: Mutex<Option<std::sync::Arc<project::ProjectGuard>>>,
     pub engine: Mutex<Engine>,
     pub revision: Mutex<RevisionEngine>,
     pub voice: Mutex<voice::VoiceEngine>,
@@ -130,7 +133,7 @@ pub enum Request {
     SourceFile {
         id: String,
     },
-    Versions,
+    Versions { #[serde(default)] offset: usize },
     Version {
         id: String,
     },
@@ -215,9 +218,12 @@ fn activate(state: &AppState, path: &Path) -> Result<Project> {
         return Err("Ce dossier ne contient pas de projet Ariane.".into());
     }
     let path = &path.canonicalize().app()?;
+    let mut current = state.current.lock().map_err(|e| e.to_string())?;
+    let mut held = state.project_guard.lock().map_err(|e| e.to_string())?;
+    let guard = if current.as_ref() == Some(path) { held.clone() } else { None }
+        .map(Ok).unwrap_or_else(|| project::ProjectGuard::acquire(path).map(std::sync::Arc::new))?;
     let p = project::load(path)?;
     project::catalog::remember(&state.data, path, &p.name)?;
-    let mut current = state.current.lock().map_err(|e| e.to_string())?;
     let mut session = tempfile::NamedTempFile::new_in(&state.data).app()?;
     use std::io::Write;
     session.write_all(json!({"path":path}).to_string().as_bytes()).app()?;
@@ -225,6 +231,7 @@ fn activate(state: &AppState, path: &Path) -> Result<Project> {
     session.persist(state.data.join("session.json")).map_err(|e| e.to_string())?;
     state.memory_activity.writing(true);
     state.memory_activity.cancel_entities();
+    *held = Some(guard);
     *current = Some(path.to_owned());
     Ok(p)
 }
@@ -241,7 +248,7 @@ pub fn handle(
             app.set_menu(crate::platform::menu_for_language(app, &value).app()?).app()?;
             Ok(json!(true))
         }
-        Request::ImportPreview { source } => json(crate::import::preview(&state.resources, Path::new(&source))?),
+        Request::ImportPreview { source } => { state.grants.require("import",Path::new(&source))?; json(crate::import::preview(&state.resources, Path::new(&source))?) },
         Request::Projects => json(project::catalog::list(&state.data)?),
         Request::ProjectCatalog { path, pinned, archived } => json(project::catalog::update(&state.data, &path, pinned, archived)?),
         Request::MemoryActivity { active } => { state.memory_activity.writing(active); Ok(json!(true)) }
@@ -252,9 +259,7 @@ pub fn handle(
                 if let Ok(v) = serde_json::from_str::<serde_json::Value>(&text) {
                     if let Some(path) = v["path"].as_str() {
                         let path = Path::new(path).canonicalize().app()?;
-                        let project = project::load(&path)?;
-                        project::catalog::remember(&state.data, &path, &project.name)?;
-                        *state.current.lock().map_err(|e| e.to_string())? = Some(path.to_owned());
+                        let project = activate(state, &path)?;
                         return json(project);
                     }
                 }
@@ -262,6 +267,8 @@ pub fn handle(
             Ok(serde_json::Value::Null)
         }
         Request::Create { path, name, vault_path, initial_title } => {
+            state.grants.require("create",Path::new(&path))?;
+            if let Some(vault) = &vault_path { state.grants.require("vault",Path::new(vault))?; }
             let root = Path::new(&path);
             vaults::create_project(root, &name, vault_path.as_deref().map(Path::new))?;
             if let Some(title) = initial_title.filter(|title| !title.trim().is_empty()) {
@@ -272,7 +279,12 @@ pub fn handle(
             }
             json(activate(state, root)?)
         }
-        Request::Open { path } => json(activate(state, Path::new(&path))?),
+        Request::Open { path } => {
+            let target=Path::new(&path).canonicalize().app()?;
+            let known=project::catalog::list(&state.data)?.iter().any(|p|Path::new(&p.path)==target);
+            if !known {state.grants.require("open",&target)?;}
+            json(activate(state,&target)?)
+        },
         Request::EngineStatus => Ok(
             json!({"available":state.resources.join("models/embeddinggemma-300M-Q8_0.gguf").exists()&&state.resources.join("engine/llama-server").exists(),"model":"EmbeddingGemma 300M · Q8","local":true}),
         ),
@@ -311,7 +323,13 @@ pub fn handle(
             Ok(json!(true))
         }
         other => {
-            let root = root(state)?;
+            // Retain the OS lock for the entire operation, even when another
+            // request switches the active project during background work.
+            let (root, _held) = {
+                let current = state.current.lock().map_err(|e| e.to_string())?;
+                let held = state.project_guard.lock().map_err(|e| e.to_string())?.clone();
+                (current.clone().ok_or("Ouvrez un projet pour continuer.")?, held)
+            };
             match other {
                 Request::Annotations { project_path } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
@@ -331,6 +349,7 @@ pub fn handle(
                 }
                 Request::ImportIntoProject { source, project_path } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
+                    state.grants.require("import",Path::new(&source))?;
                     let report = crate::import::import_into(&root, &state.resources, Path::new(&source))?;
                     Ok(json!({"project":project::load(&root)?,"report":report}))
                 }
@@ -458,13 +477,8 @@ pub fn handle(
                 }
                 Request::Save { patches } => {
                     state.memory_activity.writing(true);
-                    let ids: Vec<_> = patches.iter().map(|p| p.id.clone()).collect();
-                    let saved = project::save(&root, patches)?;
-                    Ok(json!(saved
-                        .iter()
-                        .filter(|s| ids.contains(&s.id))
-                        .map(|s| json!({"id":s.id,"revision":s.revision}))
-                        .collect::<Vec<_>>()))
+                    let report = project::save_report(&root, patches)?;
+                    Ok(json!({"sections":report.sections.iter().map(|s| json!({"id":s.id,"revision":s.revision})).collect::<Vec<_>>(),"mirrorErrors":report.mirror_errors}))
                 }
                 Request::Add { parent, title, kind, role } => json(project::library::apply(&root, project::library::Operation { action: "add".into(), ids: vec![], target: parent, placement: None, role, title: Some(title), kind: Some(kind), included: None })?.sections),
                 Request::Update { section } => json(project::update(&root, &section)?),
@@ -484,6 +498,7 @@ pub fn handle(
                 } => json(project::resolve_external(&root, &id, keep_local, pending)?),
                 Request::Vaults => json(vaults::list(&root, &index)?),
                 Request::ConnectVault { path } => {
+                    state.grants.require("vault",Path::new(&path))?;
                     vaults::connect(&root, Path::new(&path))?;
                     json(vaults::list(&root, &index)?)
                 }
@@ -557,12 +572,13 @@ pub fn handle(
                         return Err("Une indexation est déjà en cours.".into());
                     }
                     state.cancel.store(false, Ordering::Relaxed);
-                    let result = vaults::index(
+                    let result = vaults::index_with_activity(
                         &root,
                         &index,
                         &state.resources,
                         &state.engine,
                         &state.cancel,
+                        &state.memory_activity,
                         |p| {
                             let _ = app.emit("index-progress", p);
                         },
@@ -610,36 +626,14 @@ pub fn handle(
                     enrichment::decorate(&root, &index, &mut sources)?;
                     json(sources.remove(0))
                 }
-                Request::SourceFile { id } => {
-                    use base64::Engine;
-                    let path = vaults::file(&index, &id, &vaults::list(&root, &index)?)?;
-                    let bytes = std::fs::read(&path).app()?;
-                    if bytes.len() > 100_000_000 {
-                        return Err("Le fichier dépasse 100 Mo".into());
-                    }
-                    let ext = path
-                        .extension()
-                        .unwrap_or_default()
-                        .to_string_lossy()
-                        .to_lowercase();
-                    let mime = match ext.as_str() {
-                        "pdf" => "application/pdf",
-                        "png" => "image/png",
-                        "jpg" | "jpeg" => "image/jpeg",
-                        "webp" => "image/webp",
-                        _ => "text/plain",
-                    };
-                    Ok(
-                        json!({"mime":mime,"data":base64::engine::general_purpose::STANDARD.encode(bytes)}),
-                    )
-                }
+                Request::SourceFile { id } => state.source_files.grant(state,&root,&id),
                 Request::Associate {
                     section,
                     id,
                     payload,
                 } => json(project::links::associate(&root, &section, &id, payload)?),
                 Request::Links { section } => json(project::links::links(&root, &section)?),
-                Request::Versions => json(history::list(&root)?),
+                Request::Versions { offset } => json(history::list_page(&root, offset)?),
                 Request::Version { id } => json(history::get(&root, &id)?),
                 Request::Capture { name, scope } => json(history::capture(&root, &name, scope)?),
                 Request::Restore { id } => json(history::restore(&root, &id)?),
@@ -648,6 +642,7 @@ pub fn handle(
                     format,
                     scope,
                 } => {
+                    state.grants.require("export",Path::new(&path))?;
                     if state.exporting.swap(true, Ordering::SeqCst) {
                         return Err("Un export est déjà en cours.".into());
                     }
@@ -678,9 +673,13 @@ pub fn handle(
     }
 }
 #[tauri::command]
-pub async fn dispatch(app: tauri::AppHandle, request: Request) -> Result<serde_json::Value> {
+pub async fn dispatch(app: tauri::AppHandle, request: serde_json::Value) -> Result<serde_json::Value> {
+    crate::ipc::validate(&request)?;
+    let permit=crate::ipc::admit(request["type"].as_str().ok_or("Commande invalide")?).await?;
+    let request: Request=serde_json::from_value(request).app()?;
     let app2 = app.clone();
     tauri::async_runtime::spawn_blocking(move || {
+        let _permit=permit;
         let state = app2.state::<AppState>();
         handle(&app2, &state, request)
     })
@@ -709,7 +708,7 @@ mod tests {
         std::fs::create_dir_all(data.join("session.json")).unwrap();
         let state = AppState {
             data, resources: temp.path().join("resources"), current: Mutex::new(Some(old.clone())),
-            engine: Default::default(), revision: Default::default(), voice: Default::default(),
+            source_files: Default::default(), grants: Default::default(), project_guard: Default::default(), engine: Default::default(), revision: Default::default(), voice: Default::default(),
             enriching: Default::default(), memory_activity: Default::default(),
             memory_job: Default::default(), entity_engine: Default::default(),
             indexing: false.into(), cancel: false.into(), paused: false.into(),

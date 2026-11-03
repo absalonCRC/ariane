@@ -1,4 +1,4 @@
-use crate::error::{AppResult, Result};
+use crate::{error::{AppResult, Result}, local_http};
 use std::{
     path::Path,
     process::{Child, Command, Stdio},
@@ -55,6 +55,8 @@ impl Engine {
             let _ = child.kill();
             let _ = child.wait();
         }
+        self.client = None;
+        self.last_used = None;
     }
     pub fn ensure(&mut self, resources: &Path) -> Result<()> {
         if let Some(c) = &mut self.child {
@@ -62,6 +64,8 @@ impl Engine {
                 return Ok(());
             }
         }
+        self.shutdown();
+        self.key = uuid::Uuid::new_v4().to_string();
         let model = resources.join("models/embeddinggemma-300M-Q8_0.gguf");
         let bin = resources.join("engine/llama-server");
         if !model.is_file() || !bin.is_file() {
@@ -102,19 +106,23 @@ impl Engine {
                 .app()?,
         );
         let start = Instant::now();
-        let c = reqwest::blocking::Client::builder()
-            .timeout(Duration::from_secs(1))
-            .build()
-            .app()?;
+        let c = local_http::client(1)?;
         while start.elapsed() < Duration::from_secs(45) {
+            if let Err(error) = local_http::require_alive(self.child.as_mut().ok_or("Moteur arrêté")?) {
+                self.shutdown();
+                return Err(error);
+            }
             if c.get(format!("http://127.0.0.1:{}/health", self.port))
+                .bearer_auth(&self.key)
                 .send()
                 .is_ok_and(|r| r.status().is_success())
             {
+                local_http::require_alive(self.child.as_mut().ok_or("Moteur arrêté")?)?;
                 return Ok(());
             }
             std::thread::sleep(Duration::from_millis(100));
         }
+        self.shutdown();
         Err("Le modèle local n’a pas démarré dans le délai prévu.".into())
     }
     pub fn embed(&mut self, resources: &Path, text: &str, query: bool) -> Result<Vec<f32>> {
@@ -145,32 +153,24 @@ impl Engine {
         Ok((!interrupted()).then(|| sum.into_iter().map(|x| (x / norm) as f32).collect()))
     }
     fn embed_one(&mut self, resources: &Path, text: &str, query: bool) -> Result<Vec<f32>> {
-        self.last_used = Some(Instant::now());
         self.ensure(resources)?;
+        self.last_used = Some(Instant::now());
         let prefix = if query {
             "task: search result | query: "
         } else {
             "title: none | text: "
         };
         if self.client.is_none() {
-            self.client = Some(
-                reqwest::blocking::Client::builder()
-                    .timeout(Duration::from_secs(30))
-                    .build()
-                    .app()?,
-            );
+            self.client = Some(local_http::client(30)?);
         }
         let c = self.client.as_ref().unwrap();
-        let v: serde_json::Value = c
+        local_http::require_alive(self.child.as_mut().ok_or("Moteur arrêté")?)?;
+        let v = local_http::json(c
             .post(format!("http://127.0.0.1:{}/v1/embeddings", self.port))
             .bearer_auth(&self.key)
             .json(&serde_json::json!({"input":format!("{prefix}{text}"),"model":MODEL_ID}))
-            .send()
-            .app()?
-            .error_for_status()
-            .app()?
-            .json()
-            .app()?;
+            .send().app()?)?;
+        local_http::require_alive(self.child.as_mut().ok_or("Moteur arrêté")?)?;
         let values = v["data"][0]["embedding"]
             .as_array()
             .ok_or("Vecteur local invalide")?;

@@ -5,8 +5,7 @@ import type { SourceOccurrence } from './occurrences';
 import type { Section } from '../app/types';
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { ProgressiveMarkdown } from './ProgressiveMarkdown';
 import type { Source } from '../app/types';
 import { request } from '../app/client';
 import { useContextMenu } from '../components/ContextMenu';
@@ -55,21 +54,21 @@ export function Reader({
   const [error, setError] = useState('');
   useEffect(() => {
     let alive = true;
-    let blobUrl = '';
+    setUrl('');
+    setError('');
     if (['PDF', 'Image'].includes(s.kind))
-      void request<{ data: string; mime: string }>('sourceFile', { id: s.id })
+      void request<{ url: string; mime: string }>('sourceFile', { id: s.id })
         .then((f) => {
           if (!alive) return;
-          const bytes = Uint8Array.from(atob(f.data), (c) => c.charCodeAt(0));
-          blobUrl = URL.createObjectURL(new Blob([bytes], { type: f.mime }));
-          setUrl(blobUrl);
+          setUrl(f.url);
         })
-        .catch((e) => setError(String(e)));
+        .catch((e) => {
+          if (alive) setError(String(e));
+        });
     return () => {
       alive = false;
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
     };
-  }, [s.id]);
+  }, [s.id, projectPath]);
   return (
     <aside
       ref={panel}
@@ -113,16 +112,7 @@ export function Reader({
           url && <img className="attachment" alt={s.title} src={url} />
         ) : (
           <div className="read-prose">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              skipHtml
-              components={{
-                img: () => null,
-                a: ({ children }) => <span className="source-link">{children}</span>,
-              }}
-            >
-              {s.text}
-            </ReactMarkdown>
+            <ProgressiveMarkdown text={s.text} excerpt={s.selectedExcerpt} />
           </div>
         )}
         {fields.length > 0 && (

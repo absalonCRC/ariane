@@ -160,7 +160,12 @@ export function useWorkspace() {
     fail,
   );
   const p = doc.project;
-  const unifiedSearch = useUnifiedSearch(p, searching ? searchQuery : '', sourceVersion);
+  const unifiedSearch = useUnifiedSearch(
+    p,
+    searching ? searchQuery : '',
+    sourceVersion,
+    doc.subscribeEdits,
+  );
   const active = p?.sections.some((s) => s.id === doc.settings.active)
     ? doc.settings.active
     : p?.sections.find((s) => s.kind === 'scene')?.id || null;

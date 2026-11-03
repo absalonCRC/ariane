@@ -43,6 +43,7 @@ pub fn preview(_resources: &Path, source: &Path) -> Result<ImportReport> {
 }
 
 pub fn import_into(root: &Path, resources: &Path, source: &Path) -> Result<ImportReport> {
+    crate::project::with_lock(root, || {
     if !root.join("ariane.sqlite").is_file() { return Err("Ouvrez un projet avant d’importer des textes.".into()); }
     let inventory = inspect(source)?;
     let stage = tempfile::tempdir().app()?;
@@ -105,6 +106,7 @@ pub fn import_into(root: &Path, resources: &Path, source: &Path) -> Result<Impor
     result.copied_files = inventory.files.iter().filter(|p|image_asset(p)).count();
     warnings.sort(); warnings.dedup(); result.warnings = warnings;
     Ok(result)
+    })
 }
 fn image_asset(path: &Path) -> bool {
     path.extension().is_some_and(|ext|matches!(ext.to_string_lossy().to_ascii_lowercase().as_str(),"png"|"jpg"|"jpeg"|"gif"|"webp"|"svg"|"avif"|"bmp"))
@@ -231,7 +233,8 @@ fn convert_docx(resources: &Path, input: &Path, stage: &Path, warnings: &mut Vec
     if archive.len() > 500 { return Err("DOCX trop complexe : plus de 500 éléments.".into()); }
     let mut sum = 0u64;
     for file in archive.file_names() {
-        let path = Path::new(file);
+        let file = file.app()?;
+        let path = Path::new(file.as_ref());
         if path.is_absolute() || path.components().any(|c| !matches!(c, Component::Normal(_))) {
             return Err("DOCX contient un chemin d’archive dangereux.".into());
         }
