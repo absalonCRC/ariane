@@ -1,7 +1,7 @@
 import type { Source } from '../app/types';
 
 export interface MarginGroup {
-  id: number;
+  id: number | string;
   top: number;
   sources: Source[];
 }
@@ -9,7 +9,7 @@ export interface MarginGroup {
 // Preserve passage anchors, then reserve the actual expanded card height.
 export function marginLayout(
   groups: MarginGroup[],
-  openGroup: number | null,
+  openGroup: number | string | null,
   expandedId: string | undefined,
   expandedHeight: number,
 ) {

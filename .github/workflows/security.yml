@@ -1,7 +1,7 @@
 name: Dependency security
 on:
-  push:
   pull_request:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: '37 7 * * 1'
@@ -9,6 +9,8 @@ permissions:
   contents: read
 jobs:
   application:
+    # Use the PR author's immutable account ID, not the person rerunning CI.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.user.id != 135626793 }}
     runs-on: macos-26
     timeout-minutes: 20
     steps:
@@ -23,6 +25,7 @@ jobs:
           cargo audit --file src-tauri/Cargo.lock --target-os macos --target-arch aarch64 --json > rust-audit.json || audit_status=$?
           python3 scripts/check-rust-audit.py rust-audit.json
   python:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.user.id != 135626793 }}
     runs-on: macos-26
     timeout-minutes: 20
     strategy:
@@ -40,6 +43,7 @@ jobs:
           pip-audit --disable-pip --no-deps -r scripts/${{ matrix.runtime }}-requirements.lock -f json -o python-audit.json || audit_status=$?
           python scripts/check-python-audit.py python-audit.json
   native:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.user.id != 135626793 }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

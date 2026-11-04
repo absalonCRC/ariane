@@ -64,15 +64,39 @@ impl Queue<'_> {
                 }
             }
         }
-        let mut result = context_idle(self.root, section, node, depth, || {
-            self.activity.is_writing()
-        })?;
-        if result["busy"].as_bool() == Some(true) { return Ok(result); }
-        if depth > 0 {
-            if let Some(passage) = passage(self.root, section, node)? {
-                result["evidence"] = json!(memory_evidence::suggest(self.root, self.index, &passage)?);
+        results::reconcile(self.root, self.index)?;
+        let generation = results::catalog(self.root,self.index)?;
+        let anchor = passage(self.root, section, node)?;
+        let basic = context_idle(self.root, section, node, 0, ||self.activity.is_writing())?;
+        let key = format!("context:{depth}:{section}:{}", node.unwrap_or(""));
+        let encoded: Option<(i64,Option<String>,bool)> = storage::database(self.root)?.query_row(
+            "SELECT analyzed,model,query_vector IS NOT NULL FROM memory_passages WHERE section=? AND node IS ?",
+            params![section,node],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional().app()?;
+        let signature = storage::fingerprint(&format!("{anchor:?}:{basic}:{encoded:?}"));
+        let vector_generation: i64 = storage::database(self.root)?.query_row("SELECT CAST(value AS INTEGER) FROM meta WHERE key='memory_vectors_generation'",[],|r|r.get(0)).optional().app()?.unwrap_or(0);
+        let cached = results::get(self.root,&key,&signature)?;
+        let cached = cached.filter(|value| {
+            if value["recall"].is_null() { return depth == 0 || value["recallGeneration"].as_i64() == Some(vector_generation); }
+            let Some(section) = value["recall"]["section"].as_str() else { return false; };
+            let recalled = passage(self.root,section,value["recall"]["node"].as_str()).ok().flatten();
+            recalled.is_some_and(|p| p.hash == value["recall"]["hash"].as_str().unwrap_or("")
+                && anchor.as_ref().is_none_or(|a| a.section != p.section || a.position.abs_diff(p.position)>1))
+        });
+        let mut result = if let Some(value) = cached { value } else {
+            let mut value = context_idle(self.root, section, node, depth, ||self.activity.is_writing())?;
+            if depth > 0 {
+                if let Some(passage) = &anchor {
+                    value["evidence"] = json!(memory_evidence::suggest(self.root,self.index,passage)?);
+                }
             }
-        }
+            value["recallGeneration"] = json!(vector_generation);
+            if value["busy"].as_bool() != Some(true) {
+                results::put_if_current(self.root,self.index,&key,&signature,anchor.as_ref().map_or("",|p|p.text.as_str()),&value,&generation)?;
+            }
+            value
+        };
+        if result["busy"].as_bool() == Some(true) { return Ok(result); }
+        if results::catalog(self.root,self.index)? != generation { return Ok(json!({"busy":true})); }
         result["analyzed"] = json!(analyzed);
         result["pending"] = json!(depth > 0 && available && !pending(self.root, Some(section), 1)?.is_empty());
         result["deferred"] = json!(deferred);
@@ -120,6 +144,59 @@ fn encode(text: &str,
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn an_empty_recall_is_revisited_when_background_vectors_become_available() {
+        let d = tempfile::tempdir().unwrap();
+        let root = d.path();
+        let p = project::create(root,"Mémoire").unwrap();
+        let id = &p.sections[0].id;
+        project::save(root,vec![crate::model::TextPatch {id:id.clone(),revision:0,
+            text:"Alpha.\nBeta.\nGamma.".into(),outline:Some(crate::model::Outline {version:1,nodes:vec![
+                crate::model::OutlineNode{id:"a".into(),parent:None,start:0},
+                crate::model::OutlineNode{id:"b".into(),parent:None,start:7},
+                crate::model::OutlineNode{id:"c".into(),parent:None,start:13},
+            ]})}]).unwrap();
+        sync(root).unwrap();
+        let mut vector = vec![0f32;768]; vector[0] = 1.;
+        let output = json!({"vector":vector,"queryVector":vector,"model":GEMMA_MODEL});
+        let first = passage(root,id,Some("a")).unwrap().unwrap();
+        apply(root,&first,&output).unwrap();
+        let engine = Mutex::new(Engine::default()); let activity = Activity::default();
+        let index = root.join("sources.sqlite"); let resources = root.join("no-model");
+        let q = Queue {root,index:&index,resources:&resources,engine:&engine,activity:&activity,critical_pressure:false};
+        assert!(q.run(id,Some("a"),1,3,false).unwrap()["recall"].is_null());
+        let last = passage(root,id,Some("c")).unwrap().unwrap();
+        apply(root,&last,&output).unwrap();
+        assert_eq!(q.run(id,Some("a"),1,3,false).unwrap()["recall"]["node"],"c");
+    }
+    #[test]
+    fn an_edit_only_recomputes_its_logical_block_and_survives_reopening() {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path();
+        let project = project::create(root,"Blocs").unwrap();
+        let id = &project.sections[0].id;
+        let outline = |middle: &str| crate::model::Outline { version: 1, nodes: vec![
+            crate::model::OutlineNode {id:"a".into(),parent:None,start:0},
+            crate::model::OutlineNode {id:"b".into(),parent:None,start:7},
+            crate::model::OutlineNode {id:"c".into(),parent:None,start:7+middle.encode_utf16().count()+1},
+        ]};
+        project::save(root,vec![crate::model::TextPatch {id:id.clone(),revision:0,text:"Alpha.\nBeta.\nGamma.".into(),outline:Some(outline("Beta."))}]).unwrap();
+        let engine = Mutex::new(Engine::default());
+        let activity = Activity::default();
+        let index = root.join("sources.sqlite");
+        let resources = root.join("no-model");
+        let queue = Queue {root,index:&index,resources:&resources,engine:&engine,activity:&activity,critical_pressure:false};
+        for node in ["a","b","c"] { queue.run(id,Some(node),1,0,false).unwrap(); }
+        let c = storage::database(root).unwrap();
+        c.execute_batch("CREATE TABLE writes(key TEXT); CREATE TRIGGER cache_changed AFTER UPDATE ON memory_results BEGIN INSERT INTO writes VALUES(new.key); END;").unwrap();
+        project::save(root,vec![crate::model::TextPatch {id:id.clone(),revision:1,text:"Alpha.\n😀 Delta.\nGamma.".into(),outline:Some(outline("😀 Delta."))}]).unwrap();
+        for node in ["a","b","c"] { queue.run(id,Some(node),2,0,false).unwrap(); }
+        let changed:Vec<String> = c.prepare("SELECT key FROM writes").unwrap().query_map([],|r|r.get(0)).unwrap().collect::<std::result::Result<_,_>>().unwrap();
+        assert_eq!(changed,vec![format!("context:0:{id}:b")]);
+        let saved = queue.run(id,Some("a"),2,0,false).unwrap();
+        drop(c);
+        assert_eq!(queue.run(id,Some("a"),2,0,false).unwrap(),saved);
+    }
     #[test]
     fn interrupted_encoding_never_returns_partial_vectors() {
         let output = encode("Une maison vide. Une demeure abandonnée.", true, |inputs| {

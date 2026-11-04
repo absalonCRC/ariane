@@ -22,6 +22,8 @@ import { useExport } from '../export/useExport';
 import { useUnifiedSearch } from './useUnifiedSearch';
 import type { ManuscriptMatch } from './projectSearch';
 import { useEnrichment } from '../enrichment/useEnrichment';
+import { usePassageSuggestions } from '../enrichment/usePassageSuggestions';
+import { passageKey } from '../enrichment/passages';
 export function useWorkspace() {
   useLocale();
   const exportJob = useExport();
@@ -76,12 +78,14 @@ export function useWorkspace() {
     setInitialSearch(query);
     setSearchQuery(query);
     setPalette('text');
-    if (!historyModeRef.current) setBinder(false);
-    setReader(null);
-    setCard(null);
+    if (!doc.settingsRef.current.immersiveFocus) {
+      if (!historyModeRef.current) setBinder(false);
+      setReader(null);
+      setCard(null);
+    }
   }, []);
   const [progress, setProgress] = useState<IndexProgress | null>(null);
-  const [groupOpen, setGroupOpen] = useState<number | null>(null);
+  const [groupOpen, setGroupOpen] = useState<string | number | null>(null);
   const [sourceVersion, setSourceVersion] = useState(0);
   const [enrichmentVersion, setEnrichmentVersion] = useState(0);
   const refreshEnrichment = useCallback(() => setEnrichmentVersion((v) => v + 1), []);
@@ -117,6 +121,14 @@ export function useWorkspace() {
     position?: { offset: number; cursor: number };
   } | null>(null);
   const close = useCallback(() => setSurface('none'), []);
+  const toggleFocus = useCallback(() => {
+    doc.configure({ immersiveFocus: !doc.settingsRef.current.immersiveFocus });
+    setHistoryMode(false);
+    setSurface('none');
+    setMenu(false);
+    setPalette(null);
+    requestAnimationFrame(() => editor.current?.focus());
+  }, [doc.configure]);
   const activate = useCallback(
     (p: Project) => {
       doc.activate(p);
@@ -280,7 +292,7 @@ export function useWorkspace() {
     const query = searchQuery.trim();
     if (!(await select(hit.section))) return;
     setPendingMatch({ hit, query });
-    setBinder(true);
+    if (!doc.settingsRef.current.immersiveFocus) setBinder(true);
   }
   async function locateSourceMatch(hit: ManuscriptMatch, matched: string) {
     setHistoryMode(false);
@@ -290,7 +302,7 @@ export function useWorkspace() {
       setCard(null);
     }
     setPendingMatch({ hit, query: matched });
-    setBinder(true);
+    if (!doc.settingsRef.current.immersiveFocus) setBinder(true);
   }
   useEffect(() => {
     if (!pendingMatch || active !== pendingMatch.hit.section) return;
@@ -305,47 +317,17 @@ export function useWorkspace() {
     return () => cancelAnimationFrame(frame);
   }, [active, pendingMatch]);
   const onVisible = useCallback((v: VisibleText) => setViewport(v), []);
-  const visibleText = viewport?.text;
-  const visibleAllowEnd = viewport?.allowEnd;
-  useEffect(() => {
-    if (!p || searching || visibleText === undefined || doc.status !== 'saved') return;
-    setSourceStatus('loading');
-    const seq = ++serial.current;
-    let alive = true;
-    const timer = setTimeout(() => {
-      void request<Source[]>('suggest', {
-        text: visibleText,
-        depth: doc.settings.depth,
-        allowEnd: visibleAllowEnd,
-      })
-        .then((s) => {
-          if (alive && seq === serial.current) {
-            setSources(s);
-            setSourceStatus('ready');
-          }
-        })
-        .catch(() => {
-          if (alive && seq === serial.current) {
-            setSources([]);
-            setSourceStatus('error');
-          }
-        });
-    }, 100);
-    return () => {
-      alive = false;
-      clearTimeout(timer);
-    };
-  }, [
-    searching,
-    visibleText,
-    visibleAllowEnd,
-    doc.settings.depth,
+  const passageSources = usePassageSuggestions(
     p?.path,
-    sourceVersion,
-    enrichmentVersion,
-    doc.settings.enrichment,
+    scenes,
+    viewport,
     doc.status,
-  ]);
+    doc.settings.enrichment,
+    doc.settings.depth,
+    `${sourceVersion}:${enrichmentVersion}:${doc.settings.depth}`,
+    setSources,
+    setSourceStatus,
+  );
   useEffect(() => {
     if (!native) return;
     let dispose: (() => void) | undefined;
@@ -376,11 +358,18 @@ export function useWorkspace() {
   }, [doc.flush, doc.status]);
   const commands: Command[] = p
     ? [
+        {
+          label: doc.settings.immersiveFocus
+            ? t('Quitter le mode focus')
+            : t('Activer le mode focus'),
+          detail: '⌘ ⇧ F',
+          action: toggleFocus,
+        },
         { label: t('Ouvrir le classeur'), detail: '⌘ ⇧ B', action: () => setBinder((v) => !v) },
         { label: t('Rejoindre une section'), detail: '⌘ P', action: () => setPalette('sections') },
         {
           label: t('Rechercher dans les textes et les vaults'),
-          detail: '⌘ ⇧ F',
+          detail: '⌘ F',
           action: () => setSearch(editor.current?.selection() || ''),
         },
         ...(native
@@ -443,6 +432,10 @@ export function useWorkspace() {
   nativeCommand.current = (id) => {
     if (libraryLock.current || document.querySelector('dialog[open][aria-modal="true"]')) return;
     if (!p || newProject) return;
+    if (id === 'focus') {
+      toggleFocus();
+      return;
+    }
     if (id === 'save') {
       void doc.flush().catch(fail);
       return;
@@ -510,6 +503,12 @@ export function useWorkspace() {
       }
       if (!(e.metaKey || e.ctrlKey)) return;
       const k = e.key.toLowerCase();
+      if (e.shiftKey && k === 'f') {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleFocus();
+        return;
+      }
       if (k === 'k') {
         e.preventDefault();
         setPalette((v) => (v ? null : 'commands'));
@@ -552,7 +551,7 @@ export function useWorkspace() {
       window.removeEventListener('keydown', onKey, true);
       window.removeEventListener('keydown', escape);
     };
-  }, [doc.flush]);
+  }, [doc.flush, toggleFocus]);
   async function openProject(path: string, section?: string) {
     if (libraryLock.current) return;
     libraryLock.current = true;
@@ -776,18 +775,24 @@ export function useWorkspace() {
   }
   const groups = useMemo(() => {
     if (!viewport) return [];
-    const map = new Map<number, { top: number; sources: Source[] }>();
-    for (const s of sources) {
-      const line =
-        viewport.paragraphs.find(
-          (l) =>
-            s.matched &&
-            l.text.toLocaleLowerCase().normalize('NFD').replace(/\p{M}/gu, '').includes(s.matched),
-        ) || (!s.matched ? viewport.paragraphs[0] : undefined);
-      if (!line || !Number.isFinite(line.top)) continue;
-      const existing = map.get(line.line);
-      if (existing) existing.sources.push(s);
-      else map.set(line.line, { top: line.top, sources: [s] });
+    const map = new Map<string, { top: number; sources: Source[] }>();
+    for (const { block, sources: matches } of passageSources) {
+      const lines = viewport.paragraphs.filter(
+        (line) => line.from !== undefined && line.from >= block.from && line.from < block.to,
+      );
+      const first = matches.find((source) => !!source.matched);
+      const fallback = lines.find(
+        (line) =>
+          !first ||
+          line.text
+            .toLocaleLowerCase()
+            .normalize('NFD')
+            .replace(/\p{M}/gu, '')
+            .includes(first.matched!),
+      );
+      const top = editor.current?.contextTop(block.section, block.node) ?? fallback?.top;
+      if (top === undefined || !Number.isFinite(top) || !matches.length) continue;
+      map.set(passageKey(block), { top, sources: matches });
     }
     const arr = Array.from(map.entries()).sort((a, b) => a[1].top - b[1].top);
     let bottom = -Infinity;
@@ -801,7 +806,7 @@ export function useWorkspace() {
         12;
       return { id, top, sources: g.sources };
     });
-  }, [sources, viewport, groupOpen]);
+  }, [passageSources, viewport, groupOpen]);
   return {
     appearance,
     exportJob,
@@ -859,6 +864,7 @@ export function useWorkspace() {
     setGroupOpen,
     setSourceVersion,
     sourceVersion,
+    enrichmentVersion,
     ready,
     recovery,
     setRecovery,
@@ -883,6 +889,7 @@ export function useWorkspace() {
     select,
     onVisible,
     commands,
+    toggleFocus,
     createPage,
     add,
     move,

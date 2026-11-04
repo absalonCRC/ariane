@@ -52,6 +52,7 @@ pub fn menu_for_language(app: &AppHandle, language: &str) -> tauri::Result<Menu<
     }
     let view = Submenu::new(app, "Présentation", true)?;
     for (id,label,shortcut) in [
+        ("focus", "Activer ou quitter le mode focus", Some("CmdOrCtrl+Shift+F")),
         ("binder", "Afficher ou masquer le classeur", Some("CmdOrCtrl+Shift+B")),
         ("commands", "Commandes…", Some("CmdOrCtrl+K")),
         ("sections", "Rejoindre une section…", Some("CmdOrCtrl+P")),

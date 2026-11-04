@@ -62,10 +62,19 @@ export function App() {
   const scrollActivity = useScrollActivity();
   const memory = useMemory(workspace);
   const createNote = useNoteCreation(workspace);
-  const inlineEntities = useInlineEntities(workspace, memory.result, memory.entityError);
+  const inlineEntities = useInlineEntities(
+    workspace,
+    memory.result,
+    memory.entityError,
+    memory.entityRevision,
+  );
   useEffect(() => {
     if (import.meta.env.VITE_PERFORMANCE === '1')
-      void import('../performance/native').then(({ attach }) => attach(workspace, memory)).catch(error => { document.title = `ariane — recette : ${String(error)}`; });
+      void import('../performance/native')
+        .then(({ attach }) => attach(workspace, memory))
+        .catch((error) => {
+          document.title = `ariane — recette : ${String(error)}`;
+        });
   });
   const [textSelection, setTextSelection] = useState<SelectionAnchor | null>(null);
   const [lines, setLines] = useState(1);
@@ -187,6 +196,12 @@ export function App() {
     update,
     groups,
   } = workspace;
+  const focusActive =
+    !!doc.settings.immersiveFocus &&
+    !workspace.historyMode &&
+    surface === 'none' &&
+    !newProject &&
+    !workspace.newSection;
   const sourcePresence = usePresenceValue(groups.length ? groups : null);
   const cardPresence = usePresenceValue(card);
   const [expandedHeight, setExpandedHeight] = useState(400);
@@ -313,6 +328,7 @@ export function App() {
       ref={setAppRoot}
       style={{ '--column-width': (doc.settings.columnWidth ?? 750) + 'px' } as React.CSSProperties}
       data-scrolling={scrollActivity.scrolling}
+      data-focus={focusActive}
       data-writing-font={
         (workspace.surface === 'settings' && !workspace.historyMode ? fontPreview : null) ??
         doc.settings.font
@@ -504,6 +520,7 @@ export function App() {
             generation={doc.generation}
             readOnly={workspace.libraryBusy}
             settings={doc.settings}
+            immersiveFocus={focusActive}
             projectPath={p.path}
             noteLookup={(query) => request('noteSuggestions', { projectPath: p.path, query })}
             noteCreate={createNote}
@@ -542,8 +559,6 @@ export function App() {
               inlineEntities.close();
               serial.current++;
               setCard(null);
-              workspace.setSourceStatus('loading');
-              workspace.setSources((current) => (current.length ? [] : current));
             }}
           />
           <EntityProposal entities={inlineEntities} />
@@ -887,6 +902,7 @@ export function App() {
       )}
       <footer className="statusbar">
         <div className="save-state" role="status">
+          {doc.status === 'saved' && memory.pending && !searching && t('Actualisation des liens…')}
           <Presence kind="content">
             {doc.status !== 'saved' && (
               <span className="state-label" key={doc.status}>
@@ -936,7 +952,8 @@ export function App() {
                     : 'ready'
                 : workspace.sourceStatus
             }
-            mode={doc.settings.countMode}
+            hideNotes={focusActive}
+            mode={focusActive ? 'words' : doc.settings.countMode}
             onChange={(countMode) => {
               doc.configure({ countMode });
               editor.current?.focus();
@@ -1043,6 +1060,7 @@ export function App() {
               open={surface === 'settings'}
               value={doc.settings}
               onChange={doc.configure}
+              onToggleFocus={workspace.toggleFocus}
               onFocusPreview={setFocusPreview}
               onFontPreview={setFontPreview}
               onScrollPreview={setScrollPreview}

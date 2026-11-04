@@ -399,6 +399,18 @@ pub fn resolve_external(root: &Path, id: &str, keep_local: bool, pending: Option
         load_unlocked(root)
     })
 }
+/// Preserve a consistent SQLite snapshot (including uncheckpointed WAL pages).
+pub(crate) fn backup_before_migration(root: &Path, c: &Connection, label: &str) -> Result<()> {
+    let dir = super::io::Dir::open(root)?.child("recuperation",true)?.ok_or("Dossier de récupération inaccessible.")?;
+    let name = format!("avant-{label}-{}.sqlite",uuid::Uuid::new_v4());
+    let file = dir.open_file(&name,libc::O_RDWR|libc::O_CREAT|libc::O_EXCL,0o600)?.ok_or("Copie de récupération inaccessible.")?;
+    let mut target = Connection::open_with_flags(root.canonicalize().app()?.join("recuperation").join(name),
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE|rusqlite::OpenFlags::SQLITE_OPEN_NOFOLLOW).app()?;
+    rusqlite::backup::Backup::new(c,&mut target).app()?.run_to_completion(128,std::time::Duration::from_millis(10),None).app()?;
+    file.sync_all().app()?;
+    Ok(())
+}
+
 #[cfg(test)]
 pub fn scene_path(root: &Path, id: &str) -> std::path::PathBuf {
     root.join("manuscrit").join(format!("{id}.md"))

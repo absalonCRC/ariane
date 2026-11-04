@@ -8,23 +8,49 @@ export const setEntityMarks = StateEffect.define<{
   mentions: SelectedEntity[];
   colors: Record<string, string>;
   enabled?: boolean;
+  hidden?: boolean;
 }>();
-// Drop saved marks on edits. Never attach an inference to a passage whose
-// meaning may have changed meanwhile.
+// A transaction invalidates only the logical lines it edits. Other marks keep
+// their identity and move with the document, including UTF-16 offsets.
 export const entityMarks = StateField.define<{
   mentions: SelectedEntity[];
   colors: Record<string, string>;
   enabled?: boolean;
+  hidden?: boolean;
 }>({
   create: () => ({ mentions: [], colors: {} }),
   update(value, tr) {
-    if (tr.docChanged) value = { ...value, mentions: [] };
+    if (tr.docChanged) {
+      const touched: { from: number; to: number }[] = [];
+      tr.changes.iterChangedRanges((from, to) => {
+        touched.push({ from, to });
+      });
+      value = {
+        ...value,
+        mentions: value.mentions
+          .filter((m) => {
+            const from = m.blockFrom ?? tr.startState.doc.lineAt(m.from).from;
+            const to = m.blockTo ?? tr.startState.doc.lineAt(m.to).to;
+            return !touched.some(
+              (r) => r.to >= from && (r.from < to || r.from === tr.startState.doc.length),
+            );
+          })
+          .map((m) => ({
+            ...m,
+            from: tr.changes.mapPos(m.from, 1),
+            to: tr.changes.mapPos(m.to, -1),
+            blockFrom: m.blockFrom === undefined ? undefined : tr.changes.mapPos(m.blockFrom, 1),
+            blockTo: m.blockTo === undefined ? undefined : tr.changes.mapPos(m.blockTo, -1),
+          })),
+      };
+    }
     for (const effect of tr.effects) if (effect.is(setEntityMarks)) value = effect.value;
     return value;
   },
   provide: (field) =>
     EditorView.decorations.compute([field, 'doc'], (state) => {
-      const { mentions, colors, enabled } = state.field(field);
+      const { mentions, colors, enabled, hidden } = state.field(field);
+      if (hidden) return Decoration.none;
       return Decoration.set(
         mentions.flatMap((m, index) => {
           if (m.from < 0 || m.to > state.doc.length || m.from >= m.to) return [];

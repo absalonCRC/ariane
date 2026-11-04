@@ -16,16 +16,12 @@ pub struct InlineEntities {
     text: String,
     mentions: Vec<Mention>,
 }
-fn sources(root: &Path, index: &Path) -> Result<Vec<Source>> {
-    let available: Vec<_> = vaults::list(root, index)?
-        .into_iter()
-        .filter(|v| v.available)
-        .collect();
-    Ok(vaults::all(index, &available)?
-        .into_iter()
-        .filter(|s| s.path.to_lowercase().ends_with(".md"))
-        .collect())
+fn sources_generation(root: &Path, index: &Path) -> Result<(Vec<Source>,String)> {
+    let snapshot = crate::retrieval::cache::snapshot(root,index,false)?;
+    Ok((snapshot.sources.all.iter().filter(|s|s.path.to_lowercase().ends_with(".md")).cloned().collect(),snapshot.sources.token.clone()))
 }
+#[cfg(test)]
+fn sources(root: &Path,index: &Path) -> Result<Vec<Source>> { Ok(sources_generation(root,index)?.0) }
 fn matches_name(source: &Source, name: &str) -> bool {
     let normalized = vaults::parse::normalize(name);
     std::iter::once(source.title.as_str())
@@ -48,13 +44,16 @@ fn collect(
     root: &Path,
     section: &str,
     revision: i64,
+    index: &Path,
     sources: &[Source],
+    generation: &str,
 ) -> Result<InlineEntities> {
     let c = storage::database(root)?;
     let section = project::section(&c, section)?
         .filter(|s| s.revision == revision)
         .ok_or("Le passage a changé. Attendez sa prochaine analyse.")?;
-    let catalog = Catalog::new(sources)?;
+    let mut catalog = None;
+    results::reconcile(root, index)?;
     let mut mentions = Vec::new();
     // Use the same code-fence exclusion and durable passage boundaries as NER.
     for passage in section_passages(&section)? {
@@ -63,7 +62,18 @@ fn collect(
             .as_ref()
             .and_then(|id| section.outline.as_ref()?.nodes.iter().find(|n| &n.id == id))
             .map_or(0, |n| n.start);
-        for (start, end, owner) in catalog.inline_mentions(&passage.text) {
+        let key = format!("inline:{}", passage.key);
+        let ner: Option<String> = c.query_row("SELECT hash || model FROM memory_ner WHERE passage_key=?",[&passage.key],|r|r.get(0)).optional().app()?;
+        let mentions_hash: Option<String> = c.query_row("SELECT group_concat(id || ':' || kind || ':' || start || ':' || end) FROM (SELECT e.id,e.kind,m.start,m.end FROM memory_mentions m JOIN memory_entities e ON e.id=m.entity_id WHERE m.passage_key=? ORDER BY e.id,m.start)",[&passage.key],|r|r.get(0)).app()?;
+        let hash = storage::fingerprint(&format!("{}:{ner:?}:{mentions_hash:?}",passage.hash));
+        if let Some(value) = results::get(root,&key,&hash)? {
+            let saved: Vec<Mention> = serde_json::from_value(value).app()?;
+            mentions.extend(saved.into_iter().map(|mut m| { m.from += offset; m.to += offset; m }));
+            continue;
+        }
+        let first = mentions.len();
+        if catalog.is_none() { catalog = Some(Catalog::new(sources)?); }
+        for (start, end, owner) in catalog.as_ref().unwrap().inline_mentions(&passage.text) {
             if !prose_range(&passage.text, start, end) {
                 continue;
             }
@@ -113,7 +123,10 @@ fn collect(
                 entity_id: Some(id),
             });
         }
+        let relative: Vec<_> = mentions[first..].iter().cloned().map(|mut m| { m.from -= offset; m.to -= offset; m }).collect();
+        results::put_if_current(root,index,&key,&hash,&passage.text,&serde_json::to_value(relative).app()?,generation)?;
     }
+    if results::catalog(root,index)? != generation { return Err("Les sources ont changé. Relancez la recherche.".into()); }
     mentions.sort_by_key(|m| (m.from, std::cmp::Reverse(m.to)));
     Ok(InlineEntities {
         text: section.text,
@@ -127,7 +140,8 @@ pub fn inline_entities(
     revision: i64,
 ) -> Result<InlineEntities> {
     sync_preferred(root, Some(section))?;
-    collect(root, section, revision, &sources(root, index)?)
+    let (sources,generation) = sources_generation(root,index)?;
+    collect(root, section, revision, index, &sources, &generation)
 }
 pub fn create_detected_entity(
     root: &Path,
@@ -139,8 +153,8 @@ pub fn create_detected_entity(
     kind: &str,
 ) -> Result<Source> {
     sync_preferred(root, Some(section))?;
-    let sources = sources(root, index)?;
-    let result = collect(root, section, revision, &sources)?;
+    let (sources,generation) = sources_generation(root, index)?;
+    let result = collect(root, section, revision, index, &sources, &generation)?;
     let candidate = result
         .mentions
         .iter()

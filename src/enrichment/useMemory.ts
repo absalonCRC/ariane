@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { t } from '../i18n';
 import { native, request } from '../app/client';
 import type { Workspace } from '../app/useWorkspace';
+import { passages, passageKey } from './passages';
 
 export interface MemoryPosition {
   section: string;
@@ -82,6 +83,45 @@ export function useMemory(workspace: Workspace) {
   const inFlight = useRef(false);
   const entitiesInFlight = useRef(false);
   const [entityError, setEntityError] = useState('');
+  const [entityRevision, setEntityRevision] = useState(0);
+  const semanticGeneration = useRef(0);
+  const cache = useRef(
+    new Map<
+      string,
+      {
+        signature: string;
+        version: string;
+        result: MemoryResult;
+        recallSignature: string | null;
+        semanticGeneration: number;
+      }
+    >(),
+  );
+  const version = `${workspace.sourceVersion ?? 0}:${workspace.enrichmentVersion ?? 0}:${doc.settings.depth}:${JSON.stringify(doc.settings.entityTypes)}`;
+  function signature(position: MemoryPosition) {
+    const section = latest.current.doc.ref.current?.sections.find((s) => s.id === position.section);
+    if (!section) return null;
+    return section.text === undefined
+      ? (latest.current.viewport?.text ?? '')
+      : (passages(section).find((p) => p.node === position.node)?.signature ?? null);
+  }
+  function recallSignature(value: MemoryResult) {
+    const target = value.recall;
+    if (!target?.section) return null;
+    const section = latest.current.doc.ref.current?.sections.find((s) => s.id === target.section);
+    return section?.text === undefined
+      ? null
+      : (passages(section).find((p) => p.node === target.node)?.signature ?? null);
+  }
+  function cached(position = latest.current.editor.current?.context()) {
+    if (!position) return null;
+    const item = cache.current.get(passageKey(position));
+    return item &&
+      item.signature === signature(position) &&
+      item.recallSignature === recallSignature(item.result)
+      ? { ...item, position }
+      : null;
+  }
 
   function activity(active: boolean) {
     if (native) void request('memoryActivity', { active }).catch(() => {});
@@ -93,8 +133,9 @@ export function useMemory(workspace: Workspace) {
       activity(true);
     }
     setShowResume(false);
-    // Results derived from the edited passage must never look current.
-    setResult((value) => (value ? null : value));
+    const saved = cached();
+    setResult(saved?.result ?? null);
+    setAnchor(saved?.position ?? null);
   }
   async function saveSession() {
     const w = latest.current;
@@ -119,6 +160,7 @@ export function useMemory(workspace: Workspace) {
     const start = epoch.current;
     let alive = true;
     loaded.current = null;
+    cache.current.clear();
     session.current = null;
     restoring.current = null;
     typing.current = false;
@@ -170,12 +212,20 @@ export function useMemory(workspace: Workspace) {
   }, [workspace.reader?.id, workspace.reader?.page]);
 
   useEffect(() => {
+    if (!doc.settings.enrichment) {
+      setResult(null);
+      setAnchor(null);
+      activity(true);
+      return;
+    }
     if (doc.status !== 'saved' || recording || workspace.searching) {
       activity(true);
       return;
     }
     let alive = true;
-    setResult(null);
+    const saved = cached();
+    setResult(saved?.result ?? null);
+    setAnchor(saved?.position ?? null);
     let timer: ReturnType<typeof setTimeout>;
     let entityTimer: ReturnType<typeof setTimeout>;
     const path = p?.path;
@@ -183,6 +233,14 @@ export function useMemory(workspace: Workspace) {
       if (!alive || !native || !path) return;
       typing.current = false;
       activity(false);
+      if (
+        saved &&
+        saved.version === version &&
+        !saved.result.pending &&
+        !saved.result.modelError &&
+        (saved.result.recall || saved.semanticGeneration === semanticGeneration.current)
+      )
+        return;
       const position = latest.current.editor.current?.context();
       if (!position) return;
       if (!doc.settings.enrichment) return;
@@ -196,6 +254,7 @@ export function useMemory(workspace: Workspace) {
       if (!section) return;
       inFlight.current = true;
       const start = epoch.current;
+      const before = signature(position);
       try {
         const value = await request<MemoryResult>('memoryQueue', {
           projectPath: path,
@@ -206,6 +265,7 @@ export function useMemory(workspace: Workspace) {
           semantic,
         });
         if (!alive || start !== epoch.current || latest.current.p?.path !== path) return;
+        if (value.analyzed) semanticGeneration.current++;
         if (!value.busy && !value.stale && value.anchorHash !== undefined) {
           const current = latest.current.editor.current?.context();
           if (
@@ -213,8 +273,17 @@ export function useMemory(workspace: Workspace) {
             current.node === position.node &&
             !activeView.current
           ) {
-            setResult(value);
-            setAnchor(position);
+            if (before !== null && before === signature(position)) {
+              cache.current.set(passageKey(position), {
+                signature: before,
+                version,
+                result: value,
+                recallSignature: recallSignature(value),
+                semanticGeneration: semanticGeneration.current,
+              });
+              setResult(value);
+              setAnchor(position);
+            }
           }
           setError(value.modelError ?? '');
         }
@@ -250,6 +319,7 @@ export function useMemory(workspace: Workspace) {
       try {
         const value = await request<{
           available?: boolean;
+          analyzed?: boolean;
           entities?: MemoryEntity[];
           anchorHash?: string;
           pending?: boolean;
@@ -268,6 +338,7 @@ export function useMemory(workspace: Workspace) {
           setEntityError(t('Le moteur de détection des entités est indisponible.'));
           return;
         }
+        if (value.analyzed) setEntityRevision((n) => n + 1);
         const current = latest.current.editor.current?.context();
         if (
           !value.stale &&
@@ -275,11 +346,13 @@ export function useMemory(workspace: Workspace) {
           current?.section === position.section &&
           current.node === position.node
         ) {
-          setResult((old) =>
-            old && old.anchorHash === value.anchorHash
-              ? { ...old, entities: value.entities! }
-              : old,
-          );
+          setResult((old) => {
+            if (!old || old.anchorHash !== value.anchorHash) return old;
+            const next = { ...old, entities: value.entities! };
+            const stored = cache.current.get(passageKey(position));
+            if (stored && stored.signature === signature(position)) stored.result = next;
+            return next;
+          });
           setEntityError('');
         }
         if (value.pending || value.busy || value.deferred) {
@@ -312,12 +385,16 @@ export function useMemory(workspace: Workspace) {
     doc.generation,
     doc.settings.enrichment,
     doc.settings.depth,
+    doc.settings.entityTypes,
     workspace.viewport?.text,
     workspace.viewport?.cursor,
     workspace.active,
+    p?.sections,
     recording,
     workspace.searching,
     refresh,
+    workspace.sourceVersion,
+    workspace.enrichmentVersion,
   ]);
 
   useEffect(() => {
@@ -337,6 +414,15 @@ export function useMemory(workspace: Workspace) {
     const item = result?.recall ?? result?.evidence;
     if (!item?.id || !p) return;
     await request('memoryDismiss', { projectPath: p.path, id: item.id, hash: item.hash });
+    const position = editor.current?.context();
+    for (const [key, value] of cache.current) {
+      if (
+        key === (position ? passageKey(position) : '') ||
+        value.result.recall?.id === item.id ||
+        value.result.evidence?.id === item.id
+      )
+        cache.current.delete(key);
+    }
     setResult(null);
     setView(null);
     setRefresh((n) => n + 1);
@@ -351,6 +437,11 @@ export function useMemory(workspace: Workspace) {
         : null;
   return {
     result,
+    pending:
+      native &&
+      !!p &&
+      doc.settings.enrichment &&
+      (doc.status !== 'saved' || !result || !!result.pending),
     anchor,
     top,
     view,
@@ -364,6 +455,7 @@ export function useMemory(workspace: Workspace) {
     showResume,
     error: error || entityError,
     entityError,
+    entityRevision,
     suggestion,
     onTyping,
     dismiss,
@@ -372,7 +464,6 @@ export function useMemory(workspace: Workspace) {
       setRecording(active);
       if (active) {
         activity(true);
-        setResult(null);
       }
     },
   };

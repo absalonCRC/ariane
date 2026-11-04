@@ -128,8 +128,7 @@ pub fn as_list(v: &serde_json::Value) -> Vec<String> {
     }
 }
 /// Inputs are normalized once by the caller, shared across all candidate aliases.
-#[cfg(test)]
-pub fn exact_mention_normalized(t: &str, n: &str, allow_end: bool) -> bool {
+pub(crate) fn exact_mention_normalized(t: &str, n: &str, allow_end: bool) -> bool {
     if n.trim().is_empty() {
         return false;
     }

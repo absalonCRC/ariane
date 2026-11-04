@@ -3,8 +3,14 @@ import { native, request } from '../app/client';
 import type { Workspace } from '../app/useWorkspace';
 import type { Source } from '../app/types';
 import type { EntityBatch, SelectedEntity } from './entityTypes';
+import { rebaseEntities } from './entityBatches';
 
-export function useInlineEntities(workspace: Workspace, memoryResult: unknown, analysisError = '') {
+export function useInlineEntities(
+  workspace: Workspace,
+  memoryResult: unknown,
+  analysisError = '',
+  analysisRevision = 0,
+) {
   const { p, doc } = workspace;
   const [batches, setBatches] = useState<EntityBatch[]>([]);
   const [selected, setSelected] = useState<SelectedEntity | null>(null);
@@ -14,6 +20,7 @@ export function useInlineEntities(workspace: Workspace, memoryResult: unknown, a
   const latest = useRef(workspace);
   latest.current = workspace;
   const inFlight = useRef(false);
+  const fetched = useRef(new Map<string, string>());
   // Continuous manuscripts may contain hundreds of scenes. Only request the
   // sections intersecting the editor's bounded visible sample.
   let offset = 0;
@@ -28,6 +35,7 @@ export function useInlineEntities(workspace: Workspace, memoryResult: unknown, a
   });
   const signature = scenes.map((s) => `${s.id}:${s.revision}`).join('|');
   useEffect(() => {
+    fetched.current.clear();
     setBatches([]);
     setSelected(null);
     setError('');
@@ -35,7 +43,7 @@ export function useInlineEntities(workspace: Workspace, memoryResult: unknown, a
   useEffect(() => {
     if (doc.status !== 'saved' || !doc.settings.enrichment) {
       setSelected(null);
-      setBatches([]);
+      if (!doc.settings.enrichment) setBatches([]);
     }
   }, [doc.status, doc.settings.enrichment]);
   useEffect(() => {
@@ -52,20 +60,32 @@ export function useInlineEntities(workspace: Workspace, memoryResult: unknown, a
         const values: EntityBatch[] = [];
         for (const section of scenes) {
           if (!alive) return;
+          const active = workspace.editor?.current?.context()?.section ?? scenes[0]?.id;
+          const stamp = `${section.revision}:${workspace.sourceVersion}:${workspace.enrichmentVersion}:${refresh}:${analysisRevision}:${section.id === active ? JSON.stringify(memoryResult) : ''}`;
+          if (fetched.current.get(section.id) === stamp) continue;
           const value = await request<Omit<EntityBatch, 'section' | 'revision'>>('inlineEntities', {
             projectPath: p.path,
             section: section.id,
             revision: section.revision,
           });
           if (!alive || latest.current.p?.path !== p.path) return;
-          if (value.text === section.text)
-            values.push({ ...value, section: section.id, revision: section.revision });
+          if (value.text === section.text) {
+            values.push({
+              ...value,
+              section: section.id,
+              revision: section.revision,
+              outline: section.outline,
+            });
+            fetched.current.set(section.id, stamp);
+          }
         }
-        setBatches(values);
+        setBatches((old) => [
+          ...old.filter((batch) => !values.some((v) => v.section === batch.section)),
+          ...values,
+        ]);
         setError('');
       } catch (e) {
         if (alive) {
-          setBatches([]);
           setError(String(e));
         }
       } finally {
@@ -84,7 +104,9 @@ export function useInlineEntities(workspace: Workspace, memoryResult: unknown, a
     doc.generation,
     doc.settings.enrichment,
     workspace.sourceVersion,
+    workspace.enrichmentVersion,
     memoryResult,
+    analysisRevision,
     refresh,
   ]);
   async function openSource(mention: SelectedEntity) {
@@ -106,7 +128,7 @@ export function useInlineEntities(workspace: Workspace, memoryResult: unknown, a
     }
   }
   async function create() {
-    if (!selected || !p || busy) return;
+    if (!selected || !p || busy || doc.status !== 'saved') return;
     const path = p.path;
     setBusy(true);
     setError('');
@@ -132,7 +154,10 @@ export function useInlineEntities(workspace: Workspace, memoryResult: unknown, a
     }
   }
   return {
-    batches,
+    batches: batches.flatMap((batch) => {
+      const section = workspace.scenes.find((s) => s.id === batch.section);
+      return section ? [rebaseEntities(batch, section)] : [];
+    }),
     selected,
     busy,
     error: error || analysisError,

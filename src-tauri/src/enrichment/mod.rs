@@ -120,12 +120,23 @@ fn node_views(section: &Section) -> Result<Vec<NodeView<'_>>> {
         })
         .collect())
 }
-fn instances(catalog: &Catalog<'_>, section: &Section) -> Result<Vec<Evidence>> {
+fn instances_cached(catalog: &Catalog<'_>, section: &Section, root: &Path, index: &Path, generation: &str) -> Result<Vec<Evidence>> {
     let mut out = vec![];
     let mut fence = None;
     for node in node_views(section)? {
         let mut by_source: BTreeMap<String, Evidence> = BTreeMap::new();
-        for mut e in catalog.extract(&section.id, node.text, &mut fence) {
+        let key = format!("enrichment:{}:{}",section.id,node.id.unwrap_or(""));
+        let hash = project::hash(&format!("{VERSION}:{:?}:{}",fence,node.text));
+        let cached = crate::memory::results::get(root,&key,&hash)?;
+        let extracted: Vec<Evidence> = if let Some(value) = cached {
+            fence = serde_json::from_value(value["fence"].clone()).app()?;
+            serde_json::from_value(value["evidence"].clone()).app()?
+        } else {
+            let evidence = catalog.extract(&section.id,node.text,&mut fence);
+            crate::memory::results::put_if_current(root,index,&key,&hash,node.text,&json!({"fence":fence,"evidence":evidence}),generation)?;
+            evidence
+        };
+        for mut e in extracted {
             if let Some(existing) = by_source.get_mut(&e.source) {
                 for fact in e.facts {
                     if !existing.facts.contains(&fact) {
@@ -162,14 +173,9 @@ pub fn run(root: &Path, index: &Path) -> Result<Value> {
     if !enabled(&c)? {
         return Ok(json!({"changed":false,"analyzed":0}));
     }
-    let available: Vec<_> = vaults::list(root, index)?
-        .into_iter()
-        .filter(|v| v.available)
-        .collect();
-    let mut sources: Vec<_> = vaults::all(index, &available)?
-        .into_iter()
-        .filter(|s| s.path.to_lowercase().ends_with(".md"))
-        .collect();
+    let snapshot = crate::retrieval::cache::snapshot(root,index,false)?;
+    let generation = snapshot.sources.token.clone();
+    let mut sources: Vec<_> = snapshot.sources.all.iter().filter(|s|s.path.to_lowercase().ends_with(".md")).cloned().collect();
     sources.sort_by(|a, b| a.id.cmp(&b.id));
     let catalog_hash = project::hash(&format!(
         "{VERSION}:{}",
@@ -192,9 +198,11 @@ pub fn run(root: &Path, index: &Path) -> Result<Value> {
         return Ok(json!({"changed":false,"analyzed":0}));
     }
     let catalog = Catalog::new(&sources)?;
+    crate::memory::results::reconcile(root,index)?;
     let mut analyzed = 0;
     for (section, hash) in pending {
-        let evidence = instances(&catalog, section)?;
+        let evidence = instances_cached(&catalog, section, root,index,&generation)?;
+        if crate::memory::results::catalog(root,index)? != generation { return Ok(json!({"changed":analyzed>0,"analyzed":analyzed,"pending":true})); }
         let tx = c
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .app()?;
@@ -207,13 +215,13 @@ pub fn run(root: &Path, index: &Path) -> Result<Value> {
             continue;
         }
         tx.execute(
-            "DELETE FROM enrichment_evidence WHERE section=?",
-            [&section.id],
+            "DELETE FROM enrichment_evidence WHERE section=?1 AND id NOT IN (SELECT value FROM json_each(?2))",
+            params![section.id,serde_json::to_string(&evidence.iter().map(|e|&e.id).collect::<Vec<_>>()).app()?],
         )
         .app()?;
         for e in evidence {
             tx.execute(
-                "INSERT OR REPLACE INTO enrichment_evidence VALUES(?,?,?,?,?,?)",
+                "INSERT INTO enrichment_evidence VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET hash=excluded.hash,source=excluded.source,fingerprint=excluded.fingerprint,payload=excluded.payload WHERE enrichment_evidence.payload<>excluded.payload OR enrichment_evidence.hash<>excluded.hash OR enrichment_evidence.fingerprint<>excluded.fingerprint",
                 params![
                     e.id,
                     section.id,

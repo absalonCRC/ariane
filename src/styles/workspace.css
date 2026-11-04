@@ -641,3 +641,25 @@
   grid-column: 1 / -1;
   margin-left: 0;
 }
+
+/* Presentation only: background readers and analysis retain their state. */
+.app[data-focus='true'] > :not(.writing-layout):not(.statusbar),
+.app[data-focus='true'] .statusbar > :not(.bottom-controls),
+.app[data-focus='true'] .document-title,
+.app[data-focus='true'] .working-text-label,
+.app[data-focus='true'] .outline-handle,
+.app[data-focus='true'] .cm-gutters,
+.app[data-focus='true'] .entity-proposal {
+  display: none !important;
+}
+.app[data-focus='true'] .writing-layout {
+  padding-right: 0;
+}
+.app[data-focus='true'] .manuscript-column {
+  width: min(var(--column-width, 750px), calc(100% - 64px));
+  margin-inline: auto;
+}
+.app[data-focus='true'] .manuscript-note-link {
+  color: inherit !important;
+  pointer-events: none;
+}

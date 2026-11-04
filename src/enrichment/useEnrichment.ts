@@ -25,8 +25,11 @@ export function useEnrichment(
       }
       running.current = true;
       try {
-        const result = await request<{ changed: boolean }>('enrich', { projectPath: path });
+        const result = await request<{ changed: boolean; pending?: boolean }>('enrich', {
+          projectPath: path,
+        });
         if (alive && result.changed) onRefresh();
+        if (alive && result.pending) timer = setTimeout(() => void analyze(), 500);
       } catch (e) {
         if (alive) setError(String(e));
       } finally {

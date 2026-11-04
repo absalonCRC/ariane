@@ -1,4 +1,4 @@
-mod cache;
+pub(crate) mod cache;
 mod fusion;
 pub(crate) mod ranking;
 use crate::{

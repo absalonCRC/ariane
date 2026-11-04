@@ -80,6 +80,7 @@ interface Props {
   generation: number;
   readOnly?: boolean;
   settings: Settings;
+  immersiveFocus?: boolean;
   focusPreview?: Settings['focus'] | null;
   scrollPreview?: boolean | null;
   onChange: (changes: Map<string, string>, outlines?: Map<string, Outline>) => void;
@@ -558,6 +559,25 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     });
     const v = new EditorView({ state, parent: host.current });
     view.current = v;
+    // Persist the outline's existing logical boundaries before the first
+    // analysis, including legacy pages. Text remains byte-for-byte unchanged.
+    if (latest.current.onDraftChange) {
+      const initial = new Map<string, SectionDraft>();
+      for (const span of data.spans) {
+        const section = latest.current.sections.find((s) => s.id === span.id);
+        if (!section || section.outline) continue;
+        const text = section.text;
+        const value = outline.serialize(v.state, span);
+        initial.set(
+          span.id,
+          sectionDraft(() => ({
+            text,
+            outline: { ...value, nodes: value.nodes.filter((n) => n.start <= text.length) },
+          })),
+        );
+      }
+      if (initial.size) latest.current.onDraftChange(initial);
+    }
     // Keep the first visible passage in place when a sidebar changes the wrapping width.
     let anchor: { pos: number; offset: number } | null = null;
     let frame = 0;
@@ -650,13 +670,14 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     view.current?.dispatch({
       effects: setNoteLinkData.of({
         colors: props.settings.entityColors ?? {},
-        enabled: props.settings.entityHighlighting !== false,
+        enabled: !props.immersiveFocus && props.settings.entityHighlighting !== false,
         refresh: true,
       }),
     });
   }, [
     props.settings.entityColors,
     props.settings.entityHighlighting,
+    props.immersiveFocus,
     props.sourceVersion,
     props.projectPath,
     props.generation,
@@ -675,21 +696,32 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
             batch.text.replace(/\n+$/, '')
         )
           continue;
-        for (const mention of batch.mentions)
+        for (const mention of batch.mentions) {
+          const nodes = outlineRef.current ? v.state.field(outlineRef.current.field).nodes : [];
+          const entry = [...nodes]
+            .reverse()
+            .find((n) => n.section === batch.section && n.from <= span.from + mention.from);
           mentions.push({
             ...mention,
             section: batch.section,
             revision: batch.revision,
             from: span.from + mention.from,
             to: span.from + mention.to,
+            blockFrom: entry?.from,
+            blockTo: entry
+              ? (nodes.find((n) => n.section === batch.section && n.from > entry.from)?.from ??
+                span.to)
+              : undefined,
           });
+        }
       }
     }
     v.dispatch({
       effects: setEntityMarks.of({
         mentions,
         colors: props.settings.entityColors ?? {},
-        enabled: props.settings.entityHighlighting !== false,
+        enabled: !props.immersiveFocus && props.settings.entityHighlighting !== false,
+        hidden: props.immersiveFocus,
       }),
     });
   }, [
@@ -697,6 +729,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     props.settings.entityColors,
     props.settings.entityHighlighting,
     props.settings.enrichment,
+    props.immersiveFocus,
     props.generation,
     props.sections.map((s) => s.id).join(':'),
     locale,

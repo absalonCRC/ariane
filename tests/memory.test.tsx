@@ -13,7 +13,18 @@ let root: ReturnType<typeof createRoot>;
 let memory: MemoryController;
 const position = { section: 's', node: 'n', offset: 0, cursor: 0 };
 function workspace(path = 'a') {
-  const p = { path, sections: [{ id: 's', revision: 1, title: 'Scène' }] };
+  const p = {
+    path,
+    sections: [
+      {
+        id: 's',
+        revision: 1,
+        title: 'Scène',
+        text: 'Un passage.',
+        outline: { version: 1, nodes: [{ id: 'n', parent: null, start: 0 }] },
+      },
+    ],
+  };
   return {
     p,
     active: 's',
@@ -86,6 +97,7 @@ it('only runs inference after a saved idle window, and suspends on typing', asyn
   await act(async () => vi.advanceTimersByTimeAsync(100));
   expect(host.textContent).toBe('Souvenir');
   await act(async () => {
+    w.doc.ref.current!.sections[0].text += ' modifié';
     memory.onTyping();
     w = { ...w, doc: { ...w.doc, status: 'editing' } };
     root.render(<Harness w={w} />);
@@ -112,6 +124,47 @@ it('discards a result that arrives after switching projects', async () => {
     finish({ entities: [], recall: { quote: 'Wrong project' }, anchorHash: 'x' }),
   );
   expect(host.textContent).toBe('');
+});
+it('retains cached results for unchanged nodes while another node is edited and saved', async () => {
+  const w = workspace();
+  const text = 'Premier passage.\nDeuxième passage.\nDernier passage.';
+  const section = w.doc.ref.current!.sections[0];
+  section.text = text;
+  section.outline = {
+    version: 1,
+    nodes: [
+      { id: 'a', parent: null, start: 0 },
+      { id: 'b', parent: null, start: text.indexOf('Deuxième') },
+      { id: 'c', parent: null, start: text.indexOf('Dernier') },
+    ],
+  };
+  let context = { ...position, node: 'a' };
+  w.editor.current!.context = () => context;
+  await act(async () => root.render(<Harness w={w} />));
+  await act(async () => vi.advanceTimersByTimeAsync(600));
+  context = { ...context, node: 'c', cursor: 40 };
+  await act(async () =>
+    root.render(<Harness w={{ ...w, viewport: { ...w.viewport!, cursor: 40 } }} />),
+  );
+  await act(async () => vi.advanceTimersByTimeAsync(600));
+  const count = request.mock.calls.filter(([type]) => type === 'memoryQueue').length;
+  section.text = text.replace('Deuxième', 'Un autre deuxième');
+  section.outline.nodes[2].start = section.text.indexOf('Dernier');
+  await act(async () => {
+    memory.onTyping();
+    root.render(<Harness w={{ ...w, doc: { ...w.doc, status: 'editing' } }} />);
+  });
+  expect(host.textContent).toBe('Souvenir');
+  await act(async () => root.render(<Harness w={w} />));
+  await act(async () => vi.advanceTimersByTimeAsync(600));
+  expect(request.mock.calls.filter(([type]) => type === 'memoryQueue')).toHaveLength(count);
+  context = { ...context, node: 'a', cursor: 0 };
+  await act(async () =>
+    root.render(<Harness w={{ ...w, viewport: { ...w.viewport!, cursor: 0 } }} />),
+  );
+  expect(host.textContent).toBe('Souvenir');
+  await act(async () => vi.advanceTimersByTimeAsync(600));
+  expect(request.mock.calls.filter(([type]) => type === 'memoryQueue')).toHaveLength(count);
 });
 it('does not run inference while dictation is active', async () => {
   await act(async () => root.render(<Harness w={workspace()} />));
@@ -277,7 +330,7 @@ it('keeps facts and sources visible during pressure and retries instead of waiti
   await act(async () => vi.advanceTimersByTimeAsync(5000));
   expect(request.mock.calls.filter((c) => c[0] === 'memoryQueue')).toHaveLength(2);
 });
-it('removes an old contextual label immediately when the cursor changes', async () => {
+it('keeps contextual results when the cursor moves within the same logical block', async () => {
   const w = workspace();
   await act(async () => root.render(<Harness w={w} />));
   await act(async () => vi.advanceTimersByTimeAsync(600));
@@ -285,7 +338,9 @@ it('removes an old contextual label immediately when the cursor changes', async 
   await act(async () =>
     root.render(<Harness w={{ ...w, viewport: { ...w.viewport!, cursor: 48 } }} />),
   );
-  expect(host.textContent).toBe('');
+  expect(host.textContent).toBe('Souvenir');
+  await act(async () => vi.advanceTimersByTimeAsync(600));
+  expect(request.mock.calls.filter(([type]) => type === 'memoryQueue')).toHaveLength(1);
 });
 
 it('keeps suggestions live while GLiNER is slow and merges entities without replacing recall', async () => {

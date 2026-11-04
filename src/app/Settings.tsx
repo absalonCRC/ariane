@@ -19,6 +19,7 @@ export function Settings({
   onFocusPreview,
   onFontPreview,
   onScrollPreview,
+  onToggleFocus,
 }: {
   value: Values;
   onChange: (v: Partial<Values>) => void;
@@ -29,6 +30,7 @@ export function Settings({
   onFocusPreview?: (mode: Values['focus'] | null) => void;
   onFontPreview?: (font: Values['font'] | null) => void;
   onScrollPreview?: (mode: boolean | null) => void;
+  onToggleFocus?: () => void;
 }) {
   useLocale();
   const panel = useRef<HTMLElement>(null);
@@ -80,6 +82,16 @@ export function Settings({
         onFocusPreview={onFocusPreview}
         onScrollPreview={onScrollPreview}
       />
+      <label className="settings-row check-label">
+        <span className="settings-label">{t('Mode focus · ⌘ ⇧ F')}</span>
+        <input
+          type="checkbox"
+          checked={!!value.immersiveFocus}
+          onChange={(event) =>
+            onToggleFocus ? onToggleFocus() : onChange({ immersiveFocus: event.target.checked })
+          }
+        />
+      </label>
       {value.typewriter && (
         <label className="settings-row check-label">
           <span className="settings-label">{t('Son de machine à écrire')}</span>

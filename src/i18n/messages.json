@@ -3894,5 +3894,25 @@
   "Transcription originale": [
     "Original transcript",
     "Transcripción original"
+  ],
+  "Mode focus · ⌘ ⇧ F": [
+    "Focus mode · ⌘ ⇧ F",
+    "Modo de concentración · ⌘ ⇧ F"
+  ],
+  "Activer le mode focus": [
+    "Enter focus mode",
+    "Activar el modo de concentración"
+  ],
+  "Quitter le mode focus": [
+    "Exit focus mode",
+    "Salir del modo de concentración"
+  ],
+  "Activer ou quitter le mode focus": [
+    "Enter or exit focus mode",
+    "Activar o salir del modo de concentración"
+  ],
+  "Actualisation des liens…": [
+    "Updating connections…",
+    "Actualizando conexiones…"
   ]
 }

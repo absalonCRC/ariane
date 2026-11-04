@@ -48,6 +48,7 @@ export interface Settings {
   columnWidth?: number;
   lineHeight?: number;
   focus: 'none' | 'paragraph' | 'sentence' | 'word';
+  immersiveFocus?: boolean;
   typewriter: boolean;
   typewriterSound: boolean;
   depth: number;

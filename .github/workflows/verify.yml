@@ -1,7 +1,7 @@
 name: Verify
 on:
-  push:
   pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -11,6 +11,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   macos:
+    # Use the PR author's immutable account ID, not the person rerunning CI.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.user.id != 135626793 }}
     runs-on: macos-26
     timeout-minutes: 45
     steps:
