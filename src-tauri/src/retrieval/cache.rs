@@ -7,13 +7,16 @@ use crate::{
 use aho_corasick::AhoCorasick;
 use rusqlite::Connection;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     path::{Path, PathBuf},
     sync::{Arc, LazyLock, Mutex},
     time::{Duration, Instant},
 };
 
 pub struct Sources {
+    pub stamps: BTreeMap<String, String>,
+    pub manifest: String,
+    pub token: String,
     pub all: Vec<Source>,
     pub by_id: HashMap<String, usize>,
     pub titles: Vec<String>,
@@ -23,6 +26,11 @@ pub struct Sources {
 }
 impl Sources {
     fn new(all: Vec<Source>) -> Result<Self> {
+        let stamps: BTreeMap<String,String> = all.iter().map(|s| {
+            Ok((s.id.clone(), crate::project::hash(&serde_json::to_string(s).app()?)))
+        }).collect::<Result<_>>()?;
+        let manifest = serde_json::to_string(&stamps).app()?;
+        let token = crate::project::hash(&manifest);
         let titles: Vec<_> = all.iter().map(|s| parse::normalize(&s.title)).collect();
         let by_id = all
             .iter()
@@ -76,6 +84,9 @@ impl Sources {
             })
             .collect();
         Ok(Self {
+            stamps,
+            manifest,
+            token,
             all,
             by_id,
             titles,
@@ -120,7 +131,7 @@ fn snapshot_in(
     index: &Path,
     vectors: bool,
 ) -> Result<Snapshot> {
-    let vaults = vaults::list(root, index)?;
+    let vaults: Vec<_> = vaults::list(root, index)?.into_iter().filter(|v|v.available).collect();
     let scope = serde_json::to_string(&(
         root,
         vaults.iter().map(|v| (&v.id, &v.scope)).collect::<Vec<_>>(),

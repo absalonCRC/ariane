@@ -8,6 +8,7 @@ mod encoding_cache;
 mod queue;
 pub use queue::{Queue, GEMMA_MODEL};
 mod storage;
+pub(crate) mod results;
 mod temporal;
 
 use crate::{
@@ -425,6 +426,7 @@ pub fn apply(root: &Path, passage: &Passage, output: &Value) -> Result<bool> {
         ],
     )
     .app()?;
+    tx.execute("INSERT INTO meta(key,value) VALUES('memory_vectors_generation','1') ON CONFLICT(key) DO UPDATE SET value=CAST(CAST(meta.value AS INTEGER)+1 AS TEXT)",[]).app()?;
     tx.commit().app()?;
     Ok(true)
 }
@@ -616,6 +618,7 @@ pub fn dismiss(root: &Path, id: &str, hash: &str) -> Result<()> {
         params![id, hash],
     )
     .app()?;
+    c.execute("DELETE FROM memory_results WHERE json_extract(payload,'$.recall.id')=?1 OR json_extract(payload,'$.evidence.id')=?1",[id]).app()?;
     Ok(())
 }
 

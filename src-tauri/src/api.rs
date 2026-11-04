@@ -143,6 +143,7 @@ pub enum Request {
         text: String,
         depth: u8,
         allow_end: bool,
+        anchor: Option<String>,
     },
     Search {
         query: String,
@@ -713,21 +714,26 @@ pub fn handle(
                     );
                     result
                 }
-                Request::Suggest {
-                    text,
-                    depth,
-                    allow_end,
-                } => {
+                Request::Suggest { text, depth, allow_end, anchor } => {
                     let _priority = state.memory_activity.foreground();
-                    let mut sources = retrieval::suggest(
-                    &root,
-                    &index,
-                    &state.resources,
-                    &state.engine,
-                    &text,
-                    depth.min(5),
-                    allow_end,
-                    )?;
+                    memory::results::reconcile(&root, &index)?;
+                    let generation = memory::results::source_generation(&root, &index)?;
+                    let identity = anchor.filter(|a| a.len() <= 512)
+                        .unwrap_or_else(|| project::hash(&text));
+                    let key = format!("sources:{}:{}:{}:{}", crate::inference::MODEL_ID,
+                        depth.min(5), allow_end, identity);
+                    let hash = project::hash(&text);
+                    let mut sources = if let Some(cached) = memory::results::source_hits(&root, &index, &key, &hash)? {
+                        cached
+                    } else {
+                        let sources = retrieval::suggest(&root, &index, &state.resources,
+                            &state.engine, &text, depth.min(5), allow_end)?;
+                        memory::results::put_source_hits(&root, &index, &key, &hash, &text, &sources, &generation)?;
+                        sources
+                    };
+                    if memory::results::catalog(&root, &index)? != generation.catalog || (sources.is_empty() && memory::results::vector_generation(&index)? != generation.vectors) {
+                        return Err("Les sources ont changé. Relancez la recherche.".into());
+                    }
                     enrichment::decorate(&root, &index, &mut sources)?;
                     json(sources)
                 }

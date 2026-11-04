@@ -448,3 +448,17 @@ fn external_vault_reference_tracks_original_node_without_writing_vault() {
     assert_eq!(fs::read_to_string(&file).unwrap(),original);
     assert_eq!(vaults::all(&index,&[vault]).unwrap().len(),1);
 }
+
+#[test]
+fn changed_middle_node_preserves_other_evidence_and_only_updates_its_own_row() {
+    let f = Fixture::new();
+    f.write(&[("a","Claude Nougaro arrive."),("b","Claude Nougaro attend."),("c","Claude Nougaro repart.")]);
+    run(&f.root,&f.index).unwrap();
+    let c = project::database(&f.root).unwrap();
+    c.execute_batch("CREATE TABLE updated_evidence(id TEXT); CREATE TRIGGER log_evidence AFTER UPDATE ON enrichment_evidence BEGIN INSERT INTO updated_evidence VALUES(new.id); END;").unwrap();
+    f.write(&[("a","Claude Nougaro arrive."),("b","😀 Claude Nougaro attend encore."),("c","Claude Nougaro repart.")]);
+    run(&f.root,&f.index).unwrap();
+    let nodes:Vec<String> = c.prepare("SELECT json_extract(payload,'$.node') FROM enrichment_evidence WHERE id IN (SELECT id FROM updated_evidence)").unwrap().query_map([],|r|r.get(0)).unwrap().collect::<std::result::Result<_,_>>().unwrap();
+    assert_eq!(nodes,vec!["b"]);
+    assert_eq!(f.enriched().enrichment.unwrap().passages.len(),3);
+}

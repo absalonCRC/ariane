@@ -12,7 +12,13 @@ it('keeps suggestions when only paragraph coordinates change and refreshes chang
     globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }
   ).IS_REACT_ACT_ENVIRONMENT = true;
   vi.useFakeTimers();
-  request.mockImplementation(async (command: string) => (command === 'bootstrap' ? null : []));
+  request.mockImplementation(async (command: string) =>
+    command === 'bootstrap'
+      ? null
+      : command === 'suggest'
+        ? [{ id: 'toulouse', title: 'Toulouse', matched: 'toulouse', score: 100 }]
+        : [],
+  );
   let workspace!: ReturnType<typeof useWorkspace>;
   function Harness() {
     workspace = useWorkspace();
@@ -26,7 +32,20 @@ it('keeps suggestions when only paragraph coordinates change and refreshes chang
         path: 'fixture',
         name: 'Test',
         settings: {},
-        sections: [],
+        sections: [
+          {
+            id: 's',
+            parent: null,
+            kind: 'scene',
+            title: 'Texte',
+            text: 'Toulouse',
+            revision: 0,
+            position: 0,
+            synopsis: '',
+            status: '',
+            goal: 0,
+          },
+        ],
         recovered: false,
       }),
     );
@@ -34,7 +53,7 @@ it('keeps suggestions when only paragraph coordinates change and refreshes chang
       text: 'Toulouse',
       from: 0,
       allowEnd: false,
-      paragraphs: [{ line: 1, text: 'Toulouse', top: 100 }],
+      paragraphs: [{ line: 1, text: 'Toulouse', top: 100, from: 0 }],
     };
     await act(async () => workspace.onVisible(visible));
     await act(async () => vi.advanceTimersByTimeAsync(100));
@@ -59,19 +78,20 @@ it('keeps suggestions when only paragraph coordinates change and refreshes chang
     await act(async () =>
       workspace.onVisible({
         ...visible,
-        paragraphs: [{ line: 2, text: 'Autre passage', top: 100 }],
+        paragraphs: [{ line: 2, text: 'Autre passage', top: 100, from: 0 }],
       }),
     );
     expect(workspace.groups).toHaveLength(0); // Never reattach Toulouse to unrelated text.
     await act(async () => workspace.onVisible({ ...visible, allowEnd: true }));
     await act(async () => vi.advanceTimersByTimeAsync(100));
-    expect(suggestions()).toHaveLength(2);
+    expect(suggestions()).toHaveLength(1);
+    workspace.p!.sections[0].text = 'Lyon';
     await act(async () => workspace.onVisible({ ...visible, text: 'Lyon' }));
     await act(async () => vi.advanceTimersByTimeAsync(100));
-    expect(suggestions()).toHaveLength(3);
+    expect(suggestions()).toHaveLength(2);
     await act(async () => workspace.setSourceVersion((v) => v + 1));
     await act(async () => vi.advanceTimersByTimeAsync(100));
-    expect(suggestions()).toHaveLength(4);
+    expect(suggestions()).toHaveLength(3);
   } finally {
     await act(async () => root.unmount());
     vi.useRealTimers();

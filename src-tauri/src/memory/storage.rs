@@ -15,7 +15,12 @@ pub(super) fn database(root: &Path) -> Result<Connection> {
     // schema. GLiNER and Gemma publish independently under WAL.
     let schema: Option<String> = c.query_row("SELECT value FROM meta WHERE key='memory_schema_version'", [], |r|r.get(0),
         ).optional().app()?;
-    if schema.as_deref() == Some("3") { return Ok(c); }
+    if schema.as_deref() == Some("4") { return Ok(c); }
+    if schema.as_ref().and_then(|v|v.parse::<u32>().ok()).is_some_and(|v|v>4) {
+        return Err("Ce projet nécessite une version plus récente d’ariane.".into());
+    }
+    if schema.is_some() { project::backup_before_migration(root,&c,"memoire-v4")?; }
+    c.execute_batch("CREATE TABLE IF NOT EXISTS memory_results(key TEXT PRIMARY KEY,hash TEXT NOT NULL,text TEXT NOT NULL,payload TEXT NOT NULL);").app()?;
     c.execute_batch("CREATE TABLE IF NOT EXISTS memory_encoding_cache(key TEXT PRIMARY KEY,vector BLOB NOT NULL,used INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS memory_classification_queue(source TEXT PRIMARY KEY,fingerprint TEXT NOT NULL,context TEXT NOT NULL,registry TEXT NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,retry INTEGER NOT NULL DEFAULT 0);
         CREATE TABLE IF NOT EXISTS memory_passages(
@@ -46,7 +51,7 @@ pub(super) fn database(root: &Path) -> Result<Connection> {
     if !has_query {
         c.execute_batch("ALTER TABLE memory_passages ADD COLUMN query_vector TEXT; UPDATE memory_passages SET analyzed=0;").app()?;
     }
-    c.execute("INSERT INTO meta(key,value) VALUES('memory_schema_version','3') ON CONFLICT(key) DO UPDATE SET value=excluded.value", []).app()?;
+    c.execute("INSERT INTO meta(key,value) VALUES('memory_schema_version','4') ON CONFLICT(key) DO UPDATE SET value=excluded.value", []).app()?;
     Ok(c)
 }
 
@@ -98,4 +103,26 @@ pub(super) fn upsert_passage(
     )
     .app()?;
     Ok(())
+}
+
+#[cfg(test)]
+mod migration_tests {
+    use super::*;
+    #[test]
+    fn migration_preserves_a_consistent_recoverable_copy_once() {
+        let d = tempfile::tempdir().unwrap();
+        project::create(d.path(),"Ancien projet").unwrap();
+        let c = project::database(d.path()).unwrap();
+        c.execute("INSERT INTO meta(key,value) VALUES('memory_schema_version','3')",[]).unwrap();
+        c.execute("UPDATE sections SET text='Texte encore dans le WAL'",[]).unwrap();
+        database(d.path()).unwrap();
+        let copies:Vec<_> = std::fs::read_dir(d.path().join("recuperation")).unwrap().map(|p|p.unwrap().path()).collect();
+        assert_eq!(copies.len(),1);
+        let copy = Connection::open(&copies[0]).unwrap();
+        assert_eq!(copy.query_row("SELECT text FROM sections LIMIT 1",[],|r|r.get::<_,String>(0)).unwrap(),"Texte encore dans le WAL");
+        assert_eq!(copy.query_row("SELECT value FROM meta WHERE key='memory_schema_version'",[],|r|r.get::<_,String>(0)).unwrap(),"3");
+        assert_eq!(copy.query_row("PRAGMA integrity_check",[],|r|r.get::<_,String>(0)).unwrap(),"ok");
+        database(d.path()).unwrap();
+        assert_eq!(std::fs::read_dir(d.path().join("recuperation")).unwrap().filter(|e|e.as_ref().unwrap().path().extension().is_some_and(|s|s=="sqlite")).count(),1);
+    }
 }

@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import type { Outline } from '../app/types';
 export interface EntityMention {
   from: number;
   to: number;
@@ -8,12 +9,15 @@ export interface EntityMention {
   entityId: string | null;
 }
 export interface EntityBatch {
+  outline?: Outline | null;
   section: string;
   revision: number;
   text: string;
   mentions: EntityMention[];
 }
 export interface SelectedEntity extends EntityMention {
+  blockFrom?: number;
+  blockTo?: number;
   section: string;
   revision: number;
 }

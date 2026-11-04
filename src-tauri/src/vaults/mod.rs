@@ -139,6 +139,7 @@ pub(crate) fn scope_json(vaults: &[Vault]) -> Result<String> {
     serde_json::to_string(&vaults.iter().map(|v| serde_json::json!({"id":v.id,"scope":v.scope})).collect::<Vec<_>>(),
     ).app()
 }
+#[cfg(test)]
 pub fn all(index: &Path, vaults: &[Vault]) -> Result<Vec<Source>> {
     let c=index_db(index)?;
     let mut q=c.prepare(&format!("SELECT payload FROM sources s WHERE {SCOPE_SQL}")).app()?;

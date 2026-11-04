@@ -1,5 +1,15 @@
 # Journal des changements
 
+## 0.3.0 — 2026-11-04, version de développement
+
+- Mode focus immersif : éditeur seul, compteur de mots, recherche et dictée en bas ; accès par `⌘ ⇧ F`, commande de recherche et réglages d’écriture. Les panneaux et couleurs d’entités sont masqués sans désactiver les moteurs.
+- Suggestions documentaires conservées par bloc logique ; modifier une ligne ne vide plus les autres résultats. Les marques des blocs inchangés suivent leurs nouveaux offsets, y compris après des éditions Unicode.
+- Cache de résultats dans SQLite pour la mémoire, les entités inline et les notes liées. Les changements de sources et d’alias invalident leurs dépendances ; les vues actualisent leurs résultats après indexation.
+- Migration du cache mémoire vers le schéma 4, avec copie SQLite cohérente avant migration d’un projet existant. Les identités de l’outline et l’historique du projet sont conservés.
+- Indication des liens en cours d’actualisation, protection contre les réponses asynchrones périmées et maintien du travail pendant les calculs en arrière-plan.
+
+Voir les [notes 0.3.0](docs/release-notes-0.3.0.md) pour les vérifications et limites.
+
 ## 0.2.2 — 2026-11-04, version de développement
 
 - Le nom affiché, les menus et le paquet utilisent `ariane`, en minuscules, sans suffixe de test.
