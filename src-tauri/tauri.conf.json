@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Ariane",
+  "productName": "ariane",
   "version": "0.2.2",
   "identifier": "fr.ariane.writer",
   "build": {
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Ariane",
+        "title": "ariane",
         "width": 1440,
         "height": 1000,
         "minWidth": 760,

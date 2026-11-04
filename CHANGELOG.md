@@ -2,6 +2,7 @@
 
 ## 0.2.2 — 2026-11-04, version de développement
 
+- Le nom affiché, les menus et le paquet utilisent `ariane`, en minuscules, sans suffixe de test.
 - Mémoire et recherche : encodages avec titres et budgets tokenisés, cache persistant par ligne logique de l’outline, lots avec reprise et vecteurs binaires validés.
 - Classement : fusion RRF pour la recherche explicite, seuils des suggestions séparés, priorité aux titres et alias exacts.
 - Entités : seuils par catégorie, types personnalisés, homonymes non fusionnés automatiquement et file durable de classement des notes.

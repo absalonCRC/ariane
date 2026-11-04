@@ -261,7 +261,7 @@ fn root(state: &AppState) -> Result<PathBuf> {
 }
 fn activate(state: &AppState, path: &Path) -> Result<Project> {
     if !path.join("ariane.sqlite").is_file() {
-        return Err("Ce dossier ne contient pas de projet Ariane.".into());
+        return Err("Ce dossier ne contient pas de projet ariane.".into());
     }
     let path = &path.canonicalize().app()?;
     let mut current = state.current.lock().map_err(|e| e.to_string())?;

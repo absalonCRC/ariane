@@ -49,4 +49,4 @@ jobs:
       - name: Build local app (ad hoc, no publication)
         run: npm run tauri build -- --bundles app
       - name: Check bundled resources
-        run: python3 scripts/verify-resources.py src-tauri/target/release/bundle/macos/Ariane.app/Contents/Resources/resources
+        run: python3 scripts/verify-resources.py src-tauri/target/release/bundle/macos/ariane.app/Contents/Resources/resources

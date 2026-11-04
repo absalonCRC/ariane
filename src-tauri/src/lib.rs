@@ -112,7 +112,7 @@ pub fn run() {
     let builder = builder.invoke_handler(tauri::generate_handler![api::dispatch, path_grants::choose_path]);
     let application = builder
         .build(tauri::generate_context!())
-        .expect("Impossible de démarrer Ariane");
+        .expect("Impossible de démarrer ariane");
     application.run(|app, event| {
         if let tauri::RunEvent::ExitRequested { api, .. } = &event {
             // Native ⌘Q follows the same durable save path as the close button.

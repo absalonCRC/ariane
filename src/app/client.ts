@@ -32,7 +32,7 @@ function makePreviewVault(path: string): Vault {
   const vault: Vault = {
     id: crypto.randomUUID(),
     path: 'Aperçu navigateur',
-    name: 'Vault Ariane',
+    name: 'Vault ariane',
     scope: [],
     count: 0,
     available: true,
@@ -281,7 +281,7 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
   }
   if (type === 'createVaultEntity') {
     const vault = previewVault(p.path);
-    if (!vault) throw new Error(t('Créez un vault Ariane.'));
+    if (!vault) throw new Error(t('Créez un vault ariane.'));
     const labels: Record<string, string> = {
       note: 'Note',
       personne: 'Personne',

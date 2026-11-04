@@ -8,7 +8,7 @@ use std::path::Path;
 
 pub(super) fn database(root: &Path) -> Result<Connection> {
     if !root.join("ariane.sqlite").is_file() {
-        return Err("Projet Ariane introuvable.".into());
+        return Err("Projet ariane introuvable.".into());
     }
     let c = project::database(root)?;
     // Read paths must not acquire a write lock just to reopen an initialized

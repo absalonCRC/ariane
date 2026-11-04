@@ -65,7 +65,7 @@ export function App() {
   const inlineEntities = useInlineEntities(workspace, memory.result, memory.entityError);
   useEffect(() => {
     if (import.meta.env.VITE_PERFORMANCE === '1')
-      void import('../performance/native').then(({ attach }) => attach(workspace, memory)).catch(error => { document.title = `Ariane — recette : ${String(error)}`; });
+      void import('../performance/native').then(({ attach }) => attach(workspace, memory)).catch(error => { document.title = `ariane — recette : ${String(error)}`; });
   });
   const [textSelection, setTextSelection] = useState<SelectionAnchor | null>(null);
   const [lines, setLines] = useState(1);

@@ -29,7 +29,7 @@ pub fn database(root: &Path) -> Result<Connection> {
     c.busy_timeout(std::time::Duration::from_secs(5)).app()?;
     c.execute_batch("PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;").app()?;
     let schema: i64 = c.pragma_query_value(None, "user_version", |r| r.get(0)).app()?;
-    if schema > SCHEMA_VERSION { return Err("Ce projet nécessite une version plus récente d’Ariane.".into()); }
+    if schema > SCHEMA_VERSION { return Err("Ce projet nécessite une version plus récente d’ariane.".into()); }
     if schema < SCHEMA_VERSION {
         // Recheck under SQLite's write lock: another process might have migrated
         // between the first check and this transaction.
@@ -115,7 +115,7 @@ pub fn load(root: &Path) -> Result<Project> {
 pub(crate) fn load_unlocked(root: &Path) -> Result<Project> {
     let root_dir = super::io::Dir::open(root)?;
     if root_dir.open_file("ariane.sqlite", libc::O_RDONLY, 0)?.is_none() {
-        return Err("Ce dossier ne contient pas de projet Ariane.".into());
+        return Err("Ce dossier ne contient pas de projet ariane.".into());
     }
     let c = database(root)?;
     let mut recovered = false;

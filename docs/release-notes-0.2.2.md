@@ -1,6 +1,6 @@
-# Ariane 0.2.2
+# ariane 0.2.2
 
-Version de développement du 4 novembre 2026 pour macOS 26+ sur Apple Silicon. Les versions npm, Cargo et Tauri sont alignées sur `0.2.2`. Cette version regroupe les améliorations des moteurs locaux et les correctifs révélés par leur validation. Les poids des modèles restent identiques.
+Version de développement du 4 novembre 2026 pour macOS 26+ sur Apple Silicon. Les versions npm, Cargo et Tauri sont alignées sur `0.2.2`. Cette version regroupe les améliorations des moteurs locaux et les correctifs révélés par leur validation. Les poids des modèles restent identiques. Le nom affiché et le paquet sont `ariane` / `ariane.app`, en minuscules et sans suffixe de test ; l’identifiant et les chemins de données existants sont conservés.
 
 ## Mémoire et recherche
 

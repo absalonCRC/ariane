@@ -63,6 +63,8 @@ Le résultat est dans `native-speech-authorized/report.json`. L’application de
 
 Après passage des manifestes à 0.2.2, la suite complète réussit de nouveau (`verify-0.2.2.log`) et le panneau macOS « À propos » affiche `0.2.2 (0.2.2)`. Le bundle est reconstruit séparément de la suite pour éviter des écritures simultanées dans `dist`. Le scénario avec précontrôle du microphone physique réussit ensuite : 40 960 échantillons à 48 kHz, transcription synthétique, sauvegarde, annulation/rétablissement et arrêt des pistes (`native-0.2.2-probe/`). Un lancement automatisé sans ce précontrôle avait expiré avant l’état d’enregistrement (`native-0.2.2-startup/`) ; la cause exacte de ce blocage du scénario synthétique n’est pas établie. Les PID propres aux deux essais ont disparu après fermeture.
 
+Le suffixe du paquet de test a ensuite été retiré ; le nom retenu pour l’application est `ariane`, tout en minuscules. La suite complète réussit après harmonisation des libellés et des chemins de construction (`verify-0.2.2-lowercase.log`). L’identité des données et les liens de projet restent identiques.
+
 Machine vérifiée : iMac21,1, Apple M1, 16 Go de RAM, alimentation secteur. L’autonomie ne peut pas être mesurée sur cet iMac sans batterie. `powermetrics` exige des privilèges indisponibles dans cette session : aucune mesure de watts ou d’énergie n’est revendiquée. Les CPU/RSS sont des indicateurs de charge. Les voix humaines, les accents régionaux réels, les autres Mac et les séances de plusieurs heures restent hors de la preuve obtenue.
 
 Les preuves locales sont dans `artifacts/ai-2026-11-03/validation-elargie/`, notamment `speech-final/`, `endurance/`, `native-large-success/`, `native-speech-authorized/`, `revision-multilingual-768.json` et `verify-authorized-final.log`. Les scripts et fixtures sont destinés au dépôt ; médias et résultats restent locaux. Cette campagne précède l’intégration des changements dans la [version 0.2.2](release-notes-0.2.2.md). Aucun paquet public ni activation du point 18 ne découle de ces essais.
@@ -76,8 +78,8 @@ python3 scripts/benchmark-speech-stress.py --manifest artifacts/ai-2026-11-03/va
 python3 scripts/benchmark-speech-stress.py --manifest artifacts/ai-2026-11-03/validation-elargie/speech-endurance-manifest.json --output /tmp/ariane-speech-endurance --timeout-seconds 1200
 python3 scripts/benchmark-revision.py --corpus benchmarks/fixtures/ai/revision-multilingual.json --output /tmp/ariane-revision-multilingual.json
 VITE_PERFORMANCE=1 npm run tauri build -- --debug --features performance-harness --config scripts/performance-config.json --bundles app
-python3 scripts/benchmark-native.py 'src-tauri/target/debug/bundle/macos/Ariane.app' /tmp/ariane-large --large
-python3 scripts/benchmark-native.py 'src-tauri/target/debug/bundle/macos/Ariane.app' /tmp/ariane-speech --speech-audio artifacts/ai-2026-11-03/validation-elargie/audio/fr-control-a-clean.wav --microphone-probe
+python3 scripts/benchmark-native.py 'src-tauri/target/debug/bundle/macos/ariane.app' /tmp/ariane-large --large
+python3 scripts/benchmark-native.py 'src-tauri/target/debug/bundle/macos/ariane.app' /tmp/ariane-speech --speech-audio artifacts/ai-2026-11-03/validation-elargie/audio/fr-control-a-clean.wav --microphone-probe
 npm run verify
 ```
 

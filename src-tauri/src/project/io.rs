@@ -151,4 +151,4 @@ mod platform {
 pub use platform::{lock, Dir};
 
 #[cfg(not(unix))]
-compile_error!("L'accès sécurisé aux projets Ariane nécessite les appels système Unix.");
+compile_error!("L'accès sécurisé aux projets ariane nécessite les appels système Unix.");

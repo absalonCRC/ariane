@@ -6,5 +6,5 @@
   <key>CFBundleLocalizations</key>
   <array><string>fr</string><string>en</string><string>es</string></array>
   <key>NSMicrophoneUsageDescription</key>
-  <string>Ariane utilise le microphone uniquement pendant la dictée vocale.</string>
+  <string>ariane utilise le microphone uniquement pendant la dictée vocale.</string>
 </dict></plist>

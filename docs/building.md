@@ -1,4 +1,4 @@
-# Construire Ariane
+# Construire ariane
 
 ## Plateforme et outils
 
@@ -17,7 +17,7 @@ npm ci
 python3 scripts/setup-resources.py
 npm run verify
 npm run tauri build -- --bundles app
-open src-tauri/target/release/bundle/macos/Ariane.app
+open src-tauri/target/release/bundle/macos/ariane.app
 ```
 
 `setup-resources.py` télécharge les archives décrites dans `native-dependencies.lock.json`, vérifie leurs empreintes et copie uniquement les exécutables et bibliothèques nécessaires. Aucun script d’installation Homebrew n’est exécuté. Les dépendances Mach-O sont relocalisées dans le paquet, puis signées ad hoc. `pdf-text` est compilé depuis son source Swift. Le modèle est téléchargé depuis la révision de `resources.lock.json` et vérifié avant installation.

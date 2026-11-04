@@ -122,7 +122,7 @@ npm ci
 python3 scripts/setup-resources.py
 npm run verify
 npm run tauri build -- --bundles app
-open src-tauri/target/release/bundle/macos/Ariane.app
+open src-tauri/target/release/bundle/macos/ariane.app
 ```
 
 Resource preparation downloads pinned native engines and EmbeddingGemma 300M Q8 (about 334 MB). The [Gemma terms](https://ai.google.dev/gemma/terms) apply to that model. A locally built bundle is signed ad hoc and is not notarized.

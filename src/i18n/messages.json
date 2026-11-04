@@ -571,9 +571,9 @@
     "Save project in…",
     "Guardar el proyecto en…"
   ],
-  "Ouvrir un projet Ariane": [
-    "Open an Ariane project",
-    "Abrir un proyecto de Ariane"
+  "Ouvrir un projet ariane": [
+    "Open an ariane project",
+    "Abrir un proyecto de ariane"
   ],
   "Un espace pour écrire.": [
     "A space to write.",
@@ -703,9 +703,9 @@
     "This project already has a vault.",
     "Este proyecto ya tiene un vault."
   ],
-  "Créez un vault Ariane.": [
-    "Create an Ariane vault.",
-    "Crea un vault de Ariane."
+  "Créez un vault ariane.": [
+    "Create an ariane vault.",
+    "Crea un vault de ariane."
   ],
   "Nom ou type de fiche invalide.": [
     "Invalid entry name or type.",
@@ -2255,9 +2255,9 @@
     "Create entry",
     "Crear la ficha"
   ],
-  "Dossier Ariane": [
-    "Ariane folder",
-    "Carpeta de Ariane"
+  "Dossier ariane": [
+    "ariane folder",
+    "Carpeta de ariane"
   ],
   "Lecture seule": [
     "Read-only",
@@ -2655,9 +2655,9 @@
     "Help",
     "Ayuda"
   ],
-  "Quitter Ariane": [
-    "Quit Ariane",
-    "Salir de Ariane"
+  "Quitter ariane": [
+    "Quit ariane",
+    "Salir de ariane"
   ],
   "Réglages…": [
     "Settings…",
@@ -2711,13 +2711,13 @@
     "Project sources…",
     "Fuentes del proyecto…"
   ],
-  "À propos d’Ariane": [
-    "About Ariane",
-    "Acerca de Ariane"
+  "À propos d’ariane": [
+    "About ariane",
+    "Acerca de ariane"
   ],
-  "Masquer Ariane": [
-    "Hide Ariane",
-    "Ocultar Ariane"
+  "Masquer ariane": [
+    "Hide ariane",
+    "Ocultar ariane"
   ],
   "Masquer les autres": [
     "Hide Others",
@@ -3007,9 +3007,9 @@
     "Empty entity name.",
     "Nombre de entidad vacío."
   ],
-  "Projet Ariane introuvable.": [
-    "Ariane project not found.",
-    "Proyecto de Ariane no encontrado."
+  "Projet ariane introuvable.": [
+    "ariane project not found.",
+    "Proyecto de ariane no encontrado."
   ],
   "Résultat GLiNER incompatible.": [
     "Incompatible GLiNER result.",
@@ -3119,9 +3119,9 @@
     "Unknown entry type.",
     "Tipo de ficha desconocido."
   ],
-  "Ce projet ne possède pas de vault Ariane accessible en écriture.": [
-    "This project has no writable Ariane vault.",
-    "Este proyecto no tiene un vault de Ariane con acceso de escritura."
+  "Ce projet ne possède pas de vault ariane accessible en écriture.": [
+    "This project has no writable ariane vault.",
+    "Este proyecto no tiene un vault de ariane con acceso de escritura."
   ],
   "Le dossier de fiches n’est pas accessible en sécurité.": [
     "The entry folder cannot be accessed safely.",
@@ -3219,9 +3219,9 @@
     "The local engine has stopped.",
     "El motor local se ha detenido."
   ],
-  "Ce dossier ne contient pas de projet Ariane.": [
-    "This folder does not contain an Ariane project.",
-    "Esta carpeta no contiene un proyecto de Ariane."
+  "Ce dossier ne contient pas de projet ariane.": [
+    "This folder does not contain an ariane project.",
+    "Esta carpeta no contiene un proyecto de ariane."
   ],
   "+ Ligne": [
     "+ Row",

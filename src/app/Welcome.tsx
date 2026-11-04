@@ -76,7 +76,7 @@ export function Welcome({
   }
   async function chooseFolder() {
     try {
-      const path = await choosePath('open', { title: t('Ouvrir un projet Ariane') });
+      const path = await choosePath('open', { title: t('Ouvrir un projet ariane') });
       if (typeof path === 'string') await openProject(path);
     } catch (e) {
       onError(e);

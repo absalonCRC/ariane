@@ -4,12 +4,12 @@ La version `0.2.2` cible macOS 26+, arm64. Les [notes de développement](release
 
 ## Paquet local sans compte Apple payant
 
-À partir d’un `Ariane.app` déjà construit et signé ad hoc, préparer un DMG local :
+À partir d’un `ariane.app` déjà construit et signé ad hoc, préparer un DMG local :
 
 ```sh
-python3 scripts/package-local.py --check-only src-tauri/target/release/bundle/macos/Ariane.app
-python3 scripts/package-local.py src-tauri/target/release/bundle/macos/Ariane.app dist-local
-cd dist-local && shasum -a 256 -c Ariane-*.dmg.sha256
+python3 scripts/package-local.py --check-only src-tauri/target/release/bundle/macos/ariane.app
+python3 scripts/package-local.py src-tauri/target/release/bundle/macos/ariane.app dist-local
+cd dist-local && shasum -a 256 -c ariane-*.dmg.sha256
 ```
 
 Le script refuse un nom de sortie déjà présent. Il vérifie la structure, l’architecture arm64 et la signature du bundle source, copie l’application sans la modifier, ajoute un raccourci Applications, puis vérifie l’image créée et son contenu après montage. Le manifeste SHA-256 est généré pour le DMG exact. Conserver ensemble le DMG, son manifeste et les [instructions d’installation](installing.md). Ces contrôles ne prouvent ni le démarrage sur un autre Mac, ni la confiance de Gatekeeper. Le paquet local ne constitue pas la release publique décrite ci-dessous.

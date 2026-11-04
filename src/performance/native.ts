@@ -35,7 +35,7 @@ export function attach(workspace: Workspace, controller: MemoryController) {
   if (started || !workspace.ready) return;
   started = true;
   void run().catch(async (error) => {
-    document.title = `Ariane — recette : ${String(error)}`;
+    document.title = `ariane — recette : ${String(error)}`;
     await invoke('performance', {
       action: 'report',
       payload: { ...partialReport, error: String(error), stack: error?.stack },
@@ -49,7 +49,7 @@ async function probeMicrophone(report: Record<string, unknown>) {
   let phase = 'permission';
   const bounded = async <T>(step: string, operation: Promise<T>) => {
     phase = step;
-    document.title = `Ariane — microphone : ${step}`;
+    document.title = `ariane — microphone : ${step}`;
     return Promise.race([
       operation,
       delay(10000).then(() => {
@@ -58,7 +58,7 @@ async function probeMicrophone(report: Record<string, unknown>) {
     ]);
   };
   try {
-    document.title = 'Ariane — microphone : autorisation macOS';
+    document.title = 'ariane — microphone : autorisation macOS';
     await request('voicePermission');
     const inputStream = await bounded<MediaStream>(
       'permission',
@@ -184,7 +184,7 @@ async function runSpeech(path: string, report: Record<string, unknown>, micropho
     };
     report.errors = current.error;
     await invoke('performance', { action: 'report', payload: report });
-    document.title = 'Ariane — dictée synthétique native vérifiée';
+    document.title = 'ariane — dictée synthétique native vérifiée';
   } finally {
     if (original) Object.defineProperty(navigator, 'mediaDevices', original);
     else Reflect.deleteProperty(navigator, 'mediaDevices');
@@ -213,7 +213,7 @@ async function run() {
     current.doc.configure({ enrichment: false });
     await request('memoryActivity', { active: true });
     await invoke('performance', { action: 'report', payload: report });
-    document.title = 'Ariane — mémoire native vérifiée';
+    document.title = 'ariane — mémoire native vérifiée';
     return;
   }
   const fixture = await invoke<{
@@ -385,7 +385,7 @@ async function run() {
   };
   view.scrollDOM.scrollTop = beforeScroll;
   await invoke('performance', { action: 'report', payload: report });
-  document.title = 'Ariane — mesure native terminée';
+  document.title = 'ariane — mesure native terminée';
 }
 
 async function runMemory(path: string, report: Record<string, unknown>) {
