@@ -19,7 +19,7 @@ Adjust the reading width, line spacing and focus mode to suit the way you write.
 
 ## The right context, beside the sentence
 
-Names in your draft receive automatic colors by entity type. Turn a detected mention into an entry in the project’s vault, or open an existing research note beside the sentence. Inspect its source and linked passages, then insert a reference when it belongs in your work.
+Names in your draft receive automatic colors by entity type and stay visible while you edit their context. Newly detected entities automatically receive an entry in the project’s vault; ambiguous names ask you to choose an existing entry or create a separate one. Add aliases to an entry so former names and pseudonyms refer to that same entry, or open an existing research note beside the sentence. Inspect its source and linked passages, then insert a reference when it belongs in your work.
 
 ![The full ariane window with a source card opened from a detected mention of Mara Vale](docs/media/sources.jpg)
 
@@ -34,7 +34,7 @@ Use an existing Obsidian vault in **read-only mode**, or create a vault owned by
 
 ## Keep the thought. Reconsider the sentence.
 
-Compare named drafts, inspect what changed and recover an individual passage. ariane saves a version before applying a passage or restoring a snapshot.
+Versions are saved automatically as you write, after a pause and when leaving a text. Automatic history is deduplicated and bounded; named drafts stay preserved. Compare earlier wording and recover an individual passage. ariane also saves a version before applying a passage or restoring a snapshot.
 
 ![Earlier and current wording, enlarged from the two columns of ariane’s native comparison view](docs/media/versions.jpg)
 
@@ -108,9 +108,9 @@ ariane is for novels, essays, documented narratives, theses and any long-form wo
 
 ## Try ariane
 
-**ariane 0.3.0 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
+**ariane 0.3.1 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
 
-There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.3.0 development notes](docs/release-notes-0.3.0.md) · [Roadmap to 1.0.0](docs/roadmap-1.0.0.md)
+There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.3.1 development notes](docs/release-notes-0.3.1.md) · [Roadmap to 1.0.0](docs/roadmap-1.0.0.md)
 
 <details>
 <summary>Build from source</summary>

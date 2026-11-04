@@ -63,12 +63,16 @@ export function useInlineEntities(
           const active = workspace.editor?.current?.context()?.section ?? scenes[0]?.id;
           const stamp = `${section.revision}:${workspace.sourceVersion}:${workspace.enrichmentVersion}:${refresh}:${analysisRevision}:${section.id === active ? JSON.stringify(memoryResult) : ''}`;
           if (fetched.current.get(section.id) === stamp) continue;
-          const value = await request<Omit<EntityBatch, 'section' | 'revision'>>('inlineEntities', {
+          const value = await request<
+            Omit<EntityBatch, 'section' | 'revision'> & { created?: boolean }
+          >('inlineEntities', {
             projectPath: p.path,
             section: section.id,
             revision: section.revision,
+            autoCreate: true,
           });
           if (!alive || latest.current.p?.path !== p.path) return;
+          if (value.created) workspace.setSourceVersion((v) => v + 1);
           if (value.text === section.text) {
             values.push({
               ...value,
@@ -81,7 +85,20 @@ export function useInlineEntities(
         }
         setBatches((old) => [
           ...old.filter((batch) => !values.some((v) => v.section === batch.section)),
-          ...values,
+          ...values.map((value) => {
+            const previous = old.find((b) => b.section === value.section);
+            const section = scenes.find((s) => s.id === value.section);
+            const retained = previous && section ? rebaseEntities(previous, section).mentions : [];
+            return {
+              ...value,
+              mentions: [
+                ...value.mentions,
+                ...retained.filter(
+                  (m) => !value.mentions.some((n) => m.from < n.to && m.to > n.from),
+                ),
+              ],
+            };
+          }),
         ]);
         setError('');
       } catch (e) {
@@ -127,6 +144,31 @@ export function useInlineEntities(
       if (latest.current.p?.path === path) setError(String(e));
     }
   }
+  async function choose(source: string) {
+    if (!selected || !p || busy || doc.status !== 'saved') return;
+    const path = p.path;
+    setBusy(true);
+    setError('');
+    try {
+      const value = await request<Source>('resolveDetectedEntity', {
+        projectPath: path,
+        section: selected.section,
+        revision: selected.revision,
+        from: selected.from,
+        to: selected.to,
+        source,
+      });
+      if (latest.current.p?.path !== path) return;
+      setSelected(null);
+      setRefresh((v) => v + 1);
+      workspace.setReader(value);
+      workspace.setSourceVersion((v) => v + 1);
+    } catch (e) {
+      if (latest.current.p?.path === path) setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
   async function create() {
     if (!selected || !p || busy || doc.status !== 'saved') return;
     const path = p.path;
@@ -162,6 +204,7 @@ export function useInlineEntities(
     busy,
     error: error || analysisError,
     create,
+    choose,
     open: openSource,
     close: () => setSelected(null),
   };

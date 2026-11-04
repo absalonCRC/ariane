@@ -10,8 +10,8 @@ export const setEntityMarks = StateEffect.define<{
   enabled?: boolean;
   hidden?: boolean;
 }>();
-// A transaction invalidates only the logical lines it edits. Other marks keep
-// their identity and move with the document, including UTF-16 offsets.
+// Keep literal names through context edits; invalidate only a changed name.
+// Positions follow the document in UTF-16, including within the edited line.
 export const entityMarks = StateField.define<{
   mentions: SelectedEntity[];
   colors: Record<string, string>;
@@ -21,27 +21,35 @@ export const entityMarks = StateField.define<{
   create: () => ({ mentions: [], colors: {} }),
   update(value, tr) {
     if (tr.docChanged) {
-      const touched: { from: number; to: number }[] = [];
-      tr.changes.iterChangedRanges((from, to) => {
-        touched.push({ from, to });
-      });
       value = {
         ...value,
-        mentions: value.mentions
-          .filter((m) => {
-            const from = m.blockFrom ?? tr.startState.doc.lineAt(m.from).from;
-            const to = m.blockTo ?? tr.startState.doc.lineAt(m.to).to;
-            return !touched.some(
-              (r) => r.to >= from && (r.from < to || r.from === tr.startState.doc.length),
-            );
-          })
-          .map((m) => ({
-            ...m,
-            from: tr.changes.mapPos(m.from, 1),
-            to: tr.changes.mapPos(m.to, -1),
-            blockFrom: m.blockFrom === undefined ? undefined : tr.changes.mapPos(m.blockFrom, 1),
-            blockTo: m.blockTo === undefined ? undefined : tr.changes.mapPos(m.blockTo, -1),
-          })),
+        mentions: value.mentions.flatMap((m) => {
+          const from = tr.changes.mapPos(m.from, 1);
+          const to = tr.changes.mapPos(m.to, -1);
+          const name = tr.startState.sliceDoc(m.from, m.to);
+          if (from >= to || tr.state.sliceDoc(from, to) !== name) return [];
+          // Extending a name at either edge changes its identity too.
+          const word = /[\p{L}\p{N}_]/u;
+          if (
+            (from > 0 &&
+              word.test(tr.state.sliceDoc(from - 1, from)) &&
+              (m.from === 0 || !word.test(tr.startState.sliceDoc(m.from - 1, m.from)))) ||
+            (to < tr.state.doc.length &&
+              word.test(tr.state.sliceDoc(to, to + 1)) &&
+              (m.to === tr.startState.doc.length ||
+                !word.test(tr.startState.sliceDoc(m.to, m.to + 1))))
+          )
+            return [];
+          return [
+            {
+              ...m,
+              from,
+              to,
+              blockFrom: m.blockFrom === undefined ? undefined : tr.changes.mapPos(m.blockFrom, 1),
+              blockTo: m.blockTo === undefined ? undefined : tr.changes.mapPos(m.blockTo, -1),
+            },
+          ];
+        }),
       };
     }
     for (const effect of tr.effects) if (effect.is(setEntityMarks)) value = effect.value;
@@ -66,7 +74,7 @@ export const entityMarks = StateField.define<{
               attributes: {
                 style: `--entity-color:${enabled === false ? 'inherit' : entityColor(m.kind, colors)}`,
                 'data-entity': String(index),
-                title: `${t(entityKind(m.kind))} · ${m.sourceId ? t('Fiche existante') : t('Fiche à créer')} · ${t('Cliquer pour consulter')}`,
+                title: `${t(entityKind(m.kind))} · ${m.sourceId ? t('Fiche existante') : t('Identifier cette entité')} · ${t('Cliquer pour consulter')}`,
               },
             }).range(m.from, m.to),
           ];

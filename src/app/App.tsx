@@ -18,6 +18,8 @@ import {
   Copy,
   ArrowUpRight,
   GitCompareArrows,
+  Focus,
+  Minimize2,
   X,
 } from 'lucide-react';
 import { Palette } from './Palette';
@@ -29,7 +31,8 @@ import { trackSidebarPointer } from '../project/sidebarPointer';
 import { Editor } from '../editor/Editor';
 import { SourceCard } from '../sources/SourceCard';
 import { Reader } from '../sources/Reader';
-import { SearchMargin } from '../sources/SearchMargin';
+import { FloatingVaultResults } from '../sources/FloatingVaultResults';
+import { useMarginPins } from '../sources/useMarginPins';
 import { DocumentTitle } from '../components/DocumentTitle';
 import { ordered } from '../project/tree';
 import { PathMenu } from '../project/PathMenu';
@@ -146,14 +149,13 @@ export function App() {
   useEffect(() => {
     if (workspace.palette) {
       setVoiceOpen(false);
-      memory.close();
       if (workspace.surface === 'settings') workspace.setSurface('none');
     }
   }, [workspace.palette]);
   useEffect(() => {
-    if (!workspace.palette || workspace.palette === 'sections')
-      workspace.editor.current?.clearTextSearch();
-  }, [workspace.palette]);
+    if (!workspace.searching) workspace.editor.current?.clearTextSearch();
+    else workspace.editor.current?.findText(workspace.searchQuery, 'first');
+  }, [workspace.palette, workspace.searchQuery, workspace.active, workspace.doc.generation]);
   const {
     fail,
     doc,
@@ -202,7 +204,29 @@ export function App() {
     surface === 'none' &&
     !newProject &&
     !workspace.newSection;
-  const sourcePresence = usePresenceValue(groups.length ? groups : null);
+  const pinSection = workspace.editor.current?.context()?.section ?? workspace.scenes[0]?.id;
+  const marginPins = useMarginPins(p?.path, pinSection, associationVersion);
+  const pinIds = new Set(marginPins.sources.map((s) => s.id));
+  const pinSource = (source: Source) =>
+    void marginPins.pin(source).then((added) => {
+      if (added) setGroupOpen('pinned');
+    });
+  const marginPinFor = (source: Source) => ({
+    canPin: !!pinSection,
+    busy: marginPins.busy,
+    pinned: pinIds.has(source.id),
+    error: marginPins.error,
+    onPin: () => pinSource(source),
+  });
+  const visibleGroups = [
+    ...(marginPins.sources.length
+      ? [{ id: 'pinned', top: workspace.marginBounds?.top ?? 55, sources: marginPins.sources }]
+      : []),
+    ...groups
+      .map((g) => ({ ...g, sources: g.sources.filter((s) => !pinIds.has(s.id)) }))
+      .filter((g) => g.sources.length),
+  ];
+  const sourcePresence = usePresenceValue(visibleGroups.length ? visibleGroups : null);
   const cardPresence = usePresenceValue(card);
   const [expandedHeight, setExpandedHeight] = useState(400);
   const [railScroll, setRailScroll] = useState(0);
@@ -340,6 +364,10 @@ export function App() {
         (workspace.historyMode ? 'versions-mode' : '')
       }
     >
+      <div className="chrome-blur chrome-blur-top" aria-hidden="true">
+        <span />
+        <span />
+      </div>
       {!binder && (
         <button
           className="edge-trigger"
@@ -358,6 +386,25 @@ export function App() {
       <header className="app-header" inert={workspace.libraryBusy}>
         <ArianeWordmark compact={!binder} />
         <div className="header-right">
+          {!workspace.historyMode && (
+            <button
+              className="focus-mode-trigger"
+              aria-label={
+                doc.settings.immersiveFocus
+                  ? t('Quitter le mode focus')
+                  : t('Activer le mode focus')
+              }
+              aria-pressed={!!doc.settings.immersiveFocus}
+              aria-keyshortcuts="Meta+Shift+F"
+              onClick={workspace.toggleFocus}
+            >
+              {doc.settings.immersiveFocus ? (
+                <Minimize2 size={16} aria-hidden="true" />
+              ) : (
+                <Focus size={16} aria-hidden="true" />
+              )}
+            </button>
+          )}
           <div className="menu-control" data-open={menu}>
             <button
               className="icon-button menu-trigger"
@@ -539,6 +586,7 @@ export function App() {
             }}
             onNoteError={fail}
             entities={inlineEntities.batches}
+            searchQuery={searching ? workspace.searchQuery : undefined}
             onEntity={(mention) => {
               memory.close();
               void inlineEntities.open(mention);
@@ -587,7 +635,7 @@ export function App() {
               key={p.path}
               project={p}
               active={active}
-              flush={doc.flush}
+              flush={doc.checkpoint}
               onClose={() => {
                 workspace.setHistoryMode(false);
                 setSurface('none');
@@ -621,9 +669,9 @@ export function App() {
       )}
       {!workspace.annotationsOpen &&
         !workspace.historyMode &&
-        words > 0 &&
+        (words > 0 || marginPins.sources.length > 0) &&
         railVisible &&
-        !(reader || (memory.view && !memory.origin) || searching) && (
+        !(reader || (memory.view && !memory.origin)) && (
           <div
             className="source-margin"
             aria-label={t('Sources dans la marge')}
@@ -652,46 +700,59 @@ export function App() {
                 style={{ top: g.top - (workspace.marginBounds?.top ?? 0) }}
               >
                 {g.sources.slice(0, groupOpen === g.id ? g.sources.length : 2).map((s) => (
-                  <button
-                    className="source-label entity-tinted"
-                    style={{
-                      ...entityTint(s.kind, doc.settings.entityColors),
-                      ...(cardPresence.value?.source.id === s.id
-                        ? { height: expandedHeight, minHeight: expandedHeight }
-                        : {}),
-                    }}
-                    key={s.id}
-                    onContextMenu={(event) =>
-                      openMenu(
-                        event,
-                        sourceContext(s, {
-                          onRead: () => read(s),
-                          onCite: (quote) => cite(s, quote),
-                        }),
-                      )
-                    }
-                    data-expanded={card?.source.id === s.id}
-                    onClick={(event) => {
-                      setSurface('none');
-                      setCard({
-                        source: s,
-                        top: g.top,
-                        origin: panelOrigin(event.currentTarget, s.title),
-                      });
-                    }}
-                  >
-                    <span>{s.title}</span>
-                    <small>
-                      {t(s.kind)} ·{' '}
-                      {associated.has(s.id)
-                        ? t('associée à cette section')
-                        : s.score === 100
-                          ? t('mention détectée')
-                          : s.score === 80 || s.score === 40
-                            ? t('lien entre sources')
-                            : 'suggestion'}
-                    </small>
-                  </button>
+                  <div key={s.id} className="margin-source-item" data-pinned={g.id === 'pinned'}>
+                    <button
+                      className="source-label entity-tinted"
+                      style={{
+                        ...entityTint(s.kind, doc.settings.entityColors),
+                        ...(cardPresence.value?.source.id === s.id
+                          ? { height: expandedHeight, minHeight: expandedHeight }
+                          : {}),
+                      }}
+                      key={s.id}
+                      onContextMenu={(event) =>
+                        openMenu(
+                          event,
+                          sourceContext(s, {
+                            onRead: () => read(s),
+                            onCite: (quote) => cite(s, quote),
+                          }),
+                        )
+                      }
+                      data-expanded={card?.source.id === s.id}
+                      onClick={(event) => {
+                        setSurface('none');
+                        setCard({
+                          source: s,
+                          top: g.top,
+                          origin: panelOrigin(event.currentTarget, s.title),
+                        });
+                      }}
+                    >
+                      <span>{s.title}</span>
+                      <small>
+                        {t(s.kind)} ·{' '}
+                        {g.id === 'pinned'
+                          ? t('Ajoutée à la marge')
+                          : associated.has(s.id)
+                            ? t('associée à cette section')
+                            : s.score === 100
+                              ? t('mention détectée')
+                              : s.score === 80 || s.score === 40
+                                ? t('lien entre sources')
+                                : 'suggestion'}
+                      </small>
+                    </button>
+                    {g.id === 'pinned' && (
+                      <button
+                        className="margin-unpin icon-button"
+                        aria-label={t('Retirer {0} de la marge', { 0: s.title })}
+                        onClick={() => void marginPins.remove(s.id)}
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
                 ))}
                 {g.sources.length > 2 && (
                   <button
@@ -722,7 +783,7 @@ export function App() {
           </div>
         )}
       <Presence kind="content">
-        {!workspace.historyMode && memory.showResume && !memory.view && !reader && !searching && (
+        {!workspace.historyMode && memory.showResume && !memory.view && !reader && (
           <button className="memory-resume" onClick={() => memory.open({ kind: 'resume' })}>
             {t('Reprendre le fil')}
           </button>
@@ -734,8 +795,7 @@ export function App() {
           contextVisible &&
           doc.settings.focus === 'none' &&
           !memory.view &&
-          !reader &&
-          !searching && (
+          !reader && (
             <div
               className="memory-suggestion"
               style={{ top: contextTop!, left: railLeft, width: railWidth }}
@@ -830,10 +890,12 @@ export function App() {
             key={card.source.id}
             origin={card.origin}
             source={card.source}
+            marginPin={marginPinFor(card.source)}
             sections={p.sections}
             contentVersion={`${doc.status}:${doc.generation}`}
             onOccurrence={(hit) => void workspace.locateSourceMatch(hit, hit.matched)}
             citationStyle={doc.settings.citationStyle}
+            colors={doc.settings.entityColors}
             onRegister={(s, t) => workspace.registerCitation(s, t).catch(fail)}
             top={card.top}
             onClose={() => setCard(null)}
@@ -859,6 +921,7 @@ export function App() {
         {reader && (
           <Reader
             source={reader}
+            marginPin={marginPinFor(reader)}
             sections={p.sections}
             contentVersion={`${doc.status}:${doc.generation}`}
             onOccurrence={(hit) => void workspace.locateSourceMatch(hit, hit.matched)}
@@ -869,6 +932,7 @@ export function App() {
               if (doc.ref.current?.path === p.path) {
                 setReader((current) => (current?.id === source.id ? source : current));
                 workspace.refreshEnrichment();
+                workspace.setSourceVersion((v) => v + 1);
               }
             }}
             onRead={(id) =>
@@ -882,25 +946,11 @@ export function App() {
           />
         )}
       </Presence>{' '}
-      {searching && !reader && !(memory.view && !memory.origin) && (
-        <SearchMargin
-          colors={doc.settings.entityColors}
-          expandedId={cardPresence.value?.source.id}
-          expandedHeight={expandedHeight}
-          sources={workspace.unifiedSearch.sources}
-          busy={workspace.unifiedSearch.busy}
-          error={workspace.unifiedSearch.error}
-          onOpen={(source, element) => {
-            setSurface('none');
-            setCard({
-              source,
-              top: element.getBoundingClientRect().top,
-              origin: panelOrigin(element, source.title),
-            });
-          }}
-        />
-      )}
       <footer className="statusbar">
+        <div className="chrome-blur chrome-blur-bottom" aria-hidden="true">
+          <span />
+          <span />
+        </div>
         <div className="save-state" role="status">
           {doc.status === 'saved' && memory.pending && !searching && t('Actualisation des liens…')}
           <Presence kind="content">
@@ -942,16 +992,8 @@ export function App() {
             words={words}
             characters={characters}
             lines={lines}
-            notes={countVaultNotes(searching ? workspace.unifiedSearch.sources : workspace.sources)}
-            notesStatus={
-              searching
-                ? workspace.unifiedSearch.busy
-                  ? 'loading'
-                  : workspace.unifiedSearch.error
-                    ? 'error'
-                    : 'ready'
-                : workspace.sourceStatus
-            }
+            notes={countVaultNotes([...workspace.sources, ...marginPins.sources])}
+            notesStatus={workspace.sourceStatus}
             hideNotes={focusActive}
             mode={focusActive ? 'words' : doc.settings.countMode}
             onChange={(countMode) => {
@@ -965,14 +1007,7 @@ export function App() {
             textSearch={workspace.palette === 'text'}
             searchScope={p.path}
             initialQuery={workspace.initialSearch}
-            matches={workspace.unifiedSearch.manuscript.items}
-            matchTotal={workspace.unifiedSearch.manuscript.total}
-            onMatch={(hit) => void workspace.locateMatch(hit)}
-            onTextSearch={(query) => {
-              workspace.setSearchQuery(query);
-              setCard(null);
-              editor.current?.clearTextSearch();
-            }}
+            onTextSearch={(query) => workspace.setSearchQuery(query)}
             onNextMatch={(query, backwards) =>
               editor.current?.findText(query, backwards ? 'previous' : 'next')
             }
@@ -1015,6 +1050,20 @@ export function App() {
                   )
             }
           />
+          {searching && (
+            <FloatingVaultResults
+              query={workspace.searchQuery}
+              sources={workspace.vaultSearch.sources}
+              busy={workspace.vaultSearch.busy}
+              error={workspace.vaultSearch.error || marginPins.error}
+              colors={doc.settings.entityColors}
+              pinned={pinIds}
+              pinning={marginPins.busy}
+              canPin={!!pinSection}
+              onOpen={(source) => void read(source)}
+              onPin={pinSource}
+            />
+          )}
           <div
             ref={setPanelNode}
             id="bottom-writing-panel"
@@ -1060,7 +1109,6 @@ export function App() {
               open={surface === 'settings'}
               value={doc.settings}
               onChange={doc.configure}
-              onToggleFocus={workspace.toggleFocus}
               onFocusPreview={setFocusPreview}
               onFontPreview={setFontPreview}
               onScrollPreview={setScrollPreview}

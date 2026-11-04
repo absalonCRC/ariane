@@ -10,7 +10,7 @@ export function ReadingComfort({
 }) {
   useLocale();
   return (
-    <details className="reading-comfort">
+    <details className="reading-comfort" open>
       <summary>{t('Confort de lecture')}</summary>
       <label className="settings-row">
         <span className="settings-label">

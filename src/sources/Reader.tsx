@@ -10,7 +10,9 @@ import type { Source } from '../app/types';
 import { request } from '../app/client';
 import { useContextMenu } from '../components/ContextMenu';
 import { selectedSourceText, sourceContext } from './contextMenu';
+import { SourceAliases } from './SourceAliases';
 import { EnrichmentView } from '../enrichment/EnrichmentView';
+import { MarginPinAction, type MarginPinProps } from './MarginPinAction';
 export function Reader({
   source: s,
   sections = [],
@@ -22,6 +24,7 @@ export function Reader({
   onRead,
   onLocate,
   onCite,
+  marginPin,
 }: {
   source: Source;
   sections?: Section[];
@@ -32,6 +35,7 @@ export function Reader({
   onChange: (source: Source) => void;
   onRead: (id: string) => void;
   onCite?: (quote: string) => unknown;
+  marginPin?: MarginPinProps;
   onLocate: (section: string, node: string | null, quote: string) => void;
 }) {
   useLocale();
@@ -40,7 +44,7 @@ export function Reader({
   usePanelFocus(panel, true);
   const fields = Object.entries(s.fields || {}).filter(
     ([key, value]) =>
-      !['nom', 'title', 'titre', 'type'].includes(key.toLocaleLowerCase()) &&
+      !['nom', 'title', 'titre', 'type', 'alias', 'aliases'].includes(key.toLocaleLowerCase()) &&
       value !== null &&
       value !== '' &&
       (!Array.isArray(value) || value.length > 0) &&
@@ -88,7 +92,7 @@ export function Reader({
       }}
     >
       <div className="panel-top">
-        <span>{t('SOURCE · LECTURE SEULE')}</span>
+        <span>{t('Source complète')}</span>
         <button className="icon-button" aria-label={t('Fermer la source')} onClick={onClose}>
           <X size={16} />
         </button>
@@ -96,6 +100,7 @@ export function Reader({
       <div className="state-content" key={s.id}>
         <p className="source-path">{s.path}</p>
         <h2>{s.title}</h2>
+        {marginPin && <MarginPinAction {...marginPin} />}
         {s.selectedExcerpt && (
           <blockquote ref={excerpt} className="memory-source-excerpt">
             {s.selectedExcerpt}
@@ -139,6 +144,7 @@ export function Reader({
             onLocate={onOccurrence}
           />
         )}
+        <SourceAliases source={s} projectPath={projectPath} onChange={onChange} />
         <EnrichmentView
           source={s}
           projectPath={projectPath}

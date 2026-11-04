@@ -1,5 +1,5 @@
 import { stageDraft, type SectionDraft } from './draft';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { request } from '../app/client';
 import {
   defaultSettings,
@@ -27,7 +27,19 @@ export function useProject(onError: (e: unknown) => void) {
   const dirty = useRef(new Map<string, SectionDraft>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saving = useRef<Promise<void> | null>(null);
+  const changed = useRef(new Map<string, symbol>());
+  const checkpointTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+      if (checkpointTimer.current) clearTimeout(checkpointTimer.current);
+    },
+    [],
+  );
   const activate = useCallback((p: Project) => {
+    if (timer.current) clearTimeout(timer.current);
+    if (checkpointTimer.current) clearTimeout(checkpointTimer.current);
+    changed.current.clear();
     ref.current = p;
     sectionIndex.current = new Map(p.sections.map((section) => [section.id, section]));
     setProject(p);
@@ -84,6 +96,29 @@ export function useProject(onError: (e: unknown) => void) {
     await task;
     if (dirty.current.size) return flush();
   }, [onError]);
+  const checkpoint = useCallback(async () => {
+    const path = ref.current?.path;
+    if (!path) return;
+    if (checkpointTimer.current) clearTimeout(checkpointTimer.current);
+    await flush();
+    if (ref.current?.path !== path) return;
+    const pending = new Map(changed.current);
+    for (const [scope, token] of pending) {
+      if (ref.current?.path !== path) return;
+      if (sectionIndex.current.has(scope)) {
+        await request('automaticVersion', { projectPath: path, scope });
+      }
+      if (changed.current.get(scope) === token) changed.current.delete(scope);
+    }
+  }, [flush]);
+  const scheduleCheckpoint = useCallback(
+    (ids: Iterable<string>) => {
+      for (const id of ids) changed.current.set(id, Symbol());
+      if (checkpointTimer.current) clearTimeout(checkpointTimer.current);
+      checkpointTimer.current = setTimeout(() => void checkpoint().catch(onError), 90_000);
+    },
+    [checkpoint, onError],
+  );
   const edit = useCallback(
     (changes: Map<string, string>, outlines?: Map<string, Outline>) => {
       for (const [id, text] of changes) {
@@ -95,12 +130,13 @@ export function useProject(onError: (e: unknown) => void) {
         }
         dirty.current.set(id, () => ({ text, outline }));
       }
+      scheduleCheckpoint(changes.keys());
       for (const listener of editListeners.current) listener();
       setStatus('editing');
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => void flush().catch(() => {}), 650);
     },
-    [flush],
+    [flush, scheduleCheckpoint],
   );
   const editDraft = useCallback(
     (drafts: Map<string, SectionDraft>) => {
@@ -109,12 +145,13 @@ export function useProject(onError: (e: unknown) => void) {
         if (section) stageDraft(section, draft);
         dirty.current.set(id, draft);
       }
+      scheduleCheckpoint(drafts.keys());
       for (const listener of editListeners.current) listener();
       setStatus('editing');
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => void flush().catch(() => {}), 650);
     },
-    [flush],
+    [flush, scheduleCheckpoint],
   );
   const configure = useCallback(
     (patch: Partial<Settings>) => {
@@ -164,6 +201,7 @@ export function useProject(onError: (e: unknown) => void) {
     edit,
     editDraft,
     flush,
+    checkpoint,
     replaceSections,
   };
 }

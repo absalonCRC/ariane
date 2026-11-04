@@ -1,7 +1,6 @@
 import { t, useLocale } from '../i18n';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { ManuscriptMatch } from './projectSearch';
 import { Search } from 'lucide-react';
 import { useExitPresence } from '../components/useExitPresence';
 export interface Command {
@@ -20,9 +19,6 @@ export function Palette({
   onTextSearch,
   onNextMatch,
   initialQuery = '',
-  matches,
-  matchTotal = 0,
-  onMatch,
   panel,
   retainContent = false,
 }: {
@@ -36,9 +32,6 @@ export function Palette({
   onTextSearch: (query: string) => void;
   onNextMatch: (query: string, backwards: boolean) => void;
   initialQuery?: string;
-  matches?: ManuscriptMatch[];
-  matchTotal?: number;
-  onMatch?: (hit: ManuscriptMatch) => void;
   panel: HTMLElement | null;
   retainContent?: boolean;
 }) {
@@ -61,8 +54,8 @@ export function Palette({
     }, 100);
     return () => window.clearTimeout(timer);
   }, [open, sections, textSearch, searchScope, initialQuery]);
-  const commandSearch = !sections && query.startsWith('/');
-  const searchTerm = (commandSearch ? query.slice(1) : query).trim().toLocaleLowerCase();
+  const commandSearch = !sections && !textSearch;
+  const searchTerm = (commandSearch ? query.replace(/^\//, '') : query).trim().toLocaleLowerCase();
   const filtered =
     commandSearch || (sections && searchTerm)
       ? commands.filter((c) => c.label.toLocaleLowerCase().includes(searchTerm))
@@ -116,29 +109,18 @@ export function Palette({
                 setSelected(0);
                 if (!sections) onTextSearch(event.target.value);
               }}
-              role="combobox"
-              aria-expanded={commandSearch || !!searchTerm}
-              aria-controls={commandSearch || sections ? 'palette-results' : 'manuscript-results'}
-              aria-activedescendant={
-                filtered[selected]
-                  ? `palette-result-${selected}`
-                  : !commandSearch && !sections && matches?.[selected]
-                    ? `manuscript-result-${selected}`
-                    : undefined
-              }
+              role={commandSearch || sections ? 'combobox' : 'searchbox'}
+              aria-expanded={commandSearch || sections ? !!filtered.length : undefined}
+              aria-controls={commandSearch || sections ? 'palette-results' : undefined}
+              aria-activedescendant={filtered[selected] ? `palette-result-${selected}` : undefined}
               onKeyDown={(event) => {
                 if (
                   !sections &&
                   !commandSearch &&
-                  matches?.length &&
                   (event.key === 'ArrowDown' || event.key === 'ArrowUp')
                 ) {
                   event.preventDefault();
-                  setSelected(
-                    (current) =>
-                      (current + (event.key === 'ArrowDown' ? 1 : -1) + matches.length) %
-                      matches.length,
-                  );
+                  onNextMatch(query, event.key === 'ArrowUp');
                 } else if (
                   (event.key === 'ArrowDown' || event.key === 'ArrowUp') &&
                   filtered.length
@@ -151,9 +133,7 @@ export function Palette({
                   );
                 } else if (event.key === 'Enter' && !sections && !commandSearch) {
                   event.preventDefault();
-                  if (matches?.length && onMatch)
-                    onMatch(matches[Math.min(selected, matches.length - 1)]);
-                  else onNextMatch(query, event.shiftKey);
+                  onNextMatch(query, event.shiftKey);
                 } else if (event.key === 'Enter' && filtered[selected]) {
                   event.preventDefault();
                   run(filtered[selected]);
@@ -184,38 +164,6 @@ export function Palette({
                 ) : (
                   <span>{t('Aucun résultat')}</span>
                 )}
-              </div>
-            )}
-            {!sections && !commandSearch && !!searchTerm && matches && (
-              <div className="manuscript-search-results">
-                <small role="status">
-                  {matchTotal
-                    ? t('{0} résultat{1} dans les textes', {
-                        0: matchTotal,
-                        1: matchTotal > 1 ? 's' : '',
-                      })
-                    : t('Aucun passage dans les textes')}
-                  {matchTotal > matches.length
-                    ? t(' · {0} affichés, précisez la recherche', { 0: matches.length })
-                    : ''}
-                </small>
-                <div id="manuscript-results" role="listbox" aria-label={t('Passages du projet')}>
-                  {matches.map((hit, index) => (
-                    <button
-                      role="option"
-                      aria-selected={selected === index}
-                      id={`manuscript-result-${index}`}
-                      key={hit.key}
-                      className="manuscript-search-result"
-                      data-selected={selected === index}
-                      onMouseEnter={() => setSelected(index)}
-                      onClick={() => onMatch?.(hit)}
-                    >
-                      <strong>{hit.title}</strong>
-                      <span>{hit.excerpt}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
             )}
             <span className="sr-only" aria-live="polite">

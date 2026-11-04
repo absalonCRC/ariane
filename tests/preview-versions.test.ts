@@ -31,5 +31,8 @@ it('captures and restores a scoped version without replacing unrelated writing',
   expect(restored.sections.find((s) => s.id === second.id)?.text).toBe('À préserver.');
   const versions = await request<Version[]>('versions');
   expect(versions[0]).toMatchObject({ name: 'Avant restauration', scope: first.id });
-  expect(versions[0].sections[0].text).toBe('Révisé.');
+  expect(versions[0].sections).toEqual([]);
+  expect((await request<Version>('version', { id: versions[0].id })).sections[0].text).toBe(
+    'Révisé.',
+  );
 });

@@ -136,7 +136,7 @@ export function useSharedPanel(
             width: `${origin.width}px`,
             height: `${origin.height}px`,
             borderRadius: '2px',
-            background: 'var(--theme-paper, #fafafa)',
+            background: 'var(--shared-panel-background, var(--theme-paper, #fafafa))',
             clipPath: clip(origin.top, origin.height),
           },
           {
@@ -145,7 +145,7 @@ export function useSharedPanel(
             width: `${destination.width}px`,
             height: `${destination.height}px`,
             borderRadius: '18px',
-            background: 'var(--theme-hover, #f2f2f2)',
+            background: 'var(--shared-panel-background, var(--theme-hover, #f2f2f2))',
             clipPath: element.style.clipPath,
           },
         ],

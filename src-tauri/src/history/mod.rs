@@ -1,9 +1,12 @@
+mod automatic;
+pub use automatic::checkpoint;
+pub(crate) use automatic::checkpoint_with;
 use crate::{
     error::{AppResult, Result},
     model::*,
     project,
 };
-use rusqlite::params;
+use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 #[derive(Serialize, Deserialize, Default)]
@@ -15,6 +18,8 @@ struct Snapshot {
     citations: Vec<(String, String)>,
     #[serde(default)]
     links: Vec<(String, String, String)>,
+    #[serde(default)]
+    pins: Vec<(String, String)>,
 }
 fn unpack(payload: &str) -> Result<Snapshot> {
     if payload.trim_start().starts_with('[') {
@@ -35,27 +40,32 @@ pub fn descendants(all: &[Section], id: &str) -> Vec<Section> {
 }
 pub fn capture(root: &Path, name: &str, scope: Option<String>) -> Result<Version> {
     crate::project::with_lock(root, || {
-    let c = project::database(root)?;
+        let c = project::database(root)?;
+        let snapshot = snapshot(&c, &scope)?;
+        insert(&c, name, scope, snapshot)
+    })
+}
+fn snapshot(c: &Connection, scope: &Option<String>) -> Result<Snapshot> {
     let sections = if let Some(id) = &scope {
         project::validate_id(id)?;
         let mut q = c.prepare("WITH RECURSIVE chosen(id) AS (SELECT id FROM sections WHERE id=? UNION SELECT s.id FROM sections s JOIN chosen ON s.parent=chosen.id) SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE id IN chosen ORDER BY position,id").app()?;
         let rows = q.query_map([id], project::row_section).app()?;
         rows.collect::<std::result::Result<Vec<_>,_>>().app()?
-    } else { project::all_sections(&c)? };
+    } else { project::all_sections(c)? };
     let settings: String = c
         .query_row("SELECT value FROM meta WHERE key='settings'", [], |r| {
             r.get(0)
         })
         .unwrap_or("{}".into());
     let ids=serde_json::to_string(&sections.iter().map(|s|&s.id).collect::<Vec<_>>()).app()?;
-    let mut query = c.prepare("SELECT id,payload FROM citations WHERE ?1 IS NULL OR EXISTS(SELECT 1 FROM sections WHERE id IN (SELECT value FROM json_each(?2)) AND instr(text,citations.id)>0)").app()?;
+    let mut query = c.prepare("SELECT id,payload FROM citations WHERE ?1 IS NULL OR EXISTS(SELECT 1 FROM sections WHERE id IN (SELECT value FROM json_each(?2)) AND instr(text,citations.id)>0) ORDER BY id").app()?;
     let citations = query
         .query_map(params![scope,ids], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))
         .app()?
         .collect::<std::result::Result<Vec<_>, _>>()
         .app()?;
     let mut query = c
-        .prepare("SELECT section,source,payload FROM links WHERE section IN (SELECT value FROM json_each(?1))")
+        .prepare("SELECT section,source,payload FROM links WHERE section IN (SELECT value FROM json_each(?1)) ORDER BY section,source")
         .app()?;
     let links = query
         .query_map([&ids], |r| {
@@ -68,19 +78,24 @@ pub fn capture(root: &Path, name: &str, scope: Option<String>) -> Result<Version
         .app()?
         .collect::<std::result::Result<Vec<_>, _>>()
         .app()?;
-    let payload = serde_json::to_string(&Snapshot {
-        sections: sections.clone(),
-        settings: serde_json::from_str(&settings).app()?,
-        citations,
-        links,
-    })
-    .app()?;
+    let pins = if has_pins(c)? {
+        let mut q = c.prepare("SELECT section,source FROM margin_pins WHERE section IN (SELECT value FROM json_each(?1)) ORDER BY section,source").app()?;
+        let rows = q.query_map([&ids], |r| Ok((r.get(0)?, r.get(1)?))).app()?;
+        rows.collect::<std::result::Result<Vec<_>, _>>().app()?
+    } else { vec![] };
+    Ok(Snapshot { sections, settings: serde_json::from_str(&settings).app()?, citations, links, pins })
+}
+fn has_pins(c: &Connection) -> Result<bool> {
+    c.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='margin_pins')", [], |r| r.get(0)).app()
+}
+fn insert(c: &Connection, name: &str, scope: Option<String>, snapshot: Snapshot) -> Result<Version> {
+    let payload = serde_json::to_string(&snapshot).app()?;
     let v = Version {
         id: uuid::Uuid::new_v4().to_string(),
         name: name.trim().to_owned(),
         created: chrono::Utc::now().to_rfc3339(),
         scope,
-        sections,
+        sections: snapshot.sections,
     };
     if v.name.is_empty() {
         return Err("Nommez cette version.".into());
@@ -91,7 +106,6 @@ pub fn capture(root: &Path, name: &str, scope: Option<String>) -> Result<Version
     )
     .app()?;
     Ok(v)
-    })
 }
 // The list deliberately excludes manuscript payloads; a version is loaded on demand.
 #[cfg(test)]
@@ -170,7 +184,9 @@ pub fn restore(root: &Path, id: &str) -> Result<Project> {
         before.clone()
     };
     let tx = c.transaction().app()?;
+    let pins_exist = has_pins(&tx)?;
     for s in &affected {
+        if pins_exist { tx.execute("DELETE FROM margin_pins WHERE section=?", [&s.id]).app()?; }
         tx.execute("DELETE FROM sections WHERE id=?", [&s.id])
             .app()?;
         tx.execute("DELETE FROM links WHERE section=?", [&s.id])
@@ -208,6 +224,12 @@ pub fn restore(root: &Path, id: &str) -> Result<Project> {
             params![section, id, payload],
         )
         .app()?;
+    }
+    if !snapshot.pins.is_empty() {
+        tx.execute_batch("CREATE TABLE IF NOT EXISTS margin_pins(section TEXT NOT NULL,source TEXT NOT NULL,PRIMARY KEY(section,source));").app()?;
+        for (section, source) in snapshot.pins {
+            tx.execute("INSERT OR IGNORE INTO margin_pins VALUES(?,?)", params![section,source]).app()?;
+        }
     }
     tx.execute("DELETE FROM structure_history", []).app()?;
     tx.commit().app()?;
@@ -276,7 +298,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(restore(d.path(), &v.id).unwrap().sections[0].text, "");
-        assert_eq!(list(d.path()).unwrap().len(), 2);
+        assert_eq!(list(d.path()).unwrap().len(), 3);
         assert!(list(d.path()).unwrap()[0].sections.is_empty());
     }
     #[test]

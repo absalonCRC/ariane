@@ -5,6 +5,7 @@ import type { Workspace } from '../app/useWorkspace';
 import type { Project, Source } from '../app/types';
 import { request } from '../app/client';
 import { compose } from '../editor/composite';
+import { normalizedMatches } from '../editor/normalizedSearch';
 import captureWorklet from '../voice/capture.worklet.js?url&no-inline';
 import type { MemoryController, MemoryEntity, MemoryResult } from '../enrichment/useMemory';
 let current: Workspace;
@@ -324,16 +325,17 @@ async function run() {
   };
   requestAnimationFrame(watch);
   current.setSearch('mémoire');
-  await until(() => current.unifiedSearch.manuscript.total > 0 && !current.unifiedSearch.busy);
+  await until(() => !!document.querySelector('.cm-text-search-match.current'));
   watching = false;
   report.manuscriptSearch = {
     ms: performance.now() - manuscriptStart,
     paintedFrames,
-    total: current.unifiedSearch.manuscript.total,
-    visible: current.unifiedSearch.manuscript.items.length,
+    scope: 'open-text',
+    total: normalizedMatches(current.editor.current!.text(), 'mémoire').length,
+    visible: document.querySelectorAll('.cm-text-search-match').length,
   };
-  if (paintedFrames < 2 || current.unifiedSearch.manuscript.items.length > 200)
-    throw new Error('Manuscript worker responsiveness failed');
+  if (document.querySelectorAll('.cm-text-search-match.current').length !== 1)
+    throw new Error('Direct manuscript search did not select one occurrence');
   current.setSearch(null);
   report.documentCharacters = current.editor.current!.text().length;
   report.sourceStatus = current.sourceStatus;

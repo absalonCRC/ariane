@@ -194,7 +194,6 @@ fn save_report_with(root: &Path, patches: Vec<TextPatch>, mut before_mirror: imp
     super::with_lock(root, || {
         let root_dir = super::io::Dir::open(root)?;
         let mut c = database(root)?;
-        let mut captures = Vec::new();
         let mut seen = std::collections::HashSet::new();
         for patch in &patches {
             super::validate_id(&patch.id)?;
@@ -204,15 +203,9 @@ fn save_report_with(root: &Path, patches: Vec<TextPatch>, mut before_mirror: imp
                 |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?))).app()?;
             if rev != patch.revision { return Err("Le texte a changé depuis cette sauvegarde. Rechargez sa version.".into()); }
             let old_outline = raw.map(|json| serde_json::from_str::<Outline>(&json).app()).transpose()?;
-            let next_outline = effective_outline(patch, &old, old_outline.clone())?;
+            effective_outline(patch, &old, old_outline)?;
             validate_disk(&root_dir, &patch.id, &old, &mir, pending.as_deref())?;
-            if (old != patch.text && !old.is_empty()) || (old == patch.text && old_outline != next_outline) {
-                let last: String = c.query_row("SELECT created FROM versions WHERE scope=? AND name='Sauvegarde automatique' ORDER BY created DESC LIMIT 1", [&patch.id], |r| r.get(0)).unwrap_or_default();
-                let due = chrono::DateTime::parse_from_rfc3339(&last).map_or(true, |t| chrono::Utc::now().signed_duration_since(t).num_minutes() >= 5);
-                if due { captures.push(patch.id.clone()); }
-            }
         }
-        for id in captures { crate::history::capture(root, "Sauvegarde automatique", Some(id))?; }
         let tx = c.transaction_with_behavior(TransactionBehavior::Immediate).app()?;
         for p in &patches {
             let (rev, old, raw, mir, pending): (i64, String, Option<String>, String, Option<String>) = tx.query_row(
@@ -223,8 +216,18 @@ fn save_report_with(root: &Path, patches: Vec<TextPatch>, mut before_mirror: imp
             let old_outline = raw.map(|json| serde_json::from_str::<Outline>(&json).app()).transpose()?;
             let next_outline = effective_outline(p, &old, old_outline.clone())?;
             if old != p.text || old_outline != next_outline {
+                // Keep the pre-edit state before a substantial deletion or replacement.
+                if !old.is_empty() {
+                    let prefix = old.chars().zip(p.text.chars()).take_while(|(a,b)| a == b).count();
+                    let suffix = old.chars().rev().zip(p.text.chars().rev()).take_while(|(a,b)| a == b).count();
+                    let length = old.chars().count();
+                    let shared_tail = suffix.min(length.saturating_sub(prefix)).min(p.text.chars().count().saturating_sub(prefix));
+                    let removed = length.saturating_sub(prefix + shared_tail);
+                    crate::history::checkpoint_with(&tx, &p.id, removed >= 200 && removed >= length / 3)?;
+                }
                 let encoded = next_outline.map(|outline| serde_json::to_string(&outline).app()).transpose()?;
                 tx.execute("UPDATE sections SET text=?,outline=?,revision=revision+1 WHERE id=?", params![p.text,encoded,p.id]).app()?;
+                if !p.text.is_empty() { crate::history::checkpoint_with(&tx, &p.id, false)?; }
             }
             tx.execute("INSERT INTO mirror_pending(id,base) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET base=excluded.base", params![p.id, base]).app()?;
         }
@@ -557,13 +560,14 @@ mod tests {
         save(d.path(), vec![TextPatch {
             id: second.id.clone(), revision: 0, text: "current".into(), outline: None,
         }]).unwrap();
+        let versions_before = crate::history::list(d.path()).unwrap().into_iter().map(|v|v.id).collect::<Vec<_>>();
         assert!(save(d.path(), vec![
             TextPatch { id: first.id.clone(), revision: 1, text: "new".into(), outline: None },
             TextPatch { id: second.id.clone(), revision: 0, text: "stale".into(), outline: None },
         ]).is_err());
         let all = load(d.path()).unwrap().sections;
         assert_eq!(all.iter().find(|s| s.id == first.id).unwrap().text, "existing");
-        assert!(crate::history::list(d.path()).unwrap().is_empty());
+        assert_eq!(crate::history::list(d.path()).unwrap().into_iter().map(|v|v.id).collect::<Vec<_>>(),versions_before);
     }
     #[test]
     fn migrates_legacy_sections_schema() {

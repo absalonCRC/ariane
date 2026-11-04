@@ -97,6 +97,16 @@ export function useUnifiedSearch(
     }, 100);
     return () => clearTimeout(timer);
   }, [project?.path, project?.sections, term, locale, editVersion]);
+  const vault = useVaultSearch(project, query, version);
+  return {
+    manuscript,
+    ...vault,
+    busy: manuscriptBusy || vault.busy,
+  };
+}
+
+export function useVaultSearch(project: Project | null, query: string, version = 0) {
+  const term = query.trim();
   const [result, setResult] = useState<{
     path: string;
     query: string;
@@ -123,10 +133,5 @@ export function useUnifiedSearch(
     };
   }, [project?.path, term, version]);
   const current = result?.path === project?.path && result?.query === term ? result : null;
-  return {
-    manuscript,
-    sources: current?.sources ?? [],
-    error: current?.error ?? '',
-    busy: manuscriptBusy || (!!term && !current),
-  };
+  return { sources: current?.sources ?? [], error: current?.error ?? '', busy: !!term && !current };
 }

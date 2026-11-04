@@ -1,5 +1,15 @@
 # Journal des changements
 
+## 0.3.1 — 2026-11-04, version de développement
+
+- Navigation : sélection active par la couleur du texte et de l’icône, flous progressifs plus courts, accès et sortie du focus en haut à droite, sidebar accessible en focus et slider de profondeur stabilisé selon la taille de fenêtre.
+- Entités : marques conservées pendant l’écriture et les mises à jour de contexte, création automatique des fiches non ambiguës, résolution des homonymes et édition des alias dans les fiches du vault du projet.
+- Recherche : navigation directe entre les occurrences dans le texte ouvert, cartes du vault flottantes et ajout persistant à la marge depuis les résultats, les cartes ouvertes et les fiches complètes.
+- Versions automatiques par texte : pauses, changements de texte ou de projet et fermeture normale sur Mac, sans doublons, avec rétention limitée et conservation des versions nommées.
+- Présentation : cartes de marge teintées selon le type de note, retrait du doublon de commande focus dans les réglages et confort de lecture déplié par défaut.
+
+Voir les [notes 0.3.1](docs/release-notes-0.3.1.md) pour le détail et les limites.
+
 ## 0.3.0 — 2026-11-04, version de développement
 
 - Mode focus immersif : éditeur seul, compteur de mots, recherche et dictée en bas ; accès par `⌘ ⇧ F`, commande de recherche et réglages d’écriture. Les panneaux et couleurs d’entités sont masqués sans désactiver les moteurs.
