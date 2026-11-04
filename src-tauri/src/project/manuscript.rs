@@ -69,14 +69,15 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let p = crate::project::create(dir.path(),"Essai").unwrap();
         crate::project::save(dir.path(),vec![crate::model::TextPatch{id:p.sections[0].id.clone(),revision:0,text:"Un\n\nDeux".into(),outline:None}]).unwrap();
+        let versions_before = crate::history::list(dir.path()).unwrap().into_iter().map(|v|v.id).collect::<Vec<_>>();
         let op = Operation {action:"split".into(),source_id:p.sections[0].id.clone(),offset:Some(4),target_id:None,title:None};
         let split = apply(dir.path(),op.clone()).unwrap();
         assert_eq!(split.sections.iter().map(|s|s.text.as_str()).collect::<Vec<_>>(),vec!["Un\n\n","Deux"]);
-        assert!(crate::history::list(dir.path()).unwrap().is_empty());
+        assert_eq!(crate::history::list(dir.path()).unwrap().into_iter().map(|v|v.id).collect::<Vec<_>>(),versions_before);
         let joined = apply(dir.path(),Operation{action:"join".into(),target_id:Some(split.sections[1].id.clone()),..op}).unwrap();
         assert_eq!(joined.sections.len(),1); assert_eq!(joined.trash.len(),1);
         assert!(joined.sections[0].text.contains("Deux"));
-        assert!(crate::history::list(dir.path()).unwrap().is_empty());
+        assert_eq!(crate::history::list(dir.path()).unwrap().into_iter().map(|v|v.id).collect::<Vec<_>>(),versions_before);
         let bad: Operation = serde_json::from_value(serde_json::json!({"action":"movePassage","sourceId":joined.sections[0].id})).unwrap();
         assert!(apply(dir.path(),bad).unwrap_err().contains("inconnue"));
     }

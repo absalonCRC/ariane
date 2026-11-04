@@ -111,6 +111,7 @@ export interface Source {
   selectedExcerpt?: string;
 }
 export interface Version {
+  automatic?: boolean;
   id: string;
   name: string;
   created: string;

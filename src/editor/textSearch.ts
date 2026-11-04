@@ -4,7 +4,7 @@ import { Decoration, EditorView } from '@codemirror/view';
 
 type Match = { from: number; to: number };
 type SearchHighlight = { current: Match; text: string };
-type Direction = 'current' | 'next' | 'previous';
+export type SearchDirection = 'first' | 'current' | 'next' | 'previous';
 
 const setMatch = StateEffect.define<SearchHighlight | null>();
 export const textSearchHighlight = StateField.define<SearchHighlight | null>({
@@ -21,7 +21,11 @@ export const textSearchHighlight = StateField.define<SearchHighlight | null>({
       const ranges = [];
       for (const match of normalizedMatches(state.doc.toString(), highlight.text)) {
         const current = match.from === highlight.current.from && match.to === highlight.current.to;
-        ranges.push(Decoration.mark({ class: current ? 'cm-text-search-match current' : 'cm-text-search-match' }).range(match.from, match.to));
+        ranges.push(
+          Decoration.mark({
+            class: current ? 'cm-text-search-match current' : 'cm-text-search-match',
+          }).range(match.from, match.to),
+        );
       }
       return Decoration.set(ranges);
     }),
@@ -30,24 +34,26 @@ export const textSearchHighlight = StateField.define<SearchHighlight | null>({
 export function findTextMatch(
   state: EditorState,
   text: string,
-  direction: Direction = 'current',
+  direction: SearchDirection = 'current',
 ): Match | null {
   if (!text) return null;
   const matches = normalizedMatches(state.doc.toString(), text);
+  if (direction === 'first') return matches[0] ?? null;
   const selection = state.selection.main;
   if (direction === 'previous')
-    return [...matches].reverse().find(m => m.from < selection.from) ?? matches.at(-1) ?? null;
+    return [...matches].reverse().find((m) => m.from < selection.from) ?? matches.at(-1) ?? null;
   const start = direction === 'next' ? selection.to : selection.from;
-  return matches.find(m => m.from >= start) ?? matches[0] ?? null;
+  return matches.find((m) => m.from >= start) ?? matches[0] ?? null;
 }
 
 export function highlightTextMatch(
   view: EditorView,
   text: string,
-  direction: Direction = 'current',
+  direction: SearchDirection = 'current',
   preserveSelection = false,
+  target?: Match | null,
 ) {
-  const match = findTextMatch(view.state, text, direction);
+  const match = target === undefined ? findTextMatch(view.state, text, direction) : target;
   const previous = view.state.field(textSearchHighlight);
   const selection = view.state.selection.main;
   const clearSelection =
@@ -58,7 +64,10 @@ export function highlightTextMatch(
     selection.to === previous.current.to;
   view.dispatch({
     effects: match
-      ? [setMatch.of({ current: match, text }), EditorView.scrollIntoView(match.from, { y: 'center' })]
+      ? [
+          setMatch.of({ current: match, text }),
+          EditorView.scrollIntoView(match.from, { y: 'center' }),
+        ]
       : [setMatch.of(null)],
     ...(match
       ? { selection: { anchor: match.from, head: match.to } }

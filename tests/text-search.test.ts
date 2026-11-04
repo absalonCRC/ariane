@@ -16,6 +16,10 @@ describe('recherche dans le texte', () => {
     expect(findTextMatch(state(0), '')).toBeNull();
   });
 
+  it('starts from the first occurrence regardless of the cursor position', () => {
+    expect(findTextMatch(state(second.from, second.to), 'Claude Nougaro', 'first')).toEqual(first);
+  });
+
   it('navigue entre les occurrences dans les deux sens', () => {
     expect(findTextMatch(state(first.from, first.to), 'Claude Nougaro', 'next')).toMatchObject(
       second,

@@ -1,8 +1,10 @@
+import { ChangeSet } from '@codemirror/state';
+import { diffChars } from 'diff';
 import type { Section } from '../app/types';
 import type { EntityBatch } from './entityTypes';
 import { passages } from './passages';
 
-/** Keep only unchanged logical blocks, mapping their offsets into the live text. */
+/** Retain literal names through context edits, including within their own block. */
 export function rebaseEntities(batch: EntityBatch, section: Section): EntityBatch {
   if (batch.text === section.text) return { ...batch, revision: section.revision };
   const old = passages({ ...section, text: batch.text, outline: batch.outline });
@@ -14,14 +16,36 @@ export function rebaseEntities(batch: EntityBatch, section: Section): EntityBatc
     outline: section.outline,
     mentions: old.flatMap((block) => {
       const next = current.get(block.node);
-      if (!next || next.signature !== block.signature) return [];
+      if (!next) return [];
+      let offset = 0;
+      const edits: { from: number; to?: number; insert?: string }[] = [];
+      for (const part of diffChars(block.text, next.text)) {
+        if (part.added) edits.push({ from: offset, insert: part.value });
+        else {
+          if (part.removed) edits.push({ from: offset, to: offset + part.value.length });
+          offset += part.value.length;
+        }
+      }
+      const changes = ChangeSet.of(edits, block.text.length);
       return batch.mentions
         .filter((m) => m.from >= block.from && m.to <= block.to)
-        .map((m) => ({
-          ...m,
-          from: m.from + next.from - block.from,
-          to: m.to + next.from - block.from,
-        }));
+        .flatMap((m) => {
+          const from = changes.mapPos(m.from - block.from, 1);
+          const to = changes.mapPos(m.to - block.from, -1);
+          const name = batch.text.slice(m.from, m.to);
+          if (from >= to || next.text.slice(from, to) !== name) return [];
+          const word = /[\p{L}\p{N}_]/u;
+          if (
+            (from > 0 &&
+              word.test(next.text[from - 1]) &&
+              !word.test(block.text[m.from - block.from - 1] ?? '')) ||
+            (to < next.text.length &&
+              word.test(next.text[to]) &&
+              !word.test(block.text[m.to - block.from] ?? ''))
+          )
+            return [];
+          return [{ ...m, from: from + next.from, to: to + next.from }];
+        });
     }),
   };
 }

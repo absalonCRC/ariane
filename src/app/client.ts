@@ -1,3 +1,4 @@
+import { previewCheckpoint } from '../history/previewAutomatic';
 import { t } from '../i18n';
 import { descendants } from '../project/tree';
 import { invoke, isTauri } from '@tauri-apps/api/core';
@@ -177,6 +178,16 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     browserRequest('createVaultEntity', { kind: 'note', name: a.name });
     return previewSources(p.path).at(-1);
   }
+  if (type === 'updateSourceAliases') {
+    if (a.projectPath !== p.path) throw new Error('Le projet actif a changé.');
+    const values = previewSources(p.path);
+    const source = values.find((s) => s.id === a.source);
+    if (!source || source.vaultId !== previewVault(p.path)?.id)
+      throw new Error('Fiche non modifiable.');
+    source.aliases = [...new Set((a.aliases as string[]).map((s) => s.trim()).filter(Boolean))];
+    localStorage.setItem(previewSourcesKey(p.path), JSON.stringify(values));
+    return source;
+  }
   if (type === 'browseSources') {
     const all = previewSources(p.path).filter((s) => !a.vault || s.vaultId === a.vault);
     const query = String(a.query || '').toLocaleLowerCase();
@@ -213,6 +224,22 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
     for (const patch of patches) {
       const s = p.sections.find((s) => s.id === patch.id)!;
       const outline = patch.outline ?? (s.text === patch.text ? s.outline : null);
+      if (s.text && s.text !== patch.text) {
+        const old = [...s.text],
+          next = [...patch.text];
+        let prefix = 0,
+          suffix = 0;
+        while (prefix < old.length && prefix < next.length && old[prefix] === next[prefix])
+          prefix++;
+        while (
+          suffix < old.length - prefix &&
+          suffix < next.length - prefix &&
+          old.at(-1 - suffix) === next.at(-1 - suffix)
+        )
+          suffix++;
+        const removed = old.length - prefix - suffix;
+        previewCheckpoint(p, s.id, removed >= 200 && removed >= old.length / 3);
+      }
       if (
         s.text !== patch.text ||
         JSON.stringify(s.outline ?? null) !== JSON.stringify(outline ?? null)
@@ -222,6 +249,7 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
       s.outline = outline;
     }
     store(p);
+    for (const patch of patches) if (patch.text) previewCheckpoint(p, patch.id, false);
     return {
       mirrorErrors: [],
       sections: patches.map((x) => ({
@@ -327,10 +355,14 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
       (v) => v.id === a.id,
     );
   if (type === 'versions')
-    return JSON.parse(localStorage.getItem(versionKey) || '[]').slice(
-      Number(a.offset || 0),
-      Number(a.offset || 0) + 50,
-    );
+    return (JSON.parse(localStorage.getItem(versionKey) || '[]') as Version[])
+      .slice(Number(a.offset || 0), Number(a.offset || 0) + 50)
+      .map((v) => ({ ...v, sections: [] }));
+  if (type === 'automaticVersion') {
+    if (a.projectPath !== p.path) throw new Error('Le projet actif a changé.');
+    const version = previewCheckpoint(p, String(a.scope));
+    return version ? { ...version, sections: [] } : null;
+  }
   if (type === 'capture') {
     const versions = JSON.parse(localStorage.getItem(versionKey) || '[]') as Version[];
     const v = {
@@ -374,6 +406,20 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
         : source.title.toLocaleLowerCase().includes(input) ||
           source.text.toLocaleLowerCase().includes(input),
     );
+  }
+  if (['marginPins', 'pinSource', 'unpinSource'].includes(type)) {
+    if (a.projectPath !== p.path) throw new Error('Le projet actif a changé.');
+    if (!p.sections.some((s) => s.id === a.section && s.kind === 'scene' && !s.trashed))
+      throw new Error('Texte introuvable.');
+    const key = 'ariane.preview.marginPins.' + p.path + '.' + a.section;
+    let pins = JSON.parse(localStorage.getItem(key) || '[]') as Source[];
+    if (type === 'pinSource') {
+      const source = previewSources(p.path).find((s) => s.id === a.id);
+      if (!source) throw new Error('Fiche introuvable.');
+      pins = [...pins.filter((s) => s.id !== source.id), source];
+    } else if (type === 'unpinSource') pins = pins.filter((s) => s.id !== a.id);
+    localStorage.setItem(key, JSON.stringify(pins));
+    return pins;
   }
   if (type === 'associate') {
     const key = 'ariane.preview.links.' + p.path + '.' + a.section;

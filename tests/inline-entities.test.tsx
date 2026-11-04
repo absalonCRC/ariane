@@ -76,6 +76,8 @@ it('decorates UTF16 ranges without changing manuscript and invalidates edited te
   }
   expect(state.doc.toString()).toBe(text);
   state = state.update({ changes: { from: 20, insert: 'pas ' } }).state;
+  expect(state.field(entityMarks).mentions).toHaveLength(1);
+  state = state.update({ changes: { from: 4, insert: 'x' } }).state;
   expect(state.field(entityMarks).mentions).toEqual([]);
   expect(entityColor('person', { Personne: 'url(evil)' })).toBe('#8d719e');
 });
@@ -108,10 +110,14 @@ it('waits for saved text, rejects obsolete results after switching projects', as
   await act(async () => resolvers[1](batch));
   expect(controller.batches[0].text).toBe(text);
 });
-it('creates only on explicit action and refreshes the source catalog', async () => {
+it('requests automatic creation after analysis and keeps ambiguity resolution explicit', async () => {
   const w = workspace();
   await act(async () => root.render(<Harness w={w} />));
   await act(async () => vi.advanceTimersByTimeAsync(350));
+  expect(request).toHaveBeenCalledWith(
+    'inlineEntities',
+    expect.objectContaining({ autoCreate: true }),
+  );
   await act(async () => controller.open(person));
   expect(request.mock.calls.some(([type]) => type === 'createDetectedEntity')).toBe(false);
   request.mockResolvedValueOnce({ id: 'new', title: person.title });
@@ -213,4 +219,117 @@ it('shares the colour setting between preferences and the writing menu', async (
   expect(toggles.map((e) => e.checked)).toEqual([false, false]);
   await act(async () => toggles[1].click());
   expect(toggles.map((e) => e.checked)).toEqual([true, true]);
+});
+
+it('keeps the same name visible while its sentence changes and while context analysis refreshes', async () => {
+  const w = workspace();
+  await act(async () => root.render(<Harness w={w} />));
+  await act(async () => vi.advanceTimersByTimeAsync(350));
+  const edited = { ...w.scenes[0], text: text + ' Il écrit.', revision: 2 };
+  const changed = { ...w, scenes: [edited], doc: { ...w.doc, status: 'editing' as const } };
+  await act(async () => root.render(<Harness w={changed} />));
+  expect(controller.batches[0].mentions[0].title).toBe(person.title);
+  request.mockResolvedValueOnce({ text: edited.text, mentions: [] });
+  await act(async () =>
+    root.render(<Harness w={{ ...changed, doc: { ...w.doc, status: 'saved' } }} />),
+  );
+  await act(async () => vi.advanceTimersByTimeAsync(350));
+  expect(controller.batches[0].mentions[0].title).toBe(person.title);
+  await act(async () =>
+    root.render(
+      <Harness
+        w={{ ...changed, scenes: [{ ...edited, text: edited.text.replace('Nougaro', 'Noiret') }] }}
+      />,
+    ),
+  );
+  expect(controller.batches[0].mentions).toEqual([]);
+});
+
+it('shifts an unchanged literal name after Unicode insertion and invalidates extensions at its edge', () => {
+  let state = EditorState.create({ doc: 'Claude Nougaro écrit.', extensions: entityMarks });
+  state = state.update({
+    effects: setEntityMarks.of({ mentions: [{ ...person, from: 0, to: 14 }], colors: {} }),
+  }).state;
+  state = state.update({ changes: { from: 0, insert: '😀 ' } }).state;
+  expect(state.field(entityMarks).mentions[0].from).toBe(3);
+  state = state.update({ changes: { from: 17, insert: 'x' } }).state;
+  expect(state.field(entityMarks).mentions).toEqual([]);
+});
+
+it('resolves an ambiguous mention to a chosen existing card without creating a duplicate', async () => {
+  const w = workspace();
+  await act(async () => root.render(<Harness w={w} />));
+  await act(async () =>
+    controller.open({
+      ...person,
+      candidates: [{ id: 'existing', title: 'Claude Nougaro', kind: 'Personne' }],
+    }),
+  );
+  request.mockResolvedValueOnce({ id: 'existing', title: 'Claude Nougaro' });
+  await act(async () => controller.choose('existing'));
+  expect(request).toHaveBeenCalledWith(
+    'resolveDetectedEntity',
+    expect.objectContaining({ source: 'existing', from: 3, to: 17 }),
+  );
+  expect(request.mock.calls.some(([type]) => type === 'createDetectedEntity')).toBe(false);
+  expect(w.setReader).toHaveBeenCalledWith({ id: 'existing', title: 'Claude Nougaro' });
+});
+
+it('keeps a mapped mark when React refreshes stale analysis during live typing', async () => {
+  const { Editor } = await import('../src/editor/Editor');
+  const rects = Object.getOwnPropertyDescriptor(Range.prototype, 'getClientRects');
+  const rect = Object.getOwnPropertyDescriptor(Range.prototype, 'getBoundingClientRect');
+  Object.defineProperty(Range.prototype, 'getClientRects', { configurable: true, value: () => [] });
+  Object.defineProperty(Range.prototype, 'getBoundingClientRect', {
+    configurable: true,
+    value: () => new DOMRect(),
+  });
+  const section = {
+    id: 's',
+    parent: null,
+    kind: 'scene' as const,
+    position: 0,
+    title: 'Texte',
+    text,
+    revision: 1,
+    synopsis: '',
+    status: '',
+    goal: 0,
+  };
+  const props = {
+    sections: [section],
+    generation: 1,
+    projectPath: '/fixture',
+    settings: defaultSettings,
+    onChange: vi.fn(),
+    onVisible: vi.fn(),
+    onWords: vi.fn(),
+    onCharacters: vi.fn(),
+    onCursor: vi.fn(),
+    onTyping: vi.fn(),
+  };
+  try {
+    await act(async () =>
+      root.render(<Editor {...props} entities={[{ ...batch, section: 's', revision: 1 }]} />),
+    );
+    const view = EditorView.findFromDOM(host.querySelector('.cm-editor')!)!;
+    expect(view.state.field(entityMarks).mentions).toHaveLength(1);
+    await act(async () => view.dispatch({ changes: { from: 20, insert: 'encore ' } }));
+    await act(async () =>
+      root.render(<Editor {...props} entities={[{ ...batch, section: 's', revision: 1 }]} />),
+    );
+    expect(view.state.field(entityMarks).mentions).toHaveLength(1);
+    await act(async () => view.dispatch({ changes: { from: 4, insert: 'x' } }));
+    await act(async () =>
+      root.render(<Editor {...props} entities={[{ ...batch, section: 's', revision: 1 }]} />),
+    );
+    expect(view.state.field(entityMarks).mentions).toHaveLength(0);
+    await act(async () => root.unmount());
+    root = createRoot(host);
+  } finally {
+    if (rects) Object.defineProperty(Range.prototype, 'getClientRects', rects);
+    else Reflect.deleteProperty(Range.prototype, 'getClientRects');
+    if (rect) Object.defineProperty(Range.prototype, 'getBoundingClientRect', rect);
+    else Reflect.deleteProperty(Range.prototype, 'getBoundingClientRect');
+  }
 });

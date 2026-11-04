@@ -161,13 +161,13 @@ impl<'a> Catalog<'a> {
             })
             .collect()
     }
-    /// Exact, unambiguous catalog names with byte offsets in the original text.
-    pub(crate) fn inline_mentions(&self, text: &str) -> Vec<(usize, usize, usize)> {
+    /// Exact catalog names with byte offsets; a missing owner means ambiguity.
+    pub(crate) fn inline_mentions(&self, text: &str) -> Vec<(usize, usize, Option<usize>)> {
         let folded = Folded::new(text);
         self.mentions(&folded.text)
             .into_iter()
             .filter_map(|mention| {
-                let owner = mention.owner?;
+                let owner = mention.owner;
                 let start = folded.positions.get(mention.start)?.0;
                 let mut end = folded.positions.get(mention.end.checked_sub(1)?)?.1;
                 // Keep trailing decomposed accents attached to the marked name.

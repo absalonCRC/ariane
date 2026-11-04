@@ -4,9 +4,9 @@ Version de développement du 4 novembre 2026 pour macOS 26+ sur Apple Silicon.
 
 ## Focus
 
-Le mode focus immersif est distinct de la concentration par mot, phrase ou paragraphe. Il s’active avec `⌘ ⇧ F`, depuis les commandes de recherche (« Activer le mode focus » / « Quitter le mode focus »), ou dans les réglages d’écriture.
+Le mode focus immersif est distinct de la concentration par mot, phrase ou paragraphe. Il s’active et se quitte avec le bouton en haut à droite, avec `⌘ ⇧ F`, depuis les commandes de recherche (« Activer le mode focus » / « Quitter le mode focus »), ou dans les réglages d’écriture.
 
-Il conserve le texte, le compteur de mots, la recherche et le vocal en bas de la fenêtre. Les menus de l’application, le titre, la bibliothèque, les marges, les propositions, les points d’outline et les couleurs/interactions d’entités sont masqués. La correction orthographique reste active. Les paramètres et dialogues ouverts volontairement peuvent être utilisés avant de revenir à la page.
+Il conserve le texte, le compteur de mots, la recherche et le vocal en bas de la fenêtre. La bibliothèque est fermée à l’entrée dans ce mode, mais peut être ouverte depuis le bord gauche ou avec `⌘ ⇧ B`. Les menus de l’application, le titre, les marges, les propositions, les points d’outline et les couleurs/interactions d’entités sont masqués. La correction orthographique reste active. Les paramètres et dialogues ouverts volontairement peuvent être utilisés avant de revenir à la page.
 
 L’activation depuis les réglages ramène directement à la page. Le focus modifie la présentation ; il ne désactive pas l’enrichissement. Les files de mémoire, d’entités et de notes liées continuent avec les mêmes fenêtres de repos et priorités de saisie qu’en mode normal. Quitter le focus restitue les panneaux conservés et les données actualisées ; les calculs non terminés restent signalés. La prédiction du prochain mot est prévue en 0.7.0 et n’est pas ajoutée par cette version.
 
@@ -14,7 +14,7 @@ L’activation depuis les réglages ramène directement à la page. Le focus mod
 
 Les recherches de marge sont organisées par bloc logique de l’outline, avec un ancrage stable indépendant des retours à la ligne visuels. Modifier un bloc conserve les résultats des autres blocs et limite la nouvelle recherche au bloc modifié. Les coordonnées des marges sont relues depuis leur nœud, pour suivre le texte sans rattacher une suggestion à une autre ligne.
 
-Les marques d’entités des blocs inchangés sont conservées et remappées à travers les transactions CodeMirror et les changements d’offset UTF-16. Les blocs modifiés sont invalidés ; une réponse tardive ne peut pas réintroduire les données d’un ancien texte ou d’un autre projet.
+Les marques d’entités dont le nom reste intact sont conservées et remappées à travers les transactions CodeMirror et les changements d’offset UTF-16, y compris dans un bloc modifié. Une réponse tardive ne peut pas réintroduire les données d’un ancien texte ou d’un autre projet.
 
 SQLite conserve les résultats de mémoire, les références et classements des suggestions de sources, les mentions inline et les extractions de notes liées. Les documents sources complets ne sont pas dupliqués dans chaque résultat. Les modifications de sources et d’alias réconcilient leurs dépendances ; les autres résultats sont réutilisés. La suppression d’une source ou un changement de périmètre retire les liens devenus invalides. Les nouvelles entités calculées en arrière-plan déclenchent leur affichage sans attendre une nouvelle frappe.
 
@@ -43,3 +43,23 @@ La construction native `npm run tauri build -- --bundles app` réussit. Le paque
 La recette Playwright passe sans erreur de page ni erreur console : activation par raccourci et par les réglages, maintien du compteur/recherche/vocal, saisie, recherche, restitution de la bibliothèque et du texte, réouverture du projet en focus, initialisation d’une page héritée et fenêtre réduite. Les captures et scripts de recette sont dans `/tmp/ariane-0.3-*`, hors du dépôt.
 
 La dictée réelle au microphone et une séance prolongée d’écriture en application native demandent une recette dédiée ; cette tâche ne renouvelle pas les mesures de précision des modèles décrites dans le rapport 0.2.2.
+
+## Entités stables et alias
+
+Les marques d’entités suivent désormais le nom exact pendant la saisie, y compris lorsque la phrase ou le paragraphe qui l’entoure change. Une analyse de contexte en cours ou temporairement vide ne retire plus une mention intacte. Modifier ou prolonger le nom retire immédiatement son ancienne marque.
+
+Après analyse d’un texte sauvegardé, une entité absente du catalogue crée automatiquement sa fiche dans le vault du projet. Les titres et alias existants sont réutilisés. Des noms identiques ambigus ou très proches demandent un choix entre les fiches proposées et une fiche distincte ; le choix d’une identité est conservé pour ce nom dans le passage concerné. Ces règles ne supposent pas que deux pseudonymes sans lien déclaré désignent la même personne.
+
+La lecture d’une fiche du vault du projet propose un champ Alias, avec un nom par ligne, pour tous les types de fiches Markdown. Ces alias sont réindexés après sauvegarde. Une modification externe concurrente est refusée et les vaults connectés restent en lecture seule. Le manuscrit ne reçoit aucun remplacement de nom.
+
+Le contrôle de profondeur conserve sa capsule horizontale. Dans les fenêtres étroites, une zone de passage continue maintient le survol pendant son déplacement, sans boucle d’ouverture/fermeture.
+
+## Recherche directe et fiches flottantes
+
+La recherche de texte rejoint la première occurrence dans le texte ouvert dès la saisie. ↑/↓ naviguent dans les deux sens depuis le champ ou l’éditeur, sans liste de passages et sans changer de document. Les branches repliées sont ouvertes pour montrer l’occurrence, sans retirer le focus du champ de recherche. Les commandes et le sélecteur de section conservent leurs interfaces dédiées.
+
+Les résultats du vault sont affichés par deux dans des cartes compactes au-dessus de la recherche. Les suggestions et notes de la marge restent en place. L’auteur peut ajouter une fiche à la marge du texte ouvert et retirer ce repère ensuite ; ces choix sont conservés dans le projet. Aucune fiche source n’est supprimée lors du retrait. L’ajout des repères aux projets existants conserve leur version de schéma et les réponses asynchrones d’un ancien projet ou texte sont ignorées.
+
+### Versions automatiques
+
+Des points de reprise par texte sont conservés pendant l’écriture, après une pause, lors d’un changement de texte ou de projet et à la fermeture normale sur Mac. Les états identiques sont ignorés et une réécriture importante protège l’état précédent. La rétention espace les versions anciennes et limite les nouvelles versions automatiques à 40 par texte et 128 Mio par projet ; les versions nommées et les sauvegardes de restauration sont conservées. Les cartes épinglées dans la marge sont incluses dans les nouveaux instantanés. Voir le guide d’usage pour les intervalles et limites exacts.

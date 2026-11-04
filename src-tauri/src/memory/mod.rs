@@ -1,6 +1,6 @@
 mod entities;
 mod inline;
-pub use inline::{create_detected_entity, inline_entities};
+pub use inline::{create_detected_entity, inline_entities, resolve_inline_entities, resolve_detected_entity};
 mod ner;
 pub use ner::{apply_entities, pending_entities_at, prepare_types};
 pub(crate) mod classification_queue;

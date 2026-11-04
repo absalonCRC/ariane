@@ -12,6 +12,7 @@ import type { Source } from '../app/types';
 import { compose } from '../editor/composite';
 import type { MemoryController, MemoryEntity, MemoryPassage } from './useMemory';
 import { passageExcerpt } from './excerpts';
+import { entityTint } from './entityTypes';
 import './memory-refinements.css';
 
 interface EntityDetail extends MemoryEntity {
@@ -52,6 +53,13 @@ export function MemoryReader({
   const view = shown.value?.view ?? null;
   const origin = shown.value?.origin;
   const floating = !!origin;
+  const tinted = floating && view?.kind === 'entity';
+  const entityKind =
+    view?.kind === 'entity'
+      ? ((entity?.id === view.id
+          ? entity.kind
+          : memory.result?.entities.find((e) => e.id === view.id)?.kind) ?? 'Note')
+      : 'Note';
   const panel = useSharedPanel(origin, floating && view ? view.kind : null, memory.close);
   usePanelFocus(panel, !!view && !floating && !shown.exiting);
   useResumeLayout(panel, view?.kind === 'resume', projectMenuOpen, writingMenuOpen);
@@ -146,7 +154,12 @@ export function MemoryReader({
           memory.close();
         }
       }}
-      className={'reader memory-reader motion-surface' + (floating ? ' shared-panel' : '')}
+      className={
+        'reader memory-reader motion-surface' +
+        (floating ? ' shared-panel' : '') +
+        (tinted ? ' entity-tinted' : '')
+      }
+      style={tinted ? entityTint(entityKind, workspace.doc.settings.entityColors) : undefined}
       data-phase={shown.exiting ? 'exit' : 'open'}
       inert={shown.exiting}
       aria-hidden={shown.exiting || undefined}

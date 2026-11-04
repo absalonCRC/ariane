@@ -19,7 +19,7 @@ import { composeCitation, sourceRef } from '../sources/citations';
 import type { IndexProgress } from '../sources/Library';
 import { useNativeClose } from './useNativeClose';
 import { useExport } from '../export/useExport';
-import { useUnifiedSearch } from './useUnifiedSearch';
+import { useVaultSearch } from './useUnifiedSearch';
 import type { ManuscriptMatch } from './projectSearch';
 import { useEnrichment } from '../enrichment/useEnrichment';
 import { usePassageSuggestions } from '../enrichment/usePassageSuggestions';
@@ -46,6 +46,7 @@ export function useWorkspace() {
   const [revealInBinder, setRevealInBinder] = useState(0);
   const libraryLock = useRef(false);
   const [binder, setBinder] = useState(false);
+  const binderBeforeFocus = useRef<boolean | null>(null);
   const [palette, setPalette] = useState<'text' | 'commands' | 'sections' | null>(null);
   const [words, setWords] = useState(0);
   const [sources, setSources] = useState<Source[]>([]);
@@ -67,8 +68,7 @@ export function useWorkspace() {
   useEffect(() => setHistoryMode(false), [doc.project?.path]);
   const [searchQuery, setSearchQuery] = useState('');
   const [initialSearch, setInitialSearch] = useState('');
-  const searching =
-    !!palette && palette !== 'sections' && !!searchQuery.trim() && !searchQuery.startsWith('/');
+  const searching = palette === 'text' && !!searchQuery.trim();
   const setSearch = useCallback((query: string | null) => {
     if (query === null) {
       setPalette(null);
@@ -78,10 +78,9 @@ export function useWorkspace() {
     setInitialSearch(query);
     setSearchQuery(query);
     setPalette('text');
+    setHistoryMode(false);
     if (!doc.settingsRef.current.immersiveFocus) {
       if (!historyModeRef.current) setBinder(false);
-      setReader(null);
-      setCard(null);
     }
   }, []);
   const [progress, setProgress] = useState<IndexProgress | null>(null);
@@ -122,15 +121,24 @@ export function useWorkspace() {
   } | null>(null);
   const close = useCallback(() => setSurface('none'), []);
   const toggleFocus = useCallback(() => {
-    doc.configure({ immersiveFocus: !doc.settingsRef.current.immersiveFocus });
+    const entering = !doc.settingsRef.current.immersiveFocus;
+    if (entering) {
+      binderBeforeFocus.current = binder;
+      setBinder(false);
+    } else if (binderBeforeFocus.current !== null) {
+      setBinder(binderBeforeFocus.current);
+      binderBeforeFocus.current = null;
+    }
+    doc.configure({ immersiveFocus: entering });
     setHistoryMode(false);
     setSurface('none');
     setMenu(false);
     setPalette(null);
     requestAnimationFrame(() => editor.current?.focus());
-  }, [doc.configure]);
+  }, [binder, doc.configure]);
   const activate = useCallback(
     (p: Project) => {
+      binderBeforeFocus.current = null;
       doc.activate(p);
       serial.current++;
       setViewport(null);
@@ -160,7 +168,7 @@ export function useWorkspace() {
       .finally(() => setReady(true));
   }, []);
   useNativeClose(
-    doc.flush,
+    doc.checkpoint,
     () =>
       doc.ref.current
         ? memorySessionSaver.current().then(() =>
@@ -172,12 +180,7 @@ export function useWorkspace() {
     fail,
   );
   const p = doc.project;
-  const unifiedSearch = useUnifiedSearch(
-    p,
-    searching ? searchQuery : '',
-    sourceVersion,
-    doc.subscribeEdits,
-  );
+  const vaultSearch = useVaultSearch(p, searching ? searchQuery : '', sourceVersion);
   const active = p?.sections.some((s) => s.id === doc.settings.active)
     ? doc.settings.active
     : p?.sections.find((s) => s.kind === 'scene')?.id || null;
@@ -244,7 +247,7 @@ export function useWorkspace() {
     async (id: string, continuous = false, preserveSource = false) => {
       if (libraryLock.current) return false;
       try {
-        await doc.flush();
+        await doc.checkpoint();
         await memorySessionSaver.current();
         doc.configure({ active: id, continuous, cursor: 0 });
         serial.current++;
@@ -259,7 +262,7 @@ export function useWorkspace() {
         return false;
       }
     },
-    [doc.flush, doc.configure],
+    [doc.checkpoint, doc.configure],
   );
   async function locatePassage(
     section: string,
@@ -341,7 +344,7 @@ export function useWorkspace() {
       if (!doc.ref.current) return;
       const all = { ...doc.settingsRef.current, cursor: cursor.current };
       void request('settings', { value: all }).catch(() => {});
-      void doc.flush().catch(() => {});
+      void doc.checkpoint().catch(fail);
     };
     window.addEventListener('blur', f);
     const before = (e: BeforeUnloadEvent) => {
@@ -355,7 +358,7 @@ export function useWorkspace() {
       window.removeEventListener('blur', f);
       window.removeEventListener('beforeunload', before);
     };
-  }, [doc.flush, doc.status]);
+  }, [doc.flush, doc.checkpoint, doc.status]);
   const commands: Command[] = p
     ? [
         {
@@ -421,7 +424,10 @@ export function useWorkspace() {
         {
           label: t('Créer un projet'),
           action: () => {
-            void doc.flush().then(() => setNewProject(true));
+            void doc
+              .checkpoint()
+              .then(() => setNewProject(true))
+              .catch(fail);
           },
         },
         { label: t('Ouvrir un projet'), action: () => setSurface('projects') },
@@ -557,7 +563,7 @@ export function useWorkspace() {
     libraryLock.current = true;
     setLibraryBusy(true);
     try {
-      await doc.flush();
+      await doc.checkpoint();
       await metadataQueue.current;
       await memorySessionSaver.current();
       if (doc.ref.current)
@@ -611,7 +617,7 @@ export function useWorkspace() {
     libraryLock.current = true;
     setLibraryBusy(true);
     try {
-      await doc.flush();
+      await doc.checkpoint();
       await metadataQueue.current;
       const next = await request<Project>('manuscriptOperation', {
         projectPath: doc.ref.current!.path,
@@ -639,7 +645,7 @@ export function useWorkspace() {
     libraryLock.current = true;
     setLibraryBusy(true);
     try {
-      await doc.flush();
+      await doc.checkpoint();
       await metadataQueue.current;
       await request('settings', { value: { ...doc.settingsRef.current, cursor: cursor.current } });
       const message = libraryOperationMessage(doc.ref.current!, operation);
@@ -677,7 +683,7 @@ export function useWorkspace() {
     libraryLock.current = true;
     setLibraryBusy(true);
     try {
-      await doc.flush();
+      await doc.checkpoint();
       await metadataQueue.current;
       const sections = newSection.after
         ? (
@@ -855,7 +861,7 @@ export function useWorkspace() {
     searchQuery,
     initialSearch,
     setSearchQuery,
-    unifiedSearch,
+    vaultSearch,
     locateMatch,
     setSearch,
     progress,

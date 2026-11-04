@@ -1,6 +1,12 @@
 import type { CSSProperties } from 'react';
 import type { Outline } from '../app/types';
+export interface EntityCandidate {
+  id: string;
+  title: string;
+  kind: string;
+}
 export interface EntityMention {
+  candidates?: EntityCandidate[];
   from: number;
   to: number;
   title: string;

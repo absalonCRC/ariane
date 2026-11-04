@@ -9,6 +9,8 @@ import { sourceContext, sourceExcerpt } from './contextMenu';
 import type { Source } from '../app/types';
 import { composeCitation } from './citations';
 import type { Settings } from '../app/types';
+import { entityTint } from '../enrichment/entityTypes';
+import { MarginPinAction, type MarginPinProps } from './MarginPinAction';
 export function SourceCard({
   source: s,
   sections = [],
@@ -21,6 +23,8 @@ export function SourceCard({
   onAssociate,
   onRegister,
   citationStyle,
+  colors,
+  marginPin,
 }: {
   source: Source;
   sections?: Section[];
@@ -34,6 +38,8 @@ export function SourceCard({
   onAssociate: () => void;
   onRegister: (s: Source, text: string) => Promise<void>;
   citationStyle: Settings['citationStyle'];
+  colors?: Settings['entityColors'];
+  marginPin?: MarginPinProps;
 }) {
   useLocale();
   const panel = useSharedPanel(origin, s.id, onClose);
@@ -56,7 +62,8 @@ export function SourceCard({
   return (
     <section
       ref={panel}
-      className="source-card shared-panel floating"
+      className="source-card shared-panel floating entity-tinted"
+      style={entityTint(s.kind, colors)}
       onContextMenu={(event) => {
         if ((event.target as HTMLElement).closest('input, textarea, select')) return;
         openMenu(
@@ -83,6 +90,7 @@ export function SourceCard({
       </button>
       <span className="source-kind">{t(s.kind)}</span>
       <h2>{s.title}</h2>
+      {marginPin && <MarginPinAction {...marginPin} />}
       <dl>
         {fields.map(([k, v]) => (
           <div key={k}>

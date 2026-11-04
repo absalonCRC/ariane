@@ -546,7 +546,7 @@ export function outlineEditor(
   });
   const extensions: Extension = [field, inversion, protectHidden];
   return {
-    reveal(target: EditorView, id: string) {
+    reveal(target: EditorView, id: string, focus = true) {
       const node = index(target.state).byId.get(id);
       if (!node) return false;
       const effects: StateEffect<unknown>[] = [];
@@ -561,7 +561,7 @@ export function outlineEditor(
         selection: { anchor: node.from },
         annotations: Transaction.addToHistory.of(false),
       });
-      target.focus();
+      if (focus) target.focus();
       return true;
     },
     field,

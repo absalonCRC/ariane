@@ -1,3 +1,7 @@
+fn visible_margin_pins(root:&std::path::Path,index:&std::path::Path,section:&str) -> crate::error::Result<Vec<crate::model::Source>> {
+    let available=crate::vaults::list(root,index)?;
+    Ok(crate::project::links::margin_pins(root,section)?.into_iter().filter_map(|s|crate::vaults::source(index,&s.id,&available).ok()).collect())
+}
 fn all_revision_stages() -> String {
     "all".into()
 }
@@ -163,6 +167,7 @@ pub enum Request {
         name: String,
         scope: Option<String>,
     },
+    AutomaticVersion { project_path: String, scope: String },
     Restore {
         id: String,
     },
@@ -189,10 +194,11 @@ pub enum Request {
     MemoryContext { project_path: String, section: String, node: Option<String>, depth: u8,
     },
     InlineEntities {
-        project_path: String,
-        section: String,
-        revision: i64,
+        project_path: String, section: String, revision: i64,
+        #[serde(default)] auto_create: bool,
     },
+    ResolveDetectedEntity { project_path:String, section:String, revision:i64, from:usize, to:usize, source:String },
+    UpdateSourceAliases { project_path:String, source:String, fingerprint:String, aliases:Vec<String> },
     CreateDetectedEntity {
         project_path: String,
         section: String,
@@ -240,6 +246,9 @@ pub enum Request {
     },
     Quit,
     CancelExport,
+    MarginPins { project_path:String, section:String },
+    PinSource { project_path:String, section:String, id:String },
+    UnpinSource { project_path:String, section:String, id:String },
     Associate {
         section: String,
         id: String,
@@ -522,15 +531,24 @@ pub fn handle(
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     memory::context(&root,&section,node.as_deref(),depth)
                 }
-                Request::InlineEntities {
-                    project_path,
-                    section,
-                    revision,
-                } => {
+                Request::InlineEntities { project_path, section, revision, auto_create } => {
                     if Path::new(&project_path) != root {
                         return Err("Le projet actif a changé.".into());
                     }
-                    json(memory::inline_entities(&root, &index, &section, revision)?)
+                    if auto_create {
+                        let _guard = state.enriching.lock().map_err(|e|e.to_string())?;
+                        json(memory::resolve_inline_entities(&root,&index,&section,revision)?)
+                    } else { json(memory::inline_entities(&root, &index, &section, revision)?) }
+                }
+                Request::UpdateSourceAliases {project_path,source,fingerprint,aliases} => {
+                    if Path::new(&project_path)!=root { return Err("Le projet actif a changé.".into()); }
+                    let _guard=state.enriching.lock().map_err(|e|e.to_string())?;
+                    json(vaults::update_aliases(&root,&index,&source,&fingerprint,&aliases)?)
+                }
+                Request::ResolveDetectedEntity {project_path,section,revision,from,to,source} => {
+                    if Path::new(&project_path)!=root { return Err("Le projet actif a changé.".into()); }
+                    let _guard=state.enriching.lock().map_err(|e|e.to_string())?;
+                    json(memory::resolve_detected_entity(&root,&index,&section,revision,from,to,&source)?)
                 }
                 Request::CreateDetectedEntity {
                     project_path,
@@ -756,6 +774,21 @@ pub fn handle(
                     json(sources.remove(0))
                 }
                 Request::SourceFile { id } => state.source_files.grant(state,&root,&id),
+                Request::MarginPins {project_path,section} => {
+                    if Path::new(&project_path)!=root { return Err("Le projet actif a changé.".into()); }
+                    json(visible_margin_pins(&root,&index,&section)?)
+                }
+                Request::PinSource {project_path,section,id} => {
+                    if Path::new(&project_path)!=root { return Err("Le projet actif a changé.".into()); }
+                    let source=vaults::source(&index,&id,&vaults::list(&root,&index)?)?;
+                    project::links::pin(&root,&section,&source)?;
+                    json(visible_margin_pins(&root,&index,&section)?)
+                }
+                Request::UnpinSource {project_path,section,id} => {
+                    if Path::new(&project_path)!=root { return Err("Le projet actif a changé.".into()); }
+                    project::links::unpin(&root,&section,&id)?;
+                    json(visible_margin_pins(&root,&index,&section)?)
+                }
                 Request::Associate {
                     section,
                     id,
@@ -764,6 +797,10 @@ pub fn handle(
                 Request::Links { section } => json(project::links::links(&root, &section)?),
                 Request::Versions { offset } => json(history::list_page(&root, offset)?),
                 Request::Version { id } => json(history::get(&root, &id)?),
+                Request::AutomaticVersion { project_path, scope } => {
+                    if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
+                    json(history::checkpoint(&root, &scope)?.map(|mut version| { version.sections.clear(); version }))
+                }
                 Request::Capture { name, scope } => json(history::capture(&root, &name, scope)?),
                 Request::Restore { id } => json(history::restore(&root, &id)?),
                 Request::Export {

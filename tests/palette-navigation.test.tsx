@@ -50,24 +50,15 @@ describe('navigation des résultats de la palette', () => {
   });
 });
 
-it('navigates to a manuscript hit without closing or resetting the query', async () => {
-  (
-    globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }
-  ).IS_REACT_ACT_ENVIRONMENT = true;
+it('moves between editor occurrences immediately without displaying a result list', async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   const host = document.createElement('div'),
     panel = document.createElement('div');
   document.body.append(host, panel);
   const root = createRoot(host),
-    onMatch = vi.fn(),
+    onNextMatch = vi.fn(),
+    onTextSearch = vi.fn(),
     onClose = vi.fn();
-  const matches = [0, 1].map((i) => ({
-    key: String(i),
-    section: 'text' + i,
-    title: 'Texte ' + i,
-    from: i * 20,
-    to: i * 20 + 4,
-    excerpt: 'La lune',
-  }));
   try {
     await act(async () =>
       root.render(
@@ -76,29 +67,29 @@ it('navigates to a manuscript hit without closing or resetting the query', async
           open
           textSearch
           initialQuery="lune"
-          matches={matches}
-          matchTotal={2}
-          onMatch={onMatch}
           onOpen={() => {}}
           onClose={onClose}
           searchScope="project"
-          onTextSearch={() => {}}
-          onNextMatch={() => {}}
+          onTextSearch={onTextSearch}
+          onNextMatch={onNextMatch}
           panel={panel}
         />,
       ),
     );
     const input = panel.querySelector('input')!;
+    expect(onTextSearch).toHaveBeenCalledWith('lune');
+    expect(input.getAttribute('role')).toBe('searchbox');
+    expect(panel.querySelector('[role=listbox]')).toBeNull();
     await act(async () =>
       input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })),
     );
-    expect(input.getAttribute('aria-activedescendant')).toBe('manuscript-result-1');
+    expect(onNextMatch).toHaveBeenLastCalledWith('lune', false);
     await act(async () =>
-      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })),
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })),
     );
-    expect(onMatch).toHaveBeenCalledWith(matches[1]);
+    expect(onNextMatch).toHaveBeenLastCalledWith('lune', true);
+    expect(document.activeElement).toBe(input);
     expect(onClose).not.toHaveBeenCalled();
-    expect(input.value).toBe('lune');
   } finally {
     await act(async () => root.unmount());
     host.remove();

@@ -1,3 +1,5 @@
+mod aliases;
+pub use aliases::update_aliases;
 mod classification;
 pub use classification::{apply_note_type, classification_types, example_type, predicted_type};
 #[cfg(test)]

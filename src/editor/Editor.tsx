@@ -28,7 +28,12 @@ import { sceneHeadings } from './sceneHeadings';
 import { smoothCaret } from './smoothCaret';
 import { sectionDraft, type SectionDraft } from '../project/draft';
 import { DocumentCounts } from './counts';
-import { highlightTextMatch, textSearchHighlight } from './textSearch';
+import {
+  findTextMatch,
+  highlightTextMatch,
+  textSearchHighlight,
+  type SearchDirection,
+} from './textSearch';
 import { formatMarkdown, type MarkdownFormat } from './formatMarkdown';
 import { prepareCitationInsertion } from './citationInsertion';
 import { reviewTarget, type ReviewTarget } from './reviewTarget';
@@ -59,7 +64,7 @@ export interface EditorHandle {
   prepareCitation: () => (text: string) => boolean;
   passage: () => { section: string; from: number; to: number; text: string } | null;
   revealNode: (id: string) => boolean;
-  findText: (query: string, direction?: 'next' | 'previous') => void;
+  findText: (query: string, direction?: SearchDirection) => void;
   clearTextSearch: () => void;
   revealMatch: (section: string, from: number | null, query: string) => boolean;
   format: (format: MarkdownFormat) => void;
@@ -69,6 +74,7 @@ export interface EditorHandle {
 interface Props {
   sections: Section[];
   entities?: EntityBatch[];
+  searchQuery?: string;
   onEntity?: (mention: SelectedEntity) => void;
   noteLookup?: (query: string) => Promise<NoteRef[]>;
   noteCreate?: (name: string, context: string) => Promise<NoteRef>;
@@ -201,7 +207,16 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     revealNode: (id) =>
       view.current && outlineRef.current ? outlineRef.current.reveal(view.current, id) : false,
     findText: (query, direction) => {
-      if (view.current) highlightTextMatch(view.current, query, direction);
+      const v = view.current;
+      if (!v) return;
+      const match = findTextMatch(v.state, query, direction);
+      const outline = outlineRef.current;
+      const node =
+        match && outline
+          ? [...v.state.field(outline.field).nodes].reverse().find((n) => n.from <= match.from)
+          : null;
+      if (node && outline) outline.reveal(v, node.id, false);
+      highlightTextMatch(v, query, direction, false, match);
     },
     revealMatch(section, from, query) {
       const v = view.current,
@@ -427,6 +442,25 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
               to: mention.to - span.from,
             });
         }),
+        keymap.of(
+          ['ArrowDown', 'ArrowUp'].map((key) => ({
+            key,
+            run: (v: EditorView) => {
+              const query = latest.current.searchQuery;
+              if (!query?.trim() || v.composing) return false;
+              const direction = key === 'ArrowUp' ? 'previous' : 'next';
+              const match = findTextMatch(v.state, query, direction);
+              const node = match
+                ? [...v.state.field(outline.field).nodes]
+                    .reverse()
+                    .find((n) => n.from <= match.from)
+                : null;
+              if (node) outline.reveal(v, node.id, false);
+              highlightTextMatch(v, query, direction, false, match);
+              return true;
+            },
+          })),
+        ),
         keymap.of([...defaultKeymap, ...historyKeymap, ...searchKeymap]),
         EditorView.lineWrapping,
         EditorView.scrollMargins.of((view) =>
@@ -683,6 +717,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     props.generation,
     props.sections.map((s) => s.id).join(':'),
   ]);
+  const entityProject = useRef(props.projectPath);
   useEffect(() => {
     const v = view.current;
     if (!v) return;
@@ -716,6 +751,16 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
         }
       }
     }
+    if (props.settings.enrichment && entityProject.current === props.projectPath) {
+      for (const previous of v.state.field(entityMarks).mentions) {
+        if (
+          spans.current.some((s) => s.id === previous.section) &&
+          !mentions.some((m) => m.from < previous.to && m.to > previous.from)
+        )
+          mentions.push(previous);
+      }
+    }
+    entityProject.current = props.projectPath;
     v.dispatch({
       effects: setEntityMarks.of({
         mentions,

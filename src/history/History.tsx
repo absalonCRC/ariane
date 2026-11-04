@@ -26,7 +26,7 @@ function versionLabel(version: Version) {
         hour: '2-digit',
         minute: '2-digit',
       }).format(created);
-  return `${version.name} · ${date}`;
+  return `${version.name === 'Sauvegarde automatique' ? t('Sauvegarde automatique') : version.name} · ${date}`;
 }
 interface Props {
   project: Project;
@@ -295,6 +295,11 @@ export function History(p: Props) {
         </button>
         <span>{t('Versions du texte')}</span>
       </header>
+      <p className="history-auto-hint">
+        {t(
+          'Les versions se créent automatiquement après une pause et au fil de l’écriture. Vous pouvez aussi nommer un état à conserver.',
+        )}
+      </p>
       <div className="history-capture">
         {' '}
         {creating && (
@@ -342,7 +347,7 @@ export function History(p: Props) {
               <h2>{t('Aucune version enregistrée')}</h2>
               <p>
                 {t(
-                  'Conservez un état du texte pour comparer vos révisions côte à côte et reprendre les passages de votre choix.',
+                  'Vos prochaines modifications créeront automatiquement des versions. Vous pourrez les comparer et reprendre les passages de votre choix.',
                 )}
               </p>
               <button onClick={() => setCreating(true)}>

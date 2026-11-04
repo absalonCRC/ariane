@@ -565,7 +565,7 @@
   }
 }
 
-.versions-mode .statusbar::before {
+.versions-mode .chrome-blur-bottom {
   height: 55px;
 }
 @media (max-width: 1000px) {
@@ -643,14 +643,18 @@
 }
 
 /* Presentation only: background readers and analysis retain their state. */
-.app[data-focus='true'] > :not(.writing-layout):not(.statusbar),
-.app[data-focus='true'] .statusbar > :not(.bottom-controls),
+.app[data-focus='true'] > :not(.writing-layout):not(.statusbar):not(.app-header):not(.chrome-blur-top):not(.edge-trigger):not(.binder-footer[data-expanded='true']):not(.motion-presence[data-motion='sidebar']),
+.app[data-focus='true'] .statusbar > :not(.bottom-controls):not(.chrome-blur-bottom),
+.app[data-focus='true'] .app-header > :not(.header-right),
 .app[data-focus='true'] .document-title,
 .app[data-focus='true'] .working-text-label,
 .app[data-focus='true'] .outline-handle,
 .app[data-focus='true'] .cm-gutters,
 .app[data-focus='true'] .entity-proposal {
   display: none !important;
+}
+.app[data-focus='true'] .header-right .menu-control {
+  display: none;
 }
 .app[data-focus='true'] .writing-layout {
   padding-right: 0;
@@ -662,4 +666,11 @@
 .app[data-focus='true'] .manuscript-note-link {
   color: inherit !important;
   pointer-events: none;
+}
+
+.history-auto-hint {
+  flex-shrink: 0;
+  margin: 4px 4px 12px;
+  color: var(--workspace-muted);
+  font: 12px/1.5 var(--ui);
 }

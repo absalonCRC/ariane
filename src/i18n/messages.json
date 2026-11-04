@@ -3914,5 +3914,89 @@
   "Actualisation des liens…": [
     "Updating connections…",
     "Actualizando conexiones…"
+  ],
+  "Identifier cette entité": [
+    "Identify this entity",
+    "Identificar esta entidad"
+  ],
+  "Cette mention correspond-elle à une fiche existante ?": [
+    "Does this mention refer to an existing card?",
+    "¿Esta mención corresponde a una ficha existente?"
+  ],
+  "Créer une fiche distincte": [
+    "Create a separate card",
+    "Crear una ficha distinta"
+  ],
+  "Alias": [
+    "Aliases",
+    "Alias"
+  ],
+  "Autres noms de cette entité · un par ligne": [
+    "Other names for this entity · one per line",
+    "Otros nombres de esta entidad · uno por línea"
+  ],
+  "Ces noms renvoient à cette fiche, sans créer de doublons.": [
+    "These names refer to this card without creating duplicates.",
+    "Estos nombres remiten a esta ficha sin crear duplicados."
+  ],
+  "Enregistrer les alias": [
+    "Save aliases",
+    "Guardar los alias"
+  ],
+  "Aucun alias": [
+    "No aliases",
+    "Sin alias"
+  ],
+  "Fiches du vault trouvées": [
+    "Vault cards found",
+    "Fichas encontradas en el vault"
+  ],
+  "Ajouter à la marge": [
+    "Add to margin",
+    "Añadir al margen"
+  ],
+  "Ajoutée à la marge": [
+    "Added to margin",
+    "Añadida al margen"
+  ],
+  "Dans la marge": [
+    "In the margin",
+    "En el margen"
+  ],
+  "Fiches précédentes": [
+    "Previous cards",
+    "Fichas anteriores"
+  ],
+  "Fiches suivantes": [
+    "Next cards",
+    "Fichas siguientes"
+  ],
+  "{0} fiches dans les vaults": [
+    "{0} cards in vaults",
+    "{0} fichas en los vaults"
+  ],
+  "Retirer {0} de la marge": [
+    "Remove {0} from margin",
+    "Quitar {0} del margen"
+  ],
+  "Ouvrir {0}": [
+    "Open {0}",
+    "Abrir {0}"
+  ],
+  "1 fiche dans les vaults": [
+    "1 card in vaults",
+    "1 ficha en los vaults"
+  ],
+  "Sauvegarde automatique": [
+    "Automatic version",
+    "Versión automática"
+  ],
+  "Les versions se créent automatiquement après une pause et au fil de l’écriture. Vous pouvez aussi nommer un état à conserver.": [
+    "Versions are created automatically after a pause and as you write. You can also name a state to keep.",
+    "Las versiones se crean automáticamente tras una pausa y mientras escribes. También puedes nombrar un estado para conservarlo."
+  ],
+  "Vos prochaines modifications créeront automatiquement des versions. Vous pourrez les comparer et reprendre les passages de votre choix.": [
+    "Your next edits will automatically create versions. You can compare them and recover passages of your choice.",
+    "Tus próximas modificaciones crearán versiones automáticamente. Podrás compararlas y recuperar los pasajes que elijas."
   ]
 }

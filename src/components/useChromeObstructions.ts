@@ -4,6 +4,7 @@ const controls = [
   '.path-heading',
   '.menu-control',
   '.voice-control',
+  '.focus-mode-trigger',
   '.header-search',
   '.writing-counter',
   '.depth-control',
