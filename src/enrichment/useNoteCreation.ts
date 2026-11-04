@@ -21,7 +21,7 @@ export function useNoteCreation(workspace: Workspace) {
     const path = latest.current.p?.path;
     if (!path) throw new Error('Ouvrez un projet pour continuer.');
     const epoch = generation.current;
-    const source = await request<Source>('createQuickNote', { projectPath: path, name });
+    const source = await request<Source>('createQuickNote', { projectPath: path, name, context });
     const current = () => epoch === generation.current && latest.current.p?.path === path;
     if (!current()) return source;
     latest.current.setSourceVersion((v) => v + 1);

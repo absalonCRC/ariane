@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "protocol": {
+    "partition": "by topic; labels frozen before inference",
+    "maxFalseDisplaysIncrease": 0,
+    "maxHarmfulCorrectionsIncrease": 0,
+    "latencyP95Tolerance": 1.1,
+    "notes": "Small synthetic regression corpus, not a general accuracy certification."
+  },
+  "documents": [
+    {
+      "id": "house",
+      "title": "Maison abandonnée",
+      "text": "La maison vide garde le souvenir de ses habitants. Personne n’y vit depuis des années."
+    },
+    {
+      "id": "garden",
+      "title": "Semis",
+      "text": "Le jardinier prépare le calendrier des semis et arrose les jeunes plantes."
+    },
+    {
+      "id": "rail",
+      "title": "Train",
+      "text": "La ligne ferroviaire relie deux villes et transporte les voyageurs chaque matin."
+    },
+    {
+      "id": "book",
+      "title": "Typographie",
+      "text": "Le livre emploie trois familles de caractères et de grandes marges pour la lecture."
+    },
+    {
+      "id": "burial",
+      "title": "Rites anciens",
+      "text": "Les villages du Languedoc conservaient des rites autour des défunts et de leur sépulture."
+    },
+    {
+      "id": "binding",
+      "title": "Atelier",
+      "text": "Louise Morel dirigeait un atelier de reliure à Arles en 1924. Elle réparait des livres."
+    }
+  ],
+  "queries": [
+    {
+      "id": "house-c",
+      "group": "house",
+      "split": "calibration",
+      "text": "Une demeure abandonnée attend le retour de ses occupants.",
+      "relevant": [
+        "house"
+      ]
+    },
+    {
+      "id": "garden-c",
+      "group": "garden",
+      "split": "calibration",
+      "text": "Quand planter les graines du potager ?",
+      "relevant": [
+        "garden"
+      ]
+    },
+    {
+      "id": "rail-v",
+      "group": "rail",
+      "split": "validation",
+      "text": "Le trajet quotidien des passagers sur les rails.",
+      "relevant": [
+        "rail"
+      ]
+    },
+    {
+      "id": "book-v",
+      "group": "book",
+      "split": "validation",
+      "text": "Les polices et la mise en page d’un ouvrage.",
+      "relevant": [
+        "book"
+      ]
+    },
+    {
+      "id": "burial-v",
+      "group": "burial",
+      "split": "validation",
+      "text": "Les coutumes funéraires dans le sud de la France.",
+      "relevant": [
+        "burial"
+      ]
+    },
+    {
+      "id": "binding-v",
+      "group": "binding",
+      "split": "validation",
+      "text": "Une artisane qui restaure les ouvrages anciens.",
+      "relevant": [
+        "binding"
+      ]
+    },
+    {
+      "id": "negative-c",
+      "group": "ocean",
+      "split": "calibration",
+      "text": "Le fonctionnement des sous-marins nucléaires.",
+      "relevant": []
+    },
+    {
+      "id": "negative-v",
+      "group": "astronomy",
+      "split": "validation",
+      "text": "La masse et la température des étoiles à neutrons.",
+      "relevant": []
+    }
+  ],
+  "cleanup": [
+    {
+      "raw": "Je ne veux pas publier ce texte.",
+      "cleaned": "Je veux publier ce texte.",
+      "safe": false
+    },
+    {
+      "raw": "Le montant est de 120 euros.",
+      "cleaned": "Le montant est de 900 euros.",
+      "safe": false
+    },
+    {
+      "raw": "Bonjour je voudrais le rapport vendredi non plutôt lundi matin",
+      "cleaned": "Bonjour, je voudrais le rapport lundi matin.",
+      "safe": true
+    }
+  ]
+}

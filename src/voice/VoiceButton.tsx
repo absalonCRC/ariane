@@ -1,5 +1,5 @@
 import { encodeAudio } from './encodeAudio';
-import captureWorklet from './capture.worklet.js?url';
+import captureWorklet from './capture.worklet.js?url&no-inline';
 import { localizeMessage, t, useLocale } from '../i18n';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -9,7 +9,7 @@ import { audioLevel, recordingTime } from './waveform';
 import { useExitPresence } from '../components/useExitPresence';
 
 type Phase = 'idle' | 'preparing' | 'recording' | 'transcribing';
-type Result = { text: string; raw: string; cleaned: boolean };
+type Result = { text: string; raw: string; cleaned: boolean; candidates?: string[] };
 type Part = { result?: Result; error?: unknown };
 type Mode = 'press' | 'continuous';
 const pendingKey = 'ariane.voice.pending';
@@ -33,10 +33,12 @@ type Session = {
   samples: number;
   sampleRate?: number;
   lastFrame: number;
-  insertion: (text: string) => boolean;
+  insertion: ((text: string) => boolean) & { before?: string; after?: string };
+  projectPath?: string;
   inserted: number;
   insertionBlocked: boolean;
   failed: boolean;
+  reviewNeeded: boolean;
 };
 
 function release(current: Session) {
@@ -52,6 +54,7 @@ function release(current: Session) {
 export function VoiceButton({
   language,
   prepareInsertion,
+  projectPath,
   panel,
   open,
   onOpen,
@@ -60,7 +63,8 @@ export function VoiceButton({
   onActivity,
 }: {
   language: string;
-  prepareInsertion: () => (text: string) => boolean;
+  prepareInsertion: () => ((text: string) => boolean) & { before?: string; after?: string };
+  projectPath?: string;
   panel: HTMLElement | null;
   open: boolean;
   onOpen: () => void;
@@ -78,6 +82,8 @@ export function VoiceButton({
   useEffect(() => () => activityCallback.current?.(false), []);
   const [message, setMessage] = useState('');
   const [pending, setPending] = useState('');
+  const [rawText, setRawText] = useState('');
+  const [nameCandidates, setNameCandidates] = useState<string[]>([]);
   const [lastText, setLastText] = useState('');
   const [levels, setLevels] = useState<number[]>(() => Array(26).fill(0));
   const [seconds, setSeconds] = useState(0);
@@ -116,8 +122,17 @@ export function VoiceButton({
           audio,
           language: current.language,
           live: current.mode === 'continuous',
+          projectPath: current.projectPath,
+          before: current.insertion.before ?? '',
+          after: current.insertion.after ?? '',
         });
         if (current.cancelled) return;
+        const changed = result.cleaned && result.raw.trim() !== result.text.trim();
+        current.reviewNeeded ||= changed || !!result.candidates?.length;
+        if (alive.current) {
+          setNameCandidates(result.candidates ?? []);
+          if (changed) setRawText(result.raw);
+        }
         if (current.mode === 'press') {
           current.parts.push({ result });
           return;
@@ -180,6 +195,8 @@ export function VoiceButton({
     onOpen();
     setMessage('');
     setLastText('');
+    setRawText('');
+    setNameCandidates([]);
     setLevels(Array(26).fill(0));
     setSeconds(0);
     if (!native) {
@@ -202,11 +219,13 @@ export function VoiceButton({
       parts: [],
       insertion: prepareInsertion(),
       language,
+      projectPath,
       samples: 0,
       lastFrame: 0,
       inserted: 0,
       insertionBlocked: false,
       failed: false,
+      reviewNeeded: false,
     };
     session.current = current;
     setMode(mode);
@@ -215,6 +234,9 @@ export function VoiceButton({
       const ready = available.current ?? (await availability.current);
       if (!current.active || current.cancelled || session.current !== current) return;
       if (!ready) throw new Error(t('Les modèles de dictée locale ne sont pas disponibles.'));
+      void request('voicePrepare').catch(() => {});
+      await request('voicePermission');
+      if (!current.active || current.cancelled || session.current !== current) return;
       if (!navigator.mediaDevices?.getUserMedia) throw new Error(t('Microphone indisponible.'));
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1 },
@@ -371,8 +393,9 @@ export function VoiceButton({
       if (current.failed) setMessage(t('Une partie de la dictée n’a pas pu être transcrite.'));
       else if (current.insertionBlocked)
         setMessage(t('Le texte a changé pendant la dictée. Copiez la transcription ci-dessous.'));
-      else if (current.mode === 'continuous') onClose();
-      else if (current.parts.some((part) => part.result?.text?.trim())) onClose();
+      else if (!current.reviewNeeded && current.mode === 'continuous') onClose();
+      else if (!current.reviewNeeded && current.parts.some((part) => part.result?.text?.trim()))
+        onClose();
       setPhase('idle');
     }
     finishing.current = false;
@@ -554,6 +577,22 @@ export function VoiceButton({
               t('Transcription…')
             ) : (
               localizeMessage(message) || t('Clic pour dicter · maintenir pour parler')
+            )}
+            {nameCandidates.length > 0 && (
+              <span className="voice-last-text">
+                {t('Noms à vérifier')} : {nameCandidates.join(', ')}
+              </span>
+            )}
+            {rawText && (
+              <details>
+                <summary>{t('Transcription originale')}</summary>
+                <textarea
+                  aria-label={t('Transcription originale')}
+                  readOnly
+                  value={rawText}
+                  onFocus={(event) => event.currentTarget.select()}
+                />
+              </details>
             )}
             {pending && (
               <textarea

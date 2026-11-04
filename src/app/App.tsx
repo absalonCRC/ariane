@@ -65,7 +65,7 @@ export function App() {
   const inlineEntities = useInlineEntities(workspace, memory.result, memory.entityError);
   useEffect(() => {
     if (import.meta.env.VITE_PERFORMANCE === '1')
-      void import('../performance/native').then(({ attach }) => attach(workspace, memory));
+      void import('../performance/native').then(({ attach }) => attach(workspace, memory)).catch(error => { document.title = `ariane — recette : ${String(error)}`; });
   });
   const [textSelection, setTextSelection] = useState<SelectionAnchor | null>(null);
   const [lines, setLines] = useState(1);
@@ -907,6 +907,7 @@ export function App() {
         >
           <div className="bottom-connector" aria-hidden="true" />
           <VoiceButton
+            projectPath={p?.path}
             language={doc.settings.language}
             onActivity={memory.setRecording}
             prepareInsertion={() => editor.current?.prepareInsertion() ?? (() => false)}

@@ -289,7 +289,7 @@ pub fn create_entity(root: &Path, kind: &str, name: &str, description: &str) -> 
         .ok_or("Type de fiche inconnu.")?;
     let vault = root.join("Vault");
     if !is_owned(root, &vault) {
-        return Err("Ce projet ne possède pas de vault Ariane accessible en écriture.".into());
+        return Err("Ce projet ne possède pas de vault ariane accessible en écriture.".into());
     }
     let canonical = vault.canonicalize().app()?;
     let folder = canonical.join(category.folder);

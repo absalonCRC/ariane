@@ -7,6 +7,8 @@ import { protectedRanges, type Range, type ReviewSuggestion } from '../revision/
 export interface ReviewTarget {
   text: string;
   protected: Range[];
+  before?: string;
+  after?: string;
   isCurrent: () => boolean;
   apply: (suggestion: ReviewSuggestion) => boolean;
 }
@@ -52,6 +54,14 @@ export function reviewTarget(
   const text = doc.sliceString(from, to);
   return {
     text,
+    before: doc.sliceString(
+      Math.max(spans.find((s) => from >= s.from && to <= s.to)!.from, from - 350),
+      from,
+    ),
+    after: doc.sliceString(
+      to,
+      Math.min(spans.find((s) => from >= s.from && to <= s.to)!.to, to + 350),
+    ),
     protected: protectedNodes,
     isCurrent: () => current() === view && view.state.doc === doc,
     apply: (suggestion) => {

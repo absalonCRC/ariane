@@ -1,4 +1,4 @@
-# Utiliser Ariane
+# Utiliser ariane
 
 ## Bibliothèque et rangement
 
@@ -6,7 +6,7 @@ Ouvrez le classeur avec ⌘ ⇧ B. Au survol du bord gauche, le chevron d’ouve
 
 Les onglets **Textes** et **Sources** partagent le même panneau, sans champ de recherche. Textes réunit les scènes et les anciennes notes dans une seule arborescence : les textes inclus dans le manuscrit participent à la lecture continue, au comptage et à l’export du projet. Le bouton + ajoute une section, un chapitre ou une scène. Le nom se saisit directement sur une nouvelle ligne dans la sidebar : Entrée ou la coche valide, Échap annule. Aucun document vide n’est créé avant validation. Les sections ont une icône de dossier, les chapitres un livre ouvert et les scènes une feuille. Les scènes peuvent rester à la racine, dans une section ou dans un chapitre. Un chapitre ne peut pas être placé sous un autre chapitre, même par déplacement d’une section intermédiaire ; le + de chaque conteneur ajoute directement à cet emplacement. Les anciens dossiers sont présentés comme des sections, sans changer leur contenu. Le clic droit conserve les actions de rangement ; les outils de sélection apparaissent pour une sélection multiple.
 
-Sources présente les entités indexées du Vault Ariane et des vaults Obsidian connectés, regroupées par leur type. Choisissez un vault, puis dépliez Personne, Lieu ou un autre type présent dans ses données. Les documents sans type restent accessibles sous Note. Le nom d’une entité ouvre le lecteur existant. Les réglages de connexion et d’indexation restent accessibles via « Gérer les vaults… ».
+Sources présente les entités indexées du Vault ariane et des vaults Obsidian connectés, regroupées par leur type. Choisissez un vault, puis dépliez Personne, Lieu ou un autre type présent dans ses données. Les documents sans type restent accessibles sous Note. Le nom d’une entité ouvre le lecteur existant. Les réglages de connexion et d’indexation restent accessibles via « Gérer les vaults… ».
 
 Dans l’arbre, ⌘-clic sélectionne plusieurs éléments et ⇧-clic une plage visible. « Déplacer… » choisit une section, un chapitre ou la racine ; le glisser-déposer distingue avant, après et dedans. Déposer sur Textes déplace la sélection à la racine du projet. La duplication conserve le texte et les liens documentaires d’une branche.
 
@@ -17,7 +17,7 @@ La loupe du bas, ⌘ F ou ⌘ ⇧ F ouvre une recherche commune aux textes du pr
 ## Sources et vaults
 
 
-À la création d’un projet, Ariane peut connecter un vault Obsidian existant en lecture seule, ou créer un dossier `Vault` dans le projet. Ce vault personnel contient des modèles Markdown avec front-matter pour les personnes, lieux, organisations, événements, concepts, croyances et traditions, œuvres, documents et objets. Leurs propriétés généralisent les modèles de RLC System ; elles restent vides tant qu’elles ne sont pas renseignées.
+À la création d’un projet, ariane peut connecter un vault Obsidian existant en lecture seule, ou créer un dossier `Vault` dans le projet. Ce vault personnel contient des modèles Markdown avec front-matter pour les personnes, lieux, organisations, événements, concepts, croyances et traditions, œuvres, documents et objets. Leurs propriétés généralisent les modèles de RLC System ; elles restent vides tant qu’elles ne sont pas renseignées.
 
 Dans « Sources du projet », « Nouvelle fiche » crée une note dans le vault personnel et actualise son index pour la détection dans le texte. Un projet existant peut également recevoir un vault personnel depuis ce panneau. Les vaults Obsidian connectés restent en lecture seule ; leurs notes et leur configuration ne sont pas modifiées. Dans l’aperçu navigateur, ces fiches sont simulées dans le stockage du navigateur et aucun dossier n’est créé.
 
@@ -36,14 +36,14 @@ Un clic bref sur le micro active la dictée continue ; le clic suivant l'arrête
 
 Le moteur Parakeet reste chargé pendant les fragments de dictée continue ; ceux-ci sont transcrits directement, sans attendre une mise au propre par le second modèle. Le push-to-talk garde la mise au propre après l'arrêt. Les modèles restent locaux. Si le manuscrit est modifié entre deux fragments, la suite est conservée dans une transcription à copier plutôt que d'écraser le texte. La dictée native n'est pas disponible dans l'aperçu navigateur.
 
-Pour installer le moteur et les modèles sur un Mac Apple Silicon, avec Python 3 et `uv` disponibles : `python3 scripts/setup-voice.py`. Les fichiers sont placés dans les données d’Ariane et téléchargés une seule fois ; la transcription fonctionne ensuite sans téléchargement. La compilation de l’application macOS est nécessaire pour prendre en compte l’autorisation du microphone et le nouveau moteur natif.
+Pour installer le moteur et les modèles sur un Mac Apple Silicon, avec Python 3 et `uv` disponibles : `python3 scripts/setup-voice.py`. Les fichiers sont placés dans les données d’ariane et téléchargés une seule fois ; la transcription fonctionne ensuite sans téléchargement. La compilation de l’application macOS est nécessaire pour prendre en compte l’autorisation du microphone et le nouveau moteur natif.
 
 ## Révision locale
 
 
 Dans « Aa », le bouton « Réviser le passage » analyse la sélection ou, sans sélection, la ligne où se trouve le curseur. Les suggestions de LanguageTool et de SalamandraTA sont proposées individuellement ; aucune modification n'est appliquée sans clic. Une suggestion devient caduque si le texte a changé, et les passages traversant plusieurs scènes ne sont pas révisés. L'analyse est limitée à 800 caractères ; le modèle est volontairement conservateur et n'affiche que des changements courts dont la structure reste compatible avec le Markdown. Les suggestions restent à relire.
 
-Installer les moteurs locaux une fois sur Mac Apple Silicon avec `python3 scripts/setup-revision.py`. Le script vérifie les empreintes et place LanguageTool 6.6, Temurin JRE 17 et SalamandraTA 2B Q8 dans les données d'Ariane ; après installation, la révision n'envoie pas le texte vers Internet. Les moteurs se démarrent à la demande et s'arrêtent après une période d'inactivité. L'aperçu dans le navigateur ne dispose pas du moteur natif ; les modifications du moteur nécessitent une compilation ultérieure de l'application macOS.
+Installer les moteurs locaux une fois sur Mac Apple Silicon avec `python3 scripts/setup-revision.py`. Le script vérifie les empreintes et place LanguageTool 6.6, Temurin JRE 17 et SalamandraTA 2B Q8 dans les données d'ariane ; après installation, la révision n'envoie pas le texte vers Internet. Les moteurs se démarrent à la demande et s'arrêtent après une période d'inactivité. L'aperçu dans le navigateur ne dispose pas du moteur natif ; les modifications du moteur nécessitent une compilation ultérieure de l'application macOS.
 
 Les exports PDF, Word et EPUB acceptent les images locales au projet. Les ressources distantes, liens symboliques sortant du projet et fragments HTML/TeX/Typst bruts sont refusés. L’export Markdown conserve le texte.
 
@@ -96,4 +96,4 @@ Les fiches de sources distinguent les **références explicites** des **mentions
 
 ## Langue de l’interface
 
-Ariane est disponible en français, anglais et espagnol. Choisissez la langue sur l’écran d’accueil, ou dans **Paramètres → Apparence → Langue de l’application**. Le choix s’applique immédiatement à l’interface et aux menus natifs, puis reste mémorisé sur ce Mac. La langue du document, utilisée pour la dictée et la révision, se règle séparément dans **Paramètres → Écriture**.
+ariane est disponible en français, anglais et espagnol. Choisissez la langue sur l’écran d’accueil, ou dans **Paramètres → Apparence → Langue de l’application**. Le choix s’applique immédiatement à l’interface et aux menus natifs, puis reste mémorisé sur ce Mac. La langue du document, utilisée pour la dictée et la révision, se règle séparément dans **Paramètres → Écriture**.

@@ -136,7 +136,7 @@ export function WorkspaceDialogs({
                 onClick={async () => {
                   try {
                     const path = await choosePath('open', {
-                      title: t('Ouvrir un projet Ariane'),
+                      title: t('Ouvrir un projet ariane'),
                     });
                     if (typeof path === 'string') await workspace.openProject(path);
                   } catch (e) {

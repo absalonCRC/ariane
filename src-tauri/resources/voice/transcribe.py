@@ -32,6 +32,12 @@ def transcribe_file(path, model):
         audio = librosa.resample(audio, orig_sr=sample_rate, target_sr=target_rate)
     if len(audio) < model.preprocessor_config.hop_length:
         return ""
+    # Bound full-attention Metal allocations on long recordings. This remains
+    # offline batch inference; token timestamps reconcile the five-second overlap.
+    if len(audio) > target_rate * 30:
+        return model.transcribe(
+            path, dtype=mx.float32, chunk_duration=30., overlap_duration=5.
+        ).text
     mel = get_logmel(mx.array(audio), model.preprocessor_config)
     result = model.generate(mel)[0]
     return result.text

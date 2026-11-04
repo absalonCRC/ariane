@@ -30,6 +30,56 @@ fn output(text: &str, label: &str, start: usize, end: usize) -> Value {
     json!({"entities":[{"text":text,"label":label,"start":start,"end":end,"score":0.99}],"vector":vector,"queryVector":vector,"model":GEMMA_MODEL})
 }
 #[test]
+fn identical_names_in_different_nodes_are_unresolved_distinct_mentions() {
+    let d = fixture();
+    scene(d.path(), "a", "Claude est relieur.", &[("a", 0)]);
+    scene(d.path(), "b", "Claude est marin.", &[("b", 0)]);
+    sync(d.path()).unwrap();
+    for (section, node) in [("a", "a"), ("b", "b")] {
+        let p = passage(d.path(), section, Some(node)).unwrap().unwrap();
+        apply(d.path(), &p, &output("Claude", "person", 0, 6)).unwrap();
+    }
+    let entities = list(d.path()).unwrap();
+    assert_eq!(entities.as_array().unwrap().len(), 2);
+    assert_ne!(entities[0]["id"], entities[1]["id"]);
+}
+#[test]
+fn a_title_change_invalidates_embeddings_without_erasing_ner_mentions() {
+    let d = fixture();
+    scene(d.path(), "a", "Claude attend.", &[("n", 0)]);
+    sync(d.path()).unwrap();
+    let p = passage(d.path(), "a", Some("n")).unwrap().unwrap();
+    apply(d.path(), &p, &output("Claude", "person", 0, 6)).unwrap();
+    let detected = json!({"model":ner::NER_MODEL,"entities":[{"text":"Claude","label":"person","start":0,"end":6,"score":0.99}]});
+    apply_entities(d.path(), &p, &detected).unwrap();
+    project::database(d.path())
+        .unwrap()
+        .execute("UPDATE sections SET title='Nouveau titre' WHERE id='a'", [])
+        .unwrap();
+    sync(d.path()).unwrap();
+    assert_eq!(list(d.path()).unwrap().as_array().unwrap().len(), 1);
+    assert!(pending_entities_at(d.path(), "a", Some("n"))
+        .unwrap()
+        .is_none());
+    assert_eq!(pending(d.path(), Some("a"), 10).unwrap().len(), 1);
+}
+#[test]
+fn lowercase_people_can_be_proposed_but_common_place_phrases_are_not_names() {
+    let d = fixture();
+    scene(d.path(), "a", "claude traverse la salle.", &[("a", 0)]);
+    sync(d.path()).unwrap();
+    let p = passage(d.path(), "a", Some("a")).unwrap().unwrap();
+    let mut prediction = output("claude", "person", 0, 6);
+    prediction["entities"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"text":"la salle","label":"location","start":16,"end":24,"score":0.99}));
+    apply(d.path(), &p, &prediction).unwrap();
+    let entities = list(d.path()).unwrap();
+    assert_eq!(entities.as_array().unwrap().len(), 1);
+    assert_eq!(entities[0]["title"], "claude");
+}
+#[test]
 fn creates_derived_fiche_without_touching_text() {
     let d = fixture();
     let text = "Louise Morel, relieuse, s’installa à Arles en 1924.";
@@ -285,8 +335,10 @@ fn shared_gemma_migration_preserves_extracted_mentions_and_rejects_mixed_dimensi
 fn pressure_and_missing_models_do_not_block_fiches_timeline_recall_or_sources() {
     use crate::{inference::Engine, memory_engine::Activity, vaults};
     let d = fixture();
-    scene(d.path(), "a", "Louise Morel, relieuse, vivait à Arles en 1924.", &[("n",0)]);
-    scene(d.path(), "b", "Louise Morel, relieuse, travaillait à Lyon en 1921.", &[("m",0)]);
+    scene(d.path(), "a", "Louise Morel, relieuse, vivait à Arles en 1924.", &[("n",0)],
+    );
+    scene(d.path(), "b", "Louise Morel, relieuse, travaillait à Lyon en 1921.", &[("m",0)],
+    );
     let index = d.path().join("sources.sqlite");
     let vault = d.path().join("Vault");
     std::fs::create_dir(&vault).unwrap(); vaults::connect(d.path(), &vault).unwrap();
@@ -296,22 +348,27 @@ fn pressure_and_missing_models_do_not_block_fiches_timeline_recall_or_sources() 
     let mut source = vaults::parse::parse(&available[0].id, "archive.md", raw);
     source.fingerprint = project::hash(&format!("{}:{}",raw.len(),project::hash(raw)));
     let c = vaults::index_db(&index).unwrap();
-    c.execute("INSERT INTO sources VALUES(?,?,?,?,?)",params![source.id,available[0].id,source.path,source.fingerprint,serde_json::to_string(&source).unwrap()]).unwrap();
-    c.execute("INSERT INTO search(text,source,page) VALUES(?,?,NULL)",params![source.text,source.id]).unwrap();
+    c.execute("INSERT INTO sources VALUES(?,?,?,?,?)",params![source.id,available[0].id,source.path,source.fingerprint,serde_json::to_string(&source).unwrap()],
+    ).unwrap();
+    c.execute("INSERT INTO search(text,source,page) VALUES(?,?,NULL)",params![source.text,source.id],
+    ).unwrap();
     let engine = std::sync::Mutex::new(Engine::default()); let activity = Activity::default();
     let resources = d.path().join("resources");
-    let queue = Queue { root:d.path(),index:&index,resources:&resources,engine:&engine,activity:&activity,critical_pressure:true };
+    let queue = Queue { root:d.path(),index:&index,resources:&resources,engine:&engine,activity:&activity,critical_pressure:true,
+    };
     let missing = queue.run("a",Some("n"),1,3,true).unwrap();
     assert_eq!(missing["entities"][0]["title"], "Louise Morel");
     assert!(missing["evidence"]["quote"].as_str().unwrap().contains("reliure"));
     assert_eq!(missing["recall"]["section"],"b");
     let entity = entity(d.path(),missing["entities"][0]["id"].as_str().unwrap()).unwrap();
-    assert_eq!(entity["timeline"].as_array().unwrap().len(),2);
+    assert_eq!(entity["timeline"].as_array().unwrap().len(), 1);
+    assert_eq!(entity["unresolved"], true);
     // These fake resources must never be executed under critical pressure.
     std::fs::create_dir_all(resources.join("engine")).unwrap();
     std::fs::create_dir_all(resources.join("models")).unwrap();
     std::fs::write(resources.join("engine/llama-server"), "not executable").unwrap();
-    std::fs::write(resources.join("models/embeddinggemma-300M-Q8_0.gguf"), "model").unwrap();
+    std::fs::write(resources.join("models/embeddinggemma-300M-Q8_0.gguf"), "model",
+    ).unwrap();
     let pressured = queue.run("a",Some("n"),1,3,true).unwrap();
     assert_eq!(pressured["deferred"],true);
     assert_eq!(pressured["entities"],missing["entities"]);
@@ -389,7 +446,8 @@ fn blank_outline_nodes_never_block_entities_or_semantic_backfill() {
     let d = fixture();
     let blank = "\n \t\u{a0}\u{2009}\n";
     let text = format!("{blank}Marie Curie travaille à Paris.");
-    scene(d.path(), "a", &text, &[("blank",0),("real",blank.encode_utf16().count())]);
+    scene(d.path(), "a", &text, &[("blank",0),("real",blank.encode_utf16().count())],
+    );
     sync(d.path()).unwrap();
     let pending = pending_at(d.path(),Some("a"),Some("blank"),64).unwrap();
     assert_eq!(pending.len(),1);
@@ -412,11 +470,12 @@ fn gemma2_migration_keeps_ner_and_requeues_incompatible_vectors() {
     apply_entities(d.path(), &p, &json!({"model":ner::NER_MODEL,"entities":[
         {"text":"Louise Morel","label":"person","start":0,"end":12,"score":0.99},
         {"text":"Paris","label":"location","start":20,"end":25,"score":0.99}
-    ]})).unwrap();
+    ]}),
+    ).unwrap();
     let before = list(d.path()).unwrap();
     project::database(d.path()).unwrap().execute(
-        "UPDATE memory_passages SET model='embeddinggemma-2-Q8_0:manuscript-v1'", []
-    ).unwrap();
+        "UPDATE memory_passages SET model='embeddinggemma-2-Q8_0:manuscript-v1'", [],
+        ).unwrap();
     assert!(vector(d.path(), "a", Some("n")).unwrap().is_none());
     assert_eq!(pending(d.path(), None, 10).unwrap().len(), 1);
     assert!(pending_entities_at(d.path(), "a", Some("n")).unwrap().is_none());

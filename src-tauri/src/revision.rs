@@ -12,6 +12,7 @@ pub struct RevisionEngine {
     language: Option<Server>,
     model: Option<Server>,
     last_used: Option<Instant>,
+    warm_requests: usize,
 }
 struct Server {
     child: Child,
@@ -38,6 +39,7 @@ pub struct Issue {
     length: usize,
     message: String,
     replacements: Vec<String>,
+    spelling: bool,
 }
 use crate::local_http::client;
 fn port() -> Result<u16> {
@@ -72,11 +74,15 @@ impl RevisionEngine {
         self.language = None;
         self.model = None;
         self.last_used = None;
+        self.warm_requests = 0;
     }
     pub fn shutdown_if_idle(&mut self) {
-        if self
+        if crate::memory_engine::critical_memory_pressure()
+            || self
             .last_used
-            .is_some_and(|time| time.elapsed() >= Duration::from_secs(120))
+            .is_some_and(|time| {
+                time.elapsed() >= Duration::from_secs(if self.warm_requests >= 3 { 240 } else { 60 })
+            })
         {
             self.shutdown();
         }
@@ -93,7 +99,9 @@ impl RevisionEngine {
             let child = Command::new(java)
                 .current_dir(&folder)
                 .args([
-                    "-Xmx512m",
+                    // The German suggestion dictionary exceeds 512 MiB after
+                    // other languages are warm. Keep an explicit bounded heap.
+                    "-Xmx768m",
                     "-cp",
                     "languagetool-server.jar",
                     "org.languagetool.server.HTTPServer",
@@ -101,7 +109,7 @@ impl RevisionEngine {
                     &port.to_string(),
                 ])
                 .stdout(Stdio::null())
-                .stderr(Stdio::null())
+                .stderr(if cfg!(test) { Stdio::inherit() } else { Stdio::null() })
                 .spawn()
                 .app()?;
             self.language = Some(ready(
@@ -163,6 +171,7 @@ impl RevisionEngine {
             .as_mut()
             .ok_or_else(|| "Modèle local indisponible.".into())
     }
+    #[cfg(test)]
     pub fn check(
         &mut self,
         data: &Path,
@@ -170,6 +179,31 @@ impl RevisionEngine {
         text: &str,
         language: &str,
     ) -> Result<Response> {
+        self.check_context(data, resources, text, language, "all", "", "")
+    }
+    #[allow(clippy::too_many_arguments)]
+    pub fn check_context(
+        &mut self,
+        data: &Path,
+        resources: &Path,
+        text: &str,
+        language: &str,
+        stage: &str,
+        before: &str,
+        after: &str,
+    ) -> Result<Response> {
+        if !["all", "language", "model"].contains(&stage) {
+            return Err("Étape de révision invalide.".into());
+        }
+        let before: String = before
+            .chars()
+            .rev()
+            .take(350)
+            .collect::<String>()
+            .chars()
+            .rev()
+            .collect();
+        let after: String = after.chars().take(350).collect();
         let (name, lt_language) = match language {
             "fr" => ("French", "fr"),
             "en" => ("English", "en-US"),
@@ -182,33 +216,64 @@ impl RevisionEngine {
             return Err("Sélectionnez un passage de 800 caractères maximum.".into());
         }
         let root = data.join("revision");
-        let language_result = self.language(&root).and_then(|s| {
+        let language_result = if stage == "model" {
+            Ok(vec![])
+        } else {
+            self.language(&root).and_then(|s| {
             crate::local_http::require_alive(&mut s.child)?;
+                let full = format!("{before}{text}{after}");
             let v = crate::local_http::json(client(40)?
                 .post(format!("http://127.0.0.1:{}/v2/check", s.port))
-                .form(&[("language", lt_language), ("text", text)])
+                .form(&[("language", lt_language), ("text", full.as_str())])
                 .send()
-                .app()?)?;
+                .app()?,
+                )?;
             crate::local_http::require_alive(&mut s.child)?;
-            parse_issues(&v)
-        });
-        let model_result = self.model(&root, resources).and_then(|s| {
-            let prompt = format!("Please fix any mistakes in the following {name} sentence or keep it unedited if it's correct.\nSentence: {text}\nCorrected:");
+                let offset = before.encode_utf16().count();
+                Ok(parse_issues(&v)?
+                    .into_iter()
+                    .filter_map(|mut issue| {
+                        if issue.offset < offset
+                            || issue.offset + issue.length > offset + text.encode_utf16().count()
+                        {
+                            return None;
+                        }
+                        issue.offset -= offset;
+                        Some(issue)
+                    })
+                    .collect())
+            })
+        };
+        let model_result = if stage == "language" {
+            Ok(None)
+        } else {
+            self.model(&root, resources).and_then(|s| {
+            let context=if before.is_empty() && after.is_empty(){String::new()}else{format!("Read-only context before: {before}\nRead-only context after: {after}\nCorrect only the sentence below.\n")};
+            let prompt = format!("{context}Please fix any mistakes in the following {name} sentence or keep it unedited if it's correct.\nSentence: {text}\nCorrected:");
             crate::local_http::require_alive(&mut s.child)?;
             let v = crate::local_http::json(client(90)?.post(format!("http://127.0.0.1:{}/v1/chat/completions", s.port))
                 .bearer_auth(s.key.as_deref().unwrap_or_default())
                 .json(&json!({"model":"salamandra","messages":[{"role":"user","content":prompt}],"temperature":0,"max_tokens":512}))
                 .send().app()?)?;
             crate::local_http::require_alive(&mut s.child)?;
-            parse_model(&v)
-        });
+            parse_model(&v).map(Some)
+        })
+        };
         let (issues, language_error) = match language_result {
             Ok(v) => (v, None),
             Err(e) => (vec![], Some(e)),
         };
         let (model, model_error) = match model_result {
-            Ok(v) => (Some(v), None),
+            Ok(v) => (v, None),
             Err(e) => (None, Some(e)),
+        };
+        self.warm_requests = if self
+            .last_used
+            .is_some_and(|time| time.elapsed() < Duration::from_secs(30))
+        {
+            self.warm_requests + 1
+        } else {
+            1
         };
         self.last_used = Some(Instant::now());
         Ok(Response {
@@ -230,6 +295,7 @@ fn parse_issues(value: &Value) -> Result<Vec<Issue>> {
                 offset: item["offset"].as_u64()? as usize,
                 length: item["length"].as_u64()? as usize,
                 message: item["message"].as_str()?.to_owned(),
+                spelling: item["rule"]["issueType"].as_str() == Some("misspelling"),
                 replacements: item["replacements"]
                     .as_array()?
                     .iter()

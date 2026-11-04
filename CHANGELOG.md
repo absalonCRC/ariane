@@ -1,5 +1,18 @@
 # Journal des changements
 
+## 0.2.2 — 2026-11-04, version de développement
+
+- Le nom affiché, les menus et le paquet utilisent `ariane`, en minuscules, sans suffixe de test.
+- Mémoire et recherche : encodages avec titres et budgets tokenisés, cache persistant par ligne logique de l’outline, lots avec reprise et vecteurs binaires validés.
+- Classement : fusion RRF pour la recherche explicite, seuils des suggestions séparés, priorité aux titres et alias exacts.
+- Entités : seuils par catégorie, types personnalisés, homonymes non fusionnés automatiquement et file durable de classement des notes.
+- Dictée : lexique automatiquement actualisé, contexte de mise au propre, brut récupérable, traitement borné des fichiers longs et autorisation audio native de macOS.
+- Révision : grammaire affichée avant le complément du modèle, contexte en lecture seule, propositions périmées refusées et négations multilingues protégées.
+- Fiabilité : AudioWorklet émis comme fichier local, JNA corrigé pour Hunspell et tas Java borné adapté au dictionnaire allemand.
+- Validation : corpus synthétiques figés, essais de langues et de pannes, grand projet natif, endurance et capture du microphone iMac. Le streaming Parakeet reste exclu.
+
+Voir les [notes 0.2.2](docs/release-notes-0.2.2.md) et le [bilan de validation](docs/validation-ia-2026-11-04.md), avec leurs limites de mesure.
+
 ## 0.2.1 — 2026-11-03, non publiée
 
 - Sauvegarde : chemins internes vérifiés, fichiers temporaires exclusifs, verrou de projet, accusé SQLite distinct des erreurs de miroir et reprise persistante.

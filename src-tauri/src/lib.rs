@@ -1,36 +1,40 @@
+#[cfg(test)]
+mod ai_benchmark;
+mod ai_policy;
 mod api;
-mod ipc;
-mod path_grants;
-mod source_files;
-mod local_http;
-mod worker_output;
-mod yaml;
-mod vectors;
-mod error;
 mod enrichment;
+mod error;
 mod export;
 mod history;
 mod import;
 mod inference;
-mod model;
+mod ipc;
+mod local_http;
 mod memory;
 mod memory_engine;
 mod memory_evidence;
-mod platform;
+mod model;
+mod path_grants;
 #[cfg(feature = "performance-harness")]
 mod performance;
+mod platform;
 mod project;
 mod retrieval;
 mod revision;
+mod source_files;
 mod vaults;
+mod vectors;
 mod voice;
+mod worker_output;
+mod yaml;
 use tauri::{Emitter, Manager};
 pub fn run() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .register_asynchronous_uri_scheme_protocol("source-file", |context, request, responder| {
             static READS: std::sync::LazyLock<std::sync::Arc<tokio::sync::Semaphore>> = std::sync::LazyLock::new(|| std::sync::Arc::new(tokio::sync::Semaphore::new(2)));
-            let Ok(permit)=READS.clone().try_acquire_owned() else {responder.respond(tauri::http::Response::builder().status(503).body(Vec::<u8>::new()).unwrap());return;};
+            let Ok(permit)=READS.clone().try_acquire_owned() else {responder.respond(tauri::http::Response::builder().status(503).body(Vec::<u8>::new()).unwrap(),
+                );return;};
             let app=context.app_handle().clone();
             tauri::async_runtime::spawn_blocking(move || {let _permit=permit;let state=app.state::<api::AppState>();responder.respond(state.source_files.respond(&state,request));});
         })
@@ -47,7 +51,7 @@ pub fn run() {
             let data = performance::isolated_directory()?;
             std::fs::create_dir_all(&data)?;
             let dev = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources");
-            let resources = if cfg!(debug_assertions) {
+            let resources = if cfg!(debug_assertions) && !cfg!(feature = "performance-harness") {
                 dev
             } else {
                 app.path().resource_dir()?.join("resources")
@@ -85,6 +89,7 @@ pub fn run() {
                 std::thread::sleep(std::time::Duration::from_secs(15));
                 let state = handle.state::<api::AppState>();
                 if state.exit_approved.load(std::sync::atomic::Ordering::Relaxed) { break; }
+                let _ = api::resume_classification(&handle, &state);
                 retrieval::release_if_idle();
                 if let Ok(mut engine) = state.engine.try_lock() {
                     engine.shutdown_if_idle();
@@ -107,7 +112,7 @@ pub fn run() {
     let builder = builder.invoke_handler(tauri::generate_handler![api::dispatch, path_grants::choose_path]);
     let application = builder
         .build(tauri::generate_context!())
-        .expect("Impossible de démarrer Ariane");
+        .expect("Impossible de démarrer ariane");
     application.run(|app, event| {
         if let tauri::RunEvent::ExitRequested { api, .. } = &event {
             // Native ⌘Q follows the same durable save path as the close button.

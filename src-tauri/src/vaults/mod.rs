@@ -1,28 +1,29 @@
 mod classification;
-pub use classification::{classification_types, example_type, predicted_type, apply_note_type};
+pub use classification::{apply_note_type, classification_types, example_type, predicted_type};
+#[cfg(test)]
+pub(crate) use classification::{predicted_type_with_policy, EntityType};
 mod notes;
-pub use notes::{create_quick_note, suggest_notes, note_references};
+pub use notes::{create_quick_note, note_references, suggest_notes};
 mod browse;
 mod pdf;
 mod scan;
 pub use browse::browse;
-pub mod parse;
 mod owned;
-pub use owned::{create_entity, create_owned, create_project};
+pub mod parse;
 use crate::inference::Engine;
 use crate::{
     error::{AppResult, Result},
     model::*,
     project,
 };
+pub use owned::{create_entity, create_owned, create_project};
 use rusqlite::{params, Connection};
 use std::{
     fs,
     path::{Path, PathBuf},
     sync::{
         atomic::AtomicBool,
-        Mutex,
-    },
+        Mutex},
 };
 pub fn index_db(path: &Path) -> Result<Connection> {
     let c = Connection::open(path).app()?;
@@ -47,7 +48,8 @@ pub fn index_db(path: &Path) -> Result<Connection> {
         let mut rows = columns.query_map([], |r| r.get::<_, String>(1)).app()?;
         rows.any(|row| row.is_ok_and(|name| name == "verified"))
     };
-    if !has_verified { c.execute("ALTER TABLE source_file_state ADD COLUMN verified INTEGER NOT NULL DEFAULT 0", []).app()?; }
+    if !has_verified { c.execute("ALTER TABLE source_file_state ADD COLUMN verified INTEGER NOT NULL DEFAULT 0", [],
+        ).app()?; }
     crate::vectors::migrate_batch(&c)?;
     Ok(c)
 }
@@ -134,7 +136,8 @@ pub fn allowed(s: &Source, vaults: &[Vault]) -> bool {
 /// Scope predicate uses only indexed metadata; foreign payloads are never parsed.
 pub(crate) const SCOPE_SQL: &str = "EXISTS(SELECT 1 FROM json_each(?1) v WHERE json_extract(v.value,'$.id')=s.vault AND (json_array_length(v.value,'$.scope')=0 OR EXISTS(SELECT 1 FROM json_each(v.value,'$.scope') f WHERE s.path=f.value OR substr(s.path,1,length(f.value)+1)=f.value||'/')))";
 pub(crate) fn scope_json(vaults: &[Vault]) -> Result<String> {
-    serde_json::to_string(&vaults.iter().map(|v| serde_json::json!({"id":v.id,"scope":v.scope})).collect::<Vec<_>>()).app()
+    serde_json::to_string(&vaults.iter().map(|v| serde_json::json!({"id":v.id,"scope":v.scope})).collect::<Vec<_>>(),
+    ).app()
 }
 pub fn all(index: &Path, vaults: &[Vault]) -> Result<Vec<Source>> {
     let c=index_db(index)?;
@@ -190,7 +193,8 @@ pub fn index_with_activity(
     activity: &crate::memory_engine::Activity,
     progress: impl Fn(serde_json::Value),
 ) -> Result<serde_json::Value> {
-    scan::run(root, index, resources, engine, cancel, Some(activity), progress)
+    scan::run(root, index, resources, engine, cancel, Some(activity), progress,
+    )
 }
 /// Make a newly created project fiche available immediately, without a model or
 /// a full vault scan. The regular indexer can add vectors later.
@@ -254,7 +258,8 @@ mod tests {
         crate::project::create(&root, "Test").unwrap();
         let vault = temp.path().join("vault");
         fs::create_dir(&vault).unwrap();
-        fs::write(vault.join("note.md"), format!("{}\n\n{}", "Première partie. ".repeat(120), "Autre partie. ".repeat(120))).unwrap();
+        fs::write(vault.join("note.md"), format!("{}\n\n{}", "Première partie. ".repeat(120), "Autre partie. ".repeat(120)),
+        ).unwrap();
         connect(&root, &vault).unwrap();
         let path = temp.path().join("index.sqlite");
         let resources = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources");
@@ -274,10 +279,12 @@ mod tests {
             q.query_map([], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,Vec<u8>>(1)?))).unwrap().collect::<std::result::Result<Vec<_>,_>>().unwrap()
         };
         assert_eq!(records,restored);
-        db.execute("UPDATE chunks SET model='embeddinggemma-2-Q8_0',vector='[1]'", []).unwrap();
+        db.execute("UPDATE chunks SET model='embeddinggemma-2-Q8_0',vector='[1]'", [],
+        ).unwrap();
         let report = index(&root,&path,&resources,&engine,&cancel, |_| {}).unwrap();
         assert_eq!(report["errors"], serde_json::json!([]));
-        let migrated: i64 = db.query_row("SELECT count(*) FROM chunks WHERE model=? AND length(vector)>10", [crate::inference::MODEL_ID], |r|r.get(0)).unwrap();
+        let migrated: i64 = db.query_row("SELECT count(*) FROM chunks WHERE model=? AND length(vector)>10", [crate::inference::MODEL_ID], |r|r.get(0),
+            ).unwrap();
         assert_eq!(migrated, records.len() as i64);
     }
     #[test]
@@ -288,9 +295,12 @@ mod tests {
         let fixture = temp.path().join("vault");
         fs::create_dir_all(fixture.join("Personnes")).unwrap();
         fs::create_dir_all(fixture.join("Lieux")).unwrap();
-        fs::write(fixture.join("Personnes/Pierre Plantard.md"), "---\ntype: Personne\naliases: [Pierre]\n---\n# Pierre Plantard\nUne personne.\n").unwrap();
-        fs::write(fixture.join("Personnes/Pierre Perret.md"), "---\ntype: Personne\naliases: [Pierre]\n---\n# Pierre Perret\nUne autre personne.\n").unwrap();
-        fs::write(fixture.join("Lieux/Ville.md"), "---\ntype: Lieu\n---\n# Ville\nLes souvenirs et les villes.\n").unwrap();
+        fs::write(fixture.join("Personnes/Pierre Plantard.md"), "---\ntype: Personne\naliases: [Pierre]\n---\n# Pierre Plantard\nUne personne.\n",
+        ).unwrap();
+        fs::write(fixture.join("Personnes/Pierre Perret.md"), "---\ntype: Personne\naliases: [Pierre]\n---\n# Pierre Perret\nUne autre personne.\n",
+        ).unwrap();
+        fs::write(fixture.join("Lieux/Ville.md"), "---\ntype: Lieu\n---\n# Ville\nLes souvenirs et les villes.\n",
+        ).unwrap();
         connect(&project, &fixture).unwrap();
         let indexpath = temp.path().join("index.sqlite");
         let resources = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources");

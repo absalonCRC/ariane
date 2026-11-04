@@ -55,7 +55,7 @@ export interface EditorHandle {
   focus: () => void;
   selection: () => string;
   cursor: () => number;
-  prepareInsertion: () => (text: string) => boolean;
+  prepareInsertion: () => ((text: string) => boolean) & { before?: string; after?: string };
   prepareCitation: () => (text: string) => boolean;
   passage: () => { section: string; from: number; to: number; text: string } | null;
   revealNode: (id: string) => boolean;

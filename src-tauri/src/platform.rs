@@ -20,7 +20,7 @@ pub fn menu_for_language(app: &AppHandle, language: &str) -> tauri::Result<Menu<
         application.append(&MenuItem::with_id(
             app,
             "quit-after-save",
-            "Quitter Ariane",
+            "Quitter ariane",
             true,
             Some("CmdOrCtrl+Q"),
         )?)?;
@@ -72,8 +72,8 @@ fn text(value: &str, language: &str) -> String {
     let plain = value.replace('&', "");
     let source = match plain.as_str() {
         "Window" => "Fenêtre", "Help" => "Aide", "Edit" => "Édition",
-        "About Ariane" | "About" => "À propos d’Ariane",
-        "Hide Ariane" | "Hide" => "Masquer Ariane", "Hide Others" => "Masquer les autres",
+        "About ariane" | "About" => "À propos d’ariane",
+        "Hide ariane" | "Hide" => "Masquer ariane", "Hide Others" => "Masquer les autres",
         "Show All" => "Tout afficher", "Minimize" => "Réduire la fenêtre",
         "Zoom" | "Maximize" => "Agrandir", "Close Window" | "Close" => "Fermer la fenêtre",
         "Toggle Full Screen" => "Plein écran", "Undo" => "Annuler la dernière action", "Redo" => "Rétablir",
@@ -113,6 +113,6 @@ mod tests {
         assert_eq!(text("&Copy", "fr"), "Copier");
         assert_eq!(text("Hide Others", "es"), "Ocultar las demás");
         assert_eq!(text("Window", "fr"), "Fenêtre");
-        assert_eq!(text("Ariane", "en"), "Ariane");
+        assert_eq!(text("ariane", "en"), "ariane");
     }
 }

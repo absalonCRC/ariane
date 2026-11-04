@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Run the installed local models on French fixtures; never access personal texts."""
+"""Historical E5 benchmark; use benchmark-ai.py and benchmark-entities.py for current paths.
+Run the installed local models on French fixtures; never access personal texts.
+"""
 import argparse, importlib.util, json, math, os, resource, subprocess, sys, time
 from pathlib import Path
 parser=argparse.ArgumentParser();parser.add_argument('--root',type=Path,default=Path.home()/'Library/Application Support/fr.ariane.writer/memory');parser.add_argument('--output',type=Path,required=True);args=parser.parse_args()

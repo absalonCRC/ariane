@@ -272,7 +272,7 @@ pub(super) fn run(
         // the resume queue; stale vectors cannot be published after a reindex.
         if semantic {
             let pending = {
-                let mut q=c.prepare("SELECT ch.id,ch.source,ch.text,s.hash FROM chunks ch JOIN sources s ON s.id=ch.source WHERE s.vault=? AND (ch.vector IS NULL OR ch.model IS NULL OR ch.model<>?) LIMIT 128").app()?;
+                let mut q=c.prepare("SELECT ch.id,ch.source,ch.text,s.hash,s.payload FROM chunks ch JOIN sources s ON s.id=ch.source WHERE s.vault=? AND (ch.vector IS NULL OR ch.model IS NULL OR ch.model<>?) LIMIT 128").app()?;
                 let rows = q
                     .query_map(params![vault.id, crate::inference::MODEL_ID], |r| {
                         Ok((
@@ -280,12 +280,13 @@ pub(super) fn run(
                             r.get::<_, String>(1)?,
                             r.get::<_, String>(2)?,
                             r.get::<_, String>(3)?,
+                            r.get::<_, String>(4)?,
                         ))
                     })
                     .app()?;
                 rows.collect::<std::result::Result<Vec<_>, _>>().app()?
             };
-            for (chunk, source, text, hash) in pending {
+            for (chunk, source, text, hash, payload) in pending {
                 let blocked = || {
                     cancel.load(Ordering::Relaxed)
                         || activity.is_some_and(|a| a.blocked())
@@ -301,7 +302,10 @@ pub(super) fn run(
                 };
                 let _inference = activity.map(|a| a.inference());
                 forwards += 1;
-                match model.embed_idle(resources, &text, false, blocked) {
+                let title = serde_json::from_str::<Source>(&payload)
+                    .ok()
+                    .map(|s| s.title);
+                match model.embed_titled_idle(resources, &text, title.as_deref(), false, blocked) {
                     Ok(Some(vector)) => {
                         c.execute("UPDATE chunks SET vector=?,model=? WHERE id=? AND source=? AND text=? AND EXISTS(SELECT 1 FROM sources WHERE id=? AND hash=?)",params![crate::vectors::encode(&vector),crate::inference::MODEL_ID,chunk,source,text,source,hash]).app()?;
                     }

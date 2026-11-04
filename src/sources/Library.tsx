@@ -249,7 +249,7 @@ export function Library({
               <strong>{v.name}</strong>
               <small>
                 {v.available
-                  ? `${v.count} document${v.count === 1 ? '' : 's'} · ${v.owned ? t('Dossier Ariane') : t('Lecture seule')}`
+                  ? `${v.count} document${v.count === 1 ? '' : 's'} · ${v.owned ? t('Dossier ariane') : t('Lecture seule')}`
                   : t('Dossier introuvable')}
               </small>
               {!v.owned && (

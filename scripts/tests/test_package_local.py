@@ -15,7 +15,7 @@ spec.loader.exec_module(package_local)
 
 class LocalPackage(unittest.TestCase):
     def bundle(self, directory: Path) -> Path:
-        app = directory / "Ariane.app"
+        app = directory / "ariane.app"
         binary = app / "Contents" / "MacOS" / "ariane"
         binary.parent.mkdir(parents=True)
         binary.write_bytes(b"test executable")
@@ -50,7 +50,7 @@ class LocalPackage(unittest.TestCase):
             app = self.bundle(root)
             output = root / "out"
             output.mkdir()
-            dmg = output / "Ariane-0.1.0-alpha.1-macOS-arm64-local-adhoc.dmg"
+            dmg = output / "ariane-0.1.0-alpha.1-macOS-arm64-local-adhoc.dmg"
             dmg.write_bytes(b"keep this existing package")
             with self.assertRaises(FileExistsError):
                 package_local.package(app, output, "0.1.0-alpha.1")

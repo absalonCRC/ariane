@@ -108,9 +108,9 @@ Ariane is for novels, essays, documented narratives, theses and any long-form wo
 
 ## Try Ariane
 
-**Ariane 0.2.1 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
+**Ariane 0.2.2 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
 
-There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.2.1 development notes](docs/release-notes-0.2.1.md)
+There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.2.2 development notes](docs/release-notes-0.2.2.md)
 
 <details>
 <summary>Build from source</summary>
@@ -122,7 +122,7 @@ npm ci
 python3 scripts/setup-resources.py
 npm run verify
 npm run tauri build -- --bundles app
-open src-tauri/target/release/bundle/macos/Ariane.app
+open src-tauri/target/release/bundle/macos/ariane.app
 ```
 
 Resource preparation downloads pinned native engines and EmbeddingGemma 300M Q8 (about 334 MB). The [Gemma terms](https://ai.google.dev/gemma/terms) apply to that model. A locally built bundle is signed ad hoc and is not notarized.

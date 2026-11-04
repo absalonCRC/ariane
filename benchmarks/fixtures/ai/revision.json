@@ -1,0 +1,160 @@
+{
+  "protocol": {
+    "version": 1,
+    "source": "Hand-authored French narrative and protected Markdown examples, no personal manuscripts.",
+    "frozenBeforeInference": true,
+    "evaluation": "Paired current prompt with and without read-only context; actual LanguageTool/Salamandra followed by TypeScript display filters.",
+    "budgets": {
+      "maxHarmfulDisplayedIncrease": 0,
+      "maxOutsideTargetChanges": 0
+    },
+    "note": "Gold local edits are conservative; unlisted suggestions require human review and are counted as unsafe in this benchmark."
+  },
+  "cases": [
+    {
+      "id": "accord",
+      "text": "Les enfant joue dans le jardin.",
+      "before": "",
+      "after": "",
+      "allowed": [
+        {
+          "from": 4,
+          "to": 10,
+          "original": "enfant",
+          "replacement": "enfants"
+        },
+        {
+          "from": 11,
+          "to": 15,
+          "original": "joue",
+          "replacement": "jouent"
+        }
+      ]
+    },
+    {
+      "id": "conjugaison",
+      "text": "Je prend le train.",
+      "before": "",
+      "after": "",
+      "allowed": [
+        {
+          "from": 3,
+          "to": 8,
+          "original": "prend",
+          "replacement": "prends"
+        }
+      ]
+    },
+    {
+      "id": "contexte-feminin",
+      "text": "arrivé.",
+      "before": "Ces deux lettres sont ",
+      "after": " Elles étaient attendues.",
+      "allowed": [
+        {
+          "from": 0,
+          "to": 6,
+          "original": "arrivé",
+          "replacement": "arrivées"
+        }
+      ]
+    },
+    {
+      "id": "contexte-participe",
+      "text": "parti.",
+      "before": "Ces voyageuses étaient déjà ",
+      "after": " Nous ne les avons pas revues.",
+      "allowed": [
+        {
+          "from": 0,
+          "to": 5,
+          "original": "parti",
+          "replacement": "parties"
+        }
+      ]
+    },
+    {
+      "id": "contexte-deja-correct",
+      "text": "heureux.",
+      "before": "Les deux frères semblaient ",
+      "after": " Ils venaient de rentrer.",
+      "allowed": []
+    },
+    {
+      "id": "negation",
+      "text": "Je ne veux pas partir.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "nom-fictif",
+      "text": "Yséliane contemple le fleuve.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "chiffres-dates",
+      "text": "Le contrat fixe 120 euros au 12 juin.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "voix-litteraire",
+      "text": "La nuit. Rien d’autre.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "markdown",
+      "text": "Les enfant lisent [ce livre](https://exemple.fr).",
+      "before": "",
+      "after": "",
+      "allowed": [
+        {
+          "from": 4,
+          "to": 10,
+          "original": "enfant",
+          "replacement": "enfants"
+        }
+      ]
+    },
+    {
+      "id": "code",
+      "text": "Les enfant utilisent `let enfant = 1`.",
+      "before": "",
+      "after": "",
+      "allowed": [
+        {
+          "from": 4,
+          "to": 10,
+          "original": "enfant",
+          "replacement": "enfants"
+        }
+      ]
+    },
+    {
+      "id": "unicode",
+      "text": "🌿 Les fleur sont ouverte.",
+      "before": "",
+      "after": "",
+      "allowed": [
+        {
+          "from": 7,
+          "to": 12,
+          "original": "fleur",
+          "replacement": "fleurs"
+        },
+        {
+          "from": 18,
+          "to": 25,
+          "original": "ouverte",
+          "replacement": "ouvertes"
+        }
+      ]
+    }
+  ]
+}

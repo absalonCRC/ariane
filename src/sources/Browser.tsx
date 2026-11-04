@@ -73,7 +73,7 @@ export function SourceBrowser({
         <option value="">{t('Tous les vaults')}</option>
         {vaults.map((v) => (
           <option key={v.id} value={v.id}>
-            {v.owned ? 'Vault Ariane' : v.name + ' · Lecture seule'}
+            {v.owned ? 'Vault ariane' : v.name + ' · Lecture seule'}
           </option>
         ))}
       </select>
@@ -115,7 +115,7 @@ export function SourceBrowser({
                   {!vault && (
                     <small>
                       {vaults.find((v) => v.id === s.vaultId)?.owned
-                        ? 'Vault Ariane'
+                        ? 'Vault ariane'
                         : vaults.find((v) => v.id === s.vaultId)?.name}
                     </small>
                   )}

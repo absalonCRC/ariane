@@ -31,6 +31,7 @@ export const entityColors: Record<string, string> = {
   Objet: '#9c704a',
 };
 export function entityKind(kind: string): string {
+  if (kind.startsWith('custom:')) return kind.slice(7);
   const key = kind.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
   return (
     (

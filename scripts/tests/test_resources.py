@@ -40,7 +40,7 @@ class Downloads(unittest.TestCase):
             stage = Path(directory)
             for name in config['bundle']['resources']:
                 source = repo / 'src-tauri' / name
-                if source.is_file() and source.parent.name == 'engine' and source.suffix in ('.py', '.txt'):
+                if source.is_file() and source.parent.name == 'engine' and source.suffix in ('.py', '.txt', '.json'):
                     shutil.copyfile(source, stage / source.name)
             result = subprocess.run([sys.executable, str(stage / 'memory.py'), '--root', str(stage)],
                                     input='', capture_output=True, text=True)
@@ -60,7 +60,7 @@ class Downloads(unittest.TestCase):
             (root / 'resources.lock.json').write_text(json.dumps({'model': {'name': 'test.gguf', 'sha256': bundler.digest(model)}}))
             lock = root / 'native-dependencies.lock.json'
             lock.write_text('{}')
-            names = ['llama-server', 'pandoc', 'typst', 'pdf-text', 'memory.py', 'memory-model.txt', 'libggml-cpu-test.so']
+            names = ['llama-server', 'pandoc', 'typst', 'pdf-text', 'memory.py', 'memory-model.txt', 'ai-policy.json', 'libggml-cpu-test.so']
             for name in names:
                 (engine / name).write_bytes(name.encode())
             (engine / 'checksums.json').write_text(json.dumps({'native_lock_sha256': bundler.digest(lock), 'files': {name: bundler.digest(engine / name) for name in names}}))

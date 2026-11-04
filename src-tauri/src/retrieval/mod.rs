@@ -1,4 +1,6 @@
 mod cache;
+mod fusion;
+pub(crate) mod ranking;
 use crate::{
     error::{AppResult, Result},
     inference::{cosine, Engine},
@@ -28,6 +30,41 @@ pub fn search(
     engine: &Mutex<Engine>,
     query: &str,
     semantic: bool,
+) -> Result<Vec<Source>> {
+    search_inner(
+        root,
+        index,
+        resources,
+        engine,
+        query,
+        semantic,
+        ranking::DEFAULT,
+        true,
+    )
+}
+pub(crate) fn search_with_policy(
+    root: &Path,
+    index: &Path,
+    resources: &Path,
+    engine: &Mutex<Engine>,
+    query: &str,
+    semantic: bool,
+    policy: ranking::Policy,
+) -> Result<Vec<Source>> {
+    search_inner(
+        root, index, resources, engine, query, semantic, policy, false,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn search_inner(
+    root: &Path,
+    index: &Path,
+    resources: &Path,
+    engine: &Mutex<Engine>,
+    query: &str,
+    semantic: bool,
+    policy: ranking::Policy,
+    rank_fusion: bool,
 ) -> Result<Vec<Source>> {
     if query.trim().is_empty() {
         return Ok(vec![]);
@@ -73,8 +110,17 @@ pub fn search(
         if title.contains(&normalized) {
             let mut s = data.all[i].clone();
             s.score = 8.;
-            hits.entry(s.id.clone()).or_insert(s);
+            hits.entry(s.id.clone()).and_modify(|hit| hit.score = hit.score.max(s.score))
+                .or_insert(s);
         }
+    }
+    for (name, i) in data.aliases.iter().filter(|(name, _)| name == &normalized) {
+        let mut source = data.all[*i].clone();
+        source.score = 8.;
+        source.matched = Some(name.clone());
+        hits.entry(source.id.clone())
+            .and_modify(|hit| hit.score = hit.score.max(8.))
+            .or_insert(source);
     }
     if semantic {
         let vector = engine.try_lock().ok().and_then(|mut engine| {
@@ -87,20 +133,34 @@ pub fn search(
                 .ok()
         });
         if let Some(vector) = vector {
+            if rank_fusion {
+                return fusion::search(
+                    &snapshot,
+                    index,
+                    &vector,
+                    hits,
+                    &normalized,
+                    policy.semantic_threshold,
+                );
+            }
             let mut scores = vec![0f64; data.all.len()];
             for (id,hit) in &hits { if let Some(&i)=data.by_id.get(id) { scores[i]=hit.score; } }
+            let lexical = scores.clone();
             let mut best: Vec<_> = hits.into_values().collect();
             best.sort_by(|a,b|b.score.total_cmp(&a.score).then(a.title.cmp(&b.title)));
             best.truncate(20);
             cache::visit_chunks(&snapshot,index,|chunk| {
                 let source = &data.all[chunk.source];
                 let score = cosine(&vector,&chunk.vector);
-                if score < 0.48 { return; }
-                let combined = score * 4. + scores[chunk.source].min(2.);
+                if score < policy.semantic_threshold { return; }
+                let combined =
+                    ranking::hybrid(lexical[chunk.source], score, policy.semantic_threshold);
                 if combined <= scores[chunk.source] { return; }
                 scores[chunk.source] = combined;
                 if let Some(i)=best.iter().position(|s|s.id==source.id) { best.remove(i); }
-                if best.len()<20 || best.last().is_some_and(|s|combined>s.score || (combined==s.score && source.title<s.title)) {
+                if best.len()<20 || best.last().is_some_and(|s| {
+                        combined>s.score || (combined==s.score && source.title<s.title)
+                    }) {
                     let mut s=source.clone();s.text=chunk.text.clone();s.page=chunk.page;s.score=combined;
                     best.push(s);best.sort_by(|a,b|b.score.total_cmp(&a.score).then(a.title.cmp(&b.title)));best.truncate(20);
                 }
@@ -122,6 +182,28 @@ pub fn suggest(
     text: &str,
     depth: u8,
     allow_end: bool,
+) -> Result<Vec<Source>> {
+    suggest_with_policy(
+        root,
+        index,
+        resources,
+        engine,
+        text,
+        depth,
+        allow_end,
+        ranking::DEFAULT,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn suggest_with_policy(
+    root: &Path,
+    index: &Path,
+    resources: &Path,
+    engine: &Mutex<Engine>,
+    text: &str,
+    depth: u8,
+    allow_end: bool,
+    policy: ranking::Policy,
 ) -> Result<Vec<Source>> {
     if text.trim().is_empty() {
         return Ok(vec![]);
@@ -189,12 +271,30 @@ pub fn suggest(
         }
     }
     if depth >= 3 {
-        for mut s in search(root, index, resources, engine, text, true)?
-            .into_iter()
+        // The new calibration covers depth 3. Keep the previous semantic gate
+        // for the separate, more permissive depth-5 policy.
+        let policy = if depth == 5 {
+            ranking::Policy {
+                semantic_threshold: 0.48,
+                ..policy
+            }
+        } else {
+            policy
+        };
+        let candidates = search_with_policy(root, index, resources, engine, text, true, policy)?;
+        let separated = candidates
+            .get(1)
+            .is_none_or(|s| candidates[0].score - s.score >= policy.suggestion_margin);
+        for mut s in candidates.into_iter()
             .take(if depth == 5 { 8 } else { 4 })
         {
             if ["Personne", "Lieu"].contains(&s.kind.as_str())
-                || s.score < if depth == 5 { 1.9 } else { 2.2 }
+                || s.score < if depth == 5 {
+                        policy.deep_suggestion_score
+                    } else {
+                        policy.suggestion_score
+                    }
+                || (!separated && policy.suggestion_margin > 0.)
             {
                 continue;
             }
@@ -207,4 +307,38 @@ pub fn suggest(
     out.sort_by(|a, b| b.score.total_cmp(&a.score).then(a.title.cmp(&b.title)));
     out.truncate(18);
     Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn exact_titles_keep_their_priority_when_the_body_already_matches() {
+        let d = tempfile::tempdir().unwrap();
+        let root = d.path().join("project");
+        let vault = d.path().join("vault");
+        std::fs::create_dir(&vault).unwrap();
+        crate::project::create(&root, "Recherche").unwrap();
+        vaults::connect(&root, &vault).unwrap();
+        std::fs::write(
+            vault.join("Tour.md"),
+            "---\ntitle: Tour\n---\nLa tour domine le quai.",
+        )
+        .unwrap();
+        let index = d.path().join("index");
+        let resources = d.path().join("no-model");
+        let engine = Mutex::new(Engine::default());
+        vaults::index(
+            &root,
+            &index,
+            &resources,
+            &engine,
+            &std::sync::atomic::AtomicBool::new(false),
+            |_| {},
+        )
+        .unwrap();
+        let hits = search(&root, &index, &resources, &engine, "Tour", false).unwrap();
+        assert_eq!(hits.len(), 1);
+        assert_eq!(hits[0].score, 8.);
+    }
 }

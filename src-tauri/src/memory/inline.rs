@@ -156,6 +156,16 @@ pub fn create_detected_entity(
     if kind != candidate.kind {
         return Err("Le type de cette entité a changé.".into());
     }
+    if let Some(kind) = candidate.kind.strip_prefix("custom:") {
+        if !vaults::classification_types(root, index)?
+            .iter()
+            .any(|t| t.name == kind)
+        {
+            return Err("Type d’entité désactivé.".into());
+        }
+        let note = vaults::create_quick_note(root, index, &candidate.title)?;
+        return Ok(vaults::apply_note_type(root, index, &note, kind)?.unwrap_or(note));
+    }
     let category = match candidate.kind.as_str() {
         "person" => "personne",
         "place" => "lieu",

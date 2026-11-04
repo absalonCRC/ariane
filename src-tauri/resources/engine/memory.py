@@ -28,7 +28,8 @@ os.environ["MKL_NUM_THREADS"] = "1"
 MODEL_ID = Path(__file__).with_name("memory-model.txt").read_text().strip()
 MAX_TEXT_CHARS = 65536
 E5_MAX_TOKENS = 512
-NER_MODEL_ID = "fastino/gliner2-multi-v1@ce747d7+qnnpack-v3:entities-v2"
+NER_MODEL_ID = "fastino/gliner2-multi-v1@ce747d7+qnnpack-v3:entities-v4"
+POLICY = json.loads(Path(__file__).with_name("ai-policy.json").read_text())
 LABELS = ("person", "location", "organization", "work", "event")
 
 
@@ -119,7 +120,7 @@ class MemoryEngine:
         if self.e5_cache is None:
             import torch
             from transformers import AutoModel, AutoTokenizer
-            torch.set_num_threads(1)
+            torch.set_num_threads(int(os.environ.get("ARIANE_NER_THREADS", "2")) if os.environ.get("ARIANE_NER_THREADS", "2") in ("1", "2", "4") else 1)
             self.e5_cache = self.cached("e5")
             if self.e5_cache is not None:
                 return self.e5_cache
@@ -135,7 +136,7 @@ class MemoryEngine:
         if self.gliner_cache is None:
             import torch
             from gliner2 import AutoExtractor
-            torch.set_num_threads(1)
+            torch.set_num_threads(int(os.environ.get("ARIANE_NER_THREADS", "2")) if os.environ.get("ARIANE_NER_THREADS", "2") in ("1", "2", "4") else 1)
             self.gliner_cache = self.cached("gliner")
             if self.gliner_cache is not None:
                 return self.gliner_cache
@@ -179,7 +180,7 @@ class MemoryEngine:
         # A regular extract_entities call can silently truncate at max_len.
         result = extractor.extract_entities_long(
             text, list(LABELS), threshold=0.5, chunk_size=256,
-            chunk_overlap=32, batch_size=1, num_workers=0,
+            chunk_overlap=32, batch_size=int(os.environ.get("ARIANE_NER_BATCH", "1")) if os.environ.get("ARIANE_NER_BATCH", "1") in ("1", "2", "4") else 1, num_workers=0,
             include_confidence=True, include_spans=True,
         )
         found = []
@@ -235,6 +236,18 @@ class MemoryEngine:
         start = time.perf_counter()
         if operation == "entities":
             found = self.entities(text)
+            types = request.get("types", [])
+            # Classify only extracted spans; custom types do not invent boundaries.
+            if isinstance(types, list) and types:
+                for item in [span for span in found if span["score"] >= POLICY["ner"]["custom"] and span["text"].strip() and len(span["text"]) <= 120][:4]:
+                    result = self.run({"operation":"classify_note", "title":item["text"], "text":text[max(0,item["start"]-120):item["end"]+120], "types":types})
+                    item["baseLabel"] = item["label"]
+                    item["classification"] = result.get("classification", {})
+                    choices = result.get("classification",{}).get("type",[])
+                    if choices and choices[0].get("confidence",0)>=POLICY["classification"]["score"] and choices[0].get("confidence",0)-(choices[1].get("confidence",0) if len(choices)>1 else 0)>=POLICY["classification"]["margin"]:
+                        kind=choices[0].get("label")
+                        if kind in {t.get("name") for t in types} and kind not in ("Personne","Lieu","Organisation","Œuvre","Événement"):
+                            item["label"]="custom:"+kind
             return {"id": request_id, "entities": found, "model": NER_MODEL_ID,
                     "elapsedMs": round((time.perf_counter() - start) * 1000, 2)}
         vector = self.embed(text, role if operation == "embed" else "passage")

@@ -1,6 +1,6 @@
-use std::collections::HashSet;
 use super::*;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct EntityType {
@@ -77,6 +77,13 @@ pub fn example_type<'a>(name: &str, types: &'a [EntityType]) -> Option<&'a str> 
     (matches.len() == 1).then(|| matches[0].name.as_str())
 }
 pub fn predicted_type<'a>(output: &serde_json::Value, types: &'a [EntityType]) -> Option<&'a str> {
+    predicted_type_with_policy(output, types, &crate::ai_policy::POLICY.classification)
+}
+pub(crate) fn predicted_type_with_policy<'a>(
+    output: &serde_json::Value,
+    types: &'a [EntityType],
+    policy: &crate::ai_policy::Classification,
+) -> Option<&'a str> {
     let choices = output["classification"]["type"].as_array()?;
     let first = choices.first()?;
     let score = first["confidence"].as_f64()?;
@@ -84,13 +91,13 @@ pub fn predicted_type<'a>(output: &serde_json::Value, types: &'a [EntityType]) -
         .get(1)
         .and_then(|v| v["confidence"].as_f64())
         .unwrap_or(0.);
-    if !score.is_finite() || score < 0.55 || score - next < 0.20 {
+    if !policy.accepts(score, next) {
         return None;
     }
     let name = first["label"].as_str()?;
     types
         .iter()
-        .find(|t| t.name == name)
+        .find(|t| t.enabled && t.name == name)
         .map(|t| t.name.as_str())
 }
 /// Set only the type of an unchanged owned note; never move it or change its ID.
@@ -134,8 +141,7 @@ pub fn apply_note_type(
     let mut fields: serde_json::Map<String, serde_json::Value> = crate::yaml::from_str(yaml).app()?;
     fields.insert(
         "type".into(),
-        serde_json::Value::String(kind.into()),
-    );
+        serde_json::Value::String(kind.into()));
     let updated = format!(
         "---\n{}---{}",
         serde_saphyr::to_string(&fields)

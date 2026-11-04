@@ -31,12 +31,14 @@ pub(super) fn mention(
         "organization" | "organisation" => "organization",
         "work" | "œuvre" => "work",
         "event" | "événement" => "event",
+        other if other.starts_with("custom:") => other,
         _ => return Err("Type d'entité inconnu.".into()),
     };
     if kind == "person" && !origin.starts_with("model:") && label.split_whitespace().count() < 2 {
         return Ok(());
     }
-    let name = format!("{kind}:{}", normalized(label));
+    // An unconfirmed mention is not a globally unique identity.
+    let name = format!("mention:{key}:{start}:{kind}:{}", normalized(label));
     if name.is_empty() {
         return Err("Nom d'entité vide.".into());
     }
@@ -50,7 +52,7 @@ pub(super) fn mention(
         .app()?;
     let id = id.unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
     tx.execute(
-        "INSERT OR IGNORE INTO memory_entities(id,title,normalized,kind) VALUES(?,?,?,?)",
+        "INSERT INTO memory_entities(id,title,normalized,kind) VALUES(?,?,?,?) ON CONFLICT(normalized) DO UPDATE SET title=excluded.title",
         params![id, label, name, kind],
     )
     .app()?;
@@ -65,7 +67,12 @@ pub(super) fn rules(tx: &Transaction<'_>, p: &super::Passage) -> Result<()> {
     });
     for m in RE.find_iter(&p.text) {
         let value = m.as_str();
-        if value.split_whitespace().count() > 4 {
+        if value.split_whitespace().count() > 4
+            || value
+                .split_whitespace()
+                .next()
+                .is_some_and(|w| ["Le", "La", "Les", "Un", "Une", "Des"].contains(&w))
+        {
             continue;
         }
         let after = p.text[m.end()..].trim_start();
@@ -114,6 +121,13 @@ pub(super) fn read(c: &Connection, id: &str) -> Result<Value> {
             ))
         })
         .app()?;
+    let legacy: bool = c
+        .query_row(
+            "SELECT normalized NOT LIKE 'mention:%' FROM memory_entities WHERE id=?",
+            [id],
+            |r| r.get(0),
+        )
+        .app()?;
     let mut passages = Vec::new();
     let mut timeline = Vec::new();
     let mut fields = Vec::new();
@@ -134,6 +148,10 @@ pub(super) fn read(c: &Connection, id: &str) -> Result<Value> {
         let quote = super::temporal::sentence(&text, start, end).to_owned();
         passages
             .push(json!({"section":section,"node":node,"title":ptitle,"quote":quote,"hash":hash}));
+        let named = &text[start..end];
+        if quote.matches(named).count() > 1 {
+            continue;
+        }
         let quote_start = text.find(&quote).unwrap_or(start);
         for date in super::temporal::dates(&text).into_iter().filter(|d| {
             d["start"].as_u64().is_some_and(|v| {
@@ -143,7 +161,6 @@ pub(super) fn read(c: &Connection, id: &str) -> Result<Value> {
             timeline.push(json!({"date":date["date"],"expression":date["expression"],"precision":date["precision"],"approximate":date["approximate"],"uncertain":super::temporal::uncertain(&quote),"text":quote,"section":section,"node":node,"quote":quote}));
         }
         // Only explicit appositions are surfaced as factual fields.
-        let named = &text[start..end];
         let pattern = format!(
             r"{}\s*,\s*([\p{{Ll}}][\p{{L}}-]{{2,30}})\s*[,.;]",
             regex::escape(named)
@@ -157,11 +174,15 @@ pub(super) fn read(c: &Connection, id: &str) -> Result<Value> {
             }
         }
     }
+    if legacy && passages.len() > 1 {
+        timeline.clear();
+        fields.clear();
+    }
     timeline.sort_by_key(|event| event["date"].as_str().unwrap_or("~").to_owned());
     timeline.dedup();
     passages.dedup();
     fields.dedup();
     Ok(
-        json!({"id":id,"title":title,"kind":kind,"passages":passages,"timeline":timeline,"fields":fields}),
+        json!({"id":id,"title":title,"kind":kind,"passages":passages,"timeline":timeline,"fields":fields,"unresolved":true}),
     )
 }

@@ -1,8 +1,10 @@
 //! GLiNER-only child. No engine mutex or database transaction is held during inference.
-use super::{Activity, critical_memory_pressure};
-use crate::{error::{AppResult, Result}, worker_output::WorkerOutput};
+use super::{critical_memory_pressure, Activity};
+use crate::{error::{AppResult, Result}, worker_output::WorkerOutput,
+};
 use serde_json::{json, Value};
-use std::{io::Write, path::Path, process::{Child, ChildStdin, Command, Stdio}, sync::mpsc, time::{Duration, Instant}};
+use std::{io::Write, path::Path, process::{Child, ChildStdin, Command, Stdio}, sync::mpsc, time::{Duration, Instant},
+};
 
 #[derive(Default)]
 pub struct EntityEngine {
@@ -11,6 +13,7 @@ pub struct EntityEngine {
     output: Option<WorkerOutput>,
     used: Option<Instant>,
     serial: u64,
+    warm_requests: usize,
 }
 impl EntityEngine {
     pub fn available(data: &Path, resources: &Path) -> bool {
@@ -19,6 +22,7 @@ impl EntityEngine {
             && data.join("memory/models/gliner/model.safetensors").is_file()
             && resources.join("engine/memory.py").is_file()
             && resources.join("engine/memory-model.txt").is_file()
+            && resources.join("engine/ai-policy.json").is_file()
     }
     fn start(&mut self, data: &Path, resources: &Path, activity: &Activity) -> Result<()> {
         if let Some(child) = self.child.as_mut() {
@@ -60,13 +64,18 @@ impl EntityEngine {
         resources: &Path,
         activity: &Activity,
         text: &str,
+        types: Value,
     ) -> Result<Option<Value>> {
-        self.run(data,resources,activity,json!({"operation":"entities","text":text}))
+        self.run(data,resources,activity,json!({"operation":"entities","text":text,"types":types}),
+        )
     }
-    pub fn classify_note(&mut self,data:&Path,resources:&Path,activity:&Activity,title:&str,context:&str,types:Value) -> Result<Option<Value>> {
-        self.run(data,resources,activity,json!({"operation":"classify_note","title":title,"text":context,"types":types}))
+    pub fn classify_note(&mut self,data:&Path,resources:&Path,activity:&Activity,title:&str,context:&str,types:Value,
+    ) -> Result<Option<Value>> {
+        self.run(data,resources,activity,json!({"operation":"classify_note","title":title,"text":context,"types":types}),
+        )
     }
-    fn run(&mut self,data:&Path,resources:&Path,activity:&Activity,mut input:Value) -> Result<Option<Value>> {
+    fn run(&mut self,data:&Path,resources:&Path,activity:&Activity,mut input:Value,
+    ) -> Result<Option<Value>> {
         if activity.ner_blocked() || critical_memory_pressure() {
             return Ok(None);
         }
@@ -77,8 +86,17 @@ impl EntityEngine {
         let stdin = self.input.as_mut().ok_or("Entrée du moteur indisponible")?;
         writeln!(stdin, "{input}").app()?;
         stdin.flush().app()?;
+        self.warm_requests = if self
+            .used
+            .is_some_and(|t| t.elapsed() < Duration::from_secs(30))
+        {
+            self.warm_requests + 1
+        } else {
+            1
+        };
         self.used = Some(Instant::now());
-        let start = Instant::now();
+        let mut active_elapsed = Duration::ZERO;
+        let mut tick = Instant::now();
         let mut pressure_check = Instant::now();
         loop {
             if pressure_check.elapsed() > Duration::from_secs(1) {
@@ -88,7 +106,11 @@ impl EntityEngine {
                     return Ok(None);
                 }
             }
-            if start.elapsed() > Duration::from_secs(180) {
+            if !activity.ner_blocked() {
+                active_elapsed += tick.elapsed();
+            }
+            tick = Instant::now();
+            if active_elapsed > Duration::from_secs(180) {
                 self.shutdown(activity);
                 return Err("Analyse locale différée : délai dépassé.".into());
             }
@@ -124,7 +146,9 @@ impl EntityEngine {
     pub fn shutdown_if_idle(&mut self, activity: &Activity) {
         if critical_memory_pressure() || self
             .used
-            .is_some_and(|used| used.elapsed() > Duration::from_secs(60))
+            .is_some_and(|used| {
+                used.elapsed() > Duration::from_secs(if self.warm_requests >= 3 { 180 } else { 60 })
+            })
         {
             self.shutdown(activity);
         }
@@ -140,6 +164,7 @@ impl EntityEngine {
         self.input = None;
         self.output = None;
         self.used = None;
+        self.warm_requests = 0;
     }
 }
 impl Drop for EntityEngine {

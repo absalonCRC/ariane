@@ -1,0 +1,15 @@
+{
+  "version": "french-prose-v1",
+  "ner": {
+    "thresholds": {
+      "person": 0.8,
+      "location": 0.8,
+      "organization": 0.8,
+      "work": 0.8,
+      "event": 0.8
+    },
+    "custom": 0.85,
+    "lowercasePerson": 0.95
+  },
+  "classification": { "score": 0.55, "margin": 0.2 }
+}

@@ -1,0 +1,15 @@
+{
+  "identifier": "fr.ariane.writer.ai-recette",
+  "app": {
+    "security": {
+      "capabilities": [
+        "default",
+        {
+          "identifier": "isolated-performance",
+          "windows": ["main"],
+          "permissions": ["allow-performance"]
+        }
+      ]
+    }
+  }
+}
