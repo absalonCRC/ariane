@@ -1,0 +1,489 @@
+[
+  {
+    "id": "ner-0",
+    "group": "Claude",
+    "split": "calibration",
+    "text": "Claude est né à Toulouse.",
+    "expected": [
+      [
+        "Claude",
+        "person"
+      ],
+      [
+        "Toulouse",
+        "location"
+      ]
+    ]
+  },
+  {
+    "id": "ner-1",
+    "group": "Nougaro",
+    "split": "calibration",
+    "text": "Nougaro chante ce soir.",
+    "expected": [
+      [
+        "Nougaro",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-2",
+    "group": "Voltaire",
+    "split": "validation",
+    "text": "Voltaire écrivait chaque matin.",
+    "expected": [
+      [
+        "Voltaire",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-3",
+    "group": "Molière",
+    "split": "validation",
+    "text": "Molière entre en scène.",
+    "expected": [
+      [
+        "Molière",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-4",
+    "group": "Socrate",
+    "split": "validation",
+    "text": "Socrate interroge ses disciples.",
+    "expected": [
+      [
+        "Socrate",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-5",
+    "group": "Élise",
+    "split": "calibration",
+    "text": "Élise referme la porte.",
+    "expected": [
+      [
+        "Élise",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-6",
+    "group": "Pierre",
+    "split": "validation",
+    "text": "Pierre ramasse une pierre.",
+    "expected": [
+      [
+        "Pierre",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-7",
+    "group": "Rose",
+    "split": "calibration",
+    "text": "Rose cueille une rose.",
+    "expected": [
+      [
+        "Rose",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-8",
+    "group": "Gandalf",
+    "split": "validation",
+    "text": "Gandalf rejoint Frodon.",
+    "expected": [
+      [
+        "Gandalf",
+        "person"
+      ],
+      [
+        "Frodon",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-9",
+    "group": "Arya",
+    "split": "validation",
+    "text": "Arya attend devant la porte.",
+    "expected": [
+      [
+        "Arya",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-10",
+    "group": "Mélusine",
+    "split": "validation",
+    "text": "Mélusine disparaît dans la forêt.",
+    "expected": [
+      [
+        "Mélusine",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-11",
+    "group": "Merlin",
+    "split": "validation",
+    "text": "Merlin conseille Arthur.",
+    "expected": [
+      [
+        "Merlin",
+        "person"
+      ],
+      [
+        "Arthur",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-12",
+    "group": "Napoléon",
+    "split": "validation",
+    "text": "Napoléon quitte Paris.",
+    "expected": [
+      [
+        "Napoléon",
+        "person"
+      ],
+      [
+        "Paris",
+        "location"
+      ]
+    ]
+  },
+  {
+    "id": "ner-13",
+    "group": "Vaël",
+    "split": "calibration",
+    "text": "Vaël tend sa lame à Néris.",
+    "expected": [
+      [
+        "Vaël",
+        "person"
+      ],
+      [
+        "Néris",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-14",
+    "group": "Aelys",
+    "split": "validation",
+    "text": "Aelys répondit sans hésiter.",
+    "expected": [
+      [
+        "Aelys",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-15",
+    "group": "Qorûn",
+    "split": "calibration",
+    "text": "Qorûn traversa la salle.",
+    "expected": [
+      [
+        "Qorûn",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-16",
+    "group": "Toulouse",
+    "split": "calibration",
+    "text": "Toulouse est une ville de France.",
+    "expected": [
+      [
+        "Toulouse",
+        "location"
+      ],
+      [
+        "France",
+        "location"
+      ]
+    ]
+  },
+  {
+    "id": "ner-17",
+    "group": "Portugal",
+    "split": "calibration",
+    "text": "Le Portugal est voisin de l’Espagne.",
+    "expected": [
+      [
+        "Portugal",
+        "location"
+      ],
+      [
+        "Espagne",
+        "location"
+      ]
+    ]
+  },
+  {
+    "id": "ner-18",
+    "group": "Templiers",
+    "split": "calibration",
+    "text": "Les Templiers possédaient une commanderie.",
+    "expected": [
+      [
+        "Templiers",
+        "organization"
+      ]
+    ]
+  },
+  {
+    "id": "ner-19",
+    "group": "UNESCO",
+    "split": "validation",
+    "text": "L’UNESCO publie un rapport.",
+    "expected": [
+      [
+        "UNESCO",
+        "organization"
+      ]
+    ]
+  },
+  {
+    "id": "ner-20",
+    "group": "Claude",
+    "split": "calibration",
+    "text": "Claude Nougaro est né à Toulouse.",
+    "expected": [
+      [
+        "Claude Nougaro",
+        "person"
+      ],
+      [
+        "Toulouse",
+        "location"
+      ]
+    ]
+  },
+  {
+    "id": "ner-21",
+    "group": "Jean-Pierre",
+    "split": "calibration",
+    "text": "Jean-Pierre retrouve Anne-Marie.",
+    "expected": [
+      [
+        "Jean-Pierre",
+        "person"
+      ],
+      [
+        "Anne-Marie",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-22",
+    "group": "Éloïse",
+    "split": "validation",
+    "text": "😀 Éloïse parle avec Zoé.",
+    "expected": [
+      [
+        "Éloïse",
+        "person"
+      ],
+      [
+        "Zoé",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-23",
+    "group": "Alice",
+    "split": "validation",
+    "text": "Alice walks beside Bob.",
+    "expected": [
+      [
+        "Alice",
+        "person"
+      ],
+      [
+        "Bob",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-24",
+    "group": "Rose",
+    "split": "calibration",
+    "text": "Rose picked a rose.",
+    "expected": [
+      [
+        "Rose",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-25",
+    "group": "Toulouse",
+    "split": "calibration",
+    "text": "Toulouse was a beautiful city. Claude Nougaro wwas born here.",
+    "expected": [
+      [
+        "Toulouse",
+        "location"
+      ],
+      [
+        "Claude Nougaro",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-26",
+    "group": "Marie",
+    "split": "validation",
+    "text": "Marie écrit. Elle se tait ensuite.",
+    "expected": [
+      [
+        "Marie",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-27",
+    "group": "negative-1",
+    "split": "validation",
+    "text": "Il se retourne. Elle prend son manteau.",
+    "expected": []
+  },
+  {
+    "id": "ner-28",
+    "group": "negative-0",
+    "split": "calibration",
+    "text": "Demain sera une longue journée.",
+    "expected": []
+  },
+  {
+    "id": "ner-29",
+    "group": "negative-1",
+    "split": "validation",
+    "text": "Bonjour, comment allez-vous ?",
+    "expected": []
+  },
+  {
+    "id": "ner-30",
+    "group": "negative-0",
+    "split": "calibration",
+    "text": "La lumière tombe sur la pierre.",
+    "expected": []
+  },
+  {
+    "id": "ner-31",
+    "group": "negative-1",
+    "split": "validation",
+    "text": "Une rose pousse près du mur.",
+    "expected": []
+  },
+  {
+    "id": "ner-32",
+    "group": "negative-0",
+    "split": "calibration",
+    "text": "Le roi entre dans la salle.",
+    "expected": []
+  },
+  {
+    "id": "ner-33",
+    "group": "negative-1",
+    "split": "validation",
+    "text": "Hiver après hiver, la neige revient.",
+    "expected": []
+  },
+  {
+    "id": "ner-34",
+    "group": "negative-0",
+    "split": "calibration",
+    "text": "Ordre du jour : vérifier les comptes.",
+    "expected": []
+  },
+  {
+    "id": "ner-35",
+    "group": "negative-1",
+    "split": "validation",
+    "text": "Orange est une couleur chaude.",
+    "expected": []
+  },
+  {
+    "id": "ner-36",
+    "group": "negative-0",
+    "split": "calibration",
+    "text": "Une pomme et une orange suffisent.",
+    "expected": []
+  },
+  {
+    "id": "ner-37",
+    "group": "negative-1",
+    "split": "validation",
+    "text": "Le pays est couvert de neige.",
+    "expected": []
+  },
+  {
+    "id": "ner-38",
+    "group": "negative-0",
+    "split": "calibration",
+    "text": "What we keep. What we leave behind.",
+    "expected": []
+  },
+  {
+    "id": "ner-39",
+    "group": "negative-1",
+    "split": "validation",
+    "text": "The first spark. An unexpected question.",
+    "expected": []
+  },
+  {
+    "id": "ner-40",
+    "group": "Claude",
+    "split": "calibration",
+    "text": "Claude",
+    "expected": [
+      [
+        "Claude",
+        "person"
+      ]
+    ]
+  },
+  {
+    "id": "ner-41",
+    "group": "Qorûn",
+    "split": "calibration",
+    "text": "Qorûn",
+    "expected": [
+      [
+        "Qorûn",
+        "person"
+      ]
+    ]
+  }
+]

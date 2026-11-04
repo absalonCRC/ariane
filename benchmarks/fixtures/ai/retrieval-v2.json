@@ -1,0 +1,844 @@
+{
+  "protocol": {
+    "version": 2,
+    "source": "Hand-authored French narrative/documentary fixtures, no personal manuscripts.",
+    "partition": "All variants of a subject remain in the same split. All documents are distractors in both splits.",
+    "frozenBeforeInference": true,
+    "selection": {
+      "semanticThresholds": [
+        0.44,
+        0.48,
+        0.52,
+        0.56
+      ],
+      "suggestionScores": [
+        2.2,
+        2.4,
+        2.6,
+        2.8
+      ],
+      "margins": [
+        0,
+        0.15
+      ],
+      "maxFalseDisplaysIncrease": 0,
+      "maxRecallLoss": 0.05,
+      "minimumF1Gain": 0.02,
+      "latencyP95Tolerance": 1.1
+    },
+    "validation": "One validation inference pass after freezing policy; no retuning on validation.",
+    "notes": "Small diverse authored benchmark; not a general quality certification. Explicit weak lexical results are reported separately from automatic suggestions."
+  },
+  "documents": [
+    {
+      "id": "house",
+      "title": "Maison abandonnée",
+      "text": "La vieille maison n’abrite plus personne. Les volets fermés et le jardin envahi racontent le départ de ses habitants.",
+      "kind": "Note"
+    },
+    {
+      "id": "garden",
+      "title": "Calendrier du potager",
+      "text": "Les semis doivent attendre la fin des gelées. Le jardinier choisit des graines adaptées au sol et arrose les jeunes plants.",
+      "kind": "Note"
+    },
+    {
+      "id": "rail",
+      "title": "Voyage en train",
+      "text": "La ligne ferroviaire traverse la vallée. Les voyageurs montent dans les wagons à l’aube et arrivent en ville avant midi.",
+      "kind": "Note"
+    },
+    {
+      "id": "book",
+      "title": "Typographie et lecture",
+      "text": "Le livre associe des caractères avec empattements à de larges marges. La longueur des lignes et l’interlignage facilitent la lecture.",
+      "kind": "Note"
+    },
+    {
+      "id": "binding",
+      "title": "Atelier de reliure",
+      "text": "Une artisane restaure les ouvrages endommagés. Elle recoud les cahiers, consolide les dos et remplace les couvertures trop abîmées.",
+      "kind": "Note"
+    },
+    {
+      "id": "marsh",
+      "title": "Oiseaux des marais",
+      "text": "Les roseaux abritent des oiseaux migrateurs. Le niveau de l’eau influence la nidification et les insectes dont ils se nourrissent.",
+      "kind": "Note"
+    },
+    {
+      "id": "tide",
+      "title": "Marées du littoral",
+      "text": "Le pêcheur consulte les horaires de basse mer. Quand l’océan se retire, les rochers et les flaques deviennent accessibles à pied.",
+      "kind": "Note"
+    },
+    {
+      "id": "weaving",
+      "title": "Métier à tisser",
+      "text": "La tisserande tend les fils de chaîne. La navette porte la trame et construit peu à peu le tissu, rang après rang.",
+      "kind": "Note"
+    },
+    {
+      "id": "bread",
+      "title": "Pain au levain",
+      "text": "Le boulanger nourrit le levain la veille. La pâte fermente lentement avant le façonnage et la cuisson dans un four chaud.",
+      "kind": "Note"
+    },
+    {
+      "id": "archive",
+      "title": "Archives familiales",
+      "text": "Les lettres sont classées par date et par expéditeur. Les enveloppes restent avec les feuilles afin de préserver la provenance des documents.",
+      "kind": "Note"
+    },
+    {
+      "id": "glacier",
+      "title": "Fonte du glacier",
+      "text": "La masse de glace recule lorsque les étés deviennent plus chauds. Les mesures annuelles suivent l’évolution du front et de l’épaisseur.",
+      "kind": "Note"
+    },
+    {
+      "id": "pottery",
+      "title": "Cuisson des poteries",
+      "text": "L’argile façonnée doit sécher avant la première cuisson. L’émail se transforme ensuite à haute température et protège la surface du vase.",
+      "kind": "Note"
+    },
+    {
+      "id": "lighthouse",
+      "title": "Gardien du phare",
+      "text": "La lampe tourne au sommet de la tour. Sa lumière guide les marins loin des récifs pendant les nuits de brouillard.",
+      "kind": "Note"
+    },
+    {
+      "id": "clock",
+      "title": "Réparation des horloges",
+      "text": "L’horlogère démonte les rouages, nettoie les pivots et règle le balancier. Une pièce usée peut suffire à arrêter tout le mécanisme.",
+      "kind": "Note"
+    },
+    {
+      "id": "orchard",
+      "title": "Verger ancien",
+      "text": "Les arbres fruitiers sont taillés pendant leur repos. La greffe permet de conserver les variétés dont les pommes ont une saveur particulière.",
+      "kind": "Note"
+    },
+    {
+      "id": "theatre",
+      "title": "Répétition au théâtre",
+      "text": "Les comédiens reprennent une scène sous le regard de la metteuse en scène. Les déplacements et les silences comptent autant que les répliques.",
+      "kind": "Note"
+    },
+    {
+      "id": "forge",
+      "title": "Travail de la forge",
+      "text": "Le métal rougit dans le foyer. La forgeronne le façonne au marteau sur l’enclume avant de le refroidir et de vérifier sa dureté.",
+      "kind": "Note"
+    },
+    {
+      "id": "cave",
+      "title": "Exploration souterraine",
+      "text": "Les spéléologues suivent une galerie étroite. Ils vérifient leurs cordes, protègent les concrétions et notent la présence d’un cours d’eau souterrain.",
+      "kind": "Note"
+    },
+    {
+      "id": "river",
+      "title": "Crue de la rivière",
+      "text": "Après plusieurs jours de pluie, l’eau déborde sur les berges. Les habitants déplacent leurs affaires vers les étages et surveillent la hauteur du courant.",
+      "kind": "Note"
+    },
+    {
+      "id": "bees",
+      "title": "Vie des abeilles",
+      "text": "Les ouvrières rapportent du nectar et du pollen à la ruche. La colonie élève ses larves et stocke le miel pour traverser la saison froide.",
+      "kind": "Note"
+    },
+    {
+      "id": "ines",
+      "title": "Inès Delcourt",
+      "kind": "Personne",
+      "text": "Cette relieuse travaille dans un atelier et restaure des livres anciens."
+    },
+    {
+      "id": "soline",
+      "title": "Soline Vautrin",
+      "kind": "Personne",
+      "text": "Cette comédienne répète ses répliques dans un théâtre."
+    },
+    {
+      "id": "valbrume",
+      "title": "Valbrume",
+      "kind": "Lieu",
+      "text": "Ce village possède une gare, un phare et un ancien verger."
+    },
+    {
+      "id": "clairval",
+      "title": "Clairval",
+      "kind": "Lieu",
+      "text": "Ce village est situé près d’une forge, d’une rivière et de grottes."
+    },
+    {
+      "id": "stained-glass",
+      "title": "Restauration du vitrail",
+      "kind": "Note",
+      "text": "Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le carnet portait des observations météorologiques. La pluie et le vent étaient décrits chaque jour sans commentaire. Le vitrail se compose de verres colorés assemblés par des baguettes de plomb. La lumière traverse les pièces et dessine des couleurs sur le sol."
+    },
+    {
+      "id": "paper-making",
+      "title": "Fabrication du papier",
+      "kind": "Note",
+      "text": "Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Le cahier décrivait les gestes quotidiens et le temps qui passe. Chaque matin, nous observions les mêmes objets sans leur trouver de sens nouveau. Les fibres végétales sont plongées dans une cuve. La pâte est recueillie sur un tamis puis pressée et séchée pour fabriquer des feuilles de papier."
+    }
+  ],
+  "queries": [
+    {
+      "id": "house-0",
+      "group": "house",
+      "split": "calibration",
+      "text": "Une demeure vide conserve la trace de ceux qui y vivaient.",
+      "relevant": [
+        "house"
+      ],
+      "automaticRelevant": [
+        "house"
+      ]
+    },
+    {
+      "id": "house-1",
+      "group": "house",
+      "split": "calibration",
+      "text": "Retrouver le thème de la maison désertée.",
+      "relevant": [
+        "house"
+      ],
+      "automaticRelevant": [
+        "house"
+      ]
+    },
+    {
+      "id": "garden-0",
+      "group": "garden",
+      "split": "calibration",
+      "text": "À quelle saison mettre les graines en terre pour cultiver des légumes ?",
+      "relevant": [
+        "garden"
+      ],
+      "automaticRelevant": [
+        "garden"
+      ]
+    },
+    {
+      "id": "garden-1",
+      "group": "garden",
+      "split": "calibration",
+      "text": "Planter des légumes après les derniers froids.",
+      "relevant": [
+        "garden"
+      ],
+      "automaticRelevant": [
+        "garden"
+      ]
+    },
+    {
+      "id": "rail-0",
+      "group": "rail",
+      "split": "calibration",
+      "text": "Le déplacement en chemin de fer commence tôt le matin.",
+      "relevant": [
+        "rail"
+      ],
+      "automaticRelevant": [
+        "rail"
+      ]
+    },
+    {
+      "id": "rail-1",
+      "group": "rail",
+      "split": "calibration",
+      "text": "Les wagons transportent les passagers dans la vallée.",
+      "relevant": [
+        "rail"
+      ],
+      "automaticRelevant": [
+        "rail"
+      ]
+    },
+    {
+      "id": "book-0",
+      "group": "book",
+      "split": "calibration",
+      "text": "Comment choisir les caractères et les espaces pour rendre un livre lisible ?",
+      "relevant": [
+        "book"
+      ],
+      "automaticRelevant": [
+        "book"
+      ]
+    },
+    {
+      "id": "book-1",
+      "group": "book",
+      "split": "calibration",
+      "text": "Régler les marges, les caractères et la hauteur des lignes.",
+      "relevant": [
+        "book"
+      ],
+      "automaticRelevant": [
+        "book"
+      ]
+    },
+    {
+      "id": "binding-0",
+      "group": "binding",
+      "split": "calibration",
+      "text": "La réparatrice rend leur solidité aux vieux livres.",
+      "relevant": [
+        "binding"
+      ],
+      "automaticRelevant": [
+        "binding"
+      ]
+    },
+    {
+      "id": "binding-1",
+      "group": "binding",
+      "split": "calibration",
+      "text": "Recoudre un livre et refaire sa couverture.",
+      "relevant": [
+        "binding"
+      ],
+      "automaticRelevant": [
+        "binding"
+      ]
+    },
+    {
+      "id": "marsh-0",
+      "group": "marsh",
+      "split": "calibration",
+      "text": "Des volatiles font leur nid dans les zones humides.",
+      "relevant": [
+        "marsh"
+      ],
+      "automaticRelevant": [
+        "marsh"
+      ]
+    },
+    {
+      "id": "marsh-1",
+      "group": "marsh",
+      "split": "calibration",
+      "text": "La nidification des oiseaux dépend de l’eau des marais.",
+      "relevant": [
+        "marsh"
+      ],
+      "automaticRelevant": [
+        "marsh"
+      ]
+    },
+    {
+      "id": "tide-0",
+      "group": "tide",
+      "split": "calibration",
+      "text": "À quel moment la mer découvre-t-elle les rochers de la côte ?",
+      "relevant": [
+        "tide"
+      ],
+      "automaticRelevant": [
+        "tide"
+      ]
+    },
+    {
+      "id": "tide-1",
+      "group": "tide",
+      "split": "calibration",
+      "text": "Attendre que la mer se retire avant de marcher sur les rochers.",
+      "relevant": [
+        "tide"
+      ],
+      "automaticRelevant": [
+        "tide"
+      ]
+    },
+    {
+      "id": "weaving-0",
+      "group": "weaving",
+      "split": "calibration",
+      "text": "Fabriquer une étoffe en entrecroisant des fils.",
+      "relevant": [
+        "weaving"
+      ],
+      "automaticRelevant": [
+        "weaving"
+      ]
+    },
+    {
+      "id": "weaving-1",
+      "group": "weaving",
+      "split": "calibration",
+      "text": "La navette passe entre les fils tendus du métier.",
+      "relevant": [
+        "weaving"
+      ],
+      "automaticRelevant": [
+        "weaving"
+      ]
+    },
+    {
+      "id": "bread-0",
+      "group": "bread",
+      "split": "calibration",
+      "text": "Une fermentation lente prépare la miche avant son passage au four.",
+      "relevant": [
+        "bread"
+      ],
+      "automaticRelevant": [
+        "bread"
+      ]
+    },
+    {
+      "id": "bread-1",
+      "group": "bread",
+      "split": "calibration",
+      "text": "Nourrir le levain et laisser lever la pâte à pain.",
+      "relevant": [
+        "bread"
+      ],
+      "automaticRelevant": [
+        "bread"
+      ]
+    },
+    {
+      "id": "archive-0",
+      "group": "archive",
+      "split": "calibration",
+      "text": "Comment ranger une correspondance ancienne sans perdre son origine ?",
+      "relevant": [
+        "archive"
+      ],
+      "automaticRelevant": [
+        "archive"
+      ]
+    },
+    {
+      "id": "archive-1",
+      "group": "archive",
+      "split": "calibration",
+      "text": "Classer les lettres avec leurs enveloppes et leurs dates.",
+      "relevant": [
+        "archive"
+      ],
+      "automaticRelevant": [
+        "archive"
+      ]
+    },
+    {
+      "id": "glacier-0",
+      "group": "glacier",
+      "split": "validation",
+      "text": "Le réchauffement fait reculer la glace des montagnes.",
+      "relevant": [
+        "glacier"
+      ],
+      "automaticRelevant": [
+        "glacier"
+      ]
+    },
+    {
+      "id": "glacier-1",
+      "group": "glacier",
+      "split": "validation",
+      "text": "Mesurer la diminution d’un glacier au fil des années.",
+      "relevant": [
+        "glacier"
+      ],
+      "automaticRelevant": [
+        "glacier"
+      ]
+    },
+    {
+      "id": "pottery-0",
+      "group": "pottery",
+      "split": "validation",
+      "text": "Transformer une terre modelée en céramique solide et émaillée.",
+      "relevant": [
+        "pottery"
+      ],
+      "automaticRelevant": [
+        "pottery"
+      ]
+    },
+    {
+      "id": "pottery-1",
+      "group": "pottery",
+      "split": "validation",
+      "text": "Sécher l’argile puis cuire la poterie dans le four.",
+      "relevant": [
+        "pottery"
+      ],
+      "automaticRelevant": [
+        "pottery"
+      ]
+    },
+    {
+      "id": "lighthouse-0",
+      "group": "lighthouse",
+      "split": "validation",
+      "text": "Un feu côtier aide les navires à éviter les rochers dans la brume.",
+      "relevant": [
+        "lighthouse"
+      ],
+      "automaticRelevant": [
+        "lighthouse"
+      ]
+    },
+    {
+      "id": "lighthouse-1",
+      "group": "lighthouse",
+      "split": "validation",
+      "text": "La lumière du phare avertit les marins du danger.",
+      "relevant": [
+        "lighthouse"
+      ],
+      "automaticRelevant": [
+        "lighthouse"
+      ]
+    },
+    {
+      "id": "clock-0",
+      "group": "clock",
+      "split": "validation",
+      "text": "Remettre en marche un mécanisme qui mesure les heures.",
+      "relevant": [
+        "clock"
+      ],
+      "automaticRelevant": [
+        "clock"
+      ]
+    },
+    {
+      "id": "clock-1",
+      "group": "clock",
+      "split": "validation",
+      "text": "Nettoyer les roues et régler le balancier d’une horloge.",
+      "relevant": [
+        "clock"
+      ],
+      "automaticRelevant": [
+        "clock"
+      ]
+    },
+    {
+      "id": "orchard-0",
+      "group": "orchard",
+      "split": "validation",
+      "text": "Préserver de vieilles variétés de fruits grâce à la greffe.",
+      "relevant": [
+        "orchard"
+      ],
+      "automaticRelevant": [
+        "orchard"
+      ]
+    },
+    {
+      "id": "orchard-1",
+      "group": "orchard",
+      "split": "validation",
+      "text": "Tailler les pommiers et transmettre les variétés anciennes.",
+      "relevant": [
+        "orchard"
+      ],
+      "automaticRelevant": [
+        "orchard"
+      ]
+    },
+    {
+      "id": "theatre-0",
+      "group": "theatre",
+      "split": "validation",
+      "text": "Les acteurs travaillent leurs gestes et leurs paroles avant le spectacle.",
+      "relevant": [
+        "theatre"
+      ],
+      "automaticRelevant": [
+        "theatre"
+      ]
+    },
+    {
+      "id": "theatre-1",
+      "group": "theatre",
+      "split": "validation",
+      "text": "Répéter une scène, les répliques et les mouvements sur le plateau.",
+      "relevant": [
+        "theatre"
+      ],
+      "automaticRelevant": [
+        "theatre"
+      ]
+    },
+    {
+      "id": "forge-0",
+      "group": "forge",
+      "split": "validation",
+      "text": "Chauffer puis marteler une pièce métallique pour lui donner une forme.",
+      "relevant": [
+        "forge"
+      ],
+      "automaticRelevant": [
+        "forge"
+      ]
+    },
+    {
+      "id": "forge-1",
+      "group": "forge",
+      "split": "validation",
+      "text": "Le marteau frappe le métal chaud sur l’enclume.",
+      "relevant": [
+        "forge"
+      ],
+      "automaticRelevant": [
+        "forge"
+      ]
+    },
+    {
+      "id": "cave-0",
+      "group": "cave",
+      "split": "validation",
+      "text": "Descendre dans une cavité naturelle avec des cordes et une lampe.",
+      "relevant": [
+        "cave"
+      ],
+      "automaticRelevant": [
+        "cave"
+      ]
+    },
+    {
+      "id": "cave-1",
+      "group": "cave",
+      "split": "validation",
+      "text": "Explorer une grotte sans abîmer les concrétions.",
+      "relevant": [
+        "cave"
+      ],
+      "automaticRelevant": [
+        "cave"
+      ]
+    },
+    {
+      "id": "river-0",
+      "group": "river",
+      "split": "validation",
+      "text": "Des pluies persistantes provoquent une inondation près du cours d’eau.",
+      "relevant": [
+        "river"
+      ],
+      "automaticRelevant": [
+        "river"
+      ]
+    },
+    {
+      "id": "river-1",
+      "group": "river",
+      "split": "validation",
+      "text": "La rivière sort de son lit et envahit les maisons.",
+      "relevant": [
+        "river"
+      ],
+      "automaticRelevant": [
+        "river"
+      ]
+    },
+    {
+      "id": "bees-0",
+      "group": "bees",
+      "split": "validation",
+      "text": "Des insectes récoltent le nectar des fleurs pour nourrir leur colonie.",
+      "relevant": [
+        "bees"
+      ],
+      "automaticRelevant": [
+        "bees"
+      ]
+    },
+    {
+      "id": "bees-1",
+      "group": "bees",
+      "split": "validation",
+      "text": "Les abeilles remplissent les rayons de miel dans la ruche.",
+      "relevant": [
+        "bees"
+      ],
+      "automaticRelevant": [
+        "bees"
+      ]
+    },
+    {
+      "id": "calibration-negative-0",
+      "group": "calibration-negative-0",
+      "split": "calibration",
+      "text": "La mécanique quantique décrit la superposition des états.",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "calibration-negative-1",
+      "group": "calibration-negative-1",
+      "split": "calibration",
+      "text": "Comment configurer un serveur informatique sécurisé ?",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "calibration-negative-2",
+      "group": "calibration-negative-2",
+      "split": "calibration",
+      "text": "La recette d’une crème glacée à la vanille.",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "calibration-negative-3",
+      "group": "calibration-negative-3",
+      "split": "calibration",
+      "text": "Une procédure de divorce devant le tribunal.",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "calibration-negative-4",
+      "group": "calibration-negative-4",
+      "split": "calibration",
+      "text": "Le diagnostic d’une maladie respiratoire.",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "calibration-negative-5",
+      "group": "calibration-negative-5",
+      "split": "calibration",
+      "text": "Une partie d’échecs se gagne par un mat en trois coups.",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "validation-negative-0",
+      "group": "validation-negative-0",
+      "split": "validation",
+      "text": "Comment fonctionne une réaction nucléaire ?",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "validation-negative-1",
+      "group": "validation-negative-1",
+      "split": "validation",
+      "text": "Le montage d’un circuit électronique à transistors.",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "validation-negative-2",
+      "group": "validation-negative-2",
+      "split": "validation",
+      "text": "Une équation différentielle à résoudre par intégration.",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "validation-negative-3",
+      "group": "validation-negative-3",
+      "split": "validation",
+      "text": "Le règlement d’une succession devant un notaire.",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "validation-negative-4",
+      "group": "validation-negative-4",
+      "split": "validation",
+      "text": "Comment apprendre la conjugaison d’une langue étrangère ?",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "validation-negative-5",
+      "group": "validation-negative-5",
+      "split": "validation",
+      "text": "Le prix des actions baisse sur les marchés financiers.",
+      "relevant": [],
+      "automaticRelevant": []
+    },
+    {
+      "id": "ines-exact",
+      "group": "ines",
+      "split": "calibration",
+      "text": "Inès Delcourt",
+      "relevant": [
+        "ines"
+      ],
+      "automaticRelevant": [
+        "ines"
+      ],
+      "exact": true
+    },
+    {
+      "id": "soline-exact",
+      "group": "soline",
+      "split": "validation",
+      "text": "Soline Vautrin",
+      "relevant": [
+        "soline"
+      ],
+      "automaticRelevant": [
+        "soline"
+      ],
+      "exact": true
+    },
+    {
+      "id": "valbrume-exact",
+      "group": "valbrume",
+      "split": "calibration",
+      "text": "Valbrume",
+      "relevant": [
+        "valbrume"
+      ],
+      "automaticRelevant": [
+        "valbrume"
+      ],
+      "exact": true
+    },
+    {
+      "id": "clairval-exact",
+      "group": "clairval",
+      "split": "validation",
+      "text": "Clairval",
+      "relevant": [
+        "clairval"
+      ],
+      "automaticRelevant": [
+        "clairval"
+      ],
+      "exact": true
+    },
+    {
+      "id": "stained-glass-tail",
+      "group": "stained-glass",
+      "split": "validation",
+      "text": "Les fragments de verre coloré sont réunis par du plomb dans une fenêtre.",
+      "relevant": [
+        "stained-glass"
+      ],
+      "automaticRelevant": [
+        "stained-glass"
+      ]
+    },
+    {
+      "id": "paper-making-tail",
+      "group": "paper-making",
+      "split": "calibration",
+      "text": "Transformer des fibres végétales en feuilles grâce à un tamis et à une presse.",
+      "relevant": [
+        "paper-making"
+      ],
+      "automaticRelevant": [
+        "paper-making"
+      ]
+    }
+  ]
+}

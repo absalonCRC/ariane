@@ -5,6 +5,7 @@ use crate::{
     model::*,
     project, vaults,
 };
+use base64::{engine::general_purpose::STANDARD, Engine as _};
 use rusqlite::params;
 use serde_json::{json, Value};
 use std::{fs, path::PathBuf};
@@ -24,7 +25,8 @@ fn prepare(state: &AppState) -> Result<Value> {
     // a latency measurement into an unrelated full reindex.
     state.paused.store(true, std::sync::atomic::Ordering::Relaxed);
     let memory_test = state.data.join(".memory-benchmark").is_file();
-    let large = !memory_test || state.data.join(".large-manuscript").is_file();
+    let speech_test = state.data.join("speech-input.wav").is_file();
+    let large = (!memory_test && !speech_test) || state.data.join(".large-manuscript").is_file();
     let scenes = if large { 2000 } else { 6 };
     let sources = if large { 2500 } else { 6 };
     let root = state.data.join("project");
@@ -121,7 +123,7 @@ fn prepare(state: &AppState) -> Result<Value> {
             .collect();
         let norm = v.iter().map(|x| x * x).sum::<f32>().sqrt();
         let v: Vec<f32> = v.into_iter().map(|x| x / norm).collect();
-        tx.execute("INSERT INTO chunks(source,page,text,vector,model) VALUES(?,NULL,?,?,'embeddinggemma-300M-Q8_0')",params![source.id,source.text,crate::vectors::encode(&v)]).app()?;
+        tx.execute("INSERT INTO chunks(source,page,text,vector,model) VALUES(?,NULL,?,?,'embeddinggemma-300M-Q8_0:sentence-tokens-v2')",params![source.id,source.text,crate::vectors::encode(&v)]).app()?;
         tx.execute(
             "INSERT INTO search(text,source,page) VALUES(?,?,NULL)",
             params![source.text, source.id],
@@ -130,7 +132,7 @@ fn prepare(state: &AppState) -> Result<Value> {
     }
     tx.commit().app()?;
     project::catalog::remember(&state.data,&root,"Mesure native — données synthétiques")?;
-    Ok(json!({"path":root,"scenes":scenes,"sources":sources,"memoryTest":memory_test,"entitiesTest":crate::memory_engine::EntityEngine::available(&state.data,&state.resources)}))
+    Ok(json!({"path":root,"scenes":scenes,"sources":sources,"memoryTest":memory_test,"speechTest":speech_test,"microphoneProbe":state.data.join(".microphone-probe").is_file(),"entitiesTest":crate::memory_engine::EntityEngine::available(&state.data,&state.resources)}))
 }
 #[tauri::command]
 pub async fn performance(
@@ -142,6 +144,11 @@ pub async fn performance(
         let state = app.state::<AppState>();
         match action.as_str() {
             "prepare" => prepare(&state),
+            "speechInput" => {
+                let audio = fs::read(state.data.join("speech-input.wav")).app()?;
+                if audio.len() > 20 * 1024 * 1024 { return Err("Speech fixture exceeds the audio limit".into()); }
+                Ok(json!({"audio":STANDARD.encode(audio)}))
+            }
             "memoryState" => Ok(json!({"blocked":state.memory_activity.blocked(),
                 "nerPid":state.memory_activity.ner_pid(),"nerPaused":state.memory_activity.ner_blocked(),
                 "pid":state.engine.try_lock().ok().and_then(|e|e.pid()).unwrap_or(0)})),

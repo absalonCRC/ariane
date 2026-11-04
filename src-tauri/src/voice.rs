@@ -1,3 +1,7 @@
+mod fidelity;
+mod microphone;
+pub use microphone::request_permission;
+pub(crate) mod lexicon;
 use crate::error::{AppResult, Result};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use serde::Serialize;
@@ -15,15 +19,15 @@ pub struct Transcript {
     text: String,
     raw: String,
     cleaned: bool,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    candidates: Vec<String>,
 }
 
 pub fn available(data: &Path, resources: &Path) -> bool {
     let voice = data.join("voice");
     voice.join("runtime/bin/python").is_file()
         && voice.join("models/parakeet/model.safetensors").is_file()
-        && voice.join("models/cleanup-1-q8_0.gguf").is_file()
         && resources.join("voice/transcribe.py").is_file()
-        && resources.join("engine/llama-server").is_file()
 }
 
 struct Process(Child);
@@ -102,29 +106,64 @@ pub struct VoiceEngine {
     worker: Option<VoiceWorker>,
     used: Option<Instant>,
     cleanup: Option<CleanupServer>,
+    warm_requests: usize,
 }
 impl VoiceEngine {
+    #[cfg(test)]
+    pub(crate) fn diagnostics(&self) -> serde_json::Value {
+        serde_json::json!({"workerPid":self.worker.as_ref().map(|w|w._process.0.id()),"cleanupPid":self.cleanup.as_ref().map(|s|s.process.0.id())})
+    }
+    pub fn prepare(&mut self, data: &Path, resources: &Path) -> Result<()> {
+        if !available(data, resources) {
+            return Err("Les modèles de dictée locale ne sont pas installés.".into());
+        }
+        if self
+            .worker
+            .as_mut()
+            .is_some_and(|w| w._process.0.try_wait().is_ok_and(|s| s.is_some()))
+        {
+            self.worker = None;
+        }
+        if self.worker.is_none() {
+            self.worker = Some(VoiceWorker::start(data, resources)?);
+        }
+        self.used = Some(Instant::now());
+        Ok(())
+    }
     pub fn shutdown(&mut self) {
         self.worker = None;
         self.cleanup = None;
         self.used = None;
+        self.warm_requests = 0;
     }
     pub fn shutdown_if_idle(&mut self) {
-        if crate::memory_engine::critical_memory_pressure() || self.cleanup.as_ref().is_some_and(|s|s.used.elapsed()>Duration::from_secs(30)) { self.cleanup=None; }
+        if crate::memory_engine::critical_memory_pressure() {
+            self.shutdown();
+            return;
+        }
+        if self.cleanup.as_ref().is_some_and(|s| {
+            s.used.elapsed()>Duration::from_secs(if s.warm_requests >= 3 { 90 } else { 30 })
+        }) { self.cleanup=None; }
         if self
             .used
-            .is_some_and(|used| used.elapsed() > Duration::from_secs(300))
+            .is_some_and(|used| {
+            used.elapsed() > Duration::from_secs(if self.warm_requests >= 3 { 300 } else { 90 })
+        })
         {
             self.shutdown();
         }
     }
-    fn cleanup_text(&mut self, resources: &Path, voice: &Path, raw: &str) -> Result<String> {
+    fn cleanup_text(&mut self, resources: &Path, voice: &Path, raw: &str,
+        before: &str,
+        after: &str,
+    ) -> Result<String> {
         if self.cleanup.as_mut().is_some_and(|s| crate::local_http::require_alive(&mut s.process.0).is_err()) { self.cleanup=None; }
         if self.cleanup.is_none() { self.cleanup=Some(CleanupServer::start(resources,voice)?); }
-        let result=self.cleanup.as_mut().unwrap().complete(raw);
+        let result=self.cleanup.as_mut().unwrap().complete(raw, before, after);
         if result.is_err() || crate::memory_engine::critical_memory_pressure() { self.cleanup=None; }
         result
     }
+    #[cfg(test)]
     pub fn transcribe(
         &mut self,
         data: &Path,
@@ -132,6 +171,20 @@ impl VoiceEngine {
         audio: &str,
         language: &str,
         live: bool,
+    ) -> Result<Transcript> {
+        self.transcribe_context(data, resources, audio, language, live, "", "", &[])
+    }
+    #[allow(clippy::too_many_arguments)]
+    pub fn transcribe_context(
+        &mut self,
+        data: &Path,
+        resources: &Path,
+        audio: &str,
+        language: &str,
+        live: bool,
+        before: &str,
+        after: &str,
+        names: &[String],
     ) -> Result<Transcript> {
         if !available(data, resources) {
             return Err("Les modèles de dictée locale ne sont pas installés.".into());
@@ -151,6 +204,14 @@ impl VoiceEngine {
         if self.worker.is_none() {
             self.worker = Some(VoiceWorker::start(data, resources)?);
         }
+        self.warm_requests = if self
+            .used
+            .is_some_and(|t| t.elapsed() < Duration::from_secs(30))
+        {
+            self.warm_requests + 1
+        } else {
+            1
+        };
         let result = self.worker.as_mut().unwrap().transcribe(wav.path());
         self.used = Some(Instant::now());
         let raw = match result {
@@ -165,11 +226,14 @@ impl VoiceEngine {
                 text: String::new(),
                 raw,
                 cleaned: false,
+                candidates: vec![],
             });
         }
         // Cleanup 1 has not been trained on Italian; preserve the transcript in that case.
-        let formatted = if !live && matches!(language, "fr" | "en" | "de" | "es") {
-            self.cleanup_text(resources, &data.join("voice"), &raw)
+        let formatted = if !live
+            && !crate::memory_engine::critical_memory_pressure()
+            && matches!(language, "fr" | "en" | "de" | "es") {
+            self.cleanup_text(resources, &data.join("voice"), &raw, before, after)
                 .ok()
                 .filter(|s| plausible_cleanup(&raw, s))
         } else {
@@ -177,6 +241,7 @@ impl VoiceEngine {
         };
         Ok(Transcript {
             text: formatted.clone().unwrap_or_else(|| raw.clone()),
+            candidates: lexicon::candidates(&raw, names),
             raw,
             cleaned: formatted.is_some(),
         })
@@ -188,26 +253,13 @@ fn transcribe(data: &Path, resources: &Path, audio: &str, language: &str) -> Res
     VoiceEngine::default().transcribe(data, resources, audio, language, false)
 }
 
-fn plausible_cleanup(raw: &str, cleaned: &str) -> bool {
-    fn words(text: &str) -> Vec<String> {
-        text.split_whitespace()
-            .map(|s| {
-                s.trim_matches(|c: char| !c.is_alphanumeric())
-                    .to_lowercase()
-            })
-            .filter(|s| !s.is_empty())
-            .collect()
-    }
-    let original = words(raw);
-    let result = words(cleaned);
-    if original.is_empty() || result.is_empty() || result.len() > original.len() * 2 + 4 {
-        return false;
-    }
-    let shared = result.iter().filter(|word| original.contains(word)).count();
-    shared * 2 >= result.len() && shared * 3 >= original.len()
+pub(crate) fn plausible_cleanup(raw: &str, cleaned: &str) -> bool {
+    fidelity::plausible(raw, cleaned)
 }
 
-struct CleanupServer { process: Process, client: reqwest::blocking::Client, url: String, key: String, used: Instant }
+struct CleanupServer { process: Process, client: reqwest::blocking::Client, url: String, key: String, used: Instant,
+    warm_requests: usize,
+}
 impl CleanupServer {
 fn start(resources: &Path, voice: &Path) -> Result<Self> {
     let socket = std::net::TcpListener::bind("127.0.0.1:0").app()?;
@@ -254,15 +306,50 @@ fn start(resources: &Path, voice: &Path) -> Result<Self> {
         }
         std::thread::sleep(Duration::from_millis(150));
     }
-    Ok(Self { process, client, url, key, used: Instant::now() })
+    Ok(Self { process, client, url, key, used: Instant::now(),
+            warm_requests: 0,
+        })
 }
-fn complete(&mut self, raw: &str) -> Result<String> {
+fn complete(&mut self, raw: &str, before: &str, after: &str) -> Result<String> {
     crate::local_http::require_alive(&mut self.process.0)?;
-    let prompt = format!("tone: formal\ntext: {}\nout:", raw.replace('\n', " "));
-    let response = crate::local_http::json(self.client.post(format!("{}/completion",self.url))
+    let line = |s: &str| s.replace(['\n', '\r'], " ");
+        let before: String = before
+            .chars()
+            .rev()
+            .take(350)
+            .collect::<String>()
+            .chars()
+            .rev()
+            .collect();
+        let after: String = after.chars().take(350).collect();
+        let prompt = format!(
+            "before: {}\nafter: {}\ntext: {}\nout:",
+            line(&before),
+            line(&after),
+            line(raw));
+        let tokenized = crate::local_http::json(
+            self.client
+                .post(format!("{}/tokenize", self.url))
+                .bearer_auth(&self.key)
+                .json(&serde_json::json!({"content":prompt,"add_special":true}))
+                .send()
+                .app()?,
+        )?;
+        if tokenized["tokens"]
+            .as_array()
+            .is_none_or(|t| t.len() + 1024 > 4096)
+        {
+            return Err("Dictée trop longue pour la mise au propre.".into());
+        }
+        let response = crate::local_http::json(self.client.post(format!("{}/completion",self.url))
         .bearer_auth(&self.key).json(&serde_json::json!({"prompt": prompt, "temperature": 0, "n_predict": 1024, "stop": ["<|endoftext|>", "<|im_end|>"]}))
         .send().app()?)?;
     crate::local_http::require_alive(&mut self.process.0)?;
+        self.warm_requests = if self.used.elapsed() < Duration::from_secs(30) {
+            self.warm_requests + 1
+        } else {
+            1
+        };
     self.used=Instant::now();
     if response["stopped_limit"].as_bool() == Some(true) {
         return Err("Mise au propre incomplète".into());

@@ -142,7 +142,8 @@ fn snapshot_in(
     }
     let cache = slot.as_mut().unwrap();
     let tx = cache.connection.unchecked_transaction().app()?;
-    let (catalog_version, vector_version): (i64,i64) = tx.query_row("SELECT catalog,vectors FROM index_generations WHERE singleton=1",[],|r|Ok((r.get(0)?,r.get(1)?))).app()?;
+    let (catalog_version, vector_version): (i64,i64) = tx.query_row("SELECT catalog,vectors FROM index_generations WHERE singleton=1",[],|r|Ok((r.get(0)?,r.get(1)?)),
+        ).app()?;
     if catalog_version != cache.catalog_version || scope != cache.scope {
         let mut query = tx.prepare(&format!("SELECT payload FROM sources s WHERE {} ORDER BY s.id", vaults::SCOPE_SQL)).app()?;
         let rows = query.query_map([vaults::scope_json(&vaults)?], |r| r.get::<_, String>(0)).app()?;
@@ -165,7 +166,8 @@ fn snapshot_in(
         chunks,
     })
 }
-fn resident_chunks(c: &Connection, sources: &Sources, budget: usize) -> Result<Option<Arc<Vec<Chunk>>>> {
+fn resident_chunks(c: &Connection, sources: &Sources, budget: usize,
+) -> Result<Option<Arc<Vec<Chunk>>>> {
     let mut values = Vec::new();
     let mut bytes = 0;
     visit_rows(c, sources, |chunk| {
@@ -176,21 +178,25 @@ fn resident_chunks(c: &Connection, sources: &Sources, budget: usize) -> Result<O
     })?;
     Ok((bytes <= budget).then(|| Arc::new(values)))
 }
-fn visit_rows(c: &Connection, sources: &Sources, mut visit: impl FnMut(Chunk) -> bool) -> Result<()> {
+fn visit_rows(c: &Connection, sources: &Sources, mut visit: impl FnMut(Chunk) -> bool,
+) -> Result<()> {
     // ids are transported as JSON rather than an unbounded number of SQL parameters.
     let ids = serde_json::to_string(&sources.all.iter().map(|s|&s.id).collect::<Vec<_>>()).app()?;
     let mut q=c.prepare("SELECT source,page,text,vector FROM chunks WHERE source IN (SELECT value FROM json_each(?1)) AND vector IS NOT NULL AND model=?2 AND length(vector)<=65536 ORDER BY id").app()?;
     let mut rows=q.query(rusqlite::params![ids,crate::inference::MODEL_ID]).app()?;
     while let Some(row) = rows.next().app()? {
         let id: String=row.get(0).app()?;
-        if let (Some(&source),Some(vector)) = (sources.by_id.get(&id),crate::vectors::decode(row.get_ref(3).app()?)) {
-            if !visit(Chunk { source, page:row.get(1).app()?, text:row.get(2).app()?, vector }) { break; }
+        if let (Some(&source),Some(vector)) = (sources.by_id.get(&id),crate::vectors::decode(row.get_ref(3).app()?),
+        ) {
+            if !visit(Chunk { source, page:row.get(1).app()?, text:row.get(2).app()?, vector,
+            }) { break; }
         }
     }
     Ok(())
 }
 /// For indexes above the resident budget, only one row/vector is decoded at a time.
-pub fn visit_chunks(snapshot: &Snapshot, index: &Path, mut visit: impl FnMut(&Chunk)) -> Result<()> {
+pub fn visit_chunks(snapshot: &Snapshot, index: &Path, mut visit: impl FnMut(&Chunk),
+) -> Result<()> {
     if let Some(chunks) = &snapshot.chunks { for chunk in chunks.iter() { visit(chunk); } }
     else { let c=vaults::index_db(index)?; visit_rows(&c,&snapshot.sources,|chunk| {visit(&chunk);true})?; }
     Ok(())
@@ -218,21 +224,33 @@ mod tests {
         let c = vaults::index_db(&index).unwrap();
         let sources = Arc::new(Sources::new((0..5).map(|i|
             parse::parse("vault", &format!("{i}.md"), &format!("Source {i}"))
-        ).collect()).unwrap());
+        ).collect(),
+            ).unwrap(),
+        );
         for i in 0..80 {
             let mut vector = vec![0.01f32; 768];
             vector[i] = 0.8;
+            let norm = vector.iter().map(|v| v * v).sum::<f32>().sqrt();
+            for v in &mut vector {
+                *v /= norm;
+            }
             c.execute("INSERT INTO chunks(source,page,text,vector,model) VALUES(?,?,?,?,?)",
-                params![sources.all[i % 5].id, i as i64, format!("Passage {i}"), crate::vectors::encode(&vector), crate::inference::MODEL_ID]).unwrap();
+                params![sources.all[i % 5].id, i as i64, format!("Passage {i}"), crate::vectors::encode(&vector), crate::inference::MODEL_ID],
+            ).unwrap();
         }
-        let resident = Snapshot { sources: sources.clone(), chunks: resident_chunks(&c, &sources, 1024 * 1024).unwrap() };
+        let resident = Snapshot { sources: sources.clone(), chunks: resident_chunks(&c, &sources, 1024 * 1024).unwrap(),
+        };
         assert_eq!(resident.chunks.as_ref().unwrap().len(), 80);
-        let streamed = Snapshot { sources: sources.clone(), chunks: resident_chunks(&c, &sources, 4096).unwrap() };
+        let streamed = Snapshot { sources: sources.clone(), chunks: resident_chunks(&c, &sources, 4096).unwrap(),
+        };
         assert!(streamed.chunks.is_none(), "An incomplete resident cache must never stand in for the full index");
         let query = vec![0.02; 768];
         let scores = |snapshot: &Snapshot| {
             let mut scores = vec![];
-            visit_chunks(snapshot, &index, |chunk| scores.push((chunk.source, chunk.page, chunk.text.clone(), crate::inference::cosine(&query, &chunk.vector)))).unwrap();
+            visit_chunks(snapshot, &index, |chunk| {
+                scores.push((chunk.source, chunk.page, chunk.text.clone(), crate::inference::cosine(&query, &chunk.vector),
+                ))
+            }).unwrap();
             scores
         };
         assert_eq!(scores(&resident), scores(&streamed));
@@ -266,9 +284,13 @@ mod tests {
                 ],
             )
             .unwrap();
-        connection.execute("INSERT INTO chunks(source,text,vector,model) VALUES(?,? ,?,'embeddinggemma-300M-Q8_0')",params![source.id,source.text,serde_json::to_string(&vec![0.01f32;768]).unwrap()]).unwrap();
+        let mut vector = vec![0.; 768];
+        vector[0] = 1.;
+        let mut alternate = vec![0.; 768];
+        alternate[1] = 1.;
+        connection.execute("INSERT INTO chunks(source,text,vector,model) VALUES(?,? ,?,'embeddinggemma-300M-Q8_0:sentence-tokens-v2')",params![source.id,source.text,serde_json::to_string(&vector).unwrap()]).unwrap();
         // Old vectors have the same dimensions but belong to a different space.
-        connection.execute("INSERT INTO chunks(source,text,vector,model) VALUES(?,? ,?,'embeddinggemma-2-Q8_0')",params![source.id,source.text,serde_json::to_string(&vec![0.02f32;768]).unwrap()]).unwrap();
+        connection.execute("INSERT INTO chunks(source,text,vector,model) VALUES(?,? ,?,'embeddinggemma-2-Q8_0')",params![source.id,source.text,serde_json::to_string(&alternate).unwrap()]).unwrap();
         let mut slot = None;
         let first = snapshot_in(&mut slot, &root, &index, false).unwrap();
         assert_eq!(first.sources.all.len(), 1);
@@ -281,7 +303,8 @@ mod tests {
             warm.chunks.as_ref().unwrap(),
             second.chunks.as_ref().unwrap()
         ));
-        connection.execute("UPDATE chunks SET vector=? WHERE model=?",params![crate::vectors::encode(&vec![0.03;768]),crate::inference::MODEL_ID]).unwrap();
+        connection.execute("UPDATE chunks SET vector=? WHERE model=?",params![crate::vectors::encode(&alternate),crate::inference::MODEL_ID],
+            ).unwrap();
         let backfill=snapshot_in(&mut slot,&root,&index,true).unwrap();
         assert!(Arc::ptr_eq(&first.sources,&backfill.sources));
         assert!(!Arc::ptr_eq(warm.chunks.as_ref().unwrap(),backfill.chunks.as_ref().unwrap()));

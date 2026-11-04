@@ -4,6 +4,8 @@ import { undo, redo } from '@codemirror/commands';
 import type { Workspace } from '../app/useWorkspace';
 import type { Project, Source } from '../app/types';
 import { request } from '../app/client';
+import { compose } from '../editor/composite';
+import captureWorklet from '../voice/capture.worklet.js?url&no-inline';
 import type { MemoryController, MemoryEntity, MemoryResult } from '../enrichment/useMemory';
 let current: Workspace;
 let memory: MemoryController;
@@ -33,11 +35,163 @@ export function attach(workspace: Workspace, controller: MemoryController) {
   if (started || !workspace.ready) return;
   started = true;
   void run().catch(async (error) => {
+    document.title = `Ariane — recette : ${String(error)}`;
     await invoke('performance', {
       action: 'report',
       payload: { ...partialReport, error: String(error), stack: error?.stack },
     });
   });
+}
+async function probeMicrophone(report: Record<string, unknown>) {
+  const context = new AudioContext();
+  let stream: MediaStream | undefined;
+  let active = true;
+  let phase = 'permission';
+  const bounded = async <T>(step: string, operation: Promise<T>) => {
+    phase = step;
+    document.title = `Ariane — microphone : ${step}`;
+    return Promise.race([
+      operation,
+      delay(10000).then(() => {
+        throw new Error(`Microphone timeout: ${step}`);
+      }),
+    ]);
+  };
+  try {
+    document.title = 'Ariane — microphone : autorisation macOS';
+    await request('voicePermission');
+    const inputStream = await bounded<MediaStream>(
+      'permission',
+      navigator.mediaDevices
+        .getUserMedia({
+          audio: { channelCount: 1 },
+          video: false,
+        })
+        .then((input) => {
+          if (!active) input.getTracks().forEach((track) => track.stop());
+          return input;
+        }),
+    );
+    stream = inputStream;
+    await bounded('module', context.audioWorklet.addModule(captureWorklet));
+    const capture = new AudioWorkletNode(context, 'ariane-capture');
+    let samples = 0,
+      squares = 0,
+      peak = 0;
+    capture.port.onmessage = (event: MessageEvent<Float32Array | string>) => {
+      if (!(event.data instanceof Float32Array)) return;
+      for (const value of event.data) {
+        samples++;
+        squares += value * value;
+        peak = Math.max(peak, Math.abs(value));
+      }
+    };
+    const silence = context.createGain();
+    silence.gain.value = 0;
+    context.createMediaStreamSource(inputStream).connect(capture);
+    capture.connect(silence);
+    silence.connect(context.destination);
+    await bounded('capture', context.resume());
+    await delay(1000);
+    if (!samples) throw new Error('System microphone supplied no audio frames');
+    report.microphone = {
+      inputLabels: inputStream.getAudioTracks().map((track) => track.label),
+      samples,
+      sampleRate: context.sampleRate,
+      rms: Math.sqrt(squares / samples),
+      peak,
+      audioRetained: false,
+      path: 'System getUserMedia and bundled AudioWorklet',
+    };
+    capture.disconnect();
+  } catch (error) {
+    report.microphone = { phase, error: String(error), audioRetained: false };
+  } finally {
+    active = false;
+    stream?.getTracks().forEach((track) => track.stop());
+    await context.close();
+  }
+}
+async function runSpeech(path: string, report: Record<string, unknown>, microphoneProbe: boolean) {
+  if (microphoneProbe) await probeMicrophone(report);
+  const input = await invoke<{ audio: string }>('performance', { action: 'speechInput' });
+  const bytes = Uint8Array.from(atob(input.audio), (character) => character.charCodeAt(0));
+  const context = new AudioContext();
+  const buffer = await context.decodeAudioData(bytes.buffer);
+  const source = context.createBufferSource();
+  source.buffer = buffer;
+  const destination = context.createMediaStreamDestination();
+  source.connect(destination);
+  const original = Object.getOwnPropertyDescriptor(navigator, 'mediaDevices');
+  Object.defineProperty(navigator, 'mediaDevices', {
+    configurable: true,
+    value: { getUserMedia: async () => destination.stream },
+  });
+  const ended = new Promise<void>((resolve) => {
+    source.onended = () => resolve();
+  });
+  try {
+    current.doc.configure({ language: 'fr', enrichment: false });
+    const view = EditorView.findFromDOM(document.querySelector<HTMLElement>('.cm-editor')!)!;
+    current.editor.current!.focus();
+    view.dispatch({ selection: { anchor: view.state.doc.length } });
+    const before = current.editor.current!.text();
+    const trigger = document.querySelector<HTMLButtonElement>('.voice-trigger')!;
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    await until(
+      () => document.querySelector('.voice-control')?.getAttribute('data-phase') === 'recording',
+      30000,
+    );
+    const start = performance.now();
+    await context.resume();
+    source.start(context.currentTime + 0.25);
+    await ended;
+    await delay(250);
+    trigger.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', bubbles: true }));
+    await until(
+      () => document.querySelector('.voice-control')?.getAttribute('data-phase') === 'idle',
+      90000,
+    );
+    const after = current.editor.current!.text();
+    if (!after.startsWith(before) || after.length <= before.length)
+      throw new Error('Dictation did not preserve and extend the manuscript');
+    const transcript = after.slice(before.length).trim();
+    if (!/dossier[.!?]?$/iu.test(transcript) || !/ne veux pas/iu.test(transcript))
+      throw new Error('Dictation lost its negation or ending');
+    await current.doc.flush();
+    const saved = await request<Project>('open', { path });
+    const savedText = compose(saved.sections).text;
+    if (savedText !== after) throw new Error('Dictation was not saved');
+    undo(view);
+    const undoRestoresOriginal = current.editor.current!.text() === before;
+    redo(view);
+    const redoRestoresDictation = current.editor.current!.text() === after;
+    if (!undoRestoresOriginal || !redoRestoresDictation)
+      throw new Error('Dictation undo/redo failed');
+    await current.doc.flush();
+    report.speech = {
+      hardwareMicrophone: false,
+      input: 'Stock fal synthetic voice supplied as a MediaStream',
+      audioSeconds: buffer.duration,
+      elapsedMs: performance.now() - start,
+      sampleRate: context.sampleRate,
+      audioWorkletAvailable: !!context.audioWorklet,
+      transcript,
+      savedTextMatches: savedText === after,
+      undoRestoresOriginal,
+      redoRestoresDictation,
+      tracksStopped: destination.stream.getTracks().every((track) => track.readyState === 'ended'),
+    };
+    report.errors = current.error;
+    await invoke('performance', { action: 'report', payload: report });
+    document.title = 'Ariane — dictée synthétique native vérifiée';
+  } finally {
+    if (original) Object.defineProperty(navigator, 'mediaDevices', original);
+    else Reflect.deleteProperty(navigator, 'mediaDevices');
+    destination.stream.getTracks().forEach((track) => track.stop());
+    source.disconnect();
+    await context.close();
+  }
 }
 async function run() {
   const resumed = sessionStorage.getItem('ariane-memory-benchmark');
@@ -62,12 +216,15 @@ async function run() {
     document.title = 'Ariane — mémoire native vérifiée';
     return;
   }
-  const fixture = await invoke<{ path: string; memoryTest: boolean; entitiesTest: boolean }>(
-    'performance',
-    {
-      action: 'prepare',
-    },
-  );
+  const fixture = await invoke<{
+    path: string;
+    memoryTest: boolean;
+    speechTest: boolean;
+    microphoneProbe: boolean;
+    entitiesTest: boolean;
+  }>('performance', {
+    action: 'prepare',
+  });
   const report: Record<string, unknown> = {
     userAgent: navigator.userAgent,
     viewport: [innerWidth, innerHeight],
@@ -84,6 +241,10 @@ async function run() {
   await frame();
   await frame();
   report.editorMountMs = performance.now() - renderStart;
+  if (fixture.speechTest) {
+    await runSpeech(fixture.path, report, fixture.microphoneProbe);
+    return;
+  }
   if (fixture.memoryTest) {
     await runMemory(fixture.path, report);
     return;
@@ -354,17 +515,31 @@ async function runMemory(path: string, report: Record<string, unknown>) {
     queueResults.push(result);
   }
   const entities = await request<MemoryEntity[]>('memoryList', { projectPath: path });
-  const louise = entities.find((e) => e.title === 'Louise Morel');
-  if (!louise) throw new Error('Derived Louise fiche missing');
-  const fiche = await request<{ fields: unknown[]; timeline: { date: string }[] }>('memoryEntity', {
-    projectPath: path,
-    id: louise.id,
-  });
+  const louiseMentions = entities.filter((e) => e.title === 'Louise Morel');
+  const dated = await Promise.all(
+    louiseMentions.map((e) =>
+      request<{
+        fields: unknown[];
+        timeline: { date: string }[];
+        unresolved: boolean;
+        passages: { section: string; node: string }[];
+      }>('memoryEntity', { projectPath: path, id: e.id }),
+    ),
+  );
+  const currentMention = dated.findIndex((e) =>
+    e.passages.some((p) => p.section === 'scene-0' && p.node === '0-0'),
+  );
+  if (currentMention < 0) throw new Error('Derived Louise fiche missing for the current passage');
+  const louise = louiseMentions[currentMention];
+  const fiche = dated[currentMention];
   if (
-    !fiche.timeline.some((d) => d.date === '1921') ||
-    !fiche.timeline.some((d) => d.date === '1924')
+    !dated.some((e) => e.timeline.some((d) => d.date === '1921')) ||
+    !dated.some((e) => e.timeline.some((d) => d.date === '1924'))
   )
-    throw new Error('Dated events missing');
+    throw new Error('Dated mentions missing');
+  if (dated.some((e) => !e.unresolved || e.timeline.length > 1))
+    throw new Error('Unconfirmed homonyms were merged');
+  report.unresolvedLouiseMentions = dated;
   const recall = await request<MemoryResult>('memoryContext', {
     projectPath: path,
     section: 'scene-1',
@@ -407,6 +582,7 @@ async function runMemory(path: string, report: Record<string, unknown>) {
   memory.open({ kind: 'entity', id: louise.id });
   await until(() => !!document.querySelector('.memory-date'));
   report.ficheVisible = document.querySelector('.memory-reader')?.textContent?.includes('1924');
+  if (!report.ficheVisible) throw new Error('Current passage fiche was not displayed');
   report.noCitationOnDerivedFiche = !document
     .querySelector('.memory-reader')
     ?.textContent?.includes('Citer');

@@ -1,6 +1,6 @@
 # Préparer une release
 
-La version `0.2.1` cible macOS 26+, arm64. Les [notes de développement](release-notes-0.2.1.md) décrivent les nouveautés. Les deux anciennes releases GitHub ont été retirées le 2 novembre 2026 à la demande du mainteneur. Ne pas recréer de release avant signature, notarisation et validation du paquet. Le dépôt et la CI ne publient rien automatiquement.
+La version `0.2.2` cible macOS 26+, arm64. Les [notes de développement](release-notes-0.2.2.md) décrivent les nouveautés. Les deux anciennes releases GitHub ont été retirées le 2 novembre 2026 à la demande du mainteneur. Ne pas recréer de release avant signature, notarisation et validation du paquet. Le dépôt et la CI ne publient rien automatiquement.
 
 ## Paquet local sans compte Apple payant
 

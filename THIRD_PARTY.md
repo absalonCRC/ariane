@@ -15,6 +15,7 @@ La GPL-3.0-only d’Ariane couvre son code original. Elle ne remplace pas les li
 | EB Garamond | Version Fontsource dans `package-lock.json` | SIL Open Font License 1.1 |
 | Figtree, Source Code Pro | Versions Fontsource dans `package-lock.json` | SIL Open Font License 1.1 |
 | Styles APA et Chicago | Fichiers CSL et notices embarqués | CC BY-SA, voir les en-têtes |
+| objc2-av-foundation | 0.3.2, verrouillé dans `src-tauri/Cargo.lock` | Zlib OR Apache-2.0 OR MIT ; liaison au framework système AVFoundation pour l’autorisation audio |
 | Sons de frappe de machine à écrire | Extraits adaptés de Joseph Sardin : [touche](https://bigsoundbank.com/typewriter-key-s2842.html), [espace](https://bigsoundbank.com/typewriter-space-s2843.html) et [frappe](https://bigsoundbank.com/typewriter-2-s2835.html) | CC0 1.0 |
 | Son de retour du chariot | Extrait raccourci et accéléré de [ramsamba](https://freesound.org/people/ramsamba/sounds/318686/) | CC0 1.0 |
 
@@ -24,7 +25,7 @@ Les versions exactes des bibliothèques JavaScript et Rust sont dans `package-lo
 
 ## Modèles facultatifs
 
-Les installateurs de mémoire, dictée et révision téléchargent séparément GLiNER, Parakeet, Spokenly Cleanup, LanguageTool, Temurin et SalamandraTA. Les révisions et/ou empreintes sont dans leurs scripts. Ces éléments ne font pas partie du paquet de base. Consulter leurs licences et fiches de modèle avant redistribution de leurs fichiers ; l’installation locale ne transfère aucun droit supplémentaire.
+Les installateurs de mémoire, dictée et révision téléchargent séparément GLiNER, Parakeet, Spokenly Cleanup, LanguageTool, Temurin et SalamandraTA. La révision emploie également JNA et JNA Platform 5.13.0, vérifiés par SHA-256 dans `scripts/setup-revision.py`, avec leurs licences LGPL/Apache incluses dans les JAR. Les révisions et/ou empreintes sont dans leurs scripts. Ces éléments ne font pas partie du paquet de base. Consulter leurs licences et fiches de modèle avant redistribution de leurs fichiers ; l’installation locale ne transfère aucun droit supplémentaire.
 
 ## Avant de distribuer un binaire
 

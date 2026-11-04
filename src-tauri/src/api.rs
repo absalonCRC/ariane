@@ -1,8 +1,14 @@
+fn all_revision_stages() -> String {
+    "all".into()
+}
 use crate::{
+    enrichment,
     error::{AppResult, Result},
-    enrichment, export, history, memory, memory_evidence,
-    memory_engine::{Activity, EntityEngine},
+    export, history,
     inference::Engine,
+    memory,
+    memory_engine::{Activity, EntityEngine},
+    memory_evidence,
     model::*,
     project, retrieval, revision::RevisionEngine, vaults, voice,
 };
@@ -44,17 +50,27 @@ pub struct AppState {
 )]
 pub enum Request {
     Bootstrap,
-    AppLanguage { value: String },
-    Annotations { project_path: String },
-    AddAnnotation { project_path: String, section: String, revision: i64, from: usize, to: usize, note: String },
-    UpdateAnnotation { project_path: String, id: String, revision: i64, note: String, done: bool },
-    ImportPreview { source: String },
-    ImportIntoProject { source: String, project_path: String },
-    ManuscriptOperation { project_path: String, operation: project::manuscript::Operation },
+    AppLanguage { value: String,
+    },
+    Annotations { project_path: String,
+    },
+    AddAnnotation { project_path: String, section: String, revision: i64, from: usize, to: usize, note: String,
+    },
+    UpdateAnnotation { project_path: String, id: String, revision: i64, note: String, done: bool,
+    },
+    ImportPreview { source: String,
+    },
+    ImportIntoProject { source: String, project_path: String,
+    },
+    ManuscriptOperation { project_path: String, operation: project::manuscript::Operation,
+    },
     Projects,
-    ProjectCatalog { path: String, pinned: bool, archived: bool },
-    LibraryOperation { operation: project::library::Operation },
-    BrowseSources { query: String, vault: Option<String>, kind: Option<String>, folder: Option<String>, offset: usize },
+    ProjectCatalog { path: String, pinned: bool, archived: bool,
+    },
+    LibraryOperation { operation: project::library::Operation,
+    },
+    BrowseSources { query: String, vault: Option<String>, kind: Option<String>, folder: Option<String>, offset: usize,
+    },
     Create {
         path: String,
         name: String,
@@ -98,11 +114,15 @@ pub enum Request {
         project_path: String,
         query: String,
     },
-    ClassifyCreatedNote { project_path: String, id: String, #[serde(default)] context: String },
-    NoteReferences { project_path: String, ids: Vec<String> },
+    ClassifyCreatedNote { project_path: String, id: String, #[serde(default)] context: String,
+    },
+    NoteReferences { project_path: String, ids: Vec<String>,
+    },
     CreateQuickNote {
         project_path: String,
         name: String,
+        #[serde(default)]
+        context: String,
     },
     CreateVaultEntity {
         kind: String,
@@ -133,7 +153,8 @@ pub enum Request {
     SourceFile {
         id: String,
     },
-    Versions { #[serde(default)] offset: usize },
+    Versions { #[serde(default)] offset: usize,
+    },
     Version {
         id: String,
     },
@@ -153,13 +174,19 @@ pub enum Request {
         id: String,
         payload: serde_json::Value,
     },
-    Enrich { project_path: String },
-    IgnoreEnrichment { project_path: String, source: String, evidence: Option<String> },
-    MemoryActivity { active: bool },
+    Enrich { project_path: String,
+    },
+    IgnoreEnrichment { project_path: String, source: String, evidence: Option<String>,
+    },
+    MemoryActivity { active: bool,
+    },
     MemoryStatus,
-    MemoryQueue { project_path: String, section: String, node: Option<String>, revision: i64, depth: u8, #[serde(default)] semantic: bool },
-    MemoryEntities { project_path: String, section: String, node: Option<String>, revision: i64 },
-    MemoryContext { project_path: String, section: String, node: Option<String>, depth: u8 },
+    MemoryQueue { project_path: String, section: String, node: Option<String>, revision: i64, depth: u8, #[serde(default)] semantic: bool,
+    },
+    MemoryEntities { project_path: String, section: String, node: Option<String>, revision: i64,
+    },
+    MemoryContext { project_path: String, section: String, node: Option<String>, depth: u8,
+    },
     InlineEntities {
         project_path: String,
         section: String,
@@ -173,23 +200,42 @@ pub enum Request {
         to: usize,
         kind: String,
     },
-    MemoryEntity { project_path: String, id: String },
-    MemoryList { project_path: String },
-    MemoryDismiss { project_path: String, id: String, hash: String },
-    MemorySession { project_path: String, value: Option<serde_json::Value> },
-    MemorySource { id: String, fingerprint: Option<String> },
+    MemoryEntity { project_path: String, id: String,
+    },
+    MemoryList { project_path: String,
+    },
+    MemoryDismiss { project_path: String, id: String, hash: String,
+    },
+    MemorySession { project_path: String, value: Option<serde_json::Value>,
+    },
+    MemorySource { id: String, fingerprint: Option<String>,
+    },
     EngineStatus,
     VoiceStatus,
+    VoicePermission,
+    VoicePrepare,
     RevisionStatus,
     RevisionCheck {
         text: String,
         language: String,
+        #[serde(default = "all_revision_stages")]
+        stage: String,
+        #[serde(default)]
+        before: String,
+        #[serde(default)]
+        after: String,
     },
     VoiceTranscribe {
         audio: String,
         language: String,
         #[serde(default)]
         live: bool,
+        #[serde(default)]
+        before: String,
+        #[serde(default)]
+        after: String,
+        #[serde(default)]
+        project_path: Option<String>,
     },
     Quit,
     CancelExport,
@@ -248,11 +294,15 @@ pub fn handle(
             app.set_menu(crate::platform::menu_for_language(app, &value).app()?).app()?;
             Ok(json!(true))
         }
-        Request::ImportPreview { source } => { state.grants.require("import",Path::new(&source))?; json(crate::import::preview(&state.resources, Path::new(&source))?) },
+        Request::ImportPreview { source } => { state.grants.require("import",Path::new(&source))?; json(crate::import::preview(&state.resources, Path::new(&source),
+            )?) }
         Request::Projects => json(project::catalog::list(&state.data)?),
-        Request::ProjectCatalog { path, pinned, archived } => json(project::catalog::update(&state.data, &path, pinned, archived)?),
+        Request::ProjectCatalog { path, pinned, archived,
+        } => json(project::catalog::update(&state.data, &path, pinned, archived,
+        )?),
         Request::MemoryActivity { active } => { state.memory_activity.writing(active); Ok(json!(true)) }
-        Request::MemoryStatus => Ok(json!({"available":Engine::available(&state.resources), "entitiesAvailable":EntityEngine::available(&state.data, &state.resources)})),
+        Request::MemoryStatus => Ok(json!({"available":Engine::available(&state.resources), "entitiesAvailable":EntityEngine::available(&state.data, &state.resources)}),
+        ),
         Request::Bootstrap => {
             let path = state.data.join("session.json");
             if let Ok(text) = std::fs::read_to_string(path) {
@@ -266,7 +316,8 @@ pub fn handle(
             }
             Ok(serde_json::Value::Null)
         }
-        Request::Create { path, name, vault_path, initial_title } => {
+        Request::Create { path, name, vault_path, initial_title,
+        } => {
             state.grants.require("create",Path::new(&path))?;
             if let Some(vault) = &vault_path { state.grants.require("vault",Path::new(vault))?; }
             let root = Path::new(&path);
@@ -284,30 +335,64 @@ pub fn handle(
             let known=project::catalog::list(&state.data)?.iter().any(|p|Path::new(&p.path)==target);
             if !known {state.grants.require("open",&target)?;}
             json(activate(state,&target)?)
-        },
+        }
         Request::EngineStatus => Ok(
             json!({"available":state.resources.join("models/embeddinggemma-300M-Q8_0.gguf").exists()&&state.resources.join("engine/llama-server").exists(),"model":"EmbeddingGemma 300M · Q8","local":true}),
         ),
+        Request::VoicePrepare => {
+            let mut engine = state.voice.lock().map_err(|e| e.to_string())?;
+            engine.prepare(&state.data, &state.resources)?;
+            Ok(json!(true))
+        }
+        Request::VoicePermission => {
+            voice::request_permission()?;
+            Ok(json!(true))
+        }
         Request::VoiceStatus => {
             Ok(json!({"available": voice::available(&state.data, &state.resources)}))
         }
         Request::RevisionStatus => {
             let root = state.data.join("revision");
-            Ok(json!({"available": root.join("java/Contents/Home/bin/java").is_file()
-                && root.join("languagetool/languagetool-server.jar").is_file()
-                && root.join("salamandra-q8.gguf").is_file()
-                && state.resources.join("engine/llama-server").is_file()}))
+            let language = root.join("java/Contents/Home/bin/java").is_file()
+                && root.join("languagetool/languagetool-server.jar").is_file();
+            let model = root.join("salamandra-q8.gguf").is_file()
+                && state.resources.join("engine/llama-server").is_file();
+            Ok(json!({"available":language || model,"language":language,"model":model}))
         }
-        Request::RevisionCheck { text, language } => {
+        Request::RevisionCheck { text, language,
+            stage,
+            before,
+            after,
+        } => {
             let _priority = state.memory_activity.foreground();
             let mut engine = state.revision.lock().map_err(|e| e.to_string())?;
-            json(engine.check(&state.data, &state.resources, &text, &language)?)
+            json(engine.check_context(&state.data, &state.resources, &text, &language,
+                &stage,
+                &before,
+                &after,
+            )?)
         }
-        Request::VoiceTranscribe { audio, language, live } => {
+        Request::VoiceTranscribe { audio, language, live,
+            before,
+            after,
+            project_path,
+        } => {
             let _priority = state.memory_activity.foreground();
             let mut engine = state.voice.lock().map_err(|e|e.to_string())?;
-            json(engine.transcribe(&state.data, &state.resources, &audio, &language, live)?)
-        },
+            let root = root(state)?;
+            if project_path
+                .as_deref()
+                .is_some_and(|p| Path::new(p) != root)
+            {
+                return Err("Le projet actif a changé.".into());
+            }
+            let names = voice::lexicon::snapshot(&root, &state.data.join("sources.sqlite"))?;
+            json(engine.transcribe_context(&state.data, &state.resources, &audio, &language, live,
+                &before,
+                &after,
+                &names,
+            )?)
+        }
         Request::CancelExport => {
             state.export_cancel.store(true, Ordering::Relaxed);
             Ok(json!(true))
@@ -328,44 +413,58 @@ pub fn handle(
             let (root, _held) = {
                 let current = state.current.lock().map_err(|e| e.to_string())?;
                 let held = state.project_guard.lock().map_err(|e| e.to_string())?.clone();
-                (current.clone().ok_or("Ouvrez un projet pour continuer.")?, held)
+                (current.clone().ok_or("Ouvrez un projet pour continuer.")?, held,
+                )
             };
             match other {
                 Request::Annotations { project_path } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     json(project::annotations::list(&root)?)
                 }
-                Request::AddAnnotation { project_path, section, revision, from, to, note } => {
+                Request::AddAnnotation { project_path, section, revision, from, to, note,
+                } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
-                    json(project::annotations::create(&root, &section, revision, from, to, &note)?)
+                    json(project::annotations::create(&root, &section, revision, from, to, &note,
+                    )?)
                 }
-                Request::UpdateAnnotation { project_path, id, revision, note, done } => {
+                Request::UpdateAnnotation { project_path, id, revision, note, done,
+                } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
-                    json(project::annotations::update(&root, &id, revision, &note, done)?)
+                    json(project::annotations::update(&root, &id, revision, &note, done,
+                    )?)
                 }
-                Request::ManuscriptOperation { project_path, operation } => {
+                Request::ManuscriptOperation { project_path, operation,
+                } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     json(project::manuscript::apply(&root, operation)?)
                 }
-                Request::ImportIntoProject { source, project_path } => {
+                Request::ImportIntoProject { source, project_path,
+                } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     state.grants.require("import",Path::new(&source))?;
                     let report = crate::import::import_into(&root, &state.resources, Path::new(&source))?;
                     Ok(json!({"project":project::load(&root)?,"report":report}))
                 }
-                Request::LibraryOperation { operation } => json(project::library::apply(&root, operation)?),
-                Request::BrowseSources { query, vault, kind, folder, offset } => json(vaults::browse(&root, &index, &query, vault.as_deref(), kind.as_deref(), folder.as_deref(), offset)?),
-                Request::MemoryQueue { project_path, section, node, revision, depth, semantic } => {
+                Request::LibraryOperation { operation } => {
+                    json(project::library::apply(&root, operation)?)
+                }
+                Request::BrowseSources { query, vault, kind, folder, offset,
+                } => json(vaults::browse(&root, &index, &query, vault.as_deref(), kind.as_deref(), folder.as_deref(), offset,
+                )?),
+                Request::MemoryQueue { project_path, section, node, revision, depth, semantic,
+                } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     let Ok(_job) = state.memory_job.try_lock() else { return Ok(json!({"busy":true})); };
                     let queue = memory::Queue { root: &root, index: &index, resources: &state.resources,
                         engine: &state.engine, activity: &state.memory_activity,
-                        critical_pressure: crate::memory_engine::critical_memory_pressure() };
+                        critical_pressure: crate::memory_engine::critical_memory_pressure(),
+                    };
                     let result = queue.run(&section, node.as_deref(), revision, depth, semantic)?;
                     if root != super::api::root(state)? { return Ok(json!({"stale":true})); }
                     Ok(result)
                 }
-                Request::MemoryEntities { project_path, section, node, revision } => {
+                Request::MemoryEntities { project_path, section, node, revision,
+                } => {
                     if Path::new(&project_path) != root { return Ok(json!({"stale":true})); }
                     if !EntityEngine::available(&state.data, &state.resources) {
                         return Ok(json!({"available":false,"pending":false}));
@@ -378,7 +477,9 @@ pub fn handle(
                     }
                     let enabled = || -> Result<bool> {
                         let c = project::database(&root)?;
-                        let settings: String = c.query_row("SELECT value FROM meta WHERE key='settings'", [], |r|r.get(0)).app()?;
+                        let settings: String = c.query_row("SELECT value FROM meta WHERE key='settings'", [], |r| {
+                                r.get(0)
+                            }).app()?;
                         Ok(serde_json::from_str::<serde_json::Value>(&settings).app()?["enrichment"].as_bool() != Some(false)
                             && project::section(&c,&section)?.is_some_and(|s|s.revision == revision))
                     };
@@ -386,13 +487,25 @@ pub fn handle(
                     let Ok(mut worker) = state.entity_engine.try_lock() else { return Ok(json!({"busy":true,"pending":true})); };
                     {
                         let Ok(_job) = state.memory_job.try_lock() else { return Ok(json!({"busy":true,"pending":true})); };
-                        memory::sync_idle(&root,Some(&section),||state.memory_activity.is_writing())?;
+                        memory::sync_idle(&root,Some(&section),|| {
+                            state.memory_activity.is_writing()
+                        })?;
                     }
+                    let types =
+                        serde_json::to_value(vaults::classification_types(&root, &index)?).app()?;
+                    memory::prepare_types(&root, &types)?;
                     let mut analyzed = false;
                     let mut deferred = false;
                     if let Some(passage) = memory::pending_entities_at(&root,&section,node.as_deref())? {
-                        let output = worker.request(&state.data,&state.resources,&state.memory_activity,&passage.text)?;
-                        if root != super::api::root(state)? || !enabled()? { return Ok(json!({"stale":true})); }
+                        let output = worker.request(&state.data,&state.resources,&state.memory_activity,&passage.text,
+                            types.clone(),
+                        )?;
+                        if root != super::api::root(state)? || !enabled()?
+                            || types
+                                != serde_json::to_value(vaults::classification_types(
+                                    &root, &index,
+                                )?)
+                                .app()? { return Ok(json!({"stale":true})); }
                         if let Some(output) = output {
                             analyzed = memory::apply_entities(&root,&passage,&output)?;
                         } else { deferred = true; }
@@ -400,9 +513,11 @@ pub fn handle(
                     let context = memory::context(&root,&section,node.as_deref(),0)?;
                     Ok(json!({"available":true,"analyzed":analyzed,"deferred":deferred,"retryMs":5000,
                         "pending":memory::pending_entities_at(&root,&section,node.as_deref())?.is_some(),
-                        "entities":context["entities"],"anchorHash":context["anchorHash"]}))
+                        "entities":context["entities"],"anchorHash":context["anchorHash"]}),
+                    )
                 }
-                Request::MemoryContext { project_path, section, node, depth } => {
+                Request::MemoryContext { project_path, section, node, depth,
+                } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     memory::context(&root,&section,node.as_deref(),depth)
                 }
@@ -446,11 +561,13 @@ pub fn handle(
                     memory::sync(&root)?;
                     memory::list(&root)
                 }
-                Request::MemoryDismiss { project_path, id, hash } => {
+                Request::MemoryDismiss { project_path, id, hash,
+                } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     memory::dismiss(&root,&id,&hash)?; Ok(json!(true))
                 }
-                Request::MemorySession { project_path, value } => {
+                Request::MemorySession { project_path, value,
+                } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     memory::session(&root,value)
                 }
@@ -458,7 +575,8 @@ pub fn handle(
                     let available=vaults::list(&root,&index)?;
                     let source=vaults::source(&index,&id,&available)?;
                     if fingerprint.is_some_and(|f| f!=source.fingerprint) || !memory_evidence::fresh(&index,&source,&available) {
-                        return Err("Cette source a changé ou n’est plus disponible. Actualisez son index.".into());
+                        return Err("Cette source a changé ou n’est plus disponible. Actualisez son index.".into(),
+                        );
                     }
                     Ok(json!(source))
                 }
@@ -468,19 +586,26 @@ pub fn handle(
                     let _guard = state.enriching.lock().map_err(|e| e.to_string())?;
                     enrichment::run(&root, &index)
                 }
-                Request::IgnoreEnrichment { project_path, source, evidence } => {
+                Request::IgnoreEnrichment { project_path, source, evidence,
+                } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     enrichment::ignore(&root, &index, &source, evidence.as_deref())?;
-                    let mut sources = vec![vaults::source(&index, &source, &vaults::list(&root, &index)?)?];
+                    let mut sources = vec![vaults::source(&index, &source, &vaults::list(&root, &index)?,
+                    )?];
                     enrichment::decorate(&root, &index, &mut sources)?;
                     json(sources.remove(0))
                 }
                 Request::Save { patches } => {
                     state.memory_activity.writing(true);
                     let report = project::save_report(&root, patches)?;
-                    Ok(json!({"sections":report.sections.iter().map(|s| json!({"id":s.id,"revision":s.revision})).collect::<Vec<_>>(),"mirrorErrors":report.mirror_errors}))
+                    Ok(json!({"sections":report.sections.iter().map(|s| json!({"id":s.id,"revision":s.revision})).collect::<Vec<_>>(),"mirrorErrors":report.mirror_errors}),
+                    )
                 }
-                Request::Add { parent, title, kind, role } => json(project::library::apply(&root, project::library::Operation { action: "add".into(), ids: vec![], target: parent, placement: None, role, title: Some(title), kind: Some(kind), included: None })?.sections),
+                Request::Add { parent, title, kind, role,
+                } => json(project::library::apply(&root, project::library::Operation { action: "add".into(), ids: vec![], target: parent, placement: None, role, title: Some(title), kind: Some(kind), included: None,
+                        },
+                    )?.sections,
+                ),
                 Request::Update { section } => json(project::update(&root, &section)?),
                 Request::Reorder { ids, id, parent } => {
                     json(project::reorder(&root, &ids, &id, parent)?)
@@ -490,7 +615,7 @@ pub fn handle(
                     project::settings(&root, value)?;
                     if enabled == Some(false) { state.memory_activity.cancel_entities(); }
                     json(())
-                },
+                }
                 Request::ResolveExternal {
                     id,
                     keep_local,
@@ -516,40 +641,38 @@ pub fn handle(
                     if ids.len()>200 { return Err("Trop de références demandées.".into()); }
                     json(vaults::note_references(&root,&index,&ids)?)
                 }
-                Request::ClassifyCreatedNote { project_path, id, context } => {
+                Request::ClassifyCreatedNote { project_path, id, context,
+                } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
-                    let types=vaults::classification_types(&root,&index)?;
                     let available=vaults::list(&root,&index)?;
                     let source=vaults::source(&index,&id,&available)?;
-                    if types.is_empty() || source.kind.to_lowercase()!="note" || !available.iter().any(|v|v.id==source.vault_id && v.owned && v.available) {
-                        return Ok(json!({"pending":false}));
-                    }
-                    let kind=if let Some(kind)=vaults::example_type(&source.title,&types) { Some(kind.to_owned()) }
-                    else {
-                        if !EntityEngine::available(&state.data,&state.resources) { return Ok(json!({"pending":false,"unavailable":true})); }
-                        let Ok(mut worker)=state.entity_engine.try_lock() else { return Ok(json!({"pending":true})); };
-                        let context:String=context.chars().take(1000).collect();
-                        let Some(output)=worker.classify_note(&state.data,&state.resources,&state.memory_activity,&source.title,&context,serde_json::to_value(&types).app()?)? else { return Ok(json!({"pending":true})); };
-                        vaults::predicted_type(&output,&types).map(str::to_owned)
-                    };
-                    if root != super::api::root(state)? { return Ok(json!({"pending":false,"stale":true})); }
-                    let _guard=state.enriching.lock().map_err(|e|e.to_string())?;
-                    if serde_json::to_value(&types).app()? != serde_json::to_value(vaults::classification_types(&root,&index)?).app()? { return Ok(json!({"pending":true})); }
-                    let typed=if let Some(kind)=kind { vaults::apply_note_type(&root,&index,&source,&kind)? } else { None };
-                    Ok(json!({"pending":false,"source":typed}))
+                    memory::classification_queue::enqueue(&root,&index,&source, &context)?;
+                    let Ok(mut worker)=state.entity_engine.try_lock() else { return Ok(json!({"pending":true})); };
+                    memory::classification_queue::run(
+                        &root,
+                        &index,
+                        &state.data,&state.resources,&mut worker,
+                        &state.memory_activity,&id,
+                        || super::api::root(state).ok().as_deref() == Some(root.as_path()),
+                    )
                 }
-                Request::CreateQuickNote { project_path, name } => {
+                Request::CreateQuickNote { project_path, name,
+                    context,
+                } => {
                     if Path::new(&project_path) != root {
                         return Err("Le projet actif a changé.".into());
                     }
                     let _guard = state.enriching.lock().map_err(|e| e.to_string())?;
-                    json(vaults::create_quick_note(&root, &index, &name)?)
+                    let source = vaults::create_quick_note(&root, &index, &name)?;
+                    memory::classification_queue::enqueue(&root, &index, &source, &context)?;
+                    json(source)
                 }
                 Request::CreateOwnedVault => {
                     vaults::create_owned(&root)?;
                     json(vaults::list(&root, &index)?)
                 }
-                Request::CreateVaultEntity { kind, name, description } => {
+                Request::CreateVaultEntity { kind, name, description,
+                } => {
                     let path = vaults::create_entity(&root, &kind, &name, &description)?;
                     Ok(json!({"path":path}))
                 }
@@ -672,8 +795,38 @@ pub fn handle(
         }
     }
 }
+pub fn resume_classification(app: &tauri::AppHandle, state: &AppState) -> Result<()> {
+    if state.memory_activity.ner_blocked() {
+        return Ok(());
+    }
+    let Ok(root) = root(state) else {
+        return Ok(());
+    };
+    let index = state.data.join("sources.sqlite");
+    if let Some(id) = memory::classification_queue::next(&root)? {
+        let Ok(mut worker) = state.entity_engine.try_lock() else {
+            return Ok(());
+        };
+        let result = memory::classification_queue::run(
+            &root,
+            &index,
+            &state.data,
+            &state.resources,
+            &mut worker,
+            &state.memory_activity,
+            &id,
+            || self::root(state).ok().as_deref() == Some(root.as_path()),
+        )?;
+        if !result["source"].is_null() {
+            let _ = app.emit("index-finished", json!({"projectPath":root}));
+        }
+    }
+    Ok(())
+}
+
 #[tauri::command]
-pub async fn dispatch(app: tauri::AppHandle, request: serde_json::Value) -> Result<serde_json::Value> {
+pub async fn dispatch(app: tauri::AppHandle, request: serde_json::Value,
+) -> Result<serde_json::Value> {
     crate::ipc::validate(&request)?;
     let permit=crate::ipc::admit(request["type"].as_str().ok_or("Commande invalide")?).await?;
     let request: Request=serde_json::from_value(request).app()?;

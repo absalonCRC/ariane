@@ -2,7 +2,7 @@ use super::*;
 use crate::{inference::Engine, memory_engine::Activity, memory_evidence};
 use std::sync::Mutex;
 
-pub const GEMMA_MODEL: &str = "embeddinggemma-300M-Q8_0:manuscript-v1";
+pub const GEMMA_MODEL: &str = "embeddinggemma-300M-Q8_0:manuscript-outline-v2";
 
 pub struct Queue<'a> {
     pub root: &'a Path,
@@ -14,13 +14,16 @@ pub struct Queue<'a> {
 }
 
 impl Queue<'_> {
-    pub fn run(&self, section: &str, node: Option<&str>, revision: i64, depth: u8, semantic: bool) -> Result<Value> {
+    pub fn run(&self, section: &str, node: Option<&str>, revision: i64, depth: u8, semantic: bool,
+    ) -> Result<Value> {
         if self.activity.is_writing() { return Ok(json!({"busy":true})); }
         let c = project::database(self.root)?;
         if project::section(&c, section)?.is_none_or(|s|s.revision != revision) {
             return Ok(json!({"stale":true}));
         }
-        let settings: String = c.query_row("SELECT value FROM meta WHERE key='settings'", [], |r|r.get(0)).unwrap_or_else(|_|"{}".into());
+        let settings: String = c.query_row("SELECT value FROM meta WHERE key='settings'", [], |r| {
+                r.get(0)
+            }).unwrap_or_else(|_|"{}".into());
         if serde_json::from_str::<Value>(&settings).ok().and_then(|s|s["enrichment"].as_bool()) == Some(false) {
             return Ok(json!({"entities":[],"recall":null,"anchorHash":"","pending":false}));
         }
@@ -39,10 +42,17 @@ impl Queue<'_> {
                 // engine between forwards. Never wait for its mutex in this queue.
                 for passage in pending_at(self.root, Some(section), node, 1)? {
                     let _priority = self.activity.inference();
-                    let result = encode(&passage.text, |text, query| {
+                    let active = passage.section == section && passage.node.as_deref() == node;
+                    let result = encode(&passage.text, active, |inputs| {
                         if self.activity.blocked() { return Ok(None); }
                         let Ok(mut engine) = self.engine.try_lock() else { return Ok(None); };
-                        engine.embed_idle(self.resources, text, query, ||self.activity.blocked())
+                        encoding_cache::encode_many(
+                            self.root,
+                            self.resources,
+                            &mut engine,
+                            &passage.title,
+                            inputs, ||self.activity.blocked(),
+                        )
                     });
                     match result {
                         Ok(Some(output)) if !self.activity.blocked() => {
@@ -54,7 +64,9 @@ impl Queue<'_> {
                 }
             }
         }
-        let mut result = context_idle(self.root, section, node, depth, ||self.activity.is_writing())?;
+        let mut result = context_idle(self.root, section, node, depth, || {
+            self.activity.is_writing()
+        })?;
         if result["busy"].as_bool() == Some(true) { return Ok(result); }
         if depth > 0 {
             if let Some(passage) = passage(self.root, section, node)? {
@@ -71,21 +83,38 @@ impl Queue<'_> {
 
 // Preserve a paragraph vector plus its individual ideas. Whitespace changes do
 // not alter encoding, and long paragraphs are chunked by the existing engine.
-fn encode(text: &str, mut embed: impl FnMut(&str, bool) -> Result<Option<Vec<f32>>>) -> Result<Option<Value>> {
+fn encode(text: &str,
+    active: bool,
+    mut embed: impl FnMut(&[(&str, bool)]) -> Result<Option<Vec<Vec<f32>>>>,
+) -> Result<Option<Value>> {
     let normalized = text.split_whitespace().collect::<Vec<_>>().join(" ");
     let mut pieces = vec![normalized.as_str()];
     let sentences: Vec<&str> = normalized.split_inclusive(['.', '!', '?', ';']).map(str::trim).filter(|s|s.chars().count() > 15).collect();
     if sentences.len() > 1 { pieces.extend(sentences.into_iter().take(8)); }
+    let mut inputs = Vec::new();
+    for piece in pieces {
+        inputs.push((piece, false));
+        if active {
+            inputs.push((piece, true));
+        }
+    }
+    let Some(vectors) = embed(&inputs)? else {
+        return Ok(None);
+    };
+    if vectors.len() != inputs.len() {
+        return Err("Lot vectoriel incomplet.".into());
+    }
     let mut passages = Vec::new();
     let mut queries = Vec::new();
-    for piece in pieces {
-        let Some(p) = embed(piece, false)? else { return Ok(None); };
-        let Some(q) = embed(piece, true)? else { return Ok(None); };
-        passages.push(p);
-        queries.push(q);
+    for ((_, query), vector) in inputs.iter().zip(vectors) {
+        if *query {
+            queries.push(vector); } else {
+            passages.push(vector);
+        }
     }
-    Ok(Some(json!({"model":GEMMA_MODEL,"vector":passages[0],"queryVector":queries[0],
-        "passageVectors":passages,"queryVectors":queries})))
+    Ok(Some(json!({"model":GEMMA_MODEL,"vector":passages[0],"queryVector":queries.first(),
+        "passageVectors":passages,"queryVectors":if active { Some(queries) } else { None }}),
+    ))
 }
 
 #[cfg(test)]
@@ -93,12 +122,10 @@ mod tests {
     use super::*;
     #[test]
     fn interrupted_encoding_never_returns_partial_vectors() {
-        let mut calls = 0;
-        let output = encode("Une maison vide. Une demeure abandonnée.", |_,_| {
-            calls += 1;
-            Ok((calls < 3).then(||vec![1.;768]))
+        let output = encode("Une maison vide. Une demeure abandonnée.", true, |inputs| {
+            assert_eq!(inputs.len(), 6);
+            Ok(None)
         }).unwrap();
         assert!(output.is_none());
-        assert_eq!(calls, 3);
     }
 }

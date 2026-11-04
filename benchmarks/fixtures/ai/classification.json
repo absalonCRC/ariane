@@ -1,0 +1,5527 @@
+{
+  "protocol": {
+    "version": 1,
+    "source": "Hand-authored French narrative and adversarial fixtures; no personal manuscripts. Not a population sample.",
+    "partition": "Subject-disjoint calibration/validation; a bare person name labels a type, never resolves an identity. Polysemous titles require abstention.",
+    "frozenBeforeInference": true,
+    "selection": {
+      "scores": [
+        0.55,
+        0.65,
+        0.75,
+        0.85,
+        0.95
+      ],
+      "margins": [
+        0.2,
+        0.3,
+        0.4
+      ],
+      "maxWrongIncrease": 0,
+      "minimumPrecision": 0.95,
+      "minimumF1Gain": 0.02
+    },
+    "validation": "One inference pass after policy freeze; failures are reported, never used for retuning.",
+    "annotationCorrection": "Before validation: Claude and Camille identify the Personne type without establishing an identity; corrected two expected labels. No validation predictions inspected."
+  },
+  "cases": [
+    {
+      "id": "note-0",
+      "split": "calibration",
+      "group": "calibration-Inès Delcourt",
+      "title": "Inès Delcourt",
+      "text": "Une femme qui recopie des lettres dans un atelier.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Personne"
+    },
+    {
+      "id": "note-1",
+      "split": "calibration",
+      "group": "calibration-Émile Zola",
+      "title": "Émile Zola",
+      "text": "Un écrivain français.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Personne"
+    },
+    {
+      "id": "note-2",
+      "split": "calibration",
+      "group": "calibration-jeanne",
+      "title": "jeanne",
+      "text": "Elle a écrit cette lettre.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Personne"
+    },
+    {
+      "id": "note-3",
+      "split": "calibration",
+      "group": "calibration-Lyon",
+      "title": "Lyon",
+      "text": "Une ville au confluent de deux cours d’eau.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Lieu"
+    },
+    {
+      "id": "note-4",
+      "split": "calibration",
+      "group": "calibration-Bretagne",
+      "title": "Bretagne",
+      "text": "Une région géographique.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Lieu"
+    },
+    {
+      "id": "note-5",
+      "split": "calibration",
+      "group": "calibration-Lisbonne",
+      "title": "Lisbonne",
+      "text": "Une ville au bord d’un estuaire.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Lieu"
+    },
+    {
+      "id": "note-6",
+      "split": "calibration",
+      "group": "calibration-Suède",
+      "title": "Suède",
+      "text": "Un pays européen.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Pays"
+    },
+    {
+      "id": "note-7",
+      "split": "calibration",
+      "group": "calibration-Japon",
+      "title": "Japon",
+      "text": "Un État insulaire.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Pays"
+    },
+    {
+      "id": "note-8",
+      "split": "calibration",
+      "group": "calibration-Brésil",
+      "title": "Brésil",
+      "text": "Un pays d’Amérique du Sud.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Pays"
+    },
+    {
+      "id": "note-9",
+      "split": "calibration",
+      "group": "calibration-CNRS",
+      "title": "CNRS",
+      "text": "Un organisme public de recherche scientifique.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Organisation"
+    },
+    {
+      "id": "note-10",
+      "split": "calibration",
+      "group": "calibration-Amnesty International",
+      "title": "Amnesty International",
+      "text": "Une organisation de défense des droits humains.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Organisation"
+    },
+    {
+      "id": "note-11",
+      "split": "calibration",
+      "group": "calibration-Germinal",
+      "title": "Germinal",
+      "text": "Un roman.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Œuvre"
+    },
+    {
+      "id": "note-12",
+      "split": "calibration",
+      "group": "calibration-Dune",
+      "title": "Dune",
+      "text": "Un roman de science-fiction.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Œuvre"
+    },
+    {
+      "id": "note-13",
+      "split": "calibration",
+      "group": "calibration-La Traviata",
+      "title": "La Traviata",
+      "text": "Un opéra.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Œuvre"
+    },
+    {
+      "id": "note-14",
+      "split": "calibration",
+      "group": "calibration-Waterloo",
+      "title": "Waterloo",
+      "text": "Une bataille historique.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Événement"
+    },
+    {
+      "id": "note-15",
+      "split": "calibration",
+      "group": "calibration-Jeux olympiques",
+      "title": "Jeux olympiques",
+      "text": "Une compétition sportive internationale.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Événement"
+    },
+    {
+      "id": "note-16",
+      "split": "calibration",
+      "group": "calibration-Hospitaliers",
+      "title": "Hospitaliers",
+      "text": "Un ordre religieux et militaire.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Ordre"
+    },
+    {
+      "id": "note-17",
+      "split": "calibration",
+      "group": "calibration-Hindouisme",
+      "title": "Hindouisme",
+      "text": "Une religion.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Religion"
+    },
+    {
+      "id": "note-18",
+      "split": "calibration",
+      "group": "calibration-Anneau de la brume",
+      "title": "Anneau de la brume",
+      "text": "Un bijou magique nommé dans le récit.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Objet"
+    },
+    {
+      "id": "note-19",
+      "split": "calibration",
+      "group": "calibration-Solidarité",
+      "title": "Solidarité",
+      "text": "Un concept moral.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Concept"
+    },
+    {
+      "id": "note-20",
+      "split": "calibration",
+      "group": "calibration-rose",
+      "title": "rose",
+      "text": "Une fleur poussant contre un mur.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-21",
+      "split": "calibration",
+      "group": "calibration-pierre",
+      "title": "pierre",
+      "text": "Un caillou posé dans le jardin.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-22",
+      "split": "calibration",
+      "group": "calibration-Pour plus tard",
+      "title": "Pour plus tard",
+      "text": "Notes diverses sans sujet défini.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-23",
+      "split": "calibration",
+      "group": "calibration-Demain",
+      "title": "Demain",
+      "text": "Une liste de tâches à accomplir.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-24",
+      "split": "calibration",
+      "group": "calibration-Claude",
+      "title": "Claude",
+      "text": "",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Personne"
+    },
+    {
+      "id": "note-25",
+      "split": "calibration",
+      "group": "calibration-Orange",
+      "title": "Orange",
+      "text": "",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-26",
+      "split": "calibration",
+      "group": "calibration-Mercure",
+      "title": "Mercure",
+      "text": "",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-27",
+      "split": "validation",
+      "group": "validation-Soline Vautrin",
+      "title": "Soline Vautrin",
+      "text": "Une personne qui travaille au théâtre.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Personne"
+    },
+    {
+      "id": "note-28",
+      "split": "validation",
+      "group": "validation-George Sand",
+      "title": "George Sand",
+      "text": "Une écrivaine.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Personne"
+    },
+    {
+      "id": "note-29",
+      "split": "validation",
+      "group": "validation-margot",
+      "title": "margot",
+      "text": "Elle a signé ce carnet.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Personne"
+    },
+    {
+      "id": "note-30",
+      "split": "validation",
+      "group": "validation-Nantes",
+      "title": "Nantes",
+      "text": "Une ville près de l’estuaire.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Lieu"
+    },
+    {
+      "id": "note-31",
+      "split": "validation",
+      "group": "validation-Normandie",
+      "title": "Normandie",
+      "text": "Une région géographique.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Lieu"
+    },
+    {
+      "id": "note-32",
+      "split": "validation",
+      "group": "validation-Athènes",
+      "title": "Athènes",
+      "text": "Une capitale et une ville.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Lieu"
+    },
+    {
+      "id": "note-33",
+      "split": "validation",
+      "group": "validation-Norvège",
+      "title": "Norvège",
+      "text": "Un État européen.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Pays"
+    },
+    {
+      "id": "note-34",
+      "split": "validation",
+      "group": "validation-Canada",
+      "title": "Canada",
+      "text": "Un pays d’Amérique du Nord.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Pays"
+    },
+    {
+      "id": "note-35",
+      "split": "validation",
+      "group": "validation-Sénégal",
+      "title": "Sénégal",
+      "text": "Un pays africain.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Pays"
+    },
+    {
+      "id": "note-36",
+      "split": "validation",
+      "group": "validation-INSERM",
+      "title": "INSERM",
+      "text": "Un organisme public de recherche médicale.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Organisation"
+    },
+    {
+      "id": "note-37",
+      "split": "validation",
+      "group": "validation-Médecins sans frontières",
+      "title": "Médecins sans frontières",
+      "text": "Une organisation humanitaire.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Organisation"
+    },
+    {
+      "id": "note-38",
+      "split": "validation",
+      "group": "validation-L’Étranger",
+      "title": "L’Étranger",
+      "text": "Un roman français.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Œuvre"
+    },
+    {
+      "id": "note-39",
+      "split": "validation",
+      "group": "validation-Fondation",
+      "title": "Fondation",
+      "text": "Un roman de science-fiction.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Œuvre"
+    },
+    {
+      "id": "note-40",
+      "split": "validation",
+      "group": "validation-Carmen",
+      "title": "Carmen",
+      "text": "Un opéra.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Œuvre"
+    },
+    {
+      "id": "note-41",
+      "split": "validation",
+      "group": "validation-Verdun",
+      "title": "Verdun",
+      "text": "Une bataille historique.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Événement"
+    },
+    {
+      "id": "note-42",
+      "split": "validation",
+      "group": "validation-Exposition universelle",
+      "title": "Exposition universelle",
+      "text": "Un grand événement international.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Événement"
+    },
+    {
+      "id": "note-43",
+      "split": "validation",
+      "group": "validation-Chevaliers teutoniques",
+      "title": "Chevaliers teutoniques",
+      "text": "Un ordre religieux et militaire.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Ordre"
+    },
+    {
+      "id": "note-44",
+      "split": "validation",
+      "group": "validation-Judaïsme",
+      "title": "Judaïsme",
+      "text": "Une religion.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Religion"
+    },
+    {
+      "id": "note-45",
+      "split": "validation",
+      "group": "validation-Lame des marées",
+      "title": "Lame des marées",
+      "text": "Une épée nommée portée par une héroïne.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Objet"
+    },
+    {
+      "id": "note-46",
+      "split": "validation",
+      "group": "validation-Équité",
+      "title": "Équité",
+      "text": "Un concept de justice.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Concept"
+    },
+    {
+      "id": "note-47",
+      "split": "validation",
+      "group": "validation-violette",
+      "title": "violette",
+      "text": "Une fleur du sous-bois.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-48",
+      "split": "validation",
+      "group": "validation-rocher",
+      "title": "rocher",
+      "text": "Une grosse pierre sur la plage.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-49",
+      "split": "validation",
+      "group": "validation-À reprendre",
+      "title": "À reprendre",
+      "text": "Un brouillon de notes variées.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-50",
+      "split": "validation",
+      "group": "validation-Hier",
+      "title": "Hier",
+      "text": "Un rappel de tâches déjà effectuées.",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-51",
+      "split": "validation",
+      "group": "validation-Camille",
+      "title": "Camille",
+      "text": "",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": "Personne"
+    },
+    {
+      "id": "note-52",
+      "split": "validation",
+      "group": "validation-Java",
+      "title": "Java",
+      "text": "",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-53",
+      "split": "validation",
+      "group": "validation-Atlas",
+      "title": "Atlas",
+      "text": "",
+      "types": [
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive, son prénom ou son nom.",
+          "examples": [
+            "Marie Curie",
+            "Victor Hugo"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Une ville, un lieu géographique ou un bâtiment, à l'exclusion des pays.",
+          "examples": [
+            "Paris",
+            "Toulouse"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Pays",
+          "description": "Un pays ou un État souverain réel ou fictif.",
+          "examples": [
+            "France",
+            "Portugal"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Ordre",
+          "description": "Un ordre religieux, militaire ou initiatique.",
+          "examples": [
+            "Templiers",
+            "Hospitaliers"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Religion",
+          "description": "Une religion, une croyance ou une tradition spirituelle.",
+          "examples": [
+            "Christianisme",
+            "Bouddhisme"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Organisation",
+          "description": "Une entreprise, une association ou une institution.",
+          "examples": [
+            "UNESCO"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Œuvre",
+          "description": "Le titre d'un livre, d'un film, d'une chanson ou d'une œuvre artistique.",
+          "examples": [
+            "Les Misérables"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Événement",
+          "description": "Un événement historique ou fictif nommé, une bataille, une fête.",
+          "examples": [
+            "Révolution française"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Concept",
+          "description": "Une idée ou un concept abstrait.",
+          "examples": [
+            "Liberté"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Objet",
+          "description": "Un objet matériel, un artefact ou un outil nommé.",
+          "examples": [
+            "Excalibur"
+          ],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-54",
+      "split": "calibration",
+      "group": "calibration-UNESCO",
+      "title": "UNESCO",
+      "text": "Organisation internationale officielle.",
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ],
+      "expected": "Institution"
+    },
+    {
+      "id": "note-55",
+      "split": "calibration",
+      "group": "calibration-Capétiens",
+      "title": "Capétiens",
+      "text": "Une famille de rois.",
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ],
+      "expected": "Dynastie"
+    },
+    {
+      "id": "note-56",
+      "split": "calibration",
+      "group": "calibration-Enterprise",
+      "title": "Enterprise",
+      "text": "Un vaisseau spatial nommé.",
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ],
+      "expected": "Vaisseau"
+    },
+    {
+      "id": "note-57",
+      "split": "calibration",
+      "group": "calibration-Brouillon",
+      "title": "Brouillon",
+      "text": "Sans sujet particulier.",
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    },
+    {
+      "id": "note-58",
+      "split": "validation",
+      "group": "validation-ONU",
+      "title": "ONU",
+      "text": "Organisation internationale officielle.",
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ],
+      "expected": "Institution"
+    },
+    {
+      "id": "note-59",
+      "split": "validation",
+      "group": "validation-Valois",
+      "title": "Valois",
+      "text": "Une famille royale.",
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ],
+      "expected": "Dynastie"
+    },
+    {
+      "id": "note-60",
+      "split": "validation",
+      "group": "validation-Voyager",
+      "title": "Voyager",
+      "text": "Un vaisseau spatial nommé.",
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ],
+      "expected": "Vaisseau"
+    },
+    {
+      "id": "note-61",
+      "split": "validation",
+      "group": "validation-À vérifier",
+      "title": "À vérifier",
+      "text": "Sans sujet particulier.",
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ],
+      "expected": null
+    }
+  ]
+}

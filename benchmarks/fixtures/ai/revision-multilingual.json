@@ -1,0 +1,181 @@
+{
+  "protocol": {
+    "version": 1,
+    "source": "Invented multilingual cases, frozen before engine inference. Listed edits conservative; unlisted suggestions counted for review.",
+    "languages": [
+      "en",
+      "es",
+      "de",
+      "it"
+    ],
+    "budgets": {
+      "maxHarmfulDisplayedIncrease": 0,
+      "maxOutsideTargetChanges": 0
+    }
+  },
+  "cases": [
+    {
+      "id": "en-negation",
+      "language": "en",
+      "text": "I do not want to publish these notes.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "en-agreement",
+      "language": "en",
+      "text": "The children plays outside.",
+      "before": "",
+      "after": "",
+      "allowed": [
+        {
+          "from": 13,
+          "to": 18,
+          "original": "plays",
+          "replacement": "play"
+        }
+      ]
+    },
+    {
+      "id": "en-names-numbers",
+      "language": "en",
+      "text": "Nérine Aubel has 120 books, not 900.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "en-context",
+      "language": "en",
+      "text": "happy.",
+      "before": "The children are ",
+      "after": " They came yesterday.",
+      "allowed": []
+    },
+    {
+      "id": "es-negation",
+      "language": "es",
+      "text": "No quiero publicar estas notas.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "es-agreement",
+      "language": "es",
+      "text": "Los niños juega en el jardín.",
+      "before": "",
+      "after": "",
+      "allowed": [
+        {
+          "from": 10,
+          "to": 15,
+          "original": "juega",
+          "replacement": "juegan"
+        }
+      ]
+    },
+    {
+      "id": "es-names-numbers",
+      "language": "es",
+      "text": "Nérine Aubel tiene 120 libros, no 900.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "es-context",
+      "language": "es",
+      "text": "llegado.",
+      "before": "Las dos cartas han ",
+      "after": " Llegaron ayer.",
+      "allowed": []
+    },
+    {
+      "id": "de-negation",
+      "language": "de",
+      "text": "Ich möchte diese Notizen nicht veröffentlichen.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "de-agreement",
+      "language": "de",
+      "text": "Die Kinder spielt im Garten.",
+      "before": "",
+      "after": "",
+      "allowed": [
+        {
+          "from": 11,
+          "to": 17,
+          "original": "spielt",
+          "replacement": "spielen"
+        }
+      ]
+    },
+    {
+      "id": "de-names-numbers",
+      "language": "de",
+      "text": "Nérine Aubel hat 120 Bücher, nicht 900.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "de-context",
+      "language": "de",
+      "text": "angekommen.",
+      "before": "Die beiden Briefe sind ",
+      "after": " Sie kamen gestern.",
+      "allowed": []
+    },
+    {
+      "id": "it-negation",
+      "language": "it",
+      "text": "Non voglio pubblicare questi appunti.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "it-agreement",
+      "language": "it",
+      "text": "I bambini gioca in giardino.",
+      "before": "",
+      "after": "",
+      "allowed": [
+        {
+          "from": 10,
+          "to": 15,
+          "original": "gioca",
+          "replacement": "giocano"
+        }
+      ]
+    },
+    {
+      "id": "it-names-numbers",
+      "language": "it",
+      "text": "Nérine Aubel ha 120 libri, non 900.",
+      "before": "",
+      "after": "",
+      "allowed": []
+    },
+    {
+      "id": "it-context",
+      "language": "it",
+      "text": "arrivato.",
+      "before": "Le due lettere sono ",
+      "after": " Sono arrivate ieri.",
+      "allowed": [
+        {
+          "from": 0,
+          "to": 8,
+          "original": "arrivato",
+          "replacement": "arrivate"
+        }
+      ]
+    }
+  ]
+}

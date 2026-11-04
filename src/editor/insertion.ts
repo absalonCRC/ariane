@@ -4,7 +4,7 @@ import type { EditorView } from '@codemirror/view';
 export function prepareTextInsertion(view: EditorView, current: () => EditorView | null) {
   let expected = view.state.doc;
   let { from, to } = view.state.selection.main;
-  return (text: string): boolean => {
+  const insert = (text: string): boolean => {
     if (current() !== view || view.state.doc !== expected) return false;
     const transaction = view.state.update({
       changes: { from, to, insert: text },
@@ -19,4 +19,8 @@ export function prepareTextInsertion(view: EditorView, current: () => EditorView
     view.focus();
     return true;
   };
+  return Object.assign(insert, {
+    before: view.state.sliceDoc(Math.max(0, from - 350), from),
+    after: view.state.sliceDoc(to, Math.min(view.state.doc.length, to + 350)),
+  });
 }

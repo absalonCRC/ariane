@@ -1,0 +1,75 @@
+{
+  "protocol": {
+    "version": 1,
+    "source": "Invented scripts, stock synthetic voices; no cloning or personal manuscripts.",
+    "maxGenerationUsd": 3.0,
+    "observedUsdPer1000Characters": 0.02,
+    "selection": "Follow-up French control after mixed-language ASR outputs on stock English voices; same prewritten scripts, no ASR tuning.",
+    "normalization": "Report strict word error rate separately from case/punctuation-normalized words; names measured on exact and accent-insensitive forms. TTS may itself deviate from script.",
+    "variants": [
+      "clean",
+      "pink_noise_20dB",
+      "pink_noise_10dB",
+      "pink_noise_5dB",
+      "speed_0.85",
+      "speed_1.2"
+    ],
+    "budgets": {
+      "noCrash": true,
+      "maxChildRssGiB": 4,
+      "maxCaseSeconds": 180,
+      "preserveCleanupInvariants": true
+    }
+  },
+  "clips": [
+    {
+      "language": "fr",
+      "text": "Éléonore Vasseur arrive à Saint-Malo mardi douze janvier. Maël Kerlan lui remet un carnet destiné à Nérine Aubel. Je ne veux pas publier ces notes et je n’autorise aucun envoi. Le montant convenu est de cent vingt euros, et non neuf cents euros. Nous reprendrons le travail demain à quinze heures trente. Le navire reste au port ; la lettre doit rester dans le dossier.",
+      "names": [
+        "Éléonore Vasseur",
+        "Saint-Malo",
+        "Maël Kerlan",
+        "Nérine Aubel"
+      ],
+      "kind": "short",
+      "id": "fr-control-a",
+      "voice": "ff_siwis",
+      "source": "fal-ai/kokoro/french",
+      "perturbationSeed": 202611042,
+      "rateUsdPer1000Characters": 0.02
+    },
+    {
+      "language": "fr",
+      "text": "À Clairval, Soline Vautrin retrouve Inès Delcourt près de la bibliothèque. Une rose pousse contre le mur, mais Rose attend devant la porte. Le rendez-vous n’est pas annulé : il est déplacé de vendredi à lundi. J’ai dicté vingt-quatre pages ; ne remplace pas ce nombre par quarante-deux. Le devis indique mille deux cents euros. La dernière phrase doit être conservée jusqu’au dernier mot.",
+      "names": [
+        "Clairval",
+        "Soline Vautrin",
+        "Inès Delcourt",
+        "Rose"
+      ],
+      "kind": "short",
+      "id": "fr-control-b",
+      "voice": "ff_siwis",
+      "source": "fal-ai/kokoro/french",
+      "perturbationSeed": 202611043,
+      "rateUsdPer1000Characters": 0.02
+    },
+    {
+      "language": "fr",
+      "text": "Au matin, Éléonore Vasseur ouvre les volets de la petite bibliothèque. Elle découvre une lettre glissée sous la porte, puis vérifie la date écrite sur l’enveloppe. Le papier porte quelques taches, mais toutes les lignes restent lisibles. Elle décide de recopier le texte avant de le classer dans le dossier bleu. Rien ne doit être publié sans l’accord de la personne qui a envoyé ce courrier.\n\nDans la pièce voisine, Maël Kerlan prépare les cartons du voyage. Il range les carnets par année et garde les enveloppes avec leurs lettres. Le premier colis ne contient aucun document original. Le second réunit uniquement des copies. Cette distinction importe, car le navire part demain et personne ne pourra revenir chercher les pièces oubliées avant plusieurs semaines.\n\nNérine Aubel arrive avec un panier de fleurs séchées. Elle demande que l’on prononce son nom sans le remplacer par celui d’une autre personne. Son rendez-vous n’a pas été annulé. Il a simplement été déplacé de vendredi à lundi. Elle attend une confirmation écrite, puis reprend le chemin qui longe la rivière et les vieux ateliers de reliure.\n\nÀ midi, les trois visiteurs comparent les dépenses prévues. Le premier devis mentionne cent vingt euros. Le second demande mille deux cents euros pour un travail beaucoup plus long. Éléonore ne veut ni mélanger les deux montants, ni supprimer la phrase qui explique cette différence. Elle relit chaque chiffre et recopie aussi les nombres en toutes lettres pour pouvoir les contrôler.\n\nSoline Vautrin rejoint le groupe devant la bibliothèque de Clairval. Elle apporte un récit où deux personnes portent le même prénom. La première travaille au théâtre ; la seconde construit des bateaux. Il ne faut pas fusionner leurs souvenirs. Chaque passage indique son lieu, sa date et son témoin. Une supposition reste une supposition tant qu’aucun document ne permet de la confirmer.\n\nLe soir, une pluie fine recouvre les pavés. Les visiteurs ferment les fenêtres sans éteindre la lampe du bureau. Un carnet reste ouvert sur une page presque vide. La dernière ligne demande de conserver les hésitations utiles et les corrections explicitement dictées. Le narrateur reprend : nous partirons jeudi, non plutôt samedi matin. Puis il s’arrête, écoute le silence et ajoute un dernier mot : confiance.\n\nLe lendemain, Inès Delcourt inventorie les objets confiés à l’atelier. Elle inscrit le nom de chaque propriétaire dans une colonne distincte et ne devine jamais une identité à partir d’un prénom isolé. Les étiquettes illisibles sont conservées dans une enveloppe à vérifier. Une erreur d’attribution pourrait raconter une fausse histoire, même si tous les autres détails semblaient cohérents.\n\nPrès du port de Saint-Malo, le vent emporte des feuilles au-dessus du quai. Les marins observent la marée et attendent le signal du départ. Nous n’avons pas encore donné l’autorisation de charger les archives. La décision sera prise après la lecture du registre. Le capitaine promet de garder une place pour les cartons, mais ne garantit pas une heure précise d’arrivée.\n\nPendant l’attente, Éléonore relit les vingt-quatre pages du manuscrit. Elle remarque un nom sans accent et une date mal recopiée. Elle propose des corrections dans la marge, puis laisse l’auteur choisir. Le texte d’origine reste intact. Les mots ajoutés pour expliquer une phrase ne doivent pas être insérés dans la phrase elle-même, et le contexte voisin doit rester en lecture seule.\n\nQuand la nuit revient, Maël vérifie une dernière fois les portes de la bibliothèque. Le registre, les lettres et les carnets ont retrouvé leurs places. Aucun montant n’a été modifié, aucune négation n’a disparu et aucun personnage n’a été remplacé par un homonyme. La longue dictée touche maintenant à sa fin. Pour vérifier que la conclusion n’a pas été perdue, la toute dernière expression sera : les fenêtres de la confiance.",
+      "names": [
+        "Éléonore Vasseur",
+        "Maël Kerlan",
+        "Nérine Aubel",
+        "Inès Delcourt",
+        "Saint-Malo"
+      ],
+      "kind": "long",
+      "id": "fr-control-long",
+      "voice": "ff_siwis",
+      "source": "fal-ai/kokoro/french",
+      "perturbationSeed": 202611044,
+      "rateUsdPer1000Characters": 0.02
+    }
+  ]
+}

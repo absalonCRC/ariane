@@ -1,10 +1,11 @@
 use super::*;
 
-pub const NER_MODEL: &str = "fastino/gliner2-multi-v1@ce747d7+qnnpack-v3:entities-v2";
+pub const NER_MODEL: &str = "fastino/gliner2-multi-v1@ce747d7+qnnpack-v3:entities-v4";
 
 // Separate progress from embeddings: switching Gemma versions must not rerun
 // GLiNER, and an entity result must never overwrite a semantic vector.
-pub fn pending_entities_at(root: &Path, section: &str, node: Option<&str>) -> Result<Option<Passage>> {
+pub fn pending_entities_at(root: &Path, section: &str, node: Option<&str>,
+) -> Result<Option<Passage>> {
     let c = storage::database(root)?;
     c.query_row(
         "SELECT p.key,p.section,p.node,p.title,p.text,p.hash,p.position FROM memory_passages p
@@ -21,7 +22,7 @@ pub fn apply_entities(root: &Path, passage: &Passage, output: &Value) -> Result<
     if output["model"].as_str() != Some(NER_MODEL) || !output["entities"].is_array() {
         return Err("Résultat GLiNER incompatible.".into());
     }
-    let mentions = parse_mentions(passage, output)?;
+    let mentions = parse_mentions(&passage.text, output, &crate::ai_policy::POLICY.ner)?;
     let mut c = storage::database(root)?;
     let tx = c.transaction_with_behavior(TransactionBehavior::Immediate).app()?;
     let Some(s) = project::section(&tx, &passage.section)? else { return Ok(false); };
@@ -32,12 +33,33 @@ pub fn apply_entities(root: &Path, passage: &Passage, output: &Value) -> Result<
         |r| Ok((r.get(0)?,r.get(1)?)),
     ).optional().app()?;
     if current != Some((passage.hash.clone(),s.revision)) { return Ok(false); }
-    tx.execute("DELETE FROM memory_mentions WHERE passage_key=? AND origin LIKE 'model:%'", [&passage.key]).app()?;
+    tx.execute("DELETE FROM memory_mentions WHERE passage_key=? AND origin LIKE 'model:%'", [&passage.key],
+    ).app()?;
     for (text,label,a,b) in mentions {
-        entities::mention(&tx,&passage.key,&passage.text,&text,a,b,&format!("model:{label}"))?;
+        tx.execute("DELETE FROM memory_mentions WHERE passage_key=? AND origin NOT LIKE 'model:%' AND start<? AND end>?",params![passage.key,b as i64,a as i64]).app()?;
+        entities::mention(&tx,&passage.key,&passage.text,&text,a,b,&format!("model:{label}"),
+        )?;
     }
     tx.execute("INSERT INTO memory_ner(passage_key,hash,model) VALUES(?,?,?) ON CONFLICT(passage_key) DO UPDATE SET hash=excluded.hash,model=excluded.model",
         params![passage.key,passage.hash,NER_MODEL]).app()?;
     tx.commit().app()?;
     Ok(true)
+}
+
+pub fn prepare_types(root: &Path, types: &Value) -> Result<()> {
+    let c = storage::database(root)?;
+    let hash = storage::fingerprint(&types.to_string());
+    let old: Option<String> = c
+        .query_row("SELECT value FROM meta WHERE key='ner_types'", [], |r| {
+            r.get(0)
+        })
+        .optional()
+        .app()?;
+    if old.as_deref() != Some(&hash) {
+        let tx = c.unchecked_transaction().app()?;
+        tx.execute("DELETE FROM memory_ner", []).app()?;
+        tx.execute("INSERT INTO meta(key,value) VALUES('ner_types',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",[hash]).app()?;
+        tx.commit().app()?;
+    }
+    Ok(())
 }

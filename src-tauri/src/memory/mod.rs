@@ -2,7 +2,9 @@ mod entities;
 mod inline;
 pub use inline::{create_detected_entity, inline_entities};
 mod ner;
-pub use ner::{apply_entities, pending_entities_at};
+pub use ner::{apply_entities, pending_entities_at, prepare_types};
+pub(crate) mod classification_queue;
+mod encoding_cache;
 mod queue;
 pub use queue::{Queue, GEMMA_MODEL};
 mod storage;
@@ -112,11 +114,7 @@ fn section_passages(s: &Section) -> Result<Vec<Passage>> {
                 Some(n) => format!("{}\u{1f}{}", s.id, n),
                 None => format!("{}\u{1f}", s.id),
             };
-            let title = text
-                .lines()
-                .find(|line| !line.trim().is_empty())
-                .map(|line| line.trim().chars().take(80).collect::<String>())
-                .unwrap_or_else(|| s.title.clone());
+            let title = s.title.clone();
             Passage {
                 key,
                 section: s.id.clone(),
@@ -262,6 +260,9 @@ pub fn sync_idle(
         for p in desired {
             match existing.get(&p.key) {
                 Some((hash, old_title, position, old_revision)) if hash == &p.hash => {
+                    if old_title != &p.title {
+                        tx.execute("UPDATE memory_passages SET analyzed=0,vector=NULL,query_vector=NULL,model=NULL WHERE key=?",[&p.key]).app()?;
+                    }
                     if old_title != &p.title || *position != p.position || *old_revision != revision
                     {
                         tx.execute(
@@ -294,11 +295,13 @@ pub fn pending_at(
 ) -> Result<Vec<Passage>> {
     let c = storage::database(root)?;
     let model = GEMMA_MODEL;
-    let mut q=c.prepare("SELECT key,section,node,title,text,hash,position FROM memory_passages WHERE (analyzed=0 OR model IS NULL OR model<>?) AND length(trim(text,?))>0 AND length(text)<=65536 ORDER BY CASE WHEN section=? AND node IS ? THEN 0 WHEN section=? THEN 1 ELSE 2 END,section,position LIMIT ?").app()?;
+    let mut q=c.prepare("SELECT key,section,node,title,text,hash,position FROM memory_passages WHERE (analyzed=0 OR model IS NULL OR model<>? OR (section=? AND node IS ? AND query_vector IS NULL)) AND length(trim(text,?))>0 AND length(text)<=65536 ORDER BY CASE WHEN section=? AND node IS ? THEN 0 WHEN section=? THEN 1 ELSE 2 END,section,position LIMIT ?").app()?;
     let rows = q
         .query_map(
             params![
                 model,
+                preferred.unwrap_or(""),
+                node,
                 WHITESPACE,
                 preferred.unwrap_or(""),
                 node,
@@ -351,14 +354,24 @@ pub fn apply(root: &Path, passage: &Passage, output: &Value) -> Result<bool> {
     {
         return Err("Vecteur non normalisé.".into());
     }
-    let query: Vec<f32> = serde_json::from_value(output["queryVector"].clone()).app()?;
+    let query: Vec<f32> = if output["queryVector"].is_null() {
+        vec![]
+    } else {
+        serde_json::from_value(output["queryVector"].clone()).app()?
+    };
     let norm = query.iter().map(|v| v * v).sum::<f32>();
-    if query.len() != dimension || query.iter().any(|v| !v.is_finite()) || !(0.9..=1.1).contains(&norm) {
+    if !query.is_empty()
+        && (query.len() != dimension || query.iter().any(|v| !v.is_finite()) || !(0.9..=1.1).contains(&norm))
+    {
         return Err("Vecteur de requête invalide.".into());
     }
     let passage_vectors = parse_vectors(output.get("passageVectors"), &parsed)?;
-    let query_vectors = parse_vectors(output.get("queryVectors"), &query)?;
-    let mentions = parse_mentions(passage, output)?;
+    let query_vectors = if query.is_empty() {
+        None
+    } else {
+        Some(parse_vectors(output.get("queryVectors"), &query)?)
+    };
+    let mentions = parse_mentions(&passage.text, output, &crate::ai_policy::POLICY.ner)?;
     let tx = c
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .app()?;
@@ -403,8 +416,10 @@ pub fn apply(root: &Path, passage: &Passage, output: &Value) -> Result<bool> {
     tx.execute(
         "UPDATE memory_passages SET analyzed=1,vector=?,query_vector=?,model=? WHERE key=?",
         params![
-            serde_json::to_string(&passage_vectors).app()?,
-            serde_json::to_string(&query_vectors).app()?,
+            crate::vectors::encode_group(&passage_vectors),
+            query_vectors
+                .as_ref()
+                .map(|v| crate::vectors::encode_group(v)),
             model,
             passage.key
         ],
@@ -492,10 +507,14 @@ pub fn context_idle(
         let model = anchor_vector.as_ref().map(|(m,_)|m.as_str()).unwrap_or("");
         let mut q=c.prepare("SELECT key,section,node,title,text,hash,position,vector,model FROM memory_passages
             WHERE key<>? AND hash<>? AND ((vector IS NOT NULL AND model=?)
-            OR key IN (SELECT key FROM memory_fts WHERE memory_fts MATCH ?))").app()?;
+            OR key IN (SELECT key FROM memory_fts WHERE memory_fts MATCH ?))",
+            ).app()?;
         let rows = q.query_map(params![anchor.key,anchor.hash,model,lexical_query], |r| {
-            Ok((row_passage(r)?, r.get::<_,Option<String>>(7)?, r.get::<_,Option<String>>(8)?))
-        }).app()?;
+            Ok((row_passage(r)?,
+                        crate::vectors::decode_group(r.get_ref(7)?), r.get::<_,Option<String>>(8)?,
+                    ))
+        },
+            ).app()?;
         let mut best: Option<(Passage, f64)> = None;
         for row in rows {
             if interrupted() {
@@ -512,19 +531,21 @@ pub fn context_idle(
                 .count();
             let lexical = shared as f64 / anchor_terms.len().max(1) as f64;
             let semantic = match (&anchor_vector, raw, model) {
-                (Some((a_model, a)), Some(raw), Some(model)) if a_model == &model => {
-                    serde_json::from_str::<Vec<Vec<f32>>>(&raw)
-                        .ok()
+                (Some((a_model, a)), Some(raw), Some(model)) if a_model == &model => Some(raw)
                         .and_then(|b| {
                             a.iter()
                                 .flat_map(|q| b.iter().map(move |v| crate::inference::cosine(q, v)))
                                 .max_by(f64::total_cmp)
-                        })
-                }
+                        }),
                 _ => None,
             };
             // 300M scores are lower than Gemma 2: exploratory French corpus calibration.
-            let score = if let Some(score) = semantic.filter(|s| *s >= if anchor_vector.as_ref().is_some_and(|(m,_)|m == GEMMA_MODEL) { 0.45 } else { 0.85 }) {
+            let score = if let Some(score) = semantic.filter(|s| {
+                *s >= if anchor_vector.as_ref().is_some_and(|(m,_)|m == GEMMA_MODEL) {
+                    crate::retrieval::ranking::RECALL_THRESHOLD
+                } else { 0.85
+                }
+            }) {
                 score + lexical * 0.05
             } else if shared >= 2 && lexical >= 0.3 {
                 lexical * 0.8
@@ -574,16 +595,19 @@ pub fn passage(root: &Path, section: &str, node: Option<&str>) -> Result<Option<
 }
 pub fn vector(root: &Path, section: &str, node: Option<&str>) -> Result<Option<Vectors>> {
     let c = storage::database(root)?;
-    let row: Option<(Option<String>, Option<String>)> = c
+    c
         .query_row(
             "SELECT model,query_vector FROM memory_passages WHERE section=? AND node IS ? AND model=?",
             params![section, node, GEMMA_MODEL],
-            |r| Ok((r.get(0)?, r.get(1)?)),
+            |r| {
+            Ok(r.get::<_, String>(0)
+                .ok()
+                .zip(crate::vectors::decode_group(r.get_ref(1)?)))
+        },
         )
         .optional()
-        .app()?;
-    row.and_then(|(model, vector)| Some((model?, serde_json::from_str(&vector?).ok()?)))
-        .map_or(Ok(None), |value| Ok(Some(value)))
+        .app()
+    .map(Option::flatten)
 }
 pub fn dismiss(root: &Path, id: &str, hash: &str) -> Result<()> {
     let c = storage::database(root)?;
@@ -712,7 +736,10 @@ pub fn session(root: &Path, value: Option<Value>) -> Result<Value> {
 #[cfg(test)]
 mod tests;
 
-fn parse_mentions(passage: &Passage, output: &Value) -> Result<Vec<(String, String, usize, usize)>> {
+pub(crate) fn parse_mentions(
+    source: &str, output: &Value,
+    policy: &crate::ai_policy::Ner,
+) -> Result<Vec<(String, String, usize, usize)>> {
     let mut mentions = Vec::new();
     for item in output
         .get("entities")
@@ -722,7 +749,10 @@ fn parse_mentions(passage: &Passage, output: &Value) -> Result<Vec<(String, Stri
         if item
             .get("score")
             .and_then(Value::as_f64)
-            .is_none_or(|score| !score.is_finite() || score < 0.8)
+            .is_none_or(|score| {
+                !score.is_finite() || score > 1.
+                    || score < policy.threshold(item["label"].as_str().unwrap_or(""))
+            })
         {
             continue;
         }
@@ -734,7 +764,14 @@ fn parse_mentions(passage: &Passage, output: &Value) -> Result<Vec<(String, Stri
             .get("text")
             .and_then(Value::as_str)
             .ok_or("Texte de mention manquant.")?;
-        if !text.chars().any(char::is_uppercase) {
+        let named = text.chars().any(char::is_uppercase);
+        let confident_person = label == "person"
+            && item.get("score").and_then(Value::as_f64).unwrap_or(0.) >= policy.lowercase_person
+            && !text
+                .split_whitespace()
+                .next()
+                .is_some_and(|w| ["le", "la", "les", "un", "une", "des"].contains(&w));
+        if !(named || confident_person) {
             continue;
         }
         let start = item
@@ -745,8 +782,8 @@ fn parse_mentions(passage: &Passage, output: &Value) -> Result<Vec<(String, Stri
             .get("end")
             .and_then(Value::as_u64)
             .ok_or("Fin de mention manquante.")? as usize;
-        let (a, b) = codepoint_range(&passage.text, start, end)?;
-        if passage.text.get(a..b) != Some(text) {
+        let (a, b) = codepoint_range(source, start, end)?;
+        if source.get(a..b) != Some(text) {
             return Err("Texte de mention non aligné.".into());
         }
         mentions.push((text.to_owned(), label.to_owned(), a, b));

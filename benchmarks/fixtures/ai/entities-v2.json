@@ -1,0 +1,1698 @@
+{
+  "protocol": {
+    "version": 2,
+    "source": "Hand-authored French narrative and adversarial fixtures; no personal manuscripts. Not a population sample.",
+    "partition": "Paired variants and named subjects stay within one split; former 42-case corpus is historical.",
+    "frozenBeforeInference": true,
+    "selection": {
+      "thresholds": [
+        0.65,
+        0.7,
+        0.75,
+        0.8,
+        0.85,
+        0.9,
+        0.95
+      ],
+      "minimumCategorySupport": 6,
+      "minimumPrecision": 0.95,
+      "minimumF1Gain": 0.02,
+      "maxFalsePositiveIncrease": 0,
+      "maxRecallLoss": 0.05
+    },
+    "validation": "One inference pass after policy freeze; failures are reported, never used for retuning.",
+    "metrics": "Exact label + Unicode codepoint start/end; micro and per-category, raw vs model accepted vs all published, negative-case false displays."
+  },
+  "cases": [
+    {
+      "id": "calibration-calibration-person-0-0",
+      "split": "calibration",
+      "group": "calibration-person-0",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit Inès Delcourt, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "Inès Delcourt",
+          "label": "person",
+          "start": 67,
+          "end": 80
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-person-1-0",
+      "split": "calibration",
+      "group": "calibration-person-1",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit Ysandre, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "Ysandre",
+          "label": "person",
+          "start": 67,
+          "end": 74
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-person-2-0",
+      "split": "calibration",
+      "group": "calibration-person-2",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit Émile Zola, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "Émile Zola",
+          "label": "person",
+          "start": 67,
+          "end": 77
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-person-3-0",
+      "split": "calibration",
+      "group": "calibration-person-3",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit Nora, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "Nora",
+          "label": "person",
+          "start": 67,
+          "end": 71
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-person-4-0",
+      "split": "calibration",
+      "group": "calibration-person-4",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit Maël, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "Maël",
+          "label": "person",
+          "start": 67,
+          "end": 71
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-person-5-0",
+      "split": "calibration",
+      "group": "calibration-person-5",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit jeanne, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "jeanne",
+          "label": "person",
+          "start": 67,
+          "end": 73
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-location-0-0",
+      "split": "calibration",
+      "group": "calibration-location-0",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu Lyon à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Lyon",
+          "label": "location",
+          "start": 70,
+          "end": 74
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-location-1-0",
+      "split": "calibration",
+      "group": "calibration-location-1",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu Vienne à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Vienne",
+          "label": "location",
+          "start": 70,
+          "end": 76
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-location-2-0",
+      "split": "calibration",
+      "group": "calibration-location-2",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu la Bretagne à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Bretagne",
+          "label": "location",
+          "start": 73,
+          "end": 81
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-location-3-0",
+      "split": "calibration",
+      "group": "calibration-location-3",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu Valbrume à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Valbrume",
+          "label": "location",
+          "start": 70,
+          "end": 78
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-location-4-0",
+      "split": "calibration",
+      "group": "calibration-location-4",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu le Rhône à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Rhône",
+          "label": "location",
+          "start": 73,
+          "end": 78
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-location-5-0",
+      "split": "calibration",
+      "group": "calibration-location-5",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu Lisbonne à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Lisbonne",
+          "label": "location",
+          "start": 70,
+          "end": 78
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-organization-0-0",
+      "split": "calibration",
+      "group": "calibration-organization-0",
+      "text": "Le dossier portait le nom de CNRS. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "CNRS",
+          "label": "organization",
+          "start": 29,
+          "end": 33
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-organization-1-0",
+      "split": "calibration",
+      "group": "calibration-organization-1",
+      "text": "Le dossier portait le nom de Amnesty International. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "Amnesty International",
+          "label": "organization",
+          "start": 29,
+          "end": 50
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-organization-2-0",
+      "split": "calibration",
+      "group": "calibration-organization-2",
+      "text": "Le dossier portait le nom de Banque de France. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "Banque de France",
+          "label": "organization",
+          "start": 29,
+          "end": 45
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-organization-3-0",
+      "split": "calibration",
+      "group": "calibration-organization-3",
+      "text": "Le dossier portait le nom de Académie des sciences. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "Académie des sciences",
+          "label": "organization",
+          "start": 29,
+          "end": 50
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-organization-4-0",
+      "split": "calibration",
+      "group": "calibration-organization-4",
+      "text": "Le dossier portait le nom de Les Veilleurs. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "Les Veilleurs",
+          "label": "organization",
+          "start": 29,
+          "end": 42
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-organization-5-0",
+      "split": "calibration",
+      "group": "calibration-organization-5",
+      "text": "Le dossier portait le nom de SNCF. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "SNCF",
+          "label": "organization",
+          "start": 29,
+          "end": 33
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-work-0-0",
+      "split": "calibration",
+      "group": "calibration-work-0",
+      "text": "Sur le programme, on avait imprimé « Germinal ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "Germinal",
+          "label": "work",
+          "start": 37,
+          "end": 45
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-work-1-0",
+      "split": "calibration",
+      "group": "calibration-work-1",
+      "text": "Sur le programme, on avait imprimé « La Nuit étoilée ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "La Nuit étoilée",
+          "label": "work",
+          "start": 37,
+          "end": 52
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-work-2-0",
+      "split": "calibration",
+      "group": "calibration-work-2",
+      "text": "Sur le programme, on avait imprimé « Le Petit Prince ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "Le Petit Prince",
+          "label": "work",
+          "start": 37,
+          "end": 52
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-work-3-0",
+      "split": "calibration",
+      "group": "calibration-work-3",
+      "text": "Sur le programme, on avait imprimé « Dune ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "Dune",
+          "label": "work",
+          "start": 37,
+          "end": 41
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-work-4-0",
+      "split": "calibration",
+      "group": "calibration-work-4",
+      "text": "Sur le programme, on avait imprimé « La Traviata ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "La Traviata",
+          "label": "work",
+          "start": 37,
+          "end": 48
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-work-5-0",
+      "split": "calibration",
+      "group": "calibration-work-5",
+      "text": "Sur le programme, on avait imprimé « Les Fleurs du mal ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "Les Fleurs du mal",
+          "label": "work",
+          "start": 37,
+          "end": 54
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-event-0-0",
+      "split": "calibration",
+      "group": "calibration-event-0",
+      "text": "Le chapitre évoquait Révolution française. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "Révolution française",
+          "label": "event",
+          "start": 21,
+          "end": 41
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-event-1-0",
+      "split": "calibration",
+      "group": "calibration-event-1",
+      "text": "Le chapitre évoquait bataille de Waterloo. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "bataille de Waterloo",
+          "label": "event",
+          "start": 21,
+          "end": 41
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-event-2-0",
+      "split": "calibration",
+      "group": "calibration-event-2",
+      "text": "Le chapitre évoquait Festival de Cannes. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "Festival de Cannes",
+          "label": "event",
+          "start": 21,
+          "end": 39
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-event-3-0",
+      "split": "calibration",
+      "group": "calibration-event-3",
+      "text": "Le chapitre évoquait Jeux olympiques. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "Jeux olympiques",
+          "label": "event",
+          "start": 21,
+          "end": 36
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-event-4-0",
+      "split": "calibration",
+      "group": "calibration-event-4",
+      "text": "Le chapitre évoquait Commune de Paris. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "Commune de Paris",
+          "label": "event",
+          "start": 21,
+          "end": 37
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-event-5-0",
+      "split": "calibration",
+      "group": "calibration-event-5",
+      "text": "Le chapitre évoquait fête de la Musique. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "fête de la Musique",
+          "label": "event",
+          "start": 21,
+          "end": 39
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-negative-0-0",
+      "split": "calibration",
+      "group": "calibration-negative-0",
+      "text": "Une rose poussait contre le mur. La pierre gardait la chaleur du jour, tandis que le vent déplaçait la poussière sur la table.",
+      "expected": []
+    },
+    {
+      "id": "calibration-calibration-negative-1-0",
+      "split": "calibration",
+      "group": "calibration-negative-1",
+      "text": "Le roi entra sans parler. Le soldat ôta son manteau et le posa près de la fenêtre. Aucun nom ne fut prononcé.",
+      "expected": []
+    },
+    {
+      "id": "calibration-calibration-negative-2-0",
+      "split": "calibration",
+      "group": "calibration-negative-2",
+      "text": "Orange est ici une couleur, pas le nom d’une ville ou d’une société. Le tissu était bleu avant de pâlir au soleil.",
+      "expected": []
+    },
+    {
+      "id": "calibration-calibration-negative-3-0",
+      "split": "calibration",
+      "group": "calibration-negative-3",
+      "text": "La rencontre aurait lieu demain, mais il ne savait ni où ni avec qui. Le départ restait une simple hypothèse.",
+      "expected": []
+    },
+    {
+      "id": "calibration-calibration-negative-4-0",
+      "split": "calibration",
+      "group": "calibration-negative-4",
+      "text": "Hiver après hiver, les branches ployaient. La source gelait, la route disparaissait et personne ne venait jusqu’à la maison.",
+      "expected": []
+    },
+    {
+      "id": "calibration-calibration-negative-5-0",
+      "split": "calibration",
+      "group": "calibration-negative-5",
+      "text": "😀 Le titre n’a pas été choisi. Le premier chapitre contient une introduction, une question et plusieurs phrases encore inachevées.",
+      "expected": []
+    },
+    {
+      "id": "calibration-calibration-negative-6-0",
+      "split": "calibration",
+      "group": "calibration-negative-6",
+      "text": "Il relut le mot liberté dans son cahier. Le terme ne désignait ni une personne ni le titre d’un livre.",
+      "expected": []
+    },
+    {
+      "id": "calibration-calibration-negative-7-0",
+      "split": "calibration",
+      "group": "calibration-negative-7",
+      "text": "Le ministre et la présidente ont quitté la salle. L’association a remis un rapport, sans signature ni nom sur la couverture.",
+      "expected": []
+    },
+    {
+      "id": "calibration-calibration-homonym-0",
+      "split": "calibration",
+      "group": "calibration-homonym",
+      "text": "Inès Delcourt posa son sac. Plus tard, Inès Delcourt reprit le même chemin sans savoir qu’une autre personne portait exactement ce nom.",
+      "expected": [
+        {
+          "text": "Inès Delcourt",
+          "label": "person",
+          "start": 0,
+          "end": 13
+        },
+        {
+          "text": "Inès Delcourt",
+          "label": "person",
+          "start": 39,
+          "end": 52
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-long-tail-0",
+      "split": "calibration",
+      "group": "calibration-long-tail",
+      "text": "La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. Au bout du chemin, un panneau annonçait Lyon. Rien d’autre ne permettait de savoir où nous étions.",
+      "expected": [
+        {
+          "text": "Lyon",
+          "label": "location",
+          "start": 4170,
+          "end": 4174
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-unicode-0",
+      "split": "calibration",
+      "group": "calibration-unicode",
+      "text": "🌿 Émile Zola nota l’adresse, puis ajouta : « Vienne ». Les accents et l’emoji devaient rester intacts dans la copie.",
+      "expected": [
+        {
+          "text": "Émile Zola",
+          "label": "person",
+          "start": 2,
+          "end": 12
+        },
+        {
+          "text": "Vienne",
+          "label": "location",
+          "start": 45,
+          "end": 51
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-person-0-0",
+      "split": "validation",
+      "group": "validation-person-0",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit Soline Vautrin, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "Soline Vautrin",
+          "label": "person",
+          "start": 67,
+          "end": 81
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-person-1-0",
+      "split": "validation",
+      "group": "validation-person-1",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit Eldric, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "Eldric",
+          "label": "person",
+          "start": 67,
+          "end": 73
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-person-2-0",
+      "split": "validation",
+      "group": "validation-person-2",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit George Sand, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "George Sand",
+          "label": "person",
+          "start": 67,
+          "end": 78
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-person-3-0",
+      "split": "validation",
+      "group": "validation-person-3",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit Héloïse, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "Héloïse",
+          "label": "person",
+          "start": 67,
+          "end": 74
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-person-4-0",
+      "split": "validation",
+      "group": "validation-person-4",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit Noé, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "Noé",
+          "label": "person",
+          "start": 67,
+          "end": 70
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-person-5-0",
+      "split": "validation",
+      "group": "validation-person-5",
+      "text": "Le silence avait envahi la pièce. « Je reviendrai demain », promit margot, en refermant doucement le cahier. Personne ne répondit.",
+      "expected": [
+        {
+          "text": "margot",
+          "label": "person",
+          "start": 67,
+          "end": 73
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-location-0-0",
+      "split": "validation",
+      "group": "validation-location-0",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu Nantes à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Nantes",
+          "label": "location",
+          "start": 70,
+          "end": 76
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-location-1-0",
+      "split": "validation",
+      "group": "validation-location-1",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu Prague à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Prague",
+          "label": "location",
+          "start": 70,
+          "end": 76
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-location-2-0",
+      "split": "validation",
+      "group": "validation-location-2",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu la Normandie à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Normandie",
+          "label": "location",
+          "start": 73,
+          "end": 82
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-location-3-0",
+      "split": "validation",
+      "group": "validation-location-3",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu Clairval à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Clairval",
+          "label": "location",
+          "start": 70,
+          "end": 78
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-location-4-0",
+      "split": "validation",
+      "group": "validation-location-4",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu la Loire à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Loire",
+          "label": "location",
+          "start": 73,
+          "end": 78
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-location-5-0",
+      "split": "validation",
+      "group": "validation-location-5",
+      "text": "Le voyage avait duré toute la nuit. À l’aube, nous avons enfin aperçu Athènes à travers la vitre. Le carnet resta fermé.",
+      "expected": [
+        {
+          "text": "Athènes",
+          "label": "location",
+          "start": 70,
+          "end": 77
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-organization-0-0",
+      "split": "validation",
+      "group": "validation-organization-0",
+      "text": "Le dossier portait le nom de INSERM. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "INSERM",
+          "label": "organization",
+          "start": 29,
+          "end": 35
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-organization-1-0",
+      "split": "validation",
+      "group": "validation-organization-1",
+      "text": "Le dossier portait le nom de Médecins sans frontières. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "Médecins sans frontières",
+          "label": "organization",
+          "start": 29,
+          "end": 53
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-organization-2-0",
+      "split": "validation",
+      "group": "validation-organization-2",
+      "text": "Le dossier portait le nom de Cour des comptes. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "Cour des comptes",
+          "label": "organization",
+          "start": 29,
+          "end": 45
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-organization-3-0",
+      "split": "validation",
+      "group": "validation-organization-3",
+      "text": "Le dossier portait le nom de Royal Society. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "Royal Society",
+          "label": "organization",
+          "start": 29,
+          "end": 42
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-organization-4-0",
+      "split": "validation",
+      "group": "validation-organization-4",
+      "text": "Le dossier portait le nom de La Vigie. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "La Vigie",
+          "label": "organization",
+          "start": 29,
+          "end": 37
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-organization-5-0",
+      "split": "validation",
+      "group": "validation-organization-5",
+      "text": "Le dossier portait le nom de RATP. Cette organisation avait envoyé une réponse officielle, mais la lettre ne disait rien des raisons du retard.",
+      "expected": [
+        {
+          "text": "RATP",
+          "label": "organization",
+          "start": 29,
+          "end": 33
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-work-0-0",
+      "split": "validation",
+      "group": "validation-work-0",
+      "text": "Sur le programme, on avait imprimé « L’Étranger ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "L’Étranger",
+          "label": "work",
+          "start": 37,
+          "end": 47
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-work-1-0",
+      "split": "validation",
+      "group": "validation-work-1",
+      "text": "Sur le programme, on avait imprimé « Guernica ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "Guernica",
+          "label": "work",
+          "start": 37,
+          "end": 45
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-work-2-0",
+      "split": "validation",
+      "group": "validation-work-2",
+      "text": "Sur le programme, on avait imprimé « Le Nom de la rose ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "Le Nom de la rose",
+          "label": "work",
+          "start": 37,
+          "end": 54
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-work-3-0",
+      "split": "validation",
+      "group": "validation-work-3",
+      "text": "Sur le programme, on avait imprimé « Fondation ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "Fondation",
+          "label": "work",
+          "start": 37,
+          "end": 46
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-work-4-0",
+      "split": "validation",
+      "group": "validation-work-4",
+      "text": "Sur le programme, on avait imprimé « Carmen ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "Carmen",
+          "label": "work",
+          "start": 37,
+          "end": 43
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-work-5-0",
+      "split": "validation",
+      "group": "validation-work-5",
+      "text": "Sur le programme, on avait imprimé « À la recherche du temps perdu ». Cette œuvre occupa toute notre conversation ; à minuit, nous en parlions encore.",
+      "expected": [
+        {
+          "text": "À la recherche du temps perdu",
+          "label": "work",
+          "start": 37,
+          "end": 66
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-event-0-0",
+      "split": "validation",
+      "group": "validation-event-0",
+      "text": "Le chapitre évoquait Renaissance. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "Renaissance",
+          "label": "event",
+          "start": 21,
+          "end": 32
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-event-1-0",
+      "split": "validation",
+      "group": "validation-event-1",
+      "text": "Le chapitre évoquait bataille de Verdun. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "bataille de Verdun",
+          "label": "event",
+          "start": 21,
+          "end": 39
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-event-2-0",
+      "split": "validation",
+      "group": "validation-event-2",
+      "text": "Le chapitre évoquait Festival d’Avignon. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "Festival d’Avignon",
+          "label": "event",
+          "start": 21,
+          "end": 39
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-event-3-0",
+      "split": "validation",
+      "group": "validation-event-3",
+      "text": "Le chapitre évoquait Exposition universelle. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "Exposition universelle",
+          "label": "event",
+          "start": 21,
+          "end": 43
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-event-4-0",
+      "split": "validation",
+      "group": "validation-event-4",
+      "text": "Le chapitre évoquait chute du mur de Berlin. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "chute du mur de Berlin",
+          "label": "event",
+          "start": 21,
+          "end": 43
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-event-5-0",
+      "split": "validation",
+      "group": "validation-event-5",
+      "text": "Le chapitre évoquait Révolution industrielle. Cet événement avait bouleversé des familles entières ; les lettres conservées dans le grenier en portaient encore la trace.",
+      "expected": [
+        {
+          "text": "Révolution industrielle",
+          "label": "event",
+          "start": 21,
+          "end": 44
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-negative-0-0",
+      "split": "validation",
+      "group": "validation-negative-0",
+      "text": "Une fleur rouge poussait dans le gravier. Une pierre ronde lui servait d’appui. Le jardin était vide depuis le matin.",
+      "expected": []
+    },
+    {
+      "id": "validation-validation-negative-1-0",
+      "split": "validation",
+      "group": "validation-negative-1",
+      "text": "Le professeur attendait une élève devant la porte. La bibliothèque allait fermer ; aucune des deux personnes n’avait donné son nom.",
+      "expected": []
+    },
+    {
+      "id": "validation-validation-negative-2-0",
+      "split": "validation",
+      "group": "validation-negative-2",
+      "text": "Les mots printemps et automne désignaient simplement les saisons. La journée était douce, le ciel entièrement blanc.",
+      "expected": []
+    },
+    {
+      "id": "validation-validation-negative-3-0",
+      "split": "validation",
+      "group": "validation-negative-3",
+      "text": "Nous n’irons pas à la cérémonie. Elle n’a pas de nom, ne célèbre rien de précis et n’apparaît sur aucun calendrier.",
+      "expected": []
+    },
+    {
+      "id": "validation-validation-negative-4-0",
+      "split": "validation",
+      "group": "validation-negative-4",
+      "text": "Le village possédait une école et un hôpital. Le bâtiment municipal ne portait aucune enseigne ni plaque commémorative.",
+      "expected": []
+    },
+    {
+      "id": "validation-validation-negative-5-0",
+      "split": "validation",
+      "group": "validation-negative-5",
+      "text": "🙂 Après une longue attente, elle écrivit : « merci ». Puis elle laissa le carnet ouvert sur la table sans y ajouter de signature.",
+      "expected": []
+    },
+    {
+      "id": "validation-validation-negative-6-0",
+      "split": "validation",
+      "group": "validation-negative-6",
+      "text": "Une idée de justice le préoccupait. Il ne pensait ni à un ouvrage ni à une personne, seulement à ce mot et à son sens.",
+      "expected": []
+    },
+    {
+      "id": "validation-validation-negative-7-0",
+      "split": "validation",
+      "group": "validation-negative-7",
+      "text": "La société avait changé d’adresse. On ignorait son nom, celui de son directeur et même la ville où elle travaillait.",
+      "expected": []
+    },
+    {
+      "id": "validation-validation-homonym-0",
+      "split": "validation",
+      "group": "validation-homonym",
+      "text": "Soline Vautrin posa son sac. Plus tard, Soline Vautrin reprit le même chemin sans savoir qu’une autre personne portait exactement ce nom.",
+      "expected": [
+        {
+          "text": "Soline Vautrin",
+          "label": "person",
+          "start": 0,
+          "end": 14
+        },
+        {
+          "text": "Soline Vautrin",
+          "label": "person",
+          "start": 40,
+          "end": 54
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-long-tail-0",
+      "split": "validation",
+      "group": "validation-long-tail",
+      "text": "La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. La pluie effaçait les traces sur le chemin. Nous avancions lentement sans parler, en comptant les fenêtres éclairées. Au bout du chemin, un panneau annonçait Nantes. Rien d’autre ne permettait de savoir où nous étions.",
+      "expected": [
+        {
+          "text": "Nantes",
+          "label": "location",
+          "start": 4170,
+          "end": 4176
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-unicode-0",
+      "split": "validation",
+      "group": "validation-unicode",
+      "text": "🌿 George Sand nota l’adresse, puis ajouta : « Prague ». Les accents et l’emoji devaient rester intacts dans la copie.",
+      "expected": [
+        {
+          "text": "George Sand",
+          "label": "person",
+          "start": 2,
+          "end": 13
+        },
+        {
+          "text": "Prague",
+          "label": "location",
+          "start": 46,
+          "end": 52
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-custom-0-0",
+      "split": "calibration",
+      "group": "calibration-custom-0",
+      "text": "L’UNESCO coordonne ce programme international.",
+      "expected": [
+        {
+          "text": "UNESCO",
+          "label": "custom:Institution",
+          "start": 2,
+          "end": 8
+        }
+      ],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-custom-1-0",
+      "split": "calibration",
+      "group": "calibration-custom-1",
+      "text": "Les Capétiens forment une dynastie de rois.",
+      "expected": [
+        {
+          "text": "Capétiens",
+          "label": "custom:Dynastie",
+          "start": 4,
+          "end": 13
+        }
+      ],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-custom-2-0",
+      "split": "calibration",
+      "group": "calibration-custom-2",
+      "text": "Le vaisseau spatial Enterprise quitte son orbite.",
+      "expected": [
+        {
+          "text": "Enterprise",
+          "label": "custom:Vaisseau",
+          "start": 20,
+          "end": 30
+        }
+      ],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-custom-3-0",
+      "split": "calibration",
+      "group": "calibration-custom-3",
+      "text": "Nora a signé la lettre.",
+      "expected": [
+        {
+          "text": "Nora",
+          "label": "person",
+          "start": 0,
+          "end": 4
+        }
+      ],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-custom-4-0",
+      "split": "calibration",
+      "group": "calibration-custom-4",
+      "text": "Lyon est une ville traversée par deux cours d’eau.",
+      "expected": [
+        {
+          "text": "Lyon",
+          "label": "location",
+          "start": 0,
+          "end": 4
+        }
+      ],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "calibration-calibration-custom-5-0",
+      "split": "calibration",
+      "group": "calibration-custom-5",
+      "text": "Une organisation inconnue reste anonyme dans ce passage.",
+      "expected": [],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-custom-0-0",
+      "split": "validation",
+      "group": "validation-custom-0",
+      "text": "L’ONU est une organisation internationale.",
+      "expected": [
+        {
+          "text": "ONU",
+          "label": "custom:Institution",
+          "start": 2,
+          "end": 5
+        }
+      ],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-custom-1-0",
+      "split": "validation",
+      "group": "validation-custom-1",
+      "text": "Les Valois sont une famille royale.",
+      "expected": [
+        {
+          "text": "Valois",
+          "label": "custom:Dynastie",
+          "start": 4,
+          "end": 10
+        }
+      ],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-custom-2-0",
+      "split": "validation",
+      "group": "validation-custom-2",
+      "text": "Le vaisseau spatial Voyager traverse la nébuleuse.",
+      "expected": [
+        {
+          "text": "Voyager",
+          "label": "custom:Vaisseau",
+          "start": 20,
+          "end": 27
+        }
+      ],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-custom-3-0",
+      "split": "validation",
+      "group": "validation-custom-3",
+      "text": "Héloïse apporte le manuscrit.",
+      "expected": [
+        {
+          "text": "Héloïse",
+          "label": "person",
+          "start": 0,
+          "end": 7
+        }
+      ],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-custom-4-0",
+      "split": "validation",
+      "group": "validation-custom-4",
+      "text": "Nantes est une ville proche de l’estuaire.",
+      "expected": [
+        {
+          "text": "Nantes",
+          "label": "location",
+          "start": 0,
+          "end": 6
+        }
+      ],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "validation-validation-custom-5-0",
+      "split": "validation",
+      "group": "validation-custom-5",
+      "text": "Le vent soulève la poussière. Aucun nom n’est donné.",
+      "expected": [],
+      "types": [
+        {
+          "name": "Institution",
+          "description": "Un organisme public ou international chargé de missions officielles.",
+          "examples": [
+            "Cour internationale de justice"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Dynastie",
+          "description": "Une famille souveraine qui règne sur plusieurs générations.",
+          "examples": [
+            "Habsbourg"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Vaisseau",
+          "description": "Un navire ou un engin spatial nommé, et non son équipage.",
+          "examples": [
+            "Nautilus"
+          ],
+          "enabled": true
+        },
+        {
+          "name": "Personne",
+          "description": "Une personne réelle ou fictive.",
+          "examples": [],
+          "enabled": true
+        },
+        {
+          "name": "Lieu",
+          "description": "Un lieu géographique nommé.",
+          "examples": [],
+          "enabled": true
+        }
+      ]
+    }
+  ]
+}

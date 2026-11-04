@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Paired local quality evaluation with frozen judgments; no application changes.
+"""HISTORICAL Gemma comparison (2026-10-30), not a production-path benchmark.
+Use scripts/benchmark-ai.py for the current application.
+
+Paired local quality evaluation with frozen judgments; no application changes.
 
 Replays the current text encoding and ranking rules. Source candidates have no
 aliases or graph edges, so those deterministic layers cannot mask encoder quality.
@@ -199,7 +202,7 @@ def main():
     assert len({q['id'] for q in corpus['queries']})==len(corpus['queries'])
     manifest={'corpusSha256':digest,'scriptSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),'startedUtc':time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),
       'hardware':subprocess.check_output(['sysctl','-n','machdep.cpu.brand_string'],text=True).strip(),'models':MODELS,
-      'protocol':'Same Q8 native engine / Metal / 768 dimensions / prefixes / UTF-8 chunks / pooling. Ranking before thresholds, then deterministic source/recall replay with identical production thresholds for both models. No aliases or graph edges. Labels frozen before inference. No production model/config changes.'}
+      'historicalSimulation':True,'protocol':'Historical 2026-10-30 rules; not current production. Same Q8 native engine / Metal / 768 dimensions / prefixes / UTF-8 chunks / pooling. Ranking before thresholds, then deterministic source/recall replay with identical production thresholds for both models. No aliases or graph edges. Labels frozen before inference. No production model/config changes.'}
     (args.output/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2))
     reports=[run_model(resources,m,corpus,args.output) for m in MODELS]
     (args.output/'comparison.json').write_text(json.dumps(compare(reports),ensure_ascii=False,indent=2))

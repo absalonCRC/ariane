@@ -128,6 +128,36 @@ describe('voice gestures and live transcription', () => {
     return request.mock.calls.filter(([type]) => type === 'voiceTranscribe');
   }
 
+  it('does not open the microphone when native authorization is refused', async () => {
+    request.mockImplementation(async (type: string) => {
+      if (type === 'voiceStatus') return { available: true };
+      if (type === 'voicePermission') throw new Error('Accès au microphone refusé.');
+      return {};
+    });
+    await act(async () => pointer('pointerdown'));
+    expect(getUserMedia).not.toHaveBeenCalled();
+    expect(panel.textContent).toContain('Accès au microphone refusé.');
+    expect(transcriptions()).toHaveLength(0);
+  });
+  it('does not capture after cancellation while native authorization is pending', async () => {
+    let authorize!: () => void;
+    request.mockImplementation((type: string) => {
+      if (type === 'voiceStatus') return Promise.resolve({ available: true });
+      if (type === 'voicePermission')
+        return new Promise<void>((resolve) => {
+          authorize = resolve;
+        });
+      return Promise.resolve(true);
+    });
+    await act(async () => pointer('pointerdown'));
+    await act(async () =>
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })),
+    );
+    await act(async () => authorize());
+    expect(getUserMedia).not.toHaveBeenCalled();
+    expect(transcriptions()).toHaveLength(0);
+  });
+
   it('starts capture on pointer down, keeps it after a short release, and stops on the next press', async () => {
     await act(async () => pointer('pointerdown'));
     expect(getUserMedia).toHaveBeenCalledOnce();
@@ -221,6 +251,7 @@ describe('voice gestures and live transcription', () => {
     let call = 0;
     request.mockImplementation((type: string) => {
       if (type === 'voiceStatus') return Promise.resolve({ available: true });
+      if (type !== 'voiceTranscribe') return Promise.resolve(true);
       call++;
       return call === 1
         ? new Promise((resolve) => {
@@ -287,6 +318,7 @@ describe('voice gestures and live transcription', () => {
     let call = 0;
     request.mockImplementation(async (type: string) => {
       if (type === 'voiceStatus') return { available: true };
+      if (type !== 'voiceTranscribe') return true;
       call++;
       if (call === 2) throw new Error('Transcription interrompue');
       return { text: 'Récupéré', raw: 'Récupéré', cleaned: true };
@@ -367,9 +399,11 @@ describe('voice gestures and live transcription', () => {
     request.mockImplementation((type) =>
       type === 'voiceStatus'
         ? Promise.resolve({ available: true })
-        : new Promise((resolve) => {
-            done = resolve;
-          }),
+        : type !== 'voiceTranscribe'
+          ? Promise.resolve(true)
+          : new Promise((resolve) => {
+              done = resolve;
+            }),
     );
     await act(async () => {
       pointer('pointerdown');

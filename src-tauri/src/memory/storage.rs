@@ -13,9 +13,12 @@ pub(super) fn database(root: &Path) -> Result<Connection> {
     let c = project::database(root)?;
     // Read paths must not acquire a write lock just to reopen an initialized
     // schema. GLiNER and Gemma publish independently under WAL.
-    let schema: Option<String> = c.query_row("SELECT value FROM meta WHERE key='memory_schema_version'", [], |r|r.get(0)).optional().app()?;
-    if schema.as_deref() == Some("2") { return Ok(c); }
-    c.execute_batch("CREATE TABLE IF NOT EXISTS memory_passages(
+    let schema: Option<String> = c.query_row("SELECT value FROM meta WHERE key='memory_schema_version'", [], |r|r.get(0),
+        ).optional().app()?;
+    if schema.as_deref() == Some("3") { return Ok(c); }
+    c.execute_batch("CREATE TABLE IF NOT EXISTS memory_encoding_cache(key TEXT PRIMARY KEY,vector BLOB NOT NULL,used INTEGER NOT NULL);
+        CREATE TABLE IF NOT EXISTS memory_classification_queue(source TEXT PRIMARY KEY,fingerprint TEXT NOT NULL,context TEXT NOT NULL,registry TEXT NOT NULL,attempts INTEGER NOT NULL DEFAULT 0,retry INTEGER NOT NULL DEFAULT 0);
+        CREATE TABLE IF NOT EXISTS memory_passages(
         key TEXT PRIMARY KEY, section TEXT NOT NULL, node TEXT, title TEXT NOT NULL,
         text TEXT NOT NULL, hash TEXT NOT NULL, position INTEGER NOT NULL,
         revision INTEGER NOT NULL, analyzed INTEGER NOT NULL DEFAULT 0,
@@ -43,7 +46,7 @@ pub(super) fn database(root: &Path) -> Result<Connection> {
     if !has_query {
         c.execute_batch("ALTER TABLE memory_passages ADD COLUMN query_vector TEXT; UPDATE memory_passages SET analyzed=0;").app()?;
     }
-    c.execute("INSERT INTO meta(key,value) VALUES('memory_schema_version','2') ON CONFLICT(key) DO UPDATE SET value=excluded.value", []).app()?;
+    c.execute("INSERT INTO meta(key,value) VALUES('memory_schema_version','3') ON CONFLICT(key) DO UPDATE SET value=excluded.value", []).app()?;
     Ok(c)
 }
 

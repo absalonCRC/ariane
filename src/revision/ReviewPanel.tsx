@@ -65,12 +65,34 @@ export function ReviewPanel({
     setBusy(true);
     setMessage('');
     try {
-      const result = await request<Result>('revisionCheck', { text: selected.text, language });
+      let result = await request<Result>('revisionCheck', {
+        text: selected.text,
+        language,
+        stage: 'language',
+        before: selected.before ?? '',
+        after: selected.after ?? '',
+      });
       if (id !== sequence.current) return;
       if (!selected.isCurrent()) {
         setMessage(t('Le texte a changé ; relance la révision.'));
         return;
       }
+      setItems(reviewSuggestions(selected.text, result.issues, null, selected.protected));
+      const grammatical = result;
+      const model = await request<Result>('revisionCheck', {
+        text: selected.text,
+        language,
+        stage: 'model',
+        before: selected.before ?? '',
+        after: selected.after ?? '',
+      });
+      if (id !== sequence.current) return;
+      if (!selected.isCurrent()) {
+        setItems([]);
+        setMessage(t('Le texte a changé ; relance la révision.'));
+        return;
+      }
+      result = { ...model, issues: grammatical.issues, languageError: grammatical.languageError };
       const suggestions = reviewSuggestions(
         selected.text,
         result.issues,
@@ -95,6 +117,8 @@ export function ReviewPanel({
     }
   }
   function apply(item: ReviewSuggestion) {
+    sequence.current++;
+    setBusy(false);
     const applied = target.current?.apply(item);
     target.current = null;
     setItems([]);

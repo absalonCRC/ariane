@@ -1,9 +1,11 @@
+import { diffWordsWithSpace } from 'diff';
 import { t } from '../i18n';
 export interface LanguageIssue {
   offset: number;
   length: number;
   message: string;
   replacements: string[];
+  spelling?: boolean;
 }
 export interface ReviewSuggestion {
   from: number;
@@ -51,6 +53,23 @@ function distance(a: string, b: string) {
   }
   return previous[second.length];
 }
+// Shared by grammatical and model suggestions in the supported writing languages.
+const negativeWord =
+  /^(?:ne|n|pas|jamais|plus|sans|ni|aucun|aucune|non|rien|personne|no|not|never|neither|nor|without|nobody|nothing|none|nunca|jamás|nadie|nada|ninguno|ninguna|ningunos|ningunas|sin|kein|keine|keinen|keinem|keiner|keines|nicht|nie|niemals|niemand|nichts|ohne|weder|mai|nessuno|nessuna|nessun|né|senza|niente|nulla)$/iu;
+function negatives(text: string) {
+  return (text.toLocaleLowerCase().match(/[\p{L}\p{M}]+(?:['’][\p{L}\p{M}]+)?/gu) ?? []).filter(
+    (word) => negativeWord.test(word) || /n['’]t$/iu.test(word) || /^n['’]/iu.test(word),
+  );
+}
+function preservesLiterals(original: string, replacement: string) {
+  const numbers = (text: string) => text.match(/\p{N}+(?:[.,]\p{N}+)*/gu) ?? [];
+  const plural = /^(les|des|ces|mes|tes|ses|nos|vos|leurs|plusieurs)\b/iu.exec(original)?.[1];
+  return (
+    JSON.stringify(numbers(original)) === JSON.stringify(numbers(replacement)) &&
+    JSON.stringify(negatives(original)) === JSON.stringify(negatives(replacement)) &&
+    (!plural || replacement.toLocaleLowerCase().startsWith(`${plural.toLocaleLowerCase()} `))
+  );
+}
 export function reviewSuggestions(
   text: string,
   issues: LanguageIssue[],
@@ -72,8 +91,10 @@ export function reviewSuggestions(
     )
       continue;
     const original = text.slice(from, to);
+    if (issue.spelling && /\p{Lu}/u.test(original)) continue;
     for (const replacement of issue.replacements.slice(0, 3)) {
       if (!replacement || replacement === original || /[\n\r`*_[\]<>]/u.test(replacement)) continue;
+      if (!preservesLiterals(original, replacement)) continue;
       suggestions.push({
         from,
         to,
@@ -84,35 +105,46 @@ export function reviewSuggestions(
       });
     }
   }
-  if (output && output !== text) {
-    const tokens = (value: string) => [...value.matchAll(/[\p{L}\p{M}]+/gu)];
-    const before = tokens(text);
-    const after = tokens(output);
-    const skeleton = (value: string) => value.replace(/[\p{L}\p{M}]+/gu, '\u0000');
-    // Reject all AI output when token count, punctuation, whitespace, markup, or digits differ.
-    if (before.length === after.length && skeleton(text) === skeleton(output)) {
-      const unsafe = before.some((match, i) => {
-        const replacement = after[i][0];
-        if (match[0] === replacement) return false;
-        const from = match.index!,
-          to = from + match[0].length;
+  if (output && output !== text && output.length < text.length * 2 + 200) {
+    const changes = diffWordsWithSpace(text, output);
+    let offset = 0;
+    for (let i = 0; i < changes.length; i++) {
+      const part = changes[i];
+      if (part.added) continue;
+      if (!part.removed) {
+        offset += part.value.length;
+        continue;
+      }
+      const from = offset;
+      offset += part.value.length;
+      const next = changes[i + 1];
+      if (!next?.added) continue;
+      const before = [...part.value.matchAll(/[\p{L}\p{M}]+/gu)];
+      const after = [...next.value.matchAll(/[\p{L}\p{M}]+/gu)];
+      // Deletions, insertions and restructuring need a different kind of review.
+      if (!before.length || before.length !== after.length) continue;
+      if (!preservesLiterals(part.value, next.value)) continue;
+      const safe = before.every((word, j) => {
+        const replacement = after[j][0];
+        if (word[0] === replacement) return true;
+        const start = from + word.index!;
         return (
-          overlaps(from, to, ranges) ||
-          /^\p{Lu}/u.test(match[0]) ||
-          distance(match[0], replacement) > 2
+          !overlaps(start, start + word[0].length, ranges) &&
+          !/^\p{Lu}/u.test(word[0]) &&
+          !negativeWord.test(word[0]) &&
+          !negativeWord.test(replacement) &&
+          distance(word[0], replacement) <= 2
         );
       });
-      if (unsafe) return suggestions;
-      for (let i = 0; i < before.length; i++) {
-        const old = before[i][0],
-          replacement = after[i][0],
-          from = before[i].index!,
-          to = from + old.length;
-        if (old === replacement) continue;
+      if (!safe) continue;
+      for (let j = 0; j < before.length; j++) {
+        const word = before[j],
+          replacement = after[j][0];
+        if (word[0] === replacement) continue;
         suggestions.push({
-          from,
-          to,
-          original: old,
+          from: from + word.index!,
+          to: from + word.index! + word[0].length,
+          original: word[0],
           replacement,
           message: t('Suggestion locale'),
           source: 'model',
@@ -120,10 +152,11 @@ export function reviewSuggestions(
       }
     }
   }
-  return suggestions.filter(
-    (item, i, all) =>
-      all.findIndex(
-        (x) => x.from === item.from && x.to === item.to && x.replacement === item.replacement,
-      ) === i,
-  );
+  const effects = new Set<string>();
+  return suggestions.filter((item) => {
+    const effect = text.slice(0, item.from) + item.replacement + text.slice(item.to);
+    if (effects.has(effect)) return false;
+    effects.add(effect);
+    return true;
+  });
 }

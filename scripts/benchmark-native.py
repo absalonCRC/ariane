@@ -2,7 +2,7 @@
 """Launch the opt-in Tauri/WKWebView harness in fresh, isolated data.
 No personal session is opened. Leaves its window available for UI verification.
 """
-import argparse, json, subprocess, time
+import argparse, json, shutil, subprocess, time
 from pathlib import Path
 
 def processes():
@@ -24,6 +24,8 @@ parser.add_argument('--idle-seconds',type=int,default=0)
 parser.add_argument('--memory',action='store_true')
 parser.add_argument('--large',action='store_true')
 parser.add_argument('--entities',action='store_true')
+parser.add_argument('--speech-audio',type=Path,help='Synthetic WAV input through the real WebAudio capture and editor pipeline')
+parser.add_argument('--microphone-probe',action='store_true',help='One second of system microphone capture; retain level counters only, no audio')
 parser.add_argument('--observe-only',action='store_true',help='Prepare and sample; launch the bundle separately through the app UI')
 args=parser.parse_args()
 app=args.app.resolve(); directory=args.directory.resolve()
@@ -35,6 +37,12 @@ if args.large: (directory/'.large-manuscript').touch()
 if args.entities:
     installed=Path.home()/'Library/Application Support/fr.ariane.writer/memory'
     (directory/'memory').symlink_to(installed, target_is_directory=True)
+if args.speech_audio:
+    shutil.copyfile(args.speech_audio,directory/'speech-input.wav')
+    (directory/'voice').symlink_to(Path.home()/'Library/Application Support/fr.ariane.writer/voice',target_is_directory=True)
+if args.microphone_probe:
+    if not args.speech_audio: parser.error('--microphone-probe requires --speech-audio')
+    (directory/'.microphone-probe').touch()
 initial=processes(); initial_web={pid for pid,p in initial.items() if 'WebKit.WebContent' in p['command']}
 if not args.observe_only:
     subprocess.run(['/usr/bin/open','-n',str(app),'--env',f'ARIANE_PERF_DIR={directory}'],check=True)
