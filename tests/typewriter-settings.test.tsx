@@ -4,9 +4,10 @@ import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { Preferences } from '../src/app/Preferences';
 import { Settings } from '../src/app/Settings';
-import { defaultSettings, type Project } from '../src/app/types';
+import { defaultSettings } from '../src/contracts/settings';
+import { type Project } from '../src/contracts/project';
 import { useProject } from '../src/project/useProject';
-import { request } from '../src/app/client';
+import { request } from '../src/platform/client';
 
 vi.mock('@tauri-apps/api/core', () => ({ isTauri: () => false, invoke: vi.fn() }));
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
@@ -19,7 +20,7 @@ HTMLDialogElement.prototype.close = function () {
 
 it('allows the typewriter sound to be switched in writing settings and remembers it with the project', async () => {
   localStorage.clear();
-  const project = await request<Project>('create', { path: 'sound-project', name: 'Test' });
+  const project = await request('create', { path: 'sound-project', name: 'Test' });
   let workspace: ReturnType<typeof useProject>;
   const host = document.createElement('div');
   document.body.append(host);
@@ -73,19 +74,19 @@ it('allows the typewriter sound to be switched in writing settings and remembers
     expect(toggles().every((input) => input.checked)).toBe(true);
     await act(async () => mode('Classique').click());
     expect(toggles()).toHaveLength(0);
-    expect((await request<Project>('open', { path: project.path })).settings).toMatchObject({
+    expect((await request('open', { path: project.path })).settings).toMatchObject({
       typewriter: false,
       typewriterSound: true,
     });
     await act(async () => mode('Machine à écrire').click());
     expect(toggles().every((input) => input.checked)).toBe(true);
-    const reopened = await request<Project>('open', { path: project.path });
+    const reopened = await request('open', { path: project.path });
     expect(reopened.settings).toMatchObject({ typewriterSound: true });
     await act(async () => workspace.activate(reopened));
     expect(toggles().every((input) => input.checked)).toBe(true);
     await act(async () => toggles()[1].click());
     expect(toggles().every((input) => !input.checked)).toBe(true);
-    expect((await request<Project>('open', { path: project.path })).settings).toMatchObject({
+    expect((await request('open', { path: project.path })).settings).toMatchObject({
       typewriterSound: false,
     });
     expect(defaultSettings.typewriterSound).toBe(false);
@@ -98,7 +99,7 @@ it('allows the typewriter sound to be switched in writing settings and remembers
 
 it('keeps a project using the former second font on the new sans serif option', async () => {
   localStorage.clear();
-  const project = await request<Project>('create', { path: 'font-project', name: 'Test' });
+  const project = await request('create', { path: 'font-project', name: 'Test' });
   project.settings.font = 'book' as Project['settings']['font'];
   let workspace: ReturnType<typeof useProject>;
   const host = document.createElement('div');
@@ -112,7 +113,7 @@ it('keeps a project using the former second font on the new sans serif option', 
     await act(async () => workspace.activate(project));
     expect(host.textContent).toBe('sans');
     await act(async () => workspace.configure({ fontSize: 24 }));
-    expect((await request<Project>('open', { path: project.path })).settings.font).toBe('sans');
+    expect((await request('open', { path: project.path })).settings.font).toBe('sans');
   } finally {
     await act(async () => root.unmount());
     localStorage.clear();

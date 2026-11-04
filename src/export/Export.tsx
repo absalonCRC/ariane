@@ -1,6 +1,6 @@
 import { localizeMessage, t, useLocale } from '../i18n';
 import { Dialog } from '../components/Dialog';
-import type { Project } from '../app/types';
+import type { Project } from '../contracts/project';
 import type { ExportJob } from './useExport';
 export function Export({
   project,

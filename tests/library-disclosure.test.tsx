@@ -4,9 +4,9 @@ import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { Binder } from '../src/project/Binder';
 import { ContextMenuProvider } from '../src/components/ContextMenu';
-import type { Project, Section } from '../src/app/types';
+import type { Project, Section } from '../src/contracts/project';
 const { request } = vi.hoisted(() => ({ request: vi.fn() }));
-vi.mock('../src/app/client', () => ({ request }));
+vi.mock('../src/platform/client', () => ({ request }));
 const section = (
   id: string,
   kind: Section['kind'],

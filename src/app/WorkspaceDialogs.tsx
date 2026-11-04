@@ -5,13 +5,16 @@ import { Presence } from '../components/Presence';
 import { lazy, Suspense, useState, useCallback } from 'react';
 import type { Workspace } from './useWorkspace';
 import { choosePath } from './choosePath';
-import { native } from './client';
+import { native } from '../platform/client';
 import { ProjectCatalog } from '../project/ProjectCatalog';
-const Library = lazy(() => import('../sources/Library').then((m) => ({ default: m.Library })));
 import { Preparation } from '../project/Preparation';
-const Export = lazy(() => import('../export/Export').then((m) => ({ default: m.Export })));
 import { Preferences } from './Preferences';
 import { Dialog } from '../components/Dialog';
+const Library = lazy(() => import('../sources/Library').then((m) => ({ default: m.Library })));
+
+const Export = lazy(() => import('../export/Export').then((m) => ({ default: m.Export })));
+
+
 export function WorkspaceDialogs({
   workspace,
   onMemory,

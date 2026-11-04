@@ -15,7 +15,7 @@ import { editorContext } from '../src/editor/contextMenu';
 import { outlineEditor } from '../src/editor/outline/state';
 import { compose, sectionMapping } from '../src/editor/composite';
 import { Binder } from '../src/project/Binder';
-import type { Section } from '../src/app/types';
+import type { Section } from '../src/contracts/project';
 
 const section = (id: string, text = 'Alpha\nBeta\nGamma'): Section => ({
   id,
@@ -30,13 +30,11 @@ const section = (id: string, text = 'Alpha\nBeta\nGamma'): Section => ({
   goal: 0,
   outline: {
     version: 1,
-    nodes: text
-      .split('\n')
-      .map((_, i, lines) => ({
-        id: `${id}-${i}`,
-        parent: null,
-        start: lines.slice(0, i).reduce((n, line) => n + line.length + 1, 0),
-      })),
+    nodes: text.split('\n').map((_, i, lines) => ({
+      id: `${id}-${i}`,
+      parent: null,
+      start: lines.slice(0, i).reduce((n, line) => n + line.length + 1, 0),
+    })),
   },
 });
 let host: HTMLDivElement;
@@ -272,11 +270,18 @@ describe('comportement du menu', () => {
 describe('menus de source', () => {
   it('offers citation only for a supplied passage and reads the clicked source', async () => {
     const { sourceContext } = await import('../src/sources/contextMenu');
-    const source = { title: 'Carnet', kind: 'Document', text: '# Carnet\n\nLe passage.' } as import('../src/app/types').Source;
-    const read = vi.fn(), cite = vi.fn();
+    const source = {
+      title: 'Carnet',
+      kind: 'Document',
+      text: '# Carnet\n\nLe passage.',
+    } as import('../src/contracts/sources').Source;
+    const read = vi.fn(),
+      cite = vi.fn();
     const content = sourceContext(source, { onRead: read, onCite: cite });
-    action(content, 'Ouvrir la note').run(); expect(read).toHaveBeenCalledOnce();
-    action(content, 'Citer l’extrait').run(); expect(cite).toHaveBeenCalledWith('Le passage.');
+    action(content, 'Ouvrir la note').run();
+    expect(read).toHaveBeenCalledOnce();
+    action(content, 'Citer l’extrait').run();
+    expect(cite).toHaveBeenCalledWith('Le passage.');
     const reader = sourceContext(source, { quote: '' });
     expect(labels(reader)).toEqual(['Copier le titre']);
   });
@@ -285,17 +290,37 @@ describe('menus de source', () => {
 describe('barre de sélection', () => {
   it('appears only for a selection, keeps focus on pointer down, and yields to the context menu', async () => {
     const { SelectionToolbar } = await import('../src/components/SelectionToolbar');
-    const format = vi.fn(), run = vi.fn();
-    await act(async () => root.render(<ContextMenuProvider><Harness run={run} /><SelectionToolbar anchor={null} onFormat={format} /></ContextMenuProvider>));
+    const format = vi.fn(),
+      run = vi.fn();
+    await act(async () =>
+      root.render(
+        <ContextMenuProvider>
+          <Harness run={run} />
+          <SelectionToolbar anchor={null} onFormat={format} />
+        </ContextMenuProvider>,
+      ),
+    );
     expect(document.querySelector('[role="toolbar"]')).toBeNull();
-    await act(async () => root.render(<ContextMenuProvider><Harness run={run} /><SelectionToolbar anchor={{ left: 400, top: 300, bottom: 330 }} onFormat={format} /></ContextMenuProvider>));
+    await act(async () =>
+      root.render(
+        <ContextMenuProvider>
+          <Harness run={run} />
+          <SelectionToolbar anchor={{ left: 400, top: 300, bottom: 330 }} onFormat={format} />
+        </ContextMenuProvider>,
+      ),
+    );
     const toolbar = document.querySelector('[role="toolbar"]')!;
     const bold = toolbar.querySelector<HTMLButtonElement>('[aria-label="Gras"]')!;
     const down = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
     await act(async () => bold.dispatchEvent(down));
     expect(down.defaultPrevented).toBe(true);
-    await act(async () => bold.click()); expect(format).toHaveBeenCalledWith('bold');
-    await act(async () => host.querySelector('button')!.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })));
+    await act(async () => bold.click());
+    expect(format).toHaveBeenCalledWith('bold');
+    await act(async () =>
+      host
+        .querySelector('button')!
+        .dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })),
+    );
     expect(document.querySelector('[role="toolbar"]')).toBeNull();
     expect(document.querySelector('[role="menu"]')).not.toBeNull();
   });

@@ -3,7 +3,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { FloatingVaultResults } from '../src/sources/FloatingVaultResults';
-import type { Source } from '../src/app/types';
+import type { Source } from '../src/contracts/sources';
 it('shows two compact cards and pins only after an explicit action', async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   const host = document.createElement('div'),

@@ -5,8 +5,8 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Plus, RefreshCw, FolderOpen, Pause, X } from 'lucide-react';
 import { choosePath } from '../app/choosePath';
 import { listen } from '@tauri-apps/api/event';
-import { request, native } from '../app/client';
-import type { Vault } from '../app/types';
+import { request, native } from '../platform/client';
+import type { Vault } from '../contracts/sources';
 import { Dialog, Empty } from '../components/Dialog';
 export interface IndexProgress {
   done: number;
@@ -61,17 +61,15 @@ export function Library({
   const [entityDescription, setEntityDescription] = useState('');
   const owned = vaults.find((v) => v.owned);
   useEffect(() => {
-    void request<Vault[]>('vaults').then(setVaults).catch(onError);
-    void request<{ available: boolean }>('engineStatus').then((v) => setAvailable(v.available));
+    void request('vaults').then(setVaults).catch(onError);
+    void request('engineStatus').then((v) => setAvailable(v.available));
   }, [onError]);
   async function index() {
     setBusy(true);
     onBusy(true);
     setReport([]);
     try {
-      const result = await request<{ errors: string[]; cancelled?: boolean; semantic: boolean }>(
-        'index',
-      );
+      const result = await request('index');
       setReport(result.errors);
       if (!result.errors.length)
         setReport([result.cancelled ? t('Indexation suspendue.') : t('Les sources sont prêtes.')]);
@@ -258,9 +256,7 @@ export function Library({
                   aria-label={t('Déconnecter ') + v.name}
                   disabled={busy}
                   onClick={() =>
-                    void request<Vault[]>('removeVault', { id: v.id })
-                      .then(setVaults)
-                      .catch(onError)
+                    void request('removeVault', { id: v.id }).then(setVaults).catch(onError)
                   }
                 >
                   <X size={13} />

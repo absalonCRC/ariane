@@ -1,3 +1,8 @@
+import type { Project, Section } from '../contracts/project';
+import type { Dispatch, SetStateAction } from 'react';
+import type { Source } from '../contracts/sources';
+import type { ProjectController } from '../project/useProject';
+import type { EntityDetail } from '../contracts/entityDetail';
 import { localizeMessage, t, useLocale } from '../i18n';
 import { usePanelFocus } from '../components/usePanelFocus';
 import { AnimatedDetails } from '../components/AnimatedDetails';
@@ -6,28 +11,26 @@ import { useSharedPanel } from '../components/useSharedPanel';
 import { useResumeLayout } from './useResumeLayout';
 import { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
-import { request } from '../app/client';
-import type { Workspace } from '../app/useWorkspace';
-import type { Source } from '../app/types';
+import { request } from '../platform/client';
 import { compose } from '../editor/composite';
-import type { MemoryController, MemoryEntity, MemoryPassage } from './useMemory';
+import type { MemoryController } from './useMemory';
+import type { MemoryEntity } from '../contracts/memory';
 import { passageExcerpt } from './excerpts';
 import { entityTint } from './entityTypes';
 import './memory-refinements.css';
-
-interface EntityDetail extends MemoryEntity {
-  passages: MemoryPassage[];
-  fields: { name: string; value: string; section: string; node: string | null; quote: string }[];
-  timeline: {
-    date: string;
-    expression?: string;
-    approximate?: boolean;
-    text: string;
-    section: string;
-    node: string | null;
-    quote: string;
-  }[];
+export interface MemoryReaderInput {
+  p: Project | null;
+  scenes: Section[];
+  locatePassage: (
+    section: string,
+    node: string | null,
+    quote: string,
+    position?: { offset: number; cursor: number },
+  ) => Promise<void>;
+  doc: ProjectController;
+  setReader: Dispatch<SetStateAction<Source | null>>;
 }
+
 export function MemoryReader({
   memory,
   workspace,
@@ -35,7 +38,7 @@ export function MemoryReader({
   writingMenuOpen = false,
 }: {
   memory: MemoryController;
-  workspace: Workspace;
+  workspace: MemoryReaderInput;
   projectMenuOpen?: boolean;
   writingMenuOpen?: boolean;
 }) {
@@ -70,7 +73,7 @@ export function MemoryReader({
     setEntities([]);
     setError('');
     if (view?.kind === 'entity')
-      void request<EntityDetail>('memoryEntity', { projectPath: path, id: view.id })
+      void request('memoryEntity', { projectPath: path!, id: view.id })
         .then((value) => {
           if (alive) setEntity(value);
         })
@@ -78,7 +81,7 @@ export function MemoryReader({
           if (alive) setError(String(e));
         });
     if (view?.kind === 'list')
-      void request<MemoryEntity[]>('memoryList', { projectPath: path })
+      void request('memoryList', { projectPath: path! })
         .then((value) => {
           if (alive) setEntities(value);
         })
@@ -94,7 +97,7 @@ export function MemoryReader({
     let alive = true;
     setResumeSource(null);
     if (sourceId && path)
-      void request<Source>('memorySource', { id: sourceId, fingerprint: null })
+      void request('memorySource', { id: sourceId, fingerprint: null })
         .then((source) => {
           if (alive && source.id === sourceId) setResumeSource({ source, path });
         })
@@ -131,7 +134,7 @@ export function MemoryReader({
     excerpt?: string,
   ) {
     try {
-      const source = await request<Source>('memorySource', {
+      const source = await request('memorySource', {
         id,
         fingerprint: fingerprint ?? null,
       });

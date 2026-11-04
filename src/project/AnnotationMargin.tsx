@@ -1,16 +1,29 @@
+import type { Project } from '../contracts/project';
+import type { AnnotationTarget } from './annotations';
+import type { Dispatch, SetStateAction } from 'react';
+import type { ManuscriptMatch } from '../app/projectSearch';
+import type { ProjectController } from './useProject';
 import { localizeMessage, t, useLocale } from '../i18n';
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import { request } from '../app/client';
-import type { Workspace } from '../app/useWorkspace';
-import { resolveAnnotation, type Annotation } from './annotations';
+import { request } from '../platform/client';
+import { resolveAnnotation } from './annotations';
+import { type Annotation } from '../contracts/annotations';
 import '../styles/annotations.css';
+export interface AnnotationInput {
+  p: Project | null;
+  annotationTarget: AnnotationTarget | null;
+  doc: ProjectController;
+  setAnnotationTarget: Dispatch<SetStateAction<AnnotationTarget | null>>;
+  setAnnotationsOpen: Dispatch<SetStateAction<boolean>>;
+  locateSourceMatch: (hit: ManuscriptMatch, matched: string) => Promise<void>;
+}
 export function Annotations({
   workspace: w,
   left,
   width,
 }: {
-  workspace: Workspace;
+  workspace: AnnotationInput;
   left: number;
   width: number;
 }) {
@@ -28,7 +41,7 @@ export function Annotations({
   current.current = path;
   useEffect(() => {
     let live = true;
-    void request<Annotation[]>('annotations', { projectPath: path })
+    void request('annotations', { projectPath: path })
       .then((v) => {
         if (live) setItems(v);
       })
@@ -44,7 +57,7 @@ export function Annotations({
     setError('');
     try {
       if (value) {
-        const updated = await request<Annotation>('updateAnnotation', {
+        const updated = await request('updateAnnotation', {
           projectPath: path,
           id: value.id,
           revision: value.revision,
@@ -60,7 +73,7 @@ export function Annotations({
         const section = w.doc.ref.current?.sections.find((s) => s.id === target.section);
         if (w.doc.ref.current?.path !== path || section?.text !== target.original)
           throw new Error(t('Le passage a changé. Sélectionnez-le à nouveau pour l’annoter.'));
-        const added = await request<Annotation>('addAnnotation', {
+        const added = await request('addAnnotation', {
           projectPath: path,
           section: target.section,
           revision: section.revision,

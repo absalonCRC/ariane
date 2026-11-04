@@ -5,8 +5,8 @@ import { Presence } from '../components/Presence';
 import { useState, useEffect, useRef } from 'react';
 import { Dialog } from '../components/Dialog';
 import { choosePath } from './choosePath';
-import { native, request } from './client';
-import type { Project } from './types';
+import { native, request } from '../platform/client';
+import type { Project } from '../contracts/project';
 import { ArianeWordmark } from '../components/ArianeWordmark';
 
 export function Welcome({
@@ -49,7 +49,7 @@ export function Welcome({
         if (typeof folder !== 'string') return;
         path = folder + '/' + name.trim().replace(/[/:\\]/g, '-');
       }
-      const project = await request<Project>('create', {
+      const project = await request('create', {
         path,
         name: name.trim(),
         initialTitle: t('Sans titre'),
@@ -66,7 +66,7 @@ export function Welcome({
   async function openProject(path: string) {
     setBusy(true);
     try {
-      onOpen(await request<Project>('open', { path }));
+      onOpen(await request('open', { path }));
       setScreen('none');
     } catch (e) {
       onError(e);

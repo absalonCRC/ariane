@@ -6,9 +6,9 @@ import { ContextMenuProvider, useContextMenu } from '../src/components/ContextMe
 import { WorkspaceNotices } from '../src/app/WorkspaceNotices';
 import { useTitleNotices } from '../src/app/useTitleNotices';
 import type { Workspace } from '../src/app/useWorkspace';
-import type { Project, Surface } from '../src/app/types';
+import type { Project } from '../src/contracts/project';
+import type { Surface } from '../src/app/workspace/types';
 import { PathMenu } from '../src/project/PathMenu';
-
 const project: Project = {
   path: 'test',
   name: 'Mon manuscrit',

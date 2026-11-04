@@ -1,7 +1,6 @@
 import { t, useLocale } from '../i18n';
-import type { Settings } from '../app/types';
+import type { Settings } from '../contracts/settings';
 import { PreviewButton } from './PreviewButton';
-
 type FocusMode = Settings['focus'];
 function FocusModeIcon({ mode }: { mode: FocusMode }) {
   return (

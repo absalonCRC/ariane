@@ -1,0 +1,310 @@
+.revision-panel {
+  padding: 3px 0 10px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--theme-line, #dedede);
+  color: var(--theme-muted, #777);
+  font: 10px var(--ui);
+}
+.revision-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.revision-heading button,
+.revision-suggestion button {
+  padding: 6px 9px;
+  border-radius: 10px;
+  background: var(--theme-paper, #fff);
+  font: 10px var(--ui);
+}
+.revision-heading button:disabled {
+  opacity: 0.45;
+}
+.revision-message {
+  margin: 6px 0 0;
+  color: var(--theme-muted, #888);
+  line-height: 1.5;
+}
+.revision-suggestions {
+  display: grid;
+  gap: 7px;
+  max-height: 180px;
+  overflow: auto;
+  margin-top: 9px;
+}
+.revision-suggestion {
+  display: grid;
+  gap: 4px;
+}
+.revision-explanation {
+  line-height: 1.4;
+}
+.revision-suggestion button {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.revision-suggestion strong {
+  color: var(--theme-ink, #444);
+  font-weight: 600;
+}
+
+/* Réglages et repères discrets autour du manuscrit. */
+.manuscript-column {
+  width: min(750px, calc(100% - 80px));
+}
+.with-reader .manuscript-column {
+  width: min(680px, calc(100% - 80px));
+}
+.cm-text-search-match {
+  background: var(--theme-search-bg, #f8edce);
+  border-radius: 2px;
+}
+.cm-text-search-match.current {
+  background: var(--theme-search-strong, #f1d083);
+  outline: 1px solid var(--theme-search-text, #9a782a);
+  outline-offset: 1px;
+}
+.cm-line {
+  transition: color 140ms ease-out;
+}
+.outline-handle:focus-visible {
+  outline: 2px solid var(--theme-muted, #777);
+  outline-offset: -3px;
+  border-radius: 4px;
+}
+.outline-handle.outline-parent:hover::before,
+.outline-handle.outline-parent:focus-visible::before {
+  box-shadow: 0 0 0 3px var(--theme-line, #d8d8d8);
+}
+.path-trigger:hover,
+.path-trigger:focus-visible,
+.path-menu[data-open='true'] .path-trigger {
+  color: var(--theme-ink, #454545);
+}
+.path-tree-item[aria-current='page'] {
+  background: var(--theme-line, #e4e4e4);
+  font-weight: 600;
+}
+.path-popover nav {
+  padding: 2px 0;
+}
+.path-add {
+  margin-top: 10px;
+}
+.settings-control .settings .settings-row {
+  margin: 7px 0;
+}
+.header-search-results button[aria-selected='true'] {
+  background: var(--theme-line, #dedede);
+  color: var(--theme-ink, #222);
+}
+.bottom-controls,
+.bottom-controls[data-panel='none']:not(:has(.writing-counter[data-open='true'])) {
+  gap: 10px;
+}
+.source-group[data-expanded='true'] {
+  background: var(--theme-paper, #fff);
+}
+.source-label {
+  min-height: 32px;
+  margin-bottom: 12px;
+}
+.source-label small {
+  color: var(--theme-muted, #777);
+}
+@media (max-width: 1100px) {
+  .manuscript-column {
+    width: min(750px, calc(100% - 80px));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cm-line {
+    transition: none;
+  }
+}
+
+/* Center the writing sheet; annotations occupy the rail at the right edge. */
+.writing-layout {
+  padding-right: 0;
+}
+.writing-layout.sidebar-open {
+  padding-right: var(--sidebar-width);
+}
+@media (max-width: 1100px) {
+  .writing-layout.sidebar-open {
+    padding-right: 0;
+  }
+}
+.writing-layout .manuscript-column {
+  width: min(750px, calc(100% - 64px));
+}
+.with-reader .writing-layout {
+  padding-right: 0;
+}
+.source-margin {
+  display: block;
+  bottom: 0;
+  width: 190px;
+}
+.source-label {
+  max-width: 100%;
+  height: 54px;
+  min-height: 54px;
+  margin-bottom: 0;
+  width: 100%;
+}
+.source-label > span {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.source-label small {
+  line-height: 14px;
+}
+.more-sources {
+  height: 24px;
+}
+
+/* Suggestions include enough of the passage to judge the proposed connection. */
+.memory-context.source-label {
+  height: auto;
+  min-height: 54px;
+  max-width: 190px;
+}
+.memory-context .suggestion-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  overflow: hidden;
+  margin-top: 7px;
+  font: 14px/1.45 var(--literary);
+  color: var(--theme-secondary, #626262);
+}
+.settings-control .settings {
+  max-height: min(calc(100vh - 110px), var(--resume-height-limit, 100vh));
+  overflow-y: auto;
+}
+
+.source-label[data-expanded='true'] {
+  visibility: hidden;
+}
+
+.cm-entity {
+  color: var(--entity-color);
+  text-decoration: none;
+  cursor: pointer;
+}
+.entity-proposal {
+  position: fixed;
+  z-index: 40;
+  right: 24px;
+  bottom: 32px;
+  width: min(340px, calc(100vw - 48px));
+  padding: 20px;
+  font: 14px/1.5 var(--writing-sans);
+}
+.entity-proposal h2 {
+  font-size: 22px;
+  margin: 12px 0 4px;
+}
+.entity-proposal > button {
+  margin-top: 12px;
+}
+.entity-color-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 24px;
+  margin: 16px 0;
+}
+.settings-page .entity-color-grid label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+}
+.entity-color-grid input[type='color'] {
+  width: 36px;
+  height: 28px;
+  padding: 2px;
+  cursor: pointer;
+}
+.manuscript-note-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+.manuscript-note-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.cm-tooltip-autocomplete {
+  font-family: var(--font-ui, sans-serif);
+  font-size: 13px;
+  max-width: min(520px, 90vw);
+}
+.cm-tooltip-autocomplete .cm-completionDetail {
+  opacity: 0.65;
+  font-size: 11px;
+}
+
+.entity-type-definitions {
+  margin-top: 18px;
+}
+.entity-type-definitions details {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--theme-border, #ddd);
+}
+.entity-type-definitions summary {
+  cursor: pointer;
+}
+.entity-type-definitions textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+/* Type tints stay visible in the margin when manuscript colours are disabled. */
+.entity-tinted {
+  background: color-mix(in srgb, var(--entity-tint) 8%, transparent);
+}
+.entity-tinted:hover {
+  background: color-mix(in srgb, var(--entity-tint) 14%, transparent);
+}
+.source-label.entity-tinted {
+  border-left-color: color-mix(in srgb, var(--entity-tint) 35%, transparent);
+  padding: 6px 8px 6px 14px;
+}
+
+.cm-editor[data-focus='word'] .cm-line {
+  color: var(--theme-line-strong, #b6b6b6);
+}
+.cm-editor[data-focus='word'] .cm-line * {
+  color: inherit !important;
+}
+.cm-editor[data-focus='word'] .cm-line .focused-word {
+  color: var(--ink) !important;
+}
+
+.source-margin {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+  scrollbar-width: none;
+  overflow-anchor: none;
+}
+.margin-scroll-end {
+  position: absolute;
+  width: 1px;
+  pointer-events: none;
+}

@@ -2,12 +2,12 @@ import { invoke } from '@tauri-apps/api/core';
 import { EditorView } from '@codemirror/view';
 import { undo, redo } from '@codemirror/commands';
 import type { Workspace } from '../app/useWorkspace';
-import type { Project, Source } from '../app/types';
-import { request } from '../app/client';
+import { request } from '../platform/client';
 import { compose } from '../editor/composite';
 import { normalizedMatches } from '../editor/normalizedSearch';
 import captureWorklet from '../voice/capture.worklet.js?url&no-inline';
-import type { MemoryController, MemoryEntity, MemoryResult } from '../enrichment/useMemory';
+import type { MemoryController } from '../enrichment/useMemory';
+import type { MemoryEntity, MemoryResult } from '../contracts/memory';
 let current: Workspace;
 let memory: MemoryController;
 let partialReport: Record<string, unknown> = {};
@@ -160,7 +160,7 @@ async function runSpeech(path: string, report: Record<string, unknown>, micropho
     if (!/dossier[.!?]?$/iu.test(transcript) || !/ne veux pas/iu.test(transcript))
       throw new Error('Dictation lost its negation or ending');
     await current.doc.flush();
-    const saved = await request<Project>('open', { path });
+    const saved = await request('open', { path });
     const savedText = compose(saved.sections).text;
     if (savedText !== after) throw new Error('Dictation was not saved');
     undo(view);
@@ -202,7 +202,7 @@ async function run() {
     partialReport = report;
     // Bootstrap already reopened the saved project; mounting it twice would
     // overwrite the very cursor restoration this scenario is measuring.
-    if (current.p?.path !== path) current.activate(await request<Project>('open', { path }));
+    if (current.p?.path !== path) current.activate(await request('open', { path }));
     await until(() => memory.resume?.node === '0-0' && !!document.querySelector('.cm-editor'));
     await until(() => current.editor.current?.context()?.offset === 24, 5000);
     report.restoredPosition = current.editor.current!.context();
@@ -234,7 +234,7 @@ async function run() {
   };
   partialReport = report;
   const loadStart = performance.now();
-  const project = await request<Project>('open', { path: fixture.path });
+  const project = await request('open', { path: fixture.path });
   report.openIPC = performance.now() - loadStart;
   const renderStart = performance.now();
   current.activate(project);
@@ -284,13 +284,13 @@ async function run() {
   redo(view);
   report.undoRedo = beforeUndo === current.editor.current!.text();
   await current.doc.flush();
-  const persisted = await request<Project>('open', { path: fixture.path });
+  const persisted = await request('open', { path: fixture.path });
   report.savedText =
     persisted.sections.find((s) => s.id === 'scene-0')!.text ===
     current.doc.ref.current!.sections.find((s) => s.id === 'scene-0')!.text;
   for (let i = 0; i < 12; i++) {
     const start = performance.now();
-    const found = await request<Source[]>('suggest', {
+    const found = await request('suggest', {
       text: 'La mémoire de Toulouse.',
       depth: 0,
       allowEnd: true,
@@ -472,7 +472,7 @@ async function runMemory(path: string, report: Record<string, unknown>) {
     do {
       // Poll the read-only context, not memoryList (which synchronizes the
       // manuscript). Observation must not become a second indexer.
-      const context = await request<MemoryResult>('memoryContext', {
+      const context = await request('memoryContext', {
         projectPath: path,
         section: 'scene-5',
         node: '5-0',
@@ -516,17 +516,10 @@ async function runMemory(path: string, report: Record<string, unknown>) {
     if (result.modelError) throw new Error(result.modelError);
     queueResults.push(result);
   }
-  const entities = await request<MemoryEntity[]>('memoryList', { projectPath: path });
+  const entities = await request('memoryList', { projectPath: path });
   const louiseMentions = entities.filter((e) => e.title === 'Louise Morel');
   const dated = await Promise.all(
-    louiseMentions.map((e) =>
-      request<{
-        fields: unknown[];
-        timeline: { date: string }[];
-        unresolved: boolean;
-        passages: { section: string; node: string }[];
-      }>('memoryEntity', { projectPath: path, id: e.id }),
-    ),
+    louiseMentions.map((e) => request('memoryEntity', { projectPath: path, id: e.id })),
   );
   const currentMention = dated.findIndex((e) =>
     e.passages.some((p) => p.section === 'scene-0' && p.node === '0-0'),
@@ -542,7 +535,7 @@ async function runMemory(path: string, report: Record<string, unknown>) {
   if (dated.some((e) => !e.unresolved || e.timeline.length > 1))
     throw new Error('Unconfirmed homonyms were merged');
   report.unresolvedLouiseMentions = dated;
-  const recall = await request<MemoryResult>('memoryContext', {
+  const recall = await request('memoryContext', {
     projectPath: path,
     section: 'scene-1',
     node: '1-0',
@@ -552,7 +545,7 @@ async function runMemory(path: string, report: Record<string, unknown>) {
     throw new Error('Semantic recall missed the house passage');
   const unrelated = [];
   for (const i of [3, 4]) {
-    const context = await request<MemoryResult>('memoryContext', {
+    const context = await request('memoryContext', {
       projectPath: path,
       section: `scene-${i}`,
       node: `${i}-0`,
@@ -594,7 +587,7 @@ async function runMemory(path: string, report: Record<string, unknown>) {
   const resumeView = EditorView.findFromDOM(document.querySelector<HTMLElement>('.cm-editor')!)!;
   resumeView.dispatch({ selection: { anchor: 24 } });
   await until(() => current.editor.current?.context()?.offset === 24, 5000);
-  const source = await request<Source>('memorySource', {
+  const source = await request('memorySource', {
     id: evidence.sourceId,
     fingerprint: evidence.fingerprint,
   });
@@ -611,10 +604,10 @@ async function runMemory(path: string, report: Record<string, unknown>) {
   finalView.dispatch({ selection: { anchor: 24 } });
   await until(() => current.editor.current?.context()?.offset === 24, 5000);
   await current.memorySessionSaver.current();
-  const savedSession = await request<{ offset: number }>('memorySession', { projectPath: path });
+  const savedSession = await request('memorySession', { projectPath: path });
   report.savedSession = savedSession;
-  if (savedSession.offset !== 24) throw new Error('Session was not saved at offset 24');
-  const persisted = await request<Project>('open', { path });
+  if (savedSession?.offset !== 24) throw new Error('Session was not saved at offset 24');
+  const persisted = await request('open', { path });
   report.persistedText =
     persisted.sections.find((s) => s.id === 'scene-0')!.text ===
     current.doc.ref.current!.sections.find((s) => s.id === 'scene-0')!.text;

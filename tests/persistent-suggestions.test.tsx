@@ -7,10 +7,11 @@ import { rebaseEntities } from '../src/enrichment/entityBatches';
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { entityMarks, setEntityMarks } from '../src/editor/entities';
-import type { Section, SaveState } from '../src/app/types';
+import type { Section } from '../src/contracts/project';
+import type { SaveState } from '../src/app/workspace/types';
 
 const request = vi.hoisted(() => vi.fn());
-vi.mock('../src/app/client', () => ({ request }));
+vi.mock('../src/platform/client', () => ({ request }));
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 let root: ReturnType<typeof createRoot>, host: HTMLDivElement;
 const onSources = vi.fn(),

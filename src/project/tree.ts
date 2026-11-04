@@ -1,4 +1,4 @@
-import type { Section } from '../app/types';
+import type { Section } from '../contracts/project';
 export function childrenByParent(sections: Section[]): Map<string | null, Section[]> {
   const children = new Map<string | null, Section[]>();
   for (const section of sections) {

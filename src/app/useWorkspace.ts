@@ -1,21 +1,19 @@
+import { useWorkspaceCommands } from './commands/useWorkspaceCommands';
+import { createSourceActions } from '../sources/actions';
+import { createProjectOperations } from '../project/operations';
 import { t, useLocale } from '../i18n';
 import { useTheme } from './useTheme';
-import {
-  libraryOperationMessage,
-  type LibraryOperation,
-  type DocumentRole,
-} from '../project/library';
+import { type DocumentRole } from '../contracts/library';
 import type { PanelOrigin } from '../components/useSharedPanel';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { request, native } from './client';
+import { request, native } from '../platform/client';
 import type { AnnotationTarget } from '../project/annotations';
-import type { ManuscriptOperation } from '../project/library';
-import type { Project, Source, Surface, Section } from './types';
+import type { Project, Section } from '../contracts/project';
+import type { Source } from '../contracts/sources';
+import type { Surface } from './workspace/types';
 import { useProject } from '../project/useProject';
-import { scenesFor, ordered } from '../project/tree';
-import type { Command } from './Palette';
+import { scenesFor } from '../project/tree';
 import type { EditorHandle, VisibleText } from '../editor/Editor';
-import { composeCitation, sourceRef } from '../sources/citations';
 import type { IndexProgress } from '../sources/Library';
 import { useNativeClose } from './useNativeClose';
 import { useExport } from '../export/useExport';
@@ -160,7 +158,7 @@ export function useWorkspace() {
     [doc.activate],
   );
   useEffect(() => {
-    void request<Project | null>('bootstrap')
+    void request('bootstrap')
       .then((p) => {
         if (p) activate(p);
       })
@@ -217,11 +215,11 @@ export function useWorkspace() {
     const refresh = async () => {
       try {
         if (card) {
-          const source = await request<Source>('source', { id: card.source.id });
+          const source = await request('source', { id: card.source.id });
           if (alive) setCard((v) => (v?.source.id === source.id ? { ...v, source } : v));
         }
         if (reader) {
-          const source = await request<Source>('source', { id: reader.id });
+          const source = await request('source', { id: reader.id });
           if (alive)
             setReader((v) =>
               v?.id === source.id
@@ -359,236 +357,68 @@ export function useWorkspace() {
       window.removeEventListener('beforeunload', before);
     };
   }, [doc.flush, doc.checkpoint, doc.status]);
-  const commands: Command[] = p
-    ? [
-        {
-          label: doc.settings.immersiveFocus
-            ? t('Quitter le mode focus')
-            : t('Activer le mode focus'),
-          detail: '⌘ ⇧ F',
-          action: toggleFocus,
-        },
-        { label: t('Ouvrir le classeur'), detail: '⌘ ⇧ B', action: () => setBinder((v) => !v) },
-        { label: t('Rejoindre une section'), detail: '⌘ P', action: () => setPalette('sections') },
-        {
-          label: t('Rechercher dans les textes et les vaults'),
-          detail: '⌘ F',
-          action: () => setSearch(editor.current?.selection() || ''),
-        },
-        ...(native
-          ? [{ label: t('Annoter la sélection / Voir les annotations'), action: openAnnotations }]
-          : []),
-        { label: t('Importer un manuscrit'), action: () => setSurface('import') },
-        ...(native
-          ? [{ label: t('Séparer ou réunir des scènes'), action: () => void prepareManuscript() }]
-          : []),
-        { label: t('Sources du projet'), action: () => setSurface('sources') },
-        { label: t('Préparer cette section'), action: () => setSurface('prepare') },
-        {
-          label: t('Créer une variante / Voir les versions'),
-          action: () => openSurface('history'),
-        },
-        { label: t('Exporter le manuscrit'), detail: '⌘ ⇧ E', action: () => setSurface('export') },
-        { label: t('Réglages d’écriture'), action: () => setSurface('settings') },
-        { label: t('Paramètres'), action: () => setSurface('preferences') },
-        {
-          label: t('Indenter le passage'),
-          detail: 'Tab',
-          action: () => editor.current?.structure('indent'),
-        },
-        {
-          label: t('Désindenter le passage'),
-          detail: '⇧ Tab',
-          action: () => editor.current?.structure('outdent'),
-        },
-        {
-          label: t('Monter la branche'),
-          detail: '⌥ ↑',
-          action: () => editor.current?.structure('up'),
-        },
-        {
-          label: t('Descendre la branche'),
-          detail: '⌥ ↓',
-          action: () => editor.current?.structure('down'),
-        },
-        {
-          label: t('Replier ou déplier le passage'),
-          detail: '⌘ ⌥ ← / →',
-          action: () => editor.current?.structure('fold'),
-        },
-        { label: t('Lire le manuscrit entier'), action: () => void select(active || '', true) },
-        {
-          label: t('Ajouter une scène'),
-          action: () => void createPage(selected?.parent || null, selected?.role),
-        },
-        {
-          label: t('Créer un projet'),
-          action: () => {
-            void doc
-              .checkpoint()
-              .then(() => setNewProject(true))
-              .catch(fail);
-          },
-        },
-        { label: t('Ouvrir un projet'), action: () => setSurface('projects') },
-        { label: t('Enregistrer'), detail: '⌘ S', action: () => void doc.flush().catch(() => {}) },
-      ]
-    : [];
-  const nativeCommand = useRef<(id: string) => void>(() => {});
-  nativeCommand.current = (id) => {
-    if (libraryLock.current || document.querySelector('dialog[open][aria-modal="true"]')) return;
-    if (!p || newProject) return;
-    if (id === 'focus') {
-      toggleFocus();
-      return;
-    }
-    if (id === 'save') {
-      void doc.flush().catch(fail);
-      return;
-    }
-    if (id === 'new-project') {
-      void doc
-        .flush()
-        .then(() => setNewProject(true))
-        .catch(fail);
-      return;
-    }
-    if (id === 'open-project') {
-      setSurface('projects');
-      return;
-    }
-    if (id === 'annotations') {
-      openAnnotations();
-      return;
-    }
-    if (id === 'manuscript') {
-      void prepareManuscript();
-      return;
-    }
-    if (id === 'binder') {
-      setBinder((v) => !v);
-      return;
-    }
-    if (id === 'commands') {
-      setPalette('commands');
-      return;
-    }
-    if (id === 'sections') {
-      setPalette('sections');
-      return;
-    }
-    if (id === 'search') {
-      setSearch(editor.current?.selection() || '');
-      return;
-    }
-    if (['import', 'export', 'history', 'preferences', 'sources'].includes(id))
-      openSurface(id as Surface);
-  };
-  useEffect(() => {
-    if (!native) return;
-    let stop: (() => void) | undefined,
-      disposed = false;
-    void import('@tauri-apps/api/event')
-      .then(({ listen }) => listen<string>('app-command', (e) => nativeCommand.current(e.payload)))
-      .then((unlisten) => {
-        if (disposed) unlisten();
-        else stop = unlisten;
-      })
-      .catch(fail);
-    return () => {
-      disposed = true;
-      stop?.();
-    };
-  }, []);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (document.querySelector('.workspace-screen[open]')) return;
-      if (libraryLock.current) {
-        e.preventDefault();
-        return;
-      }
-      if (!(e.metaKey || e.ctrlKey)) return;
-      const k = e.key.toLowerCase();
-      if (e.shiftKey && k === 'f') {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleFocus();
-        return;
-      }
-      if (k === 'k') {
-        e.preventDefault();
-        setPalette((v) => (v ? null : 'commands'));
-      }
-      if (k === 'p') {
-        e.preventDefault();
-        setPalette('sections');
-      }
-      if (k === 's') {
-        e.preventDefault();
-        void doc.flush().catch(() => {});
-      }
-      if (e.shiftKey && k === 'b') {
-        e.preventDefault();
-        setBinder((v) => !v);
-      }
-      if (k === 'f') {
-        e.preventDefault();
-        e.stopPropagation();
-        setSearch(editor.current?.selection() || '');
-      }
-      if (e.shiftKey && k === 'e') {
-        e.preventDefault();
-        setSurface('export');
-      }
-    };
-    const escape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !e.defaultPrevented) {
-        setCard(null);
-        setReader(null);
-        setSearch(null);
-        setBinder(false);
-        setMenu(false);
-        setSurface('none');
-      }
-    };
-    window.addEventListener('keydown', onKey, true);
-    window.addEventListener('keydown', escape);
-    return () => {
-      window.removeEventListener('keydown', onKey, true);
-      window.removeEventListener('keydown', escape);
-    };
-  }, [doc.flush, toggleFocus]);
-  async function openProject(path: string, section?: string) {
-    if (libraryLock.current) return;
-    libraryLock.current = true;
-    setLibraryBusy(true);
-    try {
-      await doc.checkpoint();
-      await metadataQueue.current;
-      await memorySessionSaver.current();
-      if (doc.ref.current)
-        await request('settings', {
-          value: { ...doc.settingsRef.current, cursor: cursor.current },
-        });
-      const project = await request<Project>('open', { path });
-      if (section)
-        project.settings = {
-          ...project.settings,
-          active: section,
-          continuous: false,
-          cursor: 0,
-          libraryView: 'texts',
-        };
-      activate(project);
-      setSurface('none');
-      setBinder(true);
-    } catch (e) {
-      fail(e);
-    } finally {
-      libraryLock.current = false;
-      setLibraryBusy(false);
-    }
-  }
+  const {
+    openProject,
+    manuscriptOperation,
+    operate,
+    startCreation,
+    createPage,
+    add,
+    move,
+    update,
+    apply,
+  } = createProjectOperations({
+    libraryLock,
+    setLibraryBusy,
+    doc,
+    metadataQueue,
+    memorySessionSaver,
+    cursor,
+    activate,
+    setSurface,
+    setBinder,
+    fail,
+    setLibraryNotice,
+    setSourceVersion,
+    setNewSection,
+    setNewTitle,
+    setSearch,
+    newSection,
+    newTitle,
+    p,
+  });
+  const { registerCitation, cite, read } = createSourceActions({
+    editor,
+    doc,
+    setCard,
+    fail,
+    setReader,
+  });
+  const commands = useWorkspaceCommands({
+    p,
+    doc,
+    toggleFocus,
+    setBinder,
+    setPalette,
+    setSearch,
+    editor,
+    openAnnotations,
+    setSurface,
+    prepareManuscript,
+    openSurface,
+    select,
+    active,
+    createPage,
+    selected,
+    setNewProject,
+    fail,
+    libraryLock,
+    newProject,
+    setCard,
+    setReader,
+    setMenu,
+  });
+
   function openAnnotations() {
     const passage = editor.current?.passage();
     const section = doc.ref.current?.sections.find((s) => s.id === passage?.section);
@@ -612,173 +442,7 @@ export function useWorkspace() {
       fail(e);
     }
   }
-  async function manuscriptOperation(operation: ManuscriptOperation) {
-    if (libraryLock.current) return;
-    libraryLock.current = true;
-    setLibraryBusy(true);
-    try {
-      await doc.checkpoint();
-      await metadataQueue.current;
-      const next = await request<Project>('manuscriptOperation', {
-        projectPath: doc.ref.current!.path,
-        operation,
-      });
-      next.settings = {
-        ...doc.settingsRef.current,
-        active: operation.sourceId,
-        continuous: false,
-        cursor: 0,
-      };
-      doc.activate(next);
-      setSurface('none');
-      setBinder(true);
-      setLibraryNotice({ message: t('Texte réorganisé.'), undo: false });
-    } catch (e) {
-      fail(e);
-    } finally {
-      libraryLock.current = false;
-      setLibraryBusy(false);
-    }
-  }
-  async function operate(operation: LibraryOperation) {
-    if (libraryLock.current) return;
-    libraryLock.current = true;
-    setLibraryBusy(true);
-    try {
-      await doc.checkpoint();
-      await metadataQueue.current;
-      await request('settings', { value: { ...doc.settingsRef.current, cursor: cursor.current } });
-      const message = libraryOperationMessage(doc.ref.current!, operation);
-      const next = await request<Project>('libraryOperation', { operation });
-      doc.activate(next);
-      setLibraryNotice({ message, undo: operation.action !== 'undo' });
-      setSourceVersion((v) => v + 1);
-      setBinder(true);
-    } catch (e) {
-      fail(e);
-    } finally {
-      libraryLock.current = false;
-      setLibraryBusy(false);
-    }
-  }
-  function startCreation(
-    parent: string | null,
-    kind: Section['kind'],
-    role?: DocumentRole,
-    after?: string,
-  ) {
-    if (!doc.ref.current || libraryLock.current) return;
-    setNewSection({ parent, kind, role: role || 'manuscript', after });
-    setNewTitle('');
-    setSearch(null);
-    doc.configure({ libraryView: 'texts' });
-    setSurface('none');
-    setBinder(true);
-  }
-  async function createPage(parent: string | null, role?: DocumentRole) {
-    startCreation(parent, 'scene', role);
-  }
-  async function add() {
-    if (!newSection || !newTitle.trim() || libraryLock.current) return;
-    libraryLock.current = true;
-    setLibraryBusy(true);
-    try {
-      await doc.checkpoint();
-      await metadataQueue.current;
-      const sections = newSection.after
-        ? (
-            await request<Project>('libraryOperation', {
-              operation: {
-                action: 'add',
-                target: newSection.after,
-                placement: 'after',
-                kind: newSection.kind,
-                role: newSection.role,
-                title: newTitle.trim(),
-              },
-            })
-          ).sections
-        : await request<Section[]>('add', { ...newSection, title: newTitle.trim() });
-      setLibraryNotice(null);
-      doc.replaceSections(sections, true, true);
-      const added = sections.find((s) => !p!.sections.some((old) => old.id === s.id));
-      if (added) doc.configure({ active: added.id, continuous: false, cursor: 0 });
-      setNewSection(null);
-      setNewTitle('');
-      setBinder(true);
-    } catch (e) {
-      fail(e);
-    } finally {
-      libraryLock.current = false;
-      setLibraryBusy(false);
-    }
-  }
-  async function move(id: string, target: string, inside: boolean) {
-    try {
-      await doc.flush();
-      const all = ordered(p!.sections);
-      const ids = all.map((s) => s.id).filter((x) => x !== id);
-      ids.splice(ids.indexOf(target) + (inside ? 1 : 0), 0, id);
-      doc.replaceSections(
-        await request('reorder', {
-          ids,
-          id,
-          parent: inside ? target : all.find((s) => s.id === target)!.parent,
-        }),
-      );
-    } catch (e) {
-      fail(e);
-    }
-  }
-  async function registerCitation(s: Source, text: string) {
-    await request('cite', {
-      id: sourceRef(s),
-      payload: { ...s, quote: text, citedAt: new Date().toISOString() },
-    });
-  }
-  async function cite(s: Source, text: string) {
-    try {
-      const insert = editor.current?.prepareCitation();
-      const citation = composeCitation(s, text, doc.settings.citationStyle);
-      await registerCitation(s, text);
-      if (!insert?.(citation))
-        throw new Error(t('Le texte a changé. Replacez le curseur puis réessayez.'));
-      setCard(null);
-    } catch (e) {
-      fail(e);
-    }
-  }
-  async function read(s: Source) {
-    try {
-      const full = await request<Source>('source', { id: s.id });
-      full.page = s.page;
-      setReader(full);
-      setCard(null);
-    } catch (e) {
-      fail(e);
-    }
-  }
-  function update(section: Section) {
-    const path = doc.ref.current?.path;
-    const task = metadataQueue.current
-      .catch(() => {})
-      .then(async () => {
-        if (doc.ref.current?.path !== path) return;
-        await doc.flush();
-        const sections = await request<Section[]>('update', { section });
-        if (doc.ref.current?.path === path) doc.replaceSections(sections, false);
-      });
-    metadataQueue.current = task.catch(() => {});
-    return task;
-  }
-  async function apply(id: string, text: string, revision: number) {
-    await doc.flush();
-    const current = doc.ref.current!.sections.find((s) => s.id === id)!;
-    if (current.revision !== revision)
-      throw new Error(t('Le texte a changé. Relancez la comparaison.'));
-    await request('save', { patches: [{ id, text, revision }] });
-    activate(await request('open', { path: p!.path }));
-  }
+
   const groups = useMemo(() => {
     if (!viewport) return [];
     const map = new Map<string, { top: number; sources: Source[] }>();

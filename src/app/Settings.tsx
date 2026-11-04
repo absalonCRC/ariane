@@ -6,7 +6,7 @@ import { WritingModes } from '../components/WritingModes';
 import { TypographyModes } from '../components/TypographyModes';
 import { ReadingComfort } from '../components/ReadingComfort';
 import { X } from 'lucide-react';
-import type { Settings as Values } from './types';
+import type { Settings as Values } from '../contracts/settings';
 import { FormattingToolbar } from '../components/FormattingToolbar';
 import type { MarkdownFormat } from '../editor/formatMarkdown';
 export function Settings({

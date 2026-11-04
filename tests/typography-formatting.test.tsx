@@ -5,8 +5,8 @@ import { EditorView } from '@codemirror/view';
 import { expect, it, vi } from 'vitest';
 import { Settings } from '../src/app/Settings';
 import { Editor, type EditorHandle } from '../src/editor/Editor';
-import { defaultSettings, type Section } from '../src/app/types';
-
+import { defaultSettings } from '../src/contracts/settings';
+import { type Section } from '../src/contracts/project';
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 
 it.each(['literary', 'sans', 'mono'] as const)(

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { reviewSuggestions, type LanguageIssue } from '../src/revision/suggestions';
-
+import { reviewSuggestions } from '../src/revision/suggestions';
+import { type LanguageIssue } from '../src/contracts/revision';
 const issue = (offset: number, length: number, replacement: string): LanguageIssue => ({
   offset,
   length,

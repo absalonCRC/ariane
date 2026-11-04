@@ -4,8 +4,7 @@ import { history, undo, redo } from '@codemirror/commands';
 import { compose, sectionMapping } from '../src/editor/composite';
 import { outlineEditor } from '../src/editor/outline/state';
 import { initialOutline, validOutline } from '../src/editor/outline/model';
-import type { Outline, Section } from '../src/app/types';
-
+import type { Outline, Section } from '../src/contracts/project';
 function setup(text = '', saved?: Outline, other?: string) {
   const scene = (id: string, text: string, outline?: Outline): Section => ({
     id,

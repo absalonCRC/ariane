@@ -5,7 +5,7 @@ import { expect, it, vi } from 'vitest';
 import { Presence } from '../src/components/Presence';
 import { SidebarDock } from '../src/components/SidebarDock';
 import { Binder } from '../src/project/Binder';
-import type { Project } from '../src/app/types';
+import type { Project } from '../src/contracts/project';
 
 it('keeps the same theme control available as the sidebar opens and closes', async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
@@ -56,10 +56,15 @@ it('keeps the same theme control available as the sidebar opens and closes', asy
     const dock = host.querySelector<HTMLElement>('.binder-footer')!;
     const theme = dock.querySelector<HTMLButtonElement>('[role="switch"]')!;
     const toggle = host.querySelector<HTMLButtonElement>('button')!;
-    expect([...dock.querySelectorAll('button')].map((button) => button.getAttribute('aria-label')))
-      .toEqual(['Thème sombre', 'Versions', 'Corbeille', 'Paramètres']);
-    await act(async () => dock.querySelector<HTMLButtonElement>('[aria-label="Corbeille"]')!.click());
-    expect(dock.querySelector('[aria-label="Corbeille"]')?.getAttribute('aria-pressed')).toBe('true');
+    expect(
+      [...dock.querySelectorAll('button')].map((button) => button.getAttribute('aria-label')),
+    ).toEqual(['Thème sombre', 'Versions', 'Corbeille', 'Paramètres']);
+    await act(async () =>
+      dock.querySelector<HTMLButtonElement>('[aria-label="Corbeille"]')!.click(),
+    );
+    expect(dock.querySelector('[aria-label="Corbeille"]')?.getAttribute('aria-pressed')).toBe(
+      'true',
+    );
     const versions = dock.querySelector<HTMLButtonElement>('[aria-label="Versions"]')!;
     await act(async () => {
       versions.focus();

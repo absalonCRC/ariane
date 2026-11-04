@@ -1,7 +1,6 @@
 import { t, useLocale } from '../i18n';
-import type { Settings } from '../app/types';
+import type { Settings } from '../contracts/settings';
 import { PreviewButton } from './PreviewButton';
-
 type WritingFont = Settings['font'];
 const writingFontLabels: Record<WritingFont, string> = {
   literary: 'Littéraire · EB Garamond',

@@ -1,5 +1,7 @@
-import type { Section } from '../app/types';
+import type { Section } from '../contracts/project';
 import { ChangeDesc } from '@codemirror/state';
+import { StateField, StateEffect } from '@codemirror/state';
+import { invertedEffects } from '@codemirror/commands';
 export interface Span {
   id: string;
   from: number;
@@ -34,8 +36,8 @@ export function touchedSpans(spans: Span[], changes: ChangeDesc): Set<string> {
   return ids;
 }
 
-import { StateField, StateEffect } from '@codemirror/state';
-import { invertedEffects } from '@codemirror/commands';
+
+
 /** Scene ownership is part of undo history, including edits spanning scenes. */
 export function sectionMapping(initial: Span[]) {
   const restore = StateEffect.define<Span[]>({ map: (value, changes) => mapSpans(value, changes) });

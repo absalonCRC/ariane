@@ -6,8 +6,9 @@ import { ReadingComfort } from '../components/ReadingComfort';
 import { WritingModes } from '../components/WritingModes';
 import { depthLevel } from '../components/depthLevels';
 import { useState, type ReactNode } from 'react';
-import type { Settings as Values, Project } from './types';
-import { native } from './client';
+import type { Settings as Values } from '../contracts/settings';
+import type { Project } from '../contracts/project';
+import { native } from '../platform/client';
 import type { Theme } from './useTheme';
 import { WorkspaceScreen } from '../components/WorkspaceScreen';
 const pages = [

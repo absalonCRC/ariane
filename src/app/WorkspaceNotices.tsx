@@ -1,8 +1,7 @@
 import { localizeMessage, t, useLocale } from '../i18n';
 import { Presence } from '../components/Presence';
 import type { Workspace } from './useWorkspace';
-import { request } from './client';
-import type { Project } from './types';
+import { request } from '../platform/client';
 import { X } from 'lucide-react';
 import { useContextMenuNotice } from '../components/ContextMenu';
 export function WorkspaceNotices({
@@ -98,7 +97,7 @@ export function WorkspaceNotices({
               <>
                 <button
                   onClick={() =>
-                    void request<Project>('resolveExternal', {
+                    void request('resolveExternal', {
                       id: error.split(':')[1],
                       keepLocal: false,
                       pending:
@@ -116,7 +115,7 @@ export function WorkspaceNotices({
                 </button>
                 <button
                   onClick={() =>
-                    void request<Project>('resolveExternal', {
+                    void request('resolveExternal', {
                       id: error.split(':')[1],
                       keepLocal: true,
                       pending:

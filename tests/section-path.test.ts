@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ordered, sectionPath } from '../src/project/tree';
-import type { Section } from '../src/app/types';
+import type { Section } from '../src/contracts/project';
 const section = (id: string, title: string, parent: string | null): Section => ({
   id,
   title,

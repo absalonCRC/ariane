@@ -3,9 +3,10 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { useUnifiedSearch } from '../src/app/useUnifiedSearch';
-import type { Project, Source } from '../src/app/types';
+import type { Project } from '../src/contracts/project';
+import type { Source } from '../src/contracts/sources';
 const { request } = vi.hoisted(() => ({ request: vi.fn() }));
-vi.mock('../src/app/client', () => ({ request }));
+vi.mock('../src/platform/client', () => ({ request }));
 it('isolates stale vault responses and leaves manuscript matches usable on vault failure', async () => {
   (
     globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }

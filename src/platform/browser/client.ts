@@ -1,21 +1,17 @@
-import { previewCheckpoint } from '../history/previewAutomatic';
-import { t } from '../i18n';
-import { descendants } from '../project/tree';
-import { invoke, isTauri } from '@tauri-apps/api/core';
-import type { Project, Section, Source, TextPatch, Version, Vault } from './types';
+import { previewCheckpoint } from '../../history/previewAutomatic';
+import { t } from '../../i18n';
+import { descendants } from '../../project/tree';
+import type { Project, Section, TextPatch } from '../../contracts/project';
+import type { Source, Vault } from '../../contracts/sources';
+import type { Version } from '../../contracts/history';
 import {
   applyLibraryOperation,
   structureSnapshot,
-  type LibraryOperation,
   type StructurePosition,
-} from '../project/library';
-import type { ProjectEntry } from './types';
-import { validOutline } from '../editor/outline/model';
-export const native = isTauri();
-export async function request<T>(type: string, args: Record<string, unknown> = {}): Promise<T> {
-  if (native) return invoke<T>('dispatch', { request: { type, ...args } });
-  return browserRequest(type, args) as T;
-}
+} from '../../project/library';
+import { type LibraryOperation } from '../../contracts/library';
+import type { ProjectEntry } from '../../contracts/project';
+import { validOutline } from '../../editor/outline/model';
 // The browser adapter provides real local persistence for development and visual QA.
 // Filesystem, embeddings and document conversion belong exclusively to the Rust adapter.
 const storageKey = 'ariane.preview.projects.v1';
@@ -91,7 +87,7 @@ function remember(p: Project) {
     JSON.stringify([entry, ...entries.filter((e) => e.path !== p.path)]),
   );
 }
-function browserRequest(type: string, a: Record<string, unknown>): unknown {
+export function browserRequest(type: string, a: Record<string, unknown>): unknown {
   if (type === 'revisionStatus') return { available: false };
   if (type === 'bootstrap') {
     const p = read()[current || ''];

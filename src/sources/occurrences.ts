@@ -1,5 +1,6 @@
 import { t } from '../i18n';
-import type { Section, Source } from '../app/types';
+import type { Section } from '../contracts/project';
+import type { Source } from '../contracts/sources';
 import type { ManuscriptMatch } from '../app/projectSearch';
 import { ordered } from '../project/tree';
 export interface SourceOccurrence extends ManuscriptMatch {

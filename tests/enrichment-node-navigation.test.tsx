@@ -3,8 +3,8 @@ import { act, createRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { Editor, type EditorHandle } from '../src/editor/Editor';
-import { defaultSettings, type Section } from '../src/app/types';
-
+import { defaultSettings } from '../src/contracts/settings';
+import { type Section } from '../src/contracts/project';
 it('opens the exact original node, including a folded child with identical text elsewhere', async () => {
   (
     globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }

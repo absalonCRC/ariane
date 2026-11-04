@@ -1,10 +1,9 @@
 import { EntityColorToggle } from '../components/EntityColorToggle';
 import { useEffect, useState } from 'react';
-import { request } from '../app/client';
-import type { SourcePage } from '../app/types';
+import { request } from '../platform/client';
 import defaults from './defaultEntityTypes.json';
-import type { EntityTypeDefinition } from '../app/types';
-import type { Settings } from '../app/types';
+import type { EntityTypeDefinition } from '../contracts/settings';
+import type { Settings } from '../contracts/settings';
 import { t } from '../i18n';
 import { entityColors, entityColor, entityKind } from './entityTypes';
 
@@ -18,7 +17,7 @@ export function EntityPreferences({
   const [catalogKinds, setCatalogKinds] = useState<string[]>([]);
   useEffect(() => {
     let alive = true;
-    void request<SourcePage>('browseSources', {
+    void request('browseSources', {
       query: '',
       vault: null,
       kind: null,

@@ -1,0 +1,173 @@
+.card-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.source-kind {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--theme-quiet, #aaa);
+}
+.source-card h2 {
+  font-size: 28px;
+  margin: 18px 0 22px;
+}
+.source-card dl {
+  font-size: 11px;
+  margin: 0 0 20px;
+}
+.source-card dl > div {
+  display: grid;
+  grid-template-columns: 85px 1fr;
+  gap: 8px;
+  margin-bottom: 9px;
+  line-height: 1.6;
+}
+.source-card dt {
+  color: var(--theme-quiet, #999);
+  overflow-wrap: anywhere;
+}
+.source-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.source-excerpt {
+  font-family: var(--literary);
+  font-size: 18px;
+  line-height: 1.55;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  white-space: pre-line;
+  cursor: grab;
+  max-height: 240px;
+  overflow: auto;
+}
+.source-actions {
+  display: flex;
+  gap: 0;
+  justify-content: space-between;
+  margin: 16px -8px -4px;
+}
+.source-actions button {
+  font-size: 10px;
+  padding: 7px;
+}
+.reader {
+  position: fixed;
+  right: 0;
+  top: 45px;
+  bottom: 0;
+  width: var(--writing-panel-width);
+  background: var(--theme-paper, white);
+  border-left: 1px solid var(--theme-hover, #eee);
+  z-index: 25;
+  padding: 25px 30px;
+  overflow: auto;
+}
+.reader .panel-top > span {
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  color: var(--theme-quiet, #999);
+}
+.reader h2 {
+  margin: 42px 0 25px;
+  font-size: 33px;
+}
+.read-prose {
+  font-family: var(--literary);
+  font-size: 21px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.read-prose h1 {
+  font-size: 28px;
+}
+.read-prose h2 {
+  font-size: 25px;
+  margin-top: 25px;
+}
+.read-prose img {
+  max-width: 100%;
+}
+.source-link {
+  border-bottom: 1px solid var(--theme-line-strong, #ccc);
+}
+.reader iframe {
+  width: 100%;
+  height: calc(100vh - 220px);
+  border: 0;
+}
+.attachment {
+  max-width: 100%;
+  height: auto;
+}
+.reader.source-search h2 {
+  margin-top: 20px;
+}
+.source-search .command-search {
+  margin-top: 35px;
+}
+.search-result {
+  display: block;
+  text-align: left;
+  width: 100%;
+  padding: 22px 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--theme-hover, #eee);
+}
+.search-result strong {
+  font-family: var(--literary);
+  font-weight: 400;
+  font-size: 23px;
+  display: block;
+}
+.search-result small {
+  display: block;
+  color: var(--theme-quiet, #aaa);
+  font-size: 9px;
+  line-height: 1.6;
+  margin: 6px 0;
+}
+.search-result p {
+  font-family: var(--literary);
+  font-size: 18px;
+  margin: 10px 0 0;
+}
+.library-toolbar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+}
+.vault {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--theme-hover, #eee);
+}
+.vault-name {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.vault-name strong {
+  font: 23px var(--literary);
+}
+.vault-name small {
+  font-size: 10px;
+  color: var(--theme-quiet, #999);
+  margin-left: auto;
+}
+.vault textarea {
+  font-size: 12px !important;
+}
+.index-report {
+  font-size: 11px;
+  color: var(--theme-muted, #888);
+  max-height: 160px;
+  overflow: auto;
+  background: var(--theme-paper, #fafafa);
+  padding: 12px;
+}
+.index-report p {
+  margin: 5px 0;
+}

@@ -13,10 +13,10 @@ import {
   type InlineEntitiesController,
 } from '../src/enrichment/useInlineEntities';
 import { EntityPreferences } from '../src/enrichment/EntityPreferences';
-import { defaultSettings } from '../src/app/types';
+import { defaultSettings } from '../src/contracts/settings';
 import type { Workspace } from '../src/app/useWorkspace';
 const { request } = vi.hoisted(() => ({ request: vi.fn() }));
-vi.mock('../src/app/client', () => ({ native: true, request }));
+vi.mock('../src/platform/client', () => ({ native: true, request }));
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 const text = '😀 Claude Nougaro est né à Toulouse.';
 const person: SelectedEntity = {

@@ -2,10 +2,10 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
-const request = vi.hoisted(() => vi.fn());
-vi.mock('../src/app/client', () => ({ request, native: false }));
-import type { Source } from '../src/app/types';
+import type { Source } from '../src/contracts/sources';
 import { useWorkspace } from '../src/app/useWorkspace';
+const request = vi.hoisted(() => vi.fn());
+vi.mock('../src/platform/client', () => ({ request, native: false }));
 
 it('keeps suggestions when only paragraph coordinates change and refreshes changed inputs', async () => {
   (

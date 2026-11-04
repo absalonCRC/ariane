@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { branchGuides, inclusionBySection } from '../src/project/treePresentation';
 import { visibleTree } from '../src/project/visibleTree';
-import type { Section } from '../src/app/types';
+import type { Section } from '../src/contracts/project';
 const s = (
   id: string,
   parent: string | null,

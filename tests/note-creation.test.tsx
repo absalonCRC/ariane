@@ -3,10 +3,11 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { beforeEach, afterEach, it, expect, vi } from 'vitest';
 import { useNoteCreation } from '../src/enrichment/useNoteCreation';
-import { defaultSettings, type Source } from '../src/app/types';
+import { defaultSettings } from '../src/contracts/settings';
+import { type Source } from '../src/contracts/sources';
 import type { Workspace } from '../src/app/useWorkspace';
 const { request } = vi.hoisted(() => ({ request: vi.fn() }));
-vi.mock('../src/app/client', () => ({ request }));
+vi.mock('../src/platform/client', () => ({ request }));
 let create: ReturnType<typeof useNoteCreation>, root: ReturnType<typeof createRoot>;
 const source = { id: 'n', kind: 'note', title: 'Claude' } as Source;
 function workspace(path = '/a') {

@@ -1,12 +1,7 @@
+import type { LanguageIssue } from '../contracts/revision';
 import { diffWordsWithSpace } from 'diff';
 import { t } from '../i18n';
-export interface LanguageIssue {
-  offset: number;
-  length: number;
-  message: string;
-  replacements: string[];
-  spelling?: boolean;
-}
+
 export interface ReviewSuggestion {
   from: number;
   to: number;

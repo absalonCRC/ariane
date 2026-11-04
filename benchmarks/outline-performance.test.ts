@@ -5,8 +5,7 @@ import { history } from '@codemirror/commands';
 import { compose, sectionMapping } from '../src/editor/composite';
 import { outlineEditor } from '../src/editor/outline/state';
 import { ordered } from '../src/project/tree';
-import type { Section } from '../src/app/types';
-
+import type { Section } from '../src/contracts/project';
 // Opt-in: no timing thresholds in CI. Measures state work, not native painting.
 it.skipIf(!process.env.ARIANE_PERF_REPORT)(
   'measures a large structured manuscript',

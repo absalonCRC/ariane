@@ -1,7 +1,6 @@
 import { expect, it } from 'vitest';
 import { passageExcerpt, plainExcerpt } from '../src/enrichment/excerpts';
-import type { Section } from '../src/app/types';
-
+import type { Section } from '../src/contracts/project';
 it('keeps useful table text and avoids separator noise', () => {
   expect(plainExcerpt('| Personne | Lieu |\n| --- | --- |\n| Élise | Lyon |')).toBe(
     'Personne · Lieu Élise · Lyon',

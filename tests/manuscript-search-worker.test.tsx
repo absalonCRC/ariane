@@ -2,9 +2,9 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
-import type { Project } from '../src/app/types';
-vi.mock('../src/app/client', () => ({ request: vi.fn(async () => []) }));
+import type { Project } from '../src/contracts/project';
 import { useUnifiedSearch } from '../src/app/useUnifiedSearch';
+vi.mock('../src/platform/client', () => ({ request: vi.fn(async () => []) }));
 it('sends only changed sections and rejects obsolete worker responses', async () => {
   (
     globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }

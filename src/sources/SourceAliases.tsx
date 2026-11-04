@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { request } from '../app/client';
-import type { Source, Vault } from '../app/types';
+import { request } from '../platform/client';
+import type { Source } from '../contracts/sources';
 import { t, localizeMessage } from '../i18n';
 
 export function SourceAliases({
@@ -21,7 +21,7 @@ export function SourceAliases({
     setEditable(false);
     setValue(source.aliases.join('\n'));
     setError('');
-    void request<Vault[]>('vaults')
+    void request('vaults')
       .then((vaults) => {
         if (alive)
           setEditable(
@@ -39,7 +39,7 @@ export function SourceAliases({
     setError('');
     try {
       onChange(
-        await request<Source>('updateSourceAliases', {
+        await request('updateSourceAliases', {
           projectPath,
           source: source.id,
           fingerprint: source.fingerprint,
