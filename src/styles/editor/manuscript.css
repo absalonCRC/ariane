@@ -9,7 +9,7 @@
   position: relative;
   overflow-y: auto;
   scrollbar-width: none;
-  padding-left: 32px;
+  padding-left: 44px;
   padding-right: 32px;
   padding-top: clamp(110px, 18vh, 225px);
   scroll-padding-block: 55px;
@@ -257,9 +257,6 @@
 }
 .outline-handle.outline-parent::before {
   box-shadow: 0 0 0 3px var(--theme-hover, #ededed);
-}
-.outline-handle.outline-collapsed {
-  opacity: 0.85;
 }
 .outline-handle.outline-collapsed::before {
   border-radius: 0;

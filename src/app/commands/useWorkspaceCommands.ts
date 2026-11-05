@@ -106,6 +106,7 @@ export function useWorkspaceCommands({
             ]
           : []),
         { id: 'sources', label: t('Sources du projet'), action: () => setSurface('sources') },
+        { id: 'smart-tags', label: t('Gérer les smart-tags'), action: () => setSurface('tags') },
         { id: 'prepare', label: t('Préparer cette section'), action: () => setSurface('prepare') },
         {
           id: 'history',

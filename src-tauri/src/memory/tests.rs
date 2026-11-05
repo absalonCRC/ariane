@@ -15,7 +15,7 @@ fn scene(root: &Path, id: &str, text: &str, nodes: &[(&str, usize)]) {
         version: 1,
         nodes: nodes
             .iter()
-            .map(|(id, start)| crate::model::OutlineNode {
+            .map(|(id, start)| crate::model::OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],
                 id: (*id).into(),
                 parent: None,
                 start: *start,

@@ -73,6 +73,19 @@ it('returns focus to depth control before hiding its slider', async () => {
   expect(document.activeElement).toBe(trigger);
   expect(trigger.getAttribute('aria-expanded')).toBe('false');
 });
+it('disables the depth trigger and slider in a tag view and enables them again on return', async () => {
+  const change = vi.fn();
+  await act(async () => root.render(<DepthControl value={3} disabled onChange={change} />));
+  expect(host.querySelector('button')!.disabled).toBe(true);
+  expect(host.querySelector('input')!.disabled).toBe(true);
+  expect(host.querySelector('.depth-slider')?.hasAttribute('inert')).toBe(true);
+  await act(async () => host.querySelector('button')!.click());
+  expect(host.querySelector('button')!.getAttribute('aria-expanded')).toBe('false');
+  expect(change).not.toHaveBeenCalled();
+  await act(async () => root.render(<DepthControl value={3} onChange={change} />));
+  expect(host.querySelector('button')!.disabled).toBe(false);
+  expect(host.querySelector('input')!.disabled).toBe(false);
+});
 it('returns focus to the settings trigger after Escape', async () => {
   function Harness() {
     const [open, setOpen] = useState(false);

@@ -24,7 +24,7 @@
   display: flex;
   align-items: center;
   gap: 38px;
-  padding: 34px 36px 24px;
+  padding: 68px 36px 24px;
   border-bottom: 1px solid var(--line);
   flex-shrink: 0;
 }
@@ -525,7 +525,7 @@
 }
 @media (max-width: 850px) {
   .workspace-screen-header {
-    padding: 28px 20px 18px;
+    padding: 64px 20px 18px;
     gap: 22px;
   }
   .settings-workspace {
@@ -653,8 +653,7 @@
 .app[data-focus='true'] .entity-proposal {
   display: none !important;
 }
-.app[data-focus='true'] .header-right .menu-control,
-.app[data-focus='true'] .header-right .resume-trigger {
+.app[data-focus='true'] .header-right .menu-control {
   display: none;
 }
 .app[data-focus='true'] .writing-layout {

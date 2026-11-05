@@ -160,6 +160,7 @@ export function MemoryReader({
   }
   return (
     <aside
+      id={view.kind === 'resume' ? 'project-activity-history' : undefined}
       ref={panel}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
@@ -177,7 +178,7 @@ export function MemoryReader({
       data-phase={shown.exiting ? 'exit' : 'open'}
       inert={shown.exiting}
       aria-hidden={shown.exiting || undefined}
-      aria-label={t('Mémoire du manuscrit')}
+      aria-label={view.kind === 'resume' ? t('Historique') : t('Mémoire du manuscrit')}
       data-view={view.kind}
       data-partitioned={view.kind === 'resume' && (projectMenuOpen || writingMenuOpen)}
     >
@@ -187,8 +188,12 @@ export function MemoryReader({
         </div>
       )}
       <div className="panel-top">
-        <span>{view.kind === 'resume' ? t('REPRENDRE LE FIL') : t('DEPUIS VOTRE TEXTE')}</span>
-        <button className="icon-button" aria-label={t('Fermer la mémoire')} onClick={memory.close}>
+        <span>{view.kind === 'resume' ? t('HISTORIQUE') : t('DEPUIS VOTRE TEXTE')}</span>
+        <button
+          className="icon-button"
+          aria-label={view.kind === 'resume' ? t('Fermer l’historique') : t('Fermer la mémoire')}
+          onClick={memory.close}
+        >
           <X size={16} />
         </button>
       </div>
@@ -304,7 +309,7 @@ export function MemoryReader({
       )}
       {view.kind === 'resume' && (
         <div className="resume-content">
-          <h2 aria-hidden={projectMenuOpen || writingMenuOpen}>{t('Reprendre le fil')}</h2>
+          <h2 aria-hidden={projectMenuOpen || writingMenuOpen}>{t('Historique')}</h2>
           {workspace.activity && (
             <NoteActivity
               activity={workspace.activity}

@@ -8,6 +8,7 @@ import { type SectionDraft } from '../project/draft';
 import { type SearchDirection } from './textSearch';
 import { type MarkdownFormat } from './formatMarkdown';
 import { type ReviewTarget } from './reviewTarget';
+import type { SmartTag } from '../contracts/smartTags';
 export interface VisibleText {
   cursor?: number;
   text: string;
@@ -17,6 +18,13 @@ export interface VisibleText {
   bounds?: { top: number; bottom: number; right: number };
 }
 export interface EditorHandle {
+  removeSmartTag: (section: string, node: string, tag: string) => boolean;
+  setLineProperty: (
+    section: string,
+    node: string,
+    field: string,
+    value: import('../contracts/lineProperties').PropertyValue | undefined,
+  ) => boolean;
   context: () => { section: string; node: string | null; offset: number; cursor: number } | null;
   contextTop: (section: string, node: string | null) => number | null;
   restoreContext: (context: {
@@ -42,6 +50,14 @@ export interface EditorHandle {
   structure: (command: 'indent' | 'outdent' | 'up' | 'down' | 'fold') => void;
 }
 export interface EditorProps {
+  onOutlineDetails?: (section: string, node: string, outline: Outline) => void;
+  onRemoveSmartTag?: (section: string, node: string | null, tag: string) => void | Promise<void>;
+  smartTags?: SmartTag[];
+  tagSections?: Section[];
+  createSmartTag?: (name: string) => Promise<SmartTag>;
+  onSmartTag?: (id: string) => void;
+  onTagWork?: (task: Promise<void>) => void;
+  registerTagFlusher?: (flush: () => Promise<void>) => () => void;
   sections: Section[];
   entities?: EntityBatch[];
   searchQuery?: string;

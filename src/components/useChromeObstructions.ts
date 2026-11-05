@@ -5,7 +5,6 @@ const controls = [
   '.menu-control',
   '.voice-control',
   '.focus-mode-trigger',
-  '.resume-trigger',
   '.header-search',
   '.writing-counter',
   '.depth-control',

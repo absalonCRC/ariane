@@ -1,4 +1,5 @@
 import type { NoteEventInput, NoteEvent, NoteEventPage } from './noteActivity';
+import type { TagOperation } from './smartTags';
 import type { Project, Section, TextPatch, ProjectEntry } from './project';
 import type { Settings } from './settings';
 import type { Source, SourcePage, Vault } from './sources';
@@ -45,6 +46,7 @@ export interface IndexReport {
   semantic: boolean;
 }
 export interface Requests {
+  smartTagOperation: { projectPath: string; operation: TagOperation };
   noteActivity: { projectPath: string; before?: number | null };
   recordNoteActivity: { projectPath: string; value: NoteEventInput };
   bootstrap: {};
@@ -193,6 +195,7 @@ export interface Requests {
 }
 
 export interface Responses {
+  smartTagOperation: Project;
   noteActivity: NoteEventPage;
   recordNoteActivity: { inserted: boolean; event: NoteEvent };
   bootstrap: Project | null;

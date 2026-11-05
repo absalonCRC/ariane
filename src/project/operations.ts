@@ -220,7 +220,10 @@ export function createProjectOperations({
         if (doc.ref.current?.path !== path) return;
         await doc.flush();
         const sections = await request('update', { section });
-        if (doc.ref.current?.path === path) doc.replaceSections(sections, false);
+        if (doc.ref.current?.path === path) {
+          doc.replaceSections(sections, false);
+          doc.markChanged([section.id]);
+        }
       });
     metadataQueue.current = task.catch(() => {});
     return task;

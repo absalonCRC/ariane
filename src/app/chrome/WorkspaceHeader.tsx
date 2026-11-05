@@ -1,7 +1,7 @@
 import type { Command } from '../Palette';
 import type { Dispatch, SetStateAction } from 'react';
 import { t } from '../../i18n';
-import { MoreHorizontal, Focus, Minimize2, History } from 'lucide-react';
+import { MoreHorizontal, Focus, Minimize2 } from 'lucide-react';
 import { ArianeWordmark } from '../../components/ArianeWordmark';
 interface Props {
   libraryBusy: boolean;
@@ -9,8 +9,6 @@ interface Props {
   historyMode: boolean;
   immersiveFocus: boolean | undefined;
   onToggleFocus: () => void;
-  onResume: () => void;
-  resumeOpen: boolean;
   menu: boolean;
   setMenu: Dispatch<SetStateAction<boolean>>;
   commands: Command[];
@@ -21,8 +19,6 @@ export function WorkspaceHeader({
   historyMode,
   immersiveFocus,
   onToggleFocus,
-  onResume,
-  resumeOpen,
   menu,
   setMenu,
   commands,
@@ -44,17 +40,6 @@ export function WorkspaceHeader({
             ) : (
               <Focus size={16} aria-hidden="true" />
             )}
-          </button>
-        )}
-        {!historyMode && (
-          <button
-            className="resume-trigger"
-            aria-label={t('Reprendre le fil')}
-            data-tooltip={t('Reprendre le fil')}
-            aria-expanded={resumeOpen}
-            onClick={onResume}
-          >
-            <History size={16} aria-hidden="true" />
           </button>
         )}
         <div className="menu-control" data-open={menu}>

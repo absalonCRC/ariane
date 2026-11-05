@@ -1,5 +1,5 @@
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { native } from '../../platform/client';
+import { native } from '../platform/client';
 
 /** Native dragging is restricted to this surface below the interactive chrome. */
 export function WindowDragRegion({ onError }: { onError: (error: unknown) => void }) {

@@ -36,8 +36,9 @@ pub fn apply(root: &Path, op: Operation) -> Result<Project> {
             second.id = uuid::Uuid::new_v4().to_string();
             second.title = op.title.as_deref().map(str::trim).filter(|s| !s.is_empty()).map(str::to_owned).unwrap_or_else(||format!("{} — suite", second.title));
             second.text = all[source].text[byte..].into();
-            second.revision = 0; second.outline = None; second.synopsis.clear(); second.goal = 0;
-            all[source].text.truncate(byte); all[source].outline = None; all[source].revision += 1;
+            let (left_outline, right_outline) = super::outline::split(&all[source].outline, op.offset.unwrap(), &super::tags::definitions(&tx)?);
+            second.revision = 0; second.outline = right_outline; second.synopsis.clear(); second.goal = 0;
+            all[source].text.truncate(byte); all[source].outline = left_outline; all[source].revision += 1;
             all.insert(source+1, second);
         }
         "join" => {
@@ -46,15 +47,17 @@ pub fn apply(root: &Path, op: Operation) -> Result<Project> {
             let i = siblings.iter().position(|id|*id == op.source_id).ok_or("Scène introuvable.")?;
             if siblings.get(i+1) != Some(&all[target].id.as_str()) { return Err("Choisissez deux scènes consécutives du même emplacement.".into()); }
             let separator = if all[source].text.is_empty() || all[target].text.is_empty() { "" } else { "\n\n" };
+            let outline = super::outline::join(&all[source], &all[target], separator);
+            for tag in all[target].tag_ids.clone() {if !all[source].tag_ids.contains(&tag) {all[source].tag_ids.push(tag);}}
             all[source].text = format!("{}{}{}", all[source].text, separator, all[target].text);
-            all[source].outline = None; all[source].revision += 1; all[target].trashed = true;
+            all[source].outline = outline; all[source].revision += 1; all[target].trashed = true;
         }
         _ => return Err("Opération inconnue.".into()),
     }
     tx.execute("DELETE FROM structure_history", []).app()?;
     for (position, s) in all.iter_mut().enumerate() {
         s.position = position as i64;
-        tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET position=excluded.position,text=excluded.text,revision=excluded.revision,outline=excluded.outline,trashed=excluded.trashed", params![s.id,s.parent,s.title,s.kind,s.position,s.text,s.revision,s.synopsis,s.status,s.goal,s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included]).app()?;
+        tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET position=excluded.position,text=excluded.text,revision=excluded.revision,outline=excluded.outline,trashed=excluded.trashed,tag_ids=excluded.tag_ids", params![s.id,s.parent,s.title,s.kind,s.position,s.text,s.revision,s.synopsis,s.status,s.goal,s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included,serde_json::to_string(&s.tag_ids).app()?]).app()?;
     }
     super::annotations::relocate(&tx,&op,&before,&all)?;
     tx.commit().app()?;

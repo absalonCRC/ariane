@@ -55,7 +55,7 @@ fn prepare(state: &AppState) -> Result<Value> {
         let outline = Outline {
             version: 1,
             nodes: (0..nodes)
-                .map(|j| OutlineNode {
+                .map(|j| OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],
                     id: format!("{i}-{j}"),
                     start: j * line.len(),
                     parent: if j % 5 == 0 {

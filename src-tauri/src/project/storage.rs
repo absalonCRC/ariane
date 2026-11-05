@@ -72,6 +72,7 @@ pub(crate) fn load_unlocked(root: &Path) -> Result<Project> {
         .unwrap_or("{}".into());
     let (trash, sections): (Vec<_>, Vec<_>) = all.into_iter().partition(|s| s.trashed);
     Ok(Project {
+        smart_tags: super::tags::definitions(&c)?,
         path: root.to_string_lossy().into(),
         name,
         sections,
@@ -116,8 +117,12 @@ fn save_report_with(
     super::with_lock(root, || {
         let root_dir = super::io::Dir::open(root)?;
         let mut c = database(root)?;
+        let smart_tags = super::tags::definitions(&c)?;
         let mut seen = std::collections::HashSet::new();
         for patch in &patches {
+            if let Some(outline) = &patch.outline {
+                for node in &outline.nodes { super::tags::validate_ids(&node.tag_ids, &smart_tags)?; }
+            }
             super::validate_id(&patch.id)?;
             if !seen.insert(&patch.id) {
                 return Err(
@@ -196,7 +201,7 @@ fn save_report_with(
         }
         let mut saved = Vec::with_capacity(patches.len());
         {
-            let mut query = tx.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE id=?").app()?;
+            let mut query = tx.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids FROM sections WHERE id=?").app()?;
             for p in &patches {
                 saved.push(query.query_row([&p.id], row_section).app()?);
             }
@@ -402,7 +407,7 @@ mod tests {
             version: 1,
             nodes: nodes
                 .iter()
-                .map(|(id, parent, start)| OutlineNode {
+                .map(|(id, parent, start)| OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],
                     id: (*id).into(),
                     parent: parent.map(str::to_owned),
                     start: *start,
@@ -464,7 +469,7 @@ mod tests {
                 "A\nB",
                 Outline {
                     version: 2,
-                    nodes: vec![OutlineNode {
+                    nodes: vec![OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],
                         id: "a".into(),
                         parent: None,
                         start: 0,

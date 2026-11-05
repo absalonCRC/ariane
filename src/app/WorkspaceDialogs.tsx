@@ -10,6 +10,7 @@ import { ProjectCatalog } from '../project/ProjectCatalog';
 import { Preparation } from '../project/Preparation';
 import { Preferences } from './Preferences';
 import { Dialog } from '../components/Dialog';
+import { TagManager } from '../tags/TagManager';
 const Library = lazy(() => import('../sources/Library').then((m) => ({ default: m.Library })));
 
 const Export = lazy(() => import('../export/Export').then((m) => ({ default: m.Export })));
@@ -27,11 +28,13 @@ export function WorkspaceDialogs({
   onMemory,
   onLoading,
   onNotice,
+  onTagFilter,
 }: {
   workspace: Workspace;
   onLoading?: (loading: boolean) => void;
   onNotice?: (message: string, tone?: 'info' | 'success' | 'error') => void;
   onMemory?: () => void;
+  onTagFilter?: (id: string) => void;
 }) {
   useLocale();
   const {
@@ -50,6 +53,24 @@ export function WorkspaceDialogs({
   if (!p) return null;
   return (
     <Suspense fallback={<LoadingNotice onLoading={onLoading} />}>
+      {surface === 'tags' && (
+        <TagManager
+          project={p}
+          onError={fail}
+          onOperation={async (operation) => {
+            const context = workspace.editor.current?.context(),
+              path = p.path;
+            await doc.tagOperation(operation);
+            if (context && doc.ref.current?.path === path)
+              requestAnimationFrame(() => {
+                if (doc.ref.current?.path === path)
+                  workspace.editor.current?.restoreContext(context);
+              });
+          }}
+          onClose={close}
+          onFilter={onTagFilter}
+        />
+      )}
       {surface === 'import' && (
         <ImportProject
           projectPath={p.path}
@@ -65,10 +86,12 @@ export function WorkspaceDialogs({
         {surface === 'preferences' && (
           <Preferences
             project={p}
+            onError={fail}
             theme={workspace.appearance.theme}
             onTheme={workspace.appearance.change}
             onExport={() => workspace.setSurface('export')}
             onHistory={() => workspace.setSurface('history')}
+            onTags={() => workspace.setSurface('tags')}
             sources={
               <>
                 <Library

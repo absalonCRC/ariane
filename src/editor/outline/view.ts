@@ -1,6 +1,8 @@
 import { t, getLocale } from '../../i18n';
 import { documentBounds, documentScroller } from '../scrolling';
-import { Prec, RangeSetBuilder } from '@codemirror/state';
+import { Prec, RangeSetBuilder, type EditorState } from '@codemirror/state';
+import type { SmartTag } from '../../contracts/smartTags';
+import { refreshSmartTags } from '../smartTags';
 import {
   Decoration,
   EditorView,
@@ -14,22 +16,29 @@ import {
 import type { OutlineEditor, OutlineEntry, OutlineSession } from './state';
 import { tableHiddenRanges } from '../liveTables';
 
-export function outlinePresentation(outline: OutlineEditor) {
+export function outlinePresentation(
+  outline: OutlineEditor,
+  tagsForNode?: (state: EditorState, node: OutlineEntry) => SmartTag[],
+  onDetails?: (section: string, node: string) => void,
+) {
   let activeDrag: { id: string; cancel: () => void } | null = null;
   function activate(view: EditorView, id: string) {
     const session = view.state.field(outline.field);
-    if (session.nodes.some((n) => n.parent === id)) outline.toggleFold(view, id);
-    else {
-      const node = session.nodes.find((n) => n.id === id);
-      if (node) view.dispatch({ selection: { anchor: node.from } });
-    }
+    const node = session.nodes.find((n) => n.id === id);
+    if (node) view.dispatch({ selection: { anchor: node.from } });
     view.focus();
+    if (node) onDetails?.(node.section, node.id);
   }
   function beginDrag(view: EditorView, id: string, event: PointerEvent) {
     if (event.button !== 0) return;
     event.preventDefault();
     event.stopPropagation();
     activeDrag?.cancel();
+    if (event.shiftKey) {
+      outline.selectBranch(view, id);
+      view.focus();
+      return;
+    }
     const start = { x: event.clientX, y: event.clientY },
       win = view.dom.ownerDocument.defaultView!;
     let moving = false,
@@ -119,6 +128,7 @@ export function outlinePresentation(outline: OutlineEditor) {
       readonly active: boolean,
       readonly depth: number,
       readonly lineHeight: number,
+      readonly tags: SmartTag[],
     ) {
       super();
     }
@@ -130,40 +140,83 @@ export function outlinePresentation(outline: OutlineEditor) {
         this.folded === other.folded &&
         this.active === other.active &&
         this.depth === other.depth &&
-        this.lineHeight === other.lineHeight
+        this.lineHeight === other.lineHeight &&
+        this.tags.map((t) => t.id + ':' + t.color + ':' + t.name).join('|') ===
+          other.tags.map((t) => t.id + ':' + t.color + ':' + t.name).join('|')
       );
     }
     toDOM(view: EditorView) {
+      const controls = document.createElement('span');
+      controls.className = 'outline-controls';
+      controls.dataset.outlineAnchor = this.node.id;
+      controls.style.setProperty('--outline-line-height', this.lineHeight + 'px');
+      if (this.children) {
+        const chevron = document.createElement('button');
+        chevron.type = 'button';
+        chevron.className = 'outline-chevron';
+        chevron.dataset.folded = String(this.folded);
+        chevron.setAttribute(
+          'aria-label',
+          this.folded ? t('Déplier le passage') : t('Replier le passage'),
+        );
+        chevron.setAttribute('aria-expanded', String(!this.folded));
+        chevron.dataset.tooltip = this.folded ? t('Déplier le passage') : t('Replier le passage');
+        chevron.addEventListener('pointerdown', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        });
+        chevron.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          outline.toggleFold(view, this.node.id);
+          view.focus();
+        });
+        controls.append(chevron);
+      } else {
+        const spacer = document.createElement('span');
+        spacer.className = 'outline-chevron-spacer';
+        spacer.setAttribute('aria-hidden', 'true');
+        controls.append(spacer);
+      }
       const button = document.createElement('button');
       button.className =
         'outline-handle' +
         (this.children ? ' outline-parent' : '') +
         (this.children && this.folded ? ' outline-collapsed' : '') +
+        (this.tags.length ? ' outline-tagged' : '') +
         (this.active ? ' outline-current' : '');
       button.type = 'button';
       button.dataset.outlineHandle = this.node.id;
       button.style.setProperty('--outline-depth', String(this.depth));
       button.style.setProperty('--outline-line-height', this.lineHeight + 'px');
+      if (this.tags.length) {
+        button.style.setProperty('--outline-tag-primary', this.tags[0].color);
+        button.style.setProperty(
+          '--outline-tag-fill',
+          this.tags.length === 1
+            ? this.tags[0].color
+            : `conic-gradient(${this.tags.map((tag, i) => `${tag.color} ${(i * 100) / this.tags.length}% ${((i + 1) * 100) / this.tags.length}%`).join(',')})`,
+        );
+      }
       button.tabIndex = this.active ? 0 : -1;
-      button.setAttribute(
-        'aria-label',
-        this.children
-          ? this.folded
-            ? t('Déplier le passage')
-            : t('Replier le passage')
-          : t('Déplacer le passage'),
-      );
-      if (this.children) button.setAttribute('aria-expanded', String(!this.folded));
+      button.setAttribute('aria-label', t('Détail du passage'));
       button.dataset.state = this.children ? (this.folded ? 'replié' : 'déplié') : 'passage';
-      button.dataset.tooltip = this.children
-        ? t('Glisser pour déplacer · cliquer pour replier ou déplier')
-        : t('Glisser pour déplacer le passage');
+      button.dataset.tooltip = t('Glisser pour déplacer · cliquer pour les propriétés');
+      button.dataset.tooltip += ' · ' + t('Maj-clic : sélectionner la branche');
+      if (this.tags.length)
+        button.dataset.tooltip += ' · ' + this.tags.map((tag) => '#' + tag.name).join(' ');
       button.draggable = false;
       button.addEventListener('pointerdown', (event) => beginDrag(view, this.node.id, event));
       button.addEventListener('click', (event) => {
-        if (event.detail === 0) activate(view, this.node.id);
+        if (event.detail === 0) {
+          if (event.shiftKey) {
+            outline.selectBranch(view, this.node.id);
+            view.focus();
+          } else activate(view, this.node.id);
+        }
       });
-      return button;
+      controls.append(button);
+      return controls;
     }
   }
   const paint = ViewPlugin.fromClass(
@@ -198,9 +251,9 @@ export function outlinePresentation(outline: OutlineEditor) {
           read: () => {
             const nodes = outline.index(view.state).byId;
             return Array.from(
-              view.dom.querySelectorAll<HTMLElement>('[data-outline-handle]'),
+              view.dom.querySelectorAll<HTMLElement>('[data-outline-anchor]'),
             ).flatMap((button) => {
-              const node = nodes.get(button.dataset.outlineHandle!);
+              const node = nodes.get(button.dataset.outlineAnchor!);
               const caret = node ? view.coordsAtPos(node.from) : null;
               if (!caret || !button.parentElement) return [];
               const gutter = button.parentElement.getBoundingClientRect();
@@ -209,12 +262,17 @@ export function outlinePresentation(outline: OutlineEditor) {
                   button,
                   height: caret.bottom - caret.top,
                   top: caret.top - gutter.top,
-                  left: caret.left - gutter.left - 32,
+                  left: caret.left - gutter.left - 44,
                 },
               ];
             });
           },
           write: (items) => {
+            // CodeMirror hides decorative gutters from assistive technology.
+            // This gutter contains real buttons and must expose their labels.
+            view.dom
+              .querySelector('.cm-outline-gutter')
+              ?.parentElement?.removeAttribute('aria-hidden');
             for (const { button, height, top, left } of items) {
               button.style.height = height + 'px';
               button.style.marginTop = top + 'px';
@@ -351,8 +409,12 @@ export function outlinePresentation(outline: OutlineEditor) {
     gutter({
       class: 'cm-outline-gutter',
       lineMarker(view, line) {
-        const node = outline.entryAt(view.state, line.from);
-        if (!node || node.from !== line.from) return null;
+        const replacement = hidden(view.state).find(
+          (range) => range.from <= line.from && line.from < range.to,
+        );
+        const from = replacement?.to ?? line.from;
+        const node = outline.entryAt(view.state, from);
+        if (!node || node.from !== from) return null;
         const session = view.state.field(outline.field);
         const { depths, parents } = outline.index(view.state);
         return new PassageMarker(
@@ -362,10 +424,13 @@ export function outlinePresentation(outline: OutlineEditor) {
           outline.entryAt(view.state).id === node.id,
           depths.get(node.id) ?? 0,
           view.defaultLineHeight,
+          tagsForNode?.(view.state, node) ?? [],
         );
       },
       lineMarkerChange: (u) =>
-        u.transactions.some((tr) => tr.reconfigured) ||
+        u.transactions.some(
+          (tr) => tr.reconfigured || tr.effects.some((effect) => effect.is(refreshSmartTags)),
+        ) ||
         u.selectionSet ||
         u.geometryChanged ||
         u.startState.field(outline.field) !== u.state.field(outline.field),

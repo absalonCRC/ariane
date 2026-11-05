@@ -4,12 +4,14 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useId,
   type CSSProperties,
   type ReactNode,
 } from 'react';
 import { Check, CircleAlert, FileText, Folder, GitBranch, Info, Plus, X } from 'lucide-react';
 import type { Project, Section } from '../contracts/project';
 import { sectionPath } from './tree';
+import type { TitleView } from '../components/ViewTitleCapsule';
 export type PathNotification = {
   id: number;
   message: string;
@@ -82,9 +84,12 @@ export function PathMenu({
   hasError = false,
   noticeDetails,
   branchName,
+  hasVariants = false,
   branchMenu,
+  view,
 }: {
-  project: Project;
+  project?: Project;
+  view?: TitleView;
   selected: Section | undefined;
   continuous: boolean;
   onSelect: (id: string) => void;
@@ -94,9 +99,11 @@ export function PathMenu({
   hasError?: boolean;
   noticeDetails?: ReactNode;
   branchName?: string;
+  hasVariants?: boolean;
   branchMenu?: (close: () => void) => ReactNode;
 }) {
   useLocale();
+  const treeId = useId();
   const [open, setOpen] = useState(false);
   const [headingSize, setHeadingSize] = useState<{ width: number; height: number }>();
   const trigger = useRef<HTMLButtonElement>(null);
@@ -104,18 +111,21 @@ export function PathMenu({
   const titleWidth = useRef(0);
   const returnFocus = useCallback(() => trigger.current?.focus({ preventScroll: true }), []);
   const primary = notifications[0];
+  const showBranch = !!branchName && hasVariants && !primary;
   const signature = notifications.map((notice) => notice.id).join(',');
   const parent = continuous
     ? null
     : selected?.kind === 'scene'
       ? selected.parent
       : selected?.id || null;
-  const path = continuous ? [] : sectionPath(project.sections, selected);
+  const path = continuous || view ? [] : sectionPath(project?.sections ?? [], selected);
   const title = [
-    project.name,
-    ...(continuous
-      ? [t('Manuscrit entier')]
-      : path.map((section) => section.title || t('Sans titre'))),
+    project?.name ?? 'ariane',
+    ...(view
+      ? [view.title, ...(view.trail ?? [])]
+      : continuous
+        ? [t('Manuscrit entier')]
+        : path.map((section) => section.title || t('Sans titre'))),
   ].join(' / ');
 
   useLayoutEffect(() => {
@@ -205,15 +215,18 @@ export function PathMenu({
               className="path-trigger"
               ref={trigger}
               aria-label={
-                (primary
-                  ? t('Arborescence du projet · ') + primary.message
-                  : hasPending
-                    ? t('Arborescence du projet · notifications à consulter')
-                    : t('Arborescence du projet')) +
-                (branchName ? ' · ' + t('Variante active') + ' : ' + branchName : '')
+                (view
+                  ? t('Contexte de la vue · {0}', { 0: view.title }) +
+                    (primary ? ' · ' + primary.message : '')
+                  : primary
+                    ? t('Arborescence du projet · ') + primary.message
+                    : hasPending
+                      ? t('Arborescence du projet · notifications à consulter')
+                      : t('Arborescence du projet')) +
+                (showBranch ? ' · ' + t('Variante active') + ' : ' + branchName : '')
               }
               aria-expanded={open}
-              aria-controls="path-tree"
+              aria-controls={treeId}
               onClick={(event) => setOpen(event.detail === 0 ? !open : true)}
             >
               {primary ? (
@@ -221,7 +234,7 @@ export function PathMenu({
               ) : (
                 <span className="path-title-text">{title}</span>
               )}
-              {branchName && (
+              {showBranch && (
                 <span className="path-branch-current">
                   <GitBranch size={12} aria-hidden="true" />
                   <span>{branchName}</span>
@@ -254,7 +267,7 @@ export function PathMenu({
           ))}
         </div>
       </div>
-      <div className="path-popover" id="path-tree" aria-hidden={!open} inert={!open}>
+      <div className="path-popover" id={treeId} aria-hidden={!open} inert={!open}>
         {branchMenu?.(() => {
           setOpen(false);
           returnFocus();
@@ -262,8 +275,13 @@ export function PathMenu({
         <nav aria-label={t('Hiérarchie de la page courante')}>
           <div className="path-tree-root">
             <Folder size={14} />
-            <span>{project.name}</span>
+            <span>{project?.name ?? 'ariane'}</span>
           </div>
+          {view && (
+            <div className="path-tree-root path-view-context">
+              <span>{[view.title, ...(view.trail ?? [])].join(' / ')}</span>
+            </div>
+          )}
           {nodes()}
           {continuous && (
             <div className="path-tree-root path-tree-manuscript">
@@ -272,15 +290,28 @@ export function PathMenu({
             </div>
           )}
         </nav>
-        <button
-          className="path-add"
-          onClick={() => {
-            setOpen(false);
-            onAdd(parent);
-          }}
-        >
-          <Plus size={14} /> {t('Nouvelle page')}
-        </button>
+        {view?.onBack && (
+          <button
+            className="path-add"
+            onClick={() => {
+              setOpen(false);
+              view.onBack?.();
+            }}
+          >
+            {view.backLabel ?? t('Revenir au texte')}
+          </button>
+        )}
+        {!view && project && (
+          <button
+            className="path-add"
+            onClick={() => {
+              setOpen(false);
+              onAdd(parent);
+            }}
+          >
+            <Plus size={14} /> {t('Nouvelle page')}
+          </button>
+        )}
         {hasPending && (
           <div className="path-notices" aria-label={t('Notifications à consulter')}>
             {noticeDetails}

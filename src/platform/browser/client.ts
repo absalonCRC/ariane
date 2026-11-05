@@ -11,6 +11,8 @@ import {
 } from '../../project/library';
 import { type LibraryOperation } from '../../contracts/library';
 import type { ProjectEntry } from '../../contracts/project';
+import { applyTagOperation, validateTagIds } from '../../tags/model';
+import type { TagOperation } from '../../contracts/smartTags';
 import { validOutline } from '../../editor/outline/model';
 // The browser adapter provides real local persistence for development and visual QA.
 // Filesystem, embeddings and document conversion belong exclusively to the Rust adapter.
@@ -227,6 +229,16 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
       ].sort(),
     };
   }
+  if (type === 'smartTagOperation') {
+    if (a.projectPath !== p.path) throw new Error('Le projet actif a changé.');
+    const operation = a.operation as TagOperation;
+    const next = structuredClone(p);
+    applyTagOperation(next, operation);
+    if (operation.action !== 'save' || p.smartTags?.some((t) => t.id === operation.tag.id))
+      browserRequest('capture', { name: 'Avant modification des smart-tags' });
+    store(next);
+    return next;
+  }
   if (type === 'save') {
     const patches = a.patches as TextPatch[];
     const ids = new Set<string>();
@@ -237,6 +249,7 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
       ids.add(patch.id);
       if (patch.outline && !validOutline(patch.text, patch.outline))
         throw new Error(t('Structure de passages invalide.'));
+      for (const node of patch.outline?.nodes ?? []) validateTagIds(node.tagIds, p.smartTags ?? []);
     }
     for (const patch of patches) {
       const s = p.sections.find((s) => s.id === patch.id)!;

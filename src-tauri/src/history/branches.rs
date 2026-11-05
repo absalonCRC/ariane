@@ -164,7 +164,10 @@ pub(super) fn validate(state: &Snapshot) -> Result<()> {
     if ids.len() != state.sections.len() {
         return Err("Identifiants de sections en double.".into());
     }
+    for tag in &state.smart_tags { project::tags::validate_tag(tag, &state.smart_tags)?; }
     for s in &state.sections {
+        project::tags::validate_ids(&s.tag_ids, &state.smart_tags)?;
+        if let Some(o) = &s.outline { for n in &o.nodes { project::tags::validate_ids(&n.tag_ids, &state.smart_tags)?; } }
         project::validate_id(&s.id)?;
         if !["scene", "chapter", "folder"].contains(&s.kind.as_str()) {
             return Err("Type de section invalide.".into());
@@ -221,7 +224,7 @@ pub(super) fn replace(c: &Connection, root: &Path, state: &Snapshot) -> Result<(
 CREATE TABLE IF NOT EXISTS margin_pins(section TEXT NOT NULL,source TEXT NOT NULL,PRIMARY KEY(section,source)); DELETE FROM margin_pins;").app()?;
     for s in &state.sections {
         let revision = revision_floor;
-        c.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,mirror,outline,role,trashed,included) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",params![s.id,s.parent,s.title,s.kind,s.position,s.text,revision,s.synopsis,s.status,s.goal,bases[&s.id],s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included]).app()?;
+        c.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,mirror,outline,role,trashed,included,tag_ids) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",params![s.id,s.parent,s.title,s.kind,s.position,s.text,revision,s.synopsis,s.status,s.goal,bases[&s.id],s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included,serde_json::to_string(&s.tag_ids).app()?]).app()?;
         if s.kind == "scene" && !s.trashed {
             c.execute(
                 "INSERT INTO mirror_pending(id,base) VALUES(?,?)",
@@ -235,6 +238,7 @@ CREATE TABLE IF NOT EXISTS margin_pins(section TEXT NOT NULL,source TEXT NOT NUL
         [state.settings.to_string()],
     )
     .app()?;
+    c.execute("INSERT OR REPLACE INTO meta VALUES('smart_tags',?)",[serde_json::to_string(&state.smart_tags).app()?]).app()?;
     if let Some(annotations) = &state.annotations {
         c.execute_batch("CREATE TABLE IF NOT EXISTS annotations(id TEXT PRIMARY KEY,payload TEXT NOT NULL); DELETE FROM annotations;").app()?;
         for (id, payload) in annotations {
@@ -515,6 +519,7 @@ fn entry(
 }
 fn auxiliary(s: &Snapshot) -> BTreeMap<String, Value> {
     let mut map = BTreeMap::new();
+    for tag in &s.smart_tags {map.insert(format!("smartTag:{}", tag.id), serde_json::to_value(tag).expect("serializable tag"));}
     if let Some(settings) = s.settings.as_object() {
         for (k, v) in settings {
             map.insert(format!("settings:{k}"), v.clone());
@@ -537,13 +542,16 @@ fn auxiliary(s: &Snapshot) -> BTreeMap<String, Value> {
     map
 }
 fn apply_aux(state: &mut Snapshot, map: BTreeMap<String, Value>) -> Result<()> {
+    state.smart_tags.clear();
     state.settings = json!({});
     state.citations.clear();
     state.links.clear();
     state.pins.clear();
     state.annotations = Some(vec![]);
     for (key, value) in map {
-        if let Some(k) = key.strip_prefix("settings:") {
+        if key.starts_with("smartTag:") {
+            state.smart_tags.push(serde_json::from_value(value).app()?);
+        } else if let Some(k) = key.strip_prefix("settings:") {
             state.settings[k] = value;
         } else if let Some(k) = key.strip_prefix("annotation:") {
             state
@@ -1041,12 +1049,12 @@ mod tests {
                 outline: Some(Outline {
                     version: 1,
                     nodes: vec![
-                        OutlineNode {
+                        OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],
                             id: "a".into(),
                             parent: None,
                             start: 0,
                         },
-                        OutlineNode {
+                        OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],
                             id: "b".into(),
                             parent: None,
                             start: 5,

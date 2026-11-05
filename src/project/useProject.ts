@@ -4,6 +4,8 @@ import { request } from '../platform/client';
 import { defaultSettings, type Settings } from '../contracts/settings';
 import { type Project, type Section, type Outline } from '../contracts/project';
 import { type SaveState } from '../app/workspace/types';
+import type { SmartTag, TagOperation } from '../contracts/smartTags';
+import { nextTagColor } from '../tags/model';
 export function useProject(onError: (e: unknown) => void) {
   const [project, setProject] = useState<Project | null>(null);
   const ref = useRef<Project | null>(null);
@@ -26,6 +28,19 @@ export function useProject(onError: (e: unknown) => void) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saving = useRef<Promise<void> | null>(null);
   const settingsSaving = useRef<Promise<void> | null>(null);
+  const tagRemovals = useRef<Promise<void>>(Promise.resolve());
+  const tagWork = useRef(new Set<Promise<void>>());
+  const tagFlushers = useRef(new Set<() => Promise<void>>());
+  const registerTagFlusher = useCallback((flush: () => Promise<void>) => {
+    tagFlushers.current.add(flush);
+    return () => {
+      tagFlushers.current.delete(flush);
+    };
+  }, []);
+  const trackTagWork = useCallback((task: Promise<void>) => {
+    tagWork.current.add(task);
+    void task.finally(() => tagWork.current.delete(task));
+  }, []);
   const changed = useRef(new Map<string, symbol>());
   const checkpointTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
@@ -54,6 +69,7 @@ export function useProject(onError: (e: unknown) => void) {
     setGeneration((x) => x + 1);
   }, []);
   const flush = useCallback(async (): Promise<void> => {
+    while (tagWork.current.size) await Promise.all(tagWork.current);
     while (settingsSaving.current) await settingsSaving.current;
     if (timer.current) clearTimeout(timer.current);
     if (saving.current) {
@@ -100,6 +116,7 @@ export function useProject(onError: (e: unknown) => void) {
       session = activation.current;
     if (!path) return;
     if (checkpointTimer.current) clearTimeout(checkpointTimer.current);
+    for (const flushTags of tagFlushers.current) await flushTags();
     await flush();
     if (ref.current?.path !== path || activation.current !== session) return;
     const pending = new Map(changed.current);
@@ -193,7 +210,13 @@ export function useProject(onError: (e: unknown) => void) {
           sections = sections.map((s) => {
             const live = ref.current!.sections.find((v) => v.id === s.id);
             return live
-              ? { ...s, text: live.text, outline: live.outline, revision: live.revision }
+              ? {
+                  ...s,
+                  text: live.text,
+                  outline: live.outline,
+                  revision: live.revision,
+                  tagIds: live.tagIds,
+                }
               : s;
           });
         }
@@ -209,7 +232,124 @@ export function useProject(onError: (e: unknown) => void) {
     },
     [],
   );
+  const tagOperation = useCallback(
+    async (operation: TagOperation) => {
+      const path = ref.current?.path,
+        session = activation.current;
+      if (!path) throw new Error('Ouvrez un projet pour continuer.');
+      const sectionOnly = operation.action === 'assign' && !operation.node;
+      // New definitions may be created while typing. Remapping existing references
+      // requires the modal administration flow and a completed manuscript save.
+      const existing =
+        operation.action !== 'save' ||
+        ref.current!.smartTags?.some((t) => t.id === operation.tag.id);
+      if (existing && !sectionOnly) await flush();
+      const task = (settingsSaving.current ?? Promise.resolve())
+        .catch(() => {})
+        .then(async () => {
+          if (ref.current?.path !== path || activation.current !== session)
+            throw new Error('Le projet actif a changé.');
+          const next = await request('smartTagOperation', { projectPath: path, operation });
+          if (ref.current?.path !== path || activation.current !== session)
+            throw new Error('Le projet actif a changé.');
+          ref.current = {
+            ...ref.current,
+            smartTags: next.smartTags,
+            ...(sectionOnly
+              ? {
+                  sections: ref.current.sections.map((s) =>
+                    s.id === operation.section ? { ...s, tagIds: operation.tagIds } : s,
+                  ),
+                  trash: ref.current.trash?.map((s) =>
+                    s.id === operation.section ? { ...s, tagIds: operation.tagIds } : s,
+                  ),
+                }
+              : operation.action !== 'save'
+                ? { sections: next.sections, trash: next.trash }
+                : {}),
+          };
+          if (operation.action !== 'save') {
+            sectionIndex.current = new Map(ref.current.sections.map((s) => [s.id, s]));
+            if (!sectionOnly) setGeneration((v) => v + 1);
+          }
+          setProject(ref.current);
+          setVersionRevision((v) => v + 1);
+        });
+      settingsSaving.current = task;
+      try {
+        await task;
+      } finally {
+        if (settingsSaving.current === task) settingsSaving.current = null;
+      }
+    },
+    [flush],
+  );
+  const createSmartTag = useCallback(
+    async (name: string): Promise<SmartTag> => {
+      while (settingsSaving.current) await settingsSaving.current;
+      const found = ref.current?.smartTags?.find(
+        (t) => t.name.toLowerCase() === name.trim().toLowerCase(),
+      );
+      if (found) return found;
+      const tag = {
+        id: crypto.randomUUID(),
+        name: name.trim(),
+        category: '',
+        color: nextTagColor(ref.current?.smartTags ?? []),
+      };
+      await tagOperation({ action: 'save', tag });
+      return tag;
+    },
+    [tagOperation],
+  );
+  const addSectionTag = useCallback(
+    async (section: string, tag: string) => {
+      const path = ref.current?.path,
+        session = activation.current;
+      while (settingsSaving.current) await settingsSaving.current;
+      if (ref.current?.path !== path || activation.current !== session)
+        throw new Error('Le projet actif a changé.');
+      const owner = ref.current?.sections.find((s) => s.id === section);
+      if (!owner) throw new Error('Section introuvable.');
+      if (!owner.tagIds?.includes(tag))
+        await tagOperation({ action: 'assign', section, tagIds: [...(owner.tagIds ?? []), tag] });
+    },
+    [tagOperation],
+  );
+  const removeTagAssignment = useCallback(
+    (section: string, node: string | null, tag: string) => {
+      const path = ref.current?.path,
+        session = activation.current;
+      const task = tagRemovals.current
+        .catch(() => {})
+        .then(async () => {
+          while (settingsSaving.current) await settingsSaving.current;
+          if (ref.current?.path !== path || activation.current !== session)
+            throw new Error('Le projet actif a changé.');
+          const owner = ref.current?.sections.find((s) => s.id === section);
+          if (!owner) return;
+          const ids = node ? owner.outline?.nodes.find((n) => n.id === node)?.tagIds : owner.tagIds;
+          if (ids?.includes(tag))
+            await tagOperation({
+              action: 'assign',
+              section,
+              node,
+              tagIds: ids.filter((id) => id !== tag),
+            });
+        });
+      tagRemovals.current = task;
+      return task;
+    },
+    [tagOperation],
+  );
   return {
+    tagOperation,
+    createSmartTag,
+    addSectionTag,
+    removeTagAssignment,
+    trackTagWork,
+    registerTagFlusher,
+    markChanged: scheduleCheckpoint,
     project,
     subscribeEdits,
     ref,

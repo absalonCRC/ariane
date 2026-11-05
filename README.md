@@ -165,9 +165,9 @@ _The Human Thread_ is fictional demo material about AI and authorship. The newer
 
 ## Try ariane
 
-**ariane 0.3.3 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
+**ariane 0.4.0 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
 
-There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.3.3 development notes](docs/release-notes-0.3.3.md) · [Roadmap to 1.0.0](docs/roadmap-1.0.0.md)
+There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.4.0 development notes](docs/release-notes-0.4.0.md) · [Roadmap to 1.0.0](docs/roadmap-1.0.0.md)
 
 <details>
 <summary>Build from source</summary>

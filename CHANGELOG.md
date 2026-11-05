@@ -1,5 +1,26 @@
 # Journal des changements
 
+## 0.4.0 — 2026-11-05, version de développement
+
+- Smart-tags multiples et propres au projet : identité stable, nom, catégorie et couleur distincte à la création.
+- Création/réutilisation automatique par `#nom`, libellés à la fin des passages et points d’outline colorés. Les enfants conservent l’héritage sans répéter les libellés du parent.
+- Administration plein écran depuis la sidebar : recherche, catégories, usages, affectations, renommage, fusion et suppression avec version préalable.
+- Clic sur un tag : consultation temporaire des passages directs et hérités ; clic sur un passage pour modifier l’original. Ce parcours est avancé depuis la 0.5.0 sur demande de l’utilisateur.
+- Maj-clic sur les points : sélection et copie de lignes et branches complètes, même repliées.
+- Migration SQLite 3 avec copie préalable ; tags conservés dans les variantes, la corbeille, les restaurations et les scissions/réunions, sans ajout dans les exports.
+
+- Tags de titres hérités par toute la page ; petites puces près du titre, fond et croix de retrait au survol.
+- Chevron de pliage distinct ; clic sur le point pour ouvrir le détail et les propriétés typées héritables dans la marge droite.
+- Propriétés de texte, date, nombre, case et relation vers une note/ligne ; alimentation configurable depuis les mentions, priorité aux valeurs saisies.
+- Vues globales des tags en texte ou tableau de propriétés, chrome et compteurs conservés, tableau adaptatif et profondeur désactivée.
+- Capsule de titre/notifications adaptée aux vues ; branche visible seulement avec une variante et hors notification.
+- Titre de la capsule conservé à l’ouverture des menus, dialogues et panneaux ; adaptation réservée aux changements de vue principale.
+
+- Survol maintenu du thème : déploiement de la capsule des accès du projet sans ouvrir la sidebar, avec bouton stable et accès au clavier.
+- Historique replié par défaut, accessible depuis le bord droit avec infobulle et ouverture/fermeture au clic ; retrait du bouton supérieur « Reprendre le fil ».
+
+Voir les [notes 0.4.0](docs/release-notes-0.4.0.md).
+
 ## 0.3.3 — 2026-11-05, version de développement
 
 - Les sauvegardes automatiques restent actives, regroupées par séance, limitées et dédupliquées ; elles actualisent l’historique ouvert et peuvent être nommées pour être conservées.

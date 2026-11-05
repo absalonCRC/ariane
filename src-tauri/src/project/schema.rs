@@ -1,7 +1,7 @@
 use crate::error::{AppResult, Result};
 use rusqlite::{Connection, TransactionBehavior};
 use std::path::Path;
-const SCHEMA_VERSION: i64 = 2;
+const SCHEMA_VERSION: i64 = 3;
 /// SQLite itself refuses symlink filenames. Files used by the mirror protocol are
 /// opened relative to a verified directory descriptor in `io`.
 pub fn database(root: &Path) -> Result<Connection> {
@@ -35,7 +35,7 @@ pub fn database(root: &Path) -> Result<Connection> {
     }
     if schema < SCHEMA_VERSION {
         if schema > 0 {
-            backup_before_migration(root, &c, "versions")?;
+            backup_before_migration(root, &c, if schema < 2 { "versions" } else { "smart-tags" })?;
         }
         // Recheck under SQLite's write lock: another process might have migrated
         // between the first check and this transaction.
@@ -108,6 +108,11 @@ pub fn database(root: &Path) -> Result<Connection> {
  INSERT INTO meta(key,value) VALUES('active_branch','main') ON CONFLICT(key) DO NOTHING;
  UPDATE versions SET branch_id='main' WHERE branch_id IS NULL;
  CREATE INDEX IF NOT EXISTS versions_branch_created ON versions(branch_id,created DESC,id DESC);").app()?;
+        }
+        if current < 3 {
+            let has_tags = tx.prepare("PRAGMA table_info(sections)").app()?.query_map([], |r|r.get::<_,String>(1)).app()?.collect::<std::result::Result<Vec<_>,_>>().app()?.iter().any(|name|name == "tag_ids");
+            if !has_tags { tx.execute_batch("ALTER TABLE sections ADD COLUMN tag_ids TEXT NOT NULL DEFAULT '[]';").app()?; }
+            tx.execute_batch("INSERT INTO meta(key,value) VALUES('smart_tags','[]') ON CONFLICT(key) DO NOTHING;").app()?;
         }
         tx.pragma_update(None, "user_version", SCHEMA_VERSION)
             .app()?;

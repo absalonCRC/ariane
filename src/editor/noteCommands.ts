@@ -10,6 +10,7 @@ import {
   completionStatus,
   pickedCompletion,
   type Completion,
+  type CompletionSource,
 } from '@codemirror/autocomplete';
 import { t } from '../i18n';
 
@@ -58,6 +59,7 @@ export function noteLink(note: NoteRef) {
   return `[${label}](ariane://source/${encodeURIComponent(note.id)})`;
 }
 export function noteCommands(options: {
+  additionalCompletions?: CompletionSource[];
   lookup: (query: string) => Promise<NoteRef[]>;
   create: (name: string, context: string) => Promise<NoteRef>;
   isCurrent: (view: EditorView) => boolean;
@@ -118,6 +120,7 @@ export function noteCommands(options: {
       activateOnTypingDelay: 120,
       defaultKeymap: true,
       override: [
+        ...(options.additionalCompletions ?? []),
         async (context) => {
           const trigger = noteTrigger(context.state);
           if (!trigger) return null;

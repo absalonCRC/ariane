@@ -3,6 +3,7 @@ import { Editor } from '../../editor/Editor';
 import type { EditorHandle, EditorProps } from '../../editor/types';
 import { DocumentTitle } from '../../components/DocumentTitle';
 import { t } from '../../i18n';
+import type { TitleTagInput } from '../../tags/useTitleTagInput';
 interface WritingSurfaceProps {
   historyMode: boolean;
   projectName: string;
@@ -11,7 +12,8 @@ interface WritingSurfaceProps {
   editorProps: EditorProps;
   onScroll: UIEventHandler<HTMLDivElement>;
   onScrollEnd: UIEventHandler<HTMLDivElement>;
-  onTitle: (title: string) => void;
+  onTitle: (title: string) => void | Promise<void>;
+  titleTagInput?: TitleTagInput;
   onChooseTexts: () => void;
   onAdd: () => void;
   children: ReactNode;
@@ -29,6 +31,7 @@ export function WritingSurface({
   onChooseTexts,
   onAdd,
   children,
+  titleTagInput,
 }: WritingSurfaceProps) {
   const { settings, projectPath, sections } = editorProps;
   return (
@@ -50,6 +53,7 @@ export function WritingSurface({
         readOnly={settings.continuous}
         onEnter={() => editorRef.current?.focus()}
         onCommit={onTitle}
+        tagInput={settings.continuous ? undefined : titleTagInput}
       />
       {!settings.continuous && selected?.included === false && (
         <p className="working-text-label">{t('Texte de travail · Hors manuscrit')}</p>

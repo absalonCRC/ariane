@@ -10,6 +10,10 @@ fn all_revision_stages() -> String {
     rename_all_fields = "camelCase"
 )]
 pub enum Request {
+    SmartTagOperation {
+        project_path: String,
+        operation: project::tags::Operation,
+    },
     Bootstrap,
     NoteActivity {
         project_path: String,

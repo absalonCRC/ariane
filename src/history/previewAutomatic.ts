@@ -4,9 +4,16 @@ import { descendants } from '../project/tree';
 // The browser preview has a small localStorage quota; native projects use 128 MiB in SQLite.
 const budget = 2 * 1024 * 1024;
 export const versionKey = (path: string) => 'ariane.preview.versions.' + path;
-type AutomaticSnapshot = Pick<Version, 'sections'> & { references?: Record<string, string> };
+type AutomaticSnapshot = Pick<Version, 'sections'> & {
+  tags?: Record<string, import('../contracts/smartTags').SmartTag>;
+  references?: Record<string, string>;
+};
 const signature = (v: AutomaticSnapshot) =>
-  JSON.stringify([v.sections.map((s) => ({ ...s, revision: 0 })), v.references ?? {}]);
+  JSON.stringify([
+    v.sections.map((s) => ({ ...s, revision: 0 })),
+    v.references ?? {},
+    v.tags ?? {},
+  ]);
 export function previewCheckpoint(p: Project, scope: string, force = true): Version | null {
   const key = versionKey(p.path);
   const versions = JSON.parse(localStorage.getItem(key) || '[]') as (Version & {
@@ -20,6 +27,7 @@ export function previewCheckpoint(p: Project, scope: string, force = true): Vers
     (v) => v.automatic && v.scope === scope && (v.branchId ?? 'main') === branchId,
   );
   if (!force && last && Date.now() - Date.parse(last.created) < 300_000) return null;
+  const tags = Object.fromEntries((p.smartTags ?? []).map((t) => [t.id, t]));
   const sections = descendants([...p.sections, ...(p.trash || [])], scope);
   const ids = new Set(sections.map((s) => s.id)),
     references: Record<string, string> = {};
@@ -32,9 +40,10 @@ export function previewCheckpoint(p: Project, scope: string, force = true): Vers
       if (key.startsWith(prefix) && ids.has(key.slice(prefix.length)))
         references[key] = localStorage.getItem(key)!;
   }
-  if (!sections.length || (last && signature(last) === signature({ sections, references })))
+  if (!sections.length || (last && signature(last) === signature({ sections, references, tags })))
     return null;
-  const version: Version & { references: Record<string, string> } = {
+  const version: Version & AutomaticSnapshot & { references: Record<string, string> } = {
+    tags,
     references,
     id: crypto.randomUUID(),
     name: 'Sauvegarde automatique',

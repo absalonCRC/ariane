@@ -4,6 +4,8 @@ pub fn manuscript_role() -> String { "manuscript".into() }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Section {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tag_ids: Vec<String>,
     pub id: String,
     pub parent: Option<String>,
     pub title: String,
@@ -26,6 +28,8 @@ pub struct Section {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Project {
+    #[serde(default)]
+    pub smart_tags: Vec<SmartTag>,
     pub path: String,
     pub name: String,
     pub sections: Vec<Section>,
@@ -56,9 +60,38 @@ pub struct Outline {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OutlineNode {
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub properties: std::collections::BTreeMap<String, serde_json::Value>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub property_conflicts: std::collections::BTreeMap<String, Vec<serde_json::Value>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tag_ids: Vec<String>,
     pub id: String,
     pub parent: Option<String>,
     pub start: usize,
+}
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SmartTag {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub properties: Vec<TagProperty>,
+    pub id: String,
+    pub name: String,
+    pub color: String,
+    pub category: String,
+}
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TagProperty {
+    pub id: String,
+    pub name: String,
+    pub r#type: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub default_value: Option<serde_json::Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entity_type: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inherit: Option<bool>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

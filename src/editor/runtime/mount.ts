@@ -3,6 +3,8 @@ import type { RefObject } from 'react';
 import type { OpenMenu } from '../../components/ContextMenu';
 import type { VisibleText, EditorProps as Props } from '../types';
 import { noteCommands } from '../noteCommands';
+import { smartTags } from '../smartTags';
+import { effectiveTags } from '../../tags/model';
 import { noteLinks } from '../noteLinks';
 import { entityMarks, entityInteractions } from '../entities';
 import { EditorState, Compartment } from '@codemirror/state';
@@ -69,6 +71,20 @@ export function mountEditor({
   const mapping = sectionMapping(data.spans);
   const outline = outlineEditor(latest.current.sections, data.spans, mapping.field);
   outlineRef.current = outline;
+  const tags = smartTags(outline, {
+    tags: () => latest.current.smartTags ?? [],
+    onTag: (id) => latest.current.onSmartTag?.(id),
+    onPending: (task) => latest.current.onTagWork?.(task),
+    sections: () => latest.current.tagSections ?? latest.current.sections,
+    hidden: () => !!latest.current.immersiveFocus,
+    create: (name) =>
+      latest.current.createSmartTag
+        ? latest.current.createSmartTag(name)
+        : Promise.reject(new Error('Smart-tag indisponible.')),
+    onError: (error) => latest.current.onNoteError?.(error),
+    isCurrent: (candidate) => view.current === candidate,
+    standalone: !(latest.current.noteLookup && latest.current.noteCreate),
+  });
   let sampled: VisibleText | null = null;
   let geometryFrame = 0;
   const selectionMeasureKey = {};
@@ -193,6 +209,7 @@ export function mountEditor({
       ...(latest.current.noteLookup && latest.current.noteCreate
         ? [
             noteCommands({
+              additionalCompletions: [tags.source],
               lookup: (query) => latest.current.noteLookup!(query),
               create: (name, context) => latest.current.noteCreate!(name, context),
               isCurrent: (candidate) => view.current === candidate,
@@ -201,8 +218,38 @@ export function mountEditor({
           ]
         : []),
       // Note validation must run before the outline Enter binding at the same precedence.
-      outlinePresentation(outline),
-      ...(data.spans.length > 1 ? [sceneHeadings(mapping.field)] : []),
+      tags.extensions,
+      outlinePresentation(outline, tags.tagsForNode, (section, node) => {
+        const current = view.current;
+        const span = current?.state.field(mapping.field).find((s) => s.id === section);
+        if (current && span)
+          latest.current.onOutlineDetails?.(section, node, outline.serialize(current.state, span));
+      }),
+      ...(data.spans.length > 1 || (data.spans.length === 1 && latest.current.settings.continuous)
+        ? [
+            sceneHeadings(
+              mapping.field,
+              (section) =>
+                latest.current.immersiveFocus
+                  ? []
+                  : effectiveTags(
+                      latest.current.smartTags ?? [],
+                      latest.current.tagSections ?? latest.current.sections,
+                      section,
+                    ),
+              (id) => latest.current.onSmartTag?.(id),
+              (assignment) => {
+                void Promise.resolve(
+                  latest.current.onRemoveSmartTag?.(
+                    assignment.section,
+                    assignment.node,
+                    assignment.tag.id,
+                  ),
+                ).catch((error) => latest.current.onNoteError?.(error));
+              },
+            ),
+          ]
+        : []),
       highlightSelectionMatches(),
       textSearchHighlight,
       entityMarks,
@@ -455,7 +502,9 @@ export function mountEditor({
   v.dispatch({
     effects: EditorView.scrollIntoView(v.state.selection.main.head, { y: 'center' }),
   });
+  const unregisterTags = latest.current.registerTagFlusher?.(() => tags.flush(v));
   return () => {
+    unregisterTags?.();
     if (notifyTimer.current) clearTimeout(notifyTimer.current);
     if (wordTimer.current) clearTimeout(wordTimer.current);
     latest.current.onSelection?.(null);

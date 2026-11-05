@@ -11,6 +11,12 @@ pub(super) fn handle(
     request: Request,
 ) -> Result<serde_json::Value> {
     match request {
+        Request::SmartTagOperation { project_path, operation } => {
+            if Path::new(&project_path) != root {
+                return Err("Le projet actif a changé.".into());
+            }
+            json(project::tags::apply(&root, operation)?)
+        }
         Request::NoteActivity {
             project_path,
             before,

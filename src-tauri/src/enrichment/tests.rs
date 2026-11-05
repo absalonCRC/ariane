@@ -191,7 +191,7 @@ impl Fixture {
         let nodes = lines
             .iter()
             .map(|(id, text)| {
-                let node = OutlineNode {
+                let node = OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],
                     id: (*id).into(),
                     parent: None,
                     start,
@@ -428,7 +428,7 @@ fn external_vault_reference_tracks_original_node_without_writing_vault() {
     let source = vaults::parse::parse(&vault.id,&rel,&original);
     vaults::index_db(&index).unwrap().execute("INSERT INTO sources VALUES(?,?,?,?,?)",params![source.id,vault.id,rel,source.fingerprint,serde_json::to_string(&source).unwrap()]).unwrap();
     let section = project::sections(&project::database(&root).unwrap()).unwrap().remove(0);
-    let save = |text: &str, rev| { project::save(&root,vec![TextPatch { id:section.id.clone(),revision:rev,text:text.into(),outline:Some(Outline{version:1,nodes:vec![OutlineNode{id:"original-node".into(),parent:None,start:0}]}) }]).unwrap(); };
+    let save = |text: &str, rev| { project::save(&root,vec![TextPatch { id:section.id.clone(),revision:rev,text:text.into(),outline:Some(Outline{version:1,nodes:vec![OutlineNode{ properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],id:"original-node".into(),parent:None,start:0}]}) }]).unwrap(); };
     let name = &source.title;
     save(&format!("{name} était un personnage de Rennes-le-Château. {name} apparaît dans le récit."), section.revision);
     run(&root,&index).unwrap();
