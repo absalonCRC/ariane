@@ -1,6 +1,12 @@
 # Ariane presentation media
 
-Captured for the 0.2.0-alpha.1 presentation on 2 November 2026.
+## Current screenshots — ariane 0.3.2
+
+The main README uses screenshots and short animations from [ariane 0.3.2](0.3.2), captured on **5 November 2026**. The stills were retouched for presentation; the animations show real interactions. See [the current capture notes](0.3.2/README.md) for the edits, source version, views and isolation method.
+
+## Earlier film and screenshots — 0.2.0-alpha.1
+
+The film and the older images directly in this directory were captured for the 0.2.0-alpha.1 presentation on 2 November 2026. They are preserved as historical media. **The film does not represent the current interface.** The provenance below describes that earlier production.
 
 ## Provenance
 
