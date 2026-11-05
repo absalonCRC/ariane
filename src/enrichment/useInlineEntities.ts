@@ -1,12 +1,31 @@
+import type { NoteActivityController } from '../notes/useNoteActivity';
+import type { Project, Section } from '../contracts/project';
+import type { VisibleText, EditorHandle } from '../editor/types';
+import type { RefObject, Dispatch, SetStateAction } from 'react';
+import type { Source } from '../contracts/sources';
+import type { PanelOrigin } from '../components/useSharedPanel';
+import type { ProjectController } from '../project/useProject';
 import { useEffect, useRef, useState } from 'react';
-import { native, request } from '../app/client';
-import type { Workspace } from '../app/useWorkspace';
-import type { Source } from '../app/types';
-import type { EntityBatch, SelectedEntity } from './entityTypes';
+import { native, request } from '../platform/client';
+import type { EntityBatch } from '../contracts/entities';
+import type { SelectedEntity } from './entityTypes';
 import { rebaseEntities } from './entityBatches';
+export interface EntityInput {
+  activity?: Pick<NoteActivityController, 'record'>;
+  p: Project | null;
+  doc: ProjectController;
+  viewport: VisibleText | null;
+  scenes: Section[];
+  editor: RefObject<EditorHandle | null>;
+  sourceVersion: number;
+  enrichmentVersion: number;
+  setSourceVersion: Dispatch<SetStateAction<number>>;
+  setCard: Dispatch<SetStateAction<{ source: Source; top: number; origin?: PanelOrigin } | null>>;
+  setReader: Dispatch<SetStateAction<Source | null>>;
+}
 
 export function useInlineEntities(
-  workspace: Workspace,
+  workspace: EntityInput,
   memoryResult: unknown,
   analysisError = '',
   analysisRevision = 0,
@@ -63,9 +82,7 @@ export function useInlineEntities(
           const active = workspace.editor?.current?.context()?.section ?? scenes[0]?.id;
           const stamp = `${section.revision}:${workspace.sourceVersion}:${workspace.enrichmentVersion}:${refresh}:${analysisRevision}:${section.id === active ? JSON.stringify(memoryResult) : ''}`;
           if (fetched.current.get(section.id) === stamp) continue;
-          const value = await request<
-            Omit<EntityBatch, 'section' | 'revision'> & { created?: boolean }
-          >('inlineEntities', {
+          const value = await request('inlineEntities', {
             projectPath: p.path,
             section: section.id,
             revision: section.revision,
@@ -73,6 +90,13 @@ export function useInlineEntities(
           });
           if (!alive || latest.current.p?.path !== p.path) return;
           if (value.created) workspace.setSourceVersion((v) => v + 1);
+          for (const source of value.createdSources ?? [])
+            void workspace.activity?.record({
+              kind: 'created',
+              title: source.title,
+              sourceId: source.id,
+              section: section.id,
+            });
           if (value.text === section.text) {
             values.push({
               ...value,
@@ -135,7 +159,7 @@ export function useInlineEntities(
       return;
     }
     try {
-      const source = await request<Source>('source', { id: mention.sourceId });
+      const source = await request('source', { id: mention.sourceId });
       if (latest.current.p?.path !== path) return;
       workspace.setCard(null);
       workspace.setReader(source);
@@ -150,7 +174,7 @@ export function useInlineEntities(
     setBusy(true);
     setError('');
     try {
-      const value = await request<Source>('resolveDetectedEntity', {
+      const value = await request('resolveDetectedEntity', {
         projectPath: path,
         section: selected.section,
         revision: selected.revision,
@@ -161,6 +185,12 @@ export function useInlineEntities(
       if (latest.current.p?.path !== path) return;
       setSelected(null);
       setRefresh((v) => v + 1);
+      void workspace.activity?.record({
+        kind: 'resolved',
+        title: value.title,
+        sourceId: value.id,
+        section: selected.section,
+      });
       workspace.setReader(value);
       workspace.setSourceVersion((v) => v + 1);
     } catch (e) {
@@ -175,7 +205,7 @@ export function useInlineEntities(
     setBusy(true);
     setError('');
     try {
-      const source = await request<Source>('createDetectedEntity', {
+      const source = await request('createDetectedEntity', {
         projectPath: path,
         section: selected.section,
         revision: selected.revision,
@@ -184,6 +214,12 @@ export function useInlineEntities(
         kind: selected.kind,
       });
       if (latest.current.p?.path !== path) return;
+      void workspace.activity?.record({
+        kind: 'created',
+        title: source.title,
+        sourceId: source.id,
+        section: selected.section,
+      });
       setSelected(null);
       workspace.setSourceVersion((v) => v + 1);
       setRefresh((v) => v + 1);

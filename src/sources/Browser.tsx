@@ -1,8 +1,8 @@
 import { localizeMessage, t, useLocale } from '../i18n';
 import { useEffect, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { request } from '../app/client';
-import type { Source, SourcePage, Vault } from '../app/types';
+import { request } from '../platform/client';
+import type { Source, SourcePage, Vault } from '../contracts/sources';
 const empty: SourcePage = { items: [], total: 0, kinds: [], folders: [], types: [] };
 export function SourceBrowser({
   onRead,
@@ -23,7 +23,7 @@ export function SourceBrowser({
   const [error, setError] = useState('');
   useEffect(() => {
     let alive = true;
-    void request<Vault[]>('vaults')
+    void request('vaults')
       .then((values) => {
         if (alive) setVaults(values);
       })
@@ -38,7 +38,7 @@ export function SourceBrowser({
     let alive = true;
     setBusy(true);
     setError('');
-    void request<SourcePage>('browseSources', {
+    void request('browseSources', {
       query: '',
       vault: vault || null,
       kind,

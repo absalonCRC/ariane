@@ -1,4 +1,4 @@
-import type { Outline, Section } from '../app/types';
+import type { Outline, Section } from '../contracts/project';
 export interface SectionContent {
   text: string;
   outline?: Outline | null;

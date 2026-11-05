@@ -1,5 +1,5 @@
 import { t } from '../i18n';
-import type { Section } from './types';
+import type { Section } from '../contracts/project';
 import { ordered } from '../project/tree';
 import {
   normalizeText,
@@ -7,7 +7,6 @@ import {
   visitNormalizedMatches,
   type NormalizedText,
 } from '../editor/normalizedSearch';
-
 export interface ManuscriptMatch {
   key: string;
   section: string;

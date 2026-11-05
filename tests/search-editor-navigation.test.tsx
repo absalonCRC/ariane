@@ -4,8 +4,9 @@ import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { Editor, type EditorHandle } from '../src/editor/Editor';
 import { EditorView } from '@codemirror/view';
-import { defaultSettings, type Section } from '../src/app/types';
-vi.mock('../src/app/client', () => ({ native: false, request: vi.fn(async () => []) }));
+import { defaultSettings } from '../src/contracts/settings';
+import { type Section } from '../src/contracts/project';
+vi.mock('../src/platform/client', () => ({ native: false, request: vi.fn(async () => []) }));
 it('keeps the search input focused and navigates with arrows from the editor', async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   const rects = Object.getOwnPropertyDescriptor(Range.prototype, 'getClientRects');

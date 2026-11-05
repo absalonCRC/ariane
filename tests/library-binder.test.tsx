@@ -3,8 +3,9 @@ import { act, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { beforeAll, expect, it, vi } from 'vitest';
 import { Binder } from '../src/project/Binder';
-import type { Project, Section } from '../src/app/types';
-import { applyLibraryOperation, type LibraryOperation } from '../src/project/library';
+import type { Project, Section } from '../src/contracts/project';
+import { applyLibraryOperation } from '../src/project/library';
+import { type LibraryOperation } from '../src/contracts/library';
 beforeAll(() => {
   HTMLDialogElement.prototype.show = function () {
     this.open = true;

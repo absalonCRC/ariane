@@ -1,6 +1,6 @@
 import { entityTint } from '../enrichment/entityTypes';
 import { localizeMessage, t, useLocale } from '../i18n';
-import type { Source } from '../app/types';
+import type { Source } from '../contracts/sources';
 export function SearchMargin({
   sources,
   colors,

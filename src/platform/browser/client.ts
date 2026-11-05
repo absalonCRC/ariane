@@ -1,21 +1,17 @@
-import { previewHistory } from '../history/previewBranches';
-import { previewCheckpoint } from '../history/previewAutomatic';
-import { t } from '../i18n';
-import { invoke, isTauri } from '@tauri-apps/api/core';
-import type { Project, Section, Source, TextPatch, Vault } from './types';
+import type { NoteEvent, NoteEventInput } from '../../contracts/noteActivity';
+import { previewCheckpoint } from '../../history/previewAutomatic';
+import { previewHistory } from '../../history/previewBranches';
+import { t } from '../../i18n';
+import type { Project, Section, TextPatch } from '../../contracts/project';
+import type { Source, Vault } from '../../contracts/sources';
 import {
   applyLibraryOperation,
   structureSnapshot,
-  type LibraryOperation,
   type StructurePosition,
-} from '../project/library';
-import type { ProjectEntry } from './types';
-import { validOutline } from '../editor/outline/model';
-export const native = isTauri();
-export async function request<T>(type: string, args: Record<string, unknown> = {}): Promise<T> {
-  if (native) return invoke<T>('dispatch', { request: { type, ...args } });
-  return browserRequest(type, args) as T;
-}
+} from '../../project/library';
+import { type LibraryOperation } from '../../contracts/library';
+import type { ProjectEntry } from '../../contracts/project';
+import { validOutline } from '../../editor/outline/model';
 // The browser adapter provides real local persistence for development and visual QA.
 // Filesystem, embeddings and document conversion belong exclusively to the Rust adapter.
 const storageKey = 'ariane.preview.projects.v1';
@@ -91,7 +87,7 @@ function remember(p: Project) {
     JSON.stringify([entry, ...entries.filter((e) => e.path !== p.path)]),
   );
 }
-function browserRequest(type: string, a: Record<string, unknown>): unknown {
+export function browserRequest(type: string, a: Record<string, unknown>): unknown {
   if (type === 'revisionStatus') return { available: false };
   if (type === 'bootstrap') {
     const p = read()[current || ''];
@@ -136,6 +132,25 @@ function browserRequest(type: string, a: Record<string, unknown>): unknown {
   const p = project();
   const history = previewHistory(p, type, a);
   if (history) return history.value;
+  if (type === 'noteActivity' || type === 'recordNoteActivity') {
+    if (a.projectPath !== p.path) throw new Error('Le projet actif a changé.');
+    const key = 'ariane.preview.note-activity.' + p.path;
+    const items: NoteEvent[] = JSON.parse(localStorage.getItem(key) || '[]');
+    if (type === 'noteActivity') {
+      const page = items.filter((e) => a.before == null || e.id < Number(a.before));
+      return { items: page.slice(0, 50), hasMore: page.length > 50 };
+    }
+    const value = a.value as NoteEventInput;
+    const existing = value.dedupKey ? items.find((e) => e.dedupKey === value.dedupKey) : null;
+    if (existing) return { inserted: false, event: existing };
+    const event: NoteEvent = {
+      ...value,
+      id: (items[0]?.id ?? 0) + 1,
+      created: new Date().toISOString(),
+    };
+    localStorage.setItem(key, JSON.stringify([event, ...items]));
+    return { inserted: true, event };
+  }
   if (['annotations', 'addAnnotation', 'updateAnnotation', 'manuscriptOperation'].includes(type))
     throw new Error(t('Cette fonction est disponible dans l’application Mac.'));
   if (type === 'libraryOperation') {

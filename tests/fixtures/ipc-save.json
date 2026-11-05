@@ -1,0 +1,17 @@
+{
+  "type": "save",
+  "patches": [
+    {
+      "id": "scene-test",
+      "revision": 7,
+      "text": "Été 🌿\nDeuxième ligne",
+      "outline": {
+        "version": 1,
+        "nodes": [
+          { "id": "first", "start": 0, "parent": null },
+          { "id": "second", "start": 7, "parent": null }
+        ]
+      }
+    }
+  ]
+}

@@ -1,5 +1,4 @@
-import type { Source } from '../app/types';
-
+import type { Source } from '../contracts/sources';
 export interface MarginGroup {
   id: number | string;
   top: number;

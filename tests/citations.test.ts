@@ -2,7 +2,7 @@ import { it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { composeCitation } from '../src/sources/citations';
-import type { Source } from '../src/app/types';
+import type { Source } from '../src/contracts/sources';
 const source: Source = {
   id: 'abcdefghij123456',
   fingerprint: '1234567890abcdef',

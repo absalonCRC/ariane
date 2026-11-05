@@ -4,7 +4,7 @@ Implémentation de développement du 5 novembre 2026. Les changements restent lo
 
 ## Utilisation
 
-Le sélecteur en haut de l’éditeur indique le texte principal ou la variante active. Il ouvre l’espace des versions, composé de trois vues.
+La capsule du titre indique en permanence le texte principal ou la variante active. Son menu d’arborescence permet de changer de piste et d’ouvrir la gestion des variantes. L’espace des versions comprend trois vues.
 
 - **Modifications** compare le brouillon courant à la dernière version nommée du projet, ou à l’origine de la variante. Les autres captures restent sélectionnables. La lecture Markdown garde les ajouts et retraits visibles ; la vue Source et la reprise d’un passage restent disponibles.
 - **Historique** présente les versions nommées et les séances automatiques dépliables. « Nommer cette version » conserve le contenu et la date de la capture et la protège de la rétention. Le nom d’une version ne détermine jamais si elle est automatique.
@@ -38,6 +38,6 @@ L’aperçu navigateur utilise des données locales et un budget automatique de 
 
 Commande du projet : `npm run verify` (ressources, packaging Python, build, tests TypeScript, tests Rust, Clippy). Les nouveaux scénarios couvrent la migration, la promotion, les brouillons, les variantes imbriquées, les modifications de deux côtés, la relecture périmée, les divergences et suppressions, les choix partiels, les références/annotations, les échecs transactionnels et les modifications externes. La vérification visuelle utilise un projet fictif distinct des projets existants.
 
-Les essais manuels ont aussi été rejoués dans une application macOS construite pour les tests, avec son propre dossier de données et un projet fictif. Ils couvrent une capture automatique après une pause réelle de 90 secondes et son apparition dans l’historique ouvert, la création et la réouverture de variantes, la restauration de leur origine, l’intégration avec choix des passages et résolution d’une divergence, puis la restauration de l’état avant intégration. Les brouillons et les points de récupération ont été vérifiés dans le projet de test. Ces essais ciblés ne constituent pas une qualification d’endurance prolongée.
+Les essais manuels ont été réalisés dans des applications macOS de test isolées, avec des projets fictifs. La première recette a vérifié une capture après une pause réelle de 90 secondes et son apparition dans l’historique ouvert. Après intégration sur la 0.3.2, une nouvelle recette sur la 0.3.3 a vérifié la création et la réouverture de variantes, la visibilité de la variante dans la capsule, le changement de piste, l’intégration sélective, la résolution d’une divergence et la restauration de l’état avant intégration. Les brouillons et les points de récupération ont été vérifiés dans les projets de test. Ces essais ciblés ne constituent pas une qualification d’endurance prolongée.
 
-Dernière exécution de `npm run verify` : 349 tests TypeScript, 171 tests Rust et 27 tests Python réussis, ainsi que le build, la vérification des ressources et Clippy. La suite existante conserve 2 tests TypeScript et 12 tests Rust ignorés.
+Dernière exécution de `npm run verify` : 362 tests TypeScript, 174 tests Rust et 27 tests Python réussis, ainsi que le build, la vérification des ressources et Clippy. La suite existante conserve 2 tests TypeScript et 12 tests Rust ignorés.

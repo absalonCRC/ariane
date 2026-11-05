@@ -1,25 +1,8 @@
+import type { LibraryOperation } from '../contracts/library';
 import { t } from '../i18n';
-import type { Project, Section } from '../app/types';
+import type { Project, Section } from '../contracts/project';
 import { descendants, hasChapterAncestor } from './tree';
-export type DocumentRole = 'manuscript' | 'note';
-export interface ManuscriptOperation {
-  action: 'split' | 'join';
-  sourceId: string;
-  targetId?: string;
-  offset?: number;
-  title?: string;
-}
 
-export interface LibraryOperation {
-  action: 'move' | 'add' | 'duplicate' | 'trash' | 'restore' | 'undo' | 'include';
-  ids?: string[];
-  target?: string | null;
-  placement?: 'before' | 'after' | 'inside';
-  role?: DocumentRole;
-  title?: string;
-  kind?: Section['kind'];
-  included?: boolean;
-}
 export type StructurePosition = Pick<
   Section,
   'id' | 'parent' | 'position' | 'role' | 'trashed' | 'included'

@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest';
-import type { HistoryState, MergePreview, Project, Version } from '../src/app/types';
 vi.mock('@tauri-apps/api/core', () => ({ isTauri: () => false, invoke: vi.fn() }));
-import { request } from '../src/app/client';
+import { request } from '../src/platform/client';
 import { mergeParagraphs, mergeSections, validateMergedSections } from '../src/history/merge';
 import { historySessions } from '../src/history/VersionTimeline';
 
@@ -11,16 +10,16 @@ afterEach(() => {
   vi.useRealTimers();
 });
 async function setup() {
-  const p = await request<Project>('create', { path: 'branch-test', name: 'Roman' });
+  const p = await request('create', { path: 'branch-test', name: 'Roman' });
   const id = p.sections[0].id,
     projectPath = p.path;
   const write = async (text: string) => {
-    const current = await request<Project>('open', { path: projectPath });
+    const current = await request('open', { path: projectPath });
     await request('save', {
       patches: [{ id, revision: current.sections.find((s) => s.id === id)!.revision, text }],
     });
   };
-  const state = () => request<HistoryState>('historyState', { projectPath });
+  const state = () => request('historyState', { projectPath });
   const branch = async () => {
     await request('createBranch', { projectPath, name: 'Autre fin' });
     return (await state()).activeBranch;
@@ -32,22 +31,21 @@ it('keeps both live drafts, isolates automatic histories and reopens the active 
   await h.write('Principal.');
   const variant = await h.branch();
   await h.write('Variante.');
-  expect((await request<Version[]>('versions')).every((v) => v.branchId === variant)).toBe(true);
-  const main = await request<Project>('switchBranch', { projectPath: h.projectPath, id: 'main' });
+  expect((await request('versions')).every((v) => v.branchId === variant)).toBe(true);
+  const main = await request('switchBranch', { projectPath: h.projectPath, id: 'main' });
   expect(main.sections[0].text).toBe('Principal.');
   await h.write('Principal poursuivi.');
   await request('switchBranch', { projectPath: h.projectPath, id: variant });
-  expect((await request<Project>('bootstrap')).sections[0].text).toBe('Variante.');
+  expect((await request('bootstrap'))!.sections[0].text).toBe('Variante.');
   expect(
-    (await request<Project>('switchBranch', { projectPath: h.projectPath, id: 'main' })).sections[0]
-      .text,
+    (await request('switchBranch', { projectPath: h.projectPath, id: 'main' })).sections[0].text,
   ).toBe('Principal poursuivi.');
 });
 it('promotes an automatic state in place and groups captures without treating names as metadata', async () => {
   const h = await setup();
   await h.write('État.');
-  const [automatic] = await request<Version[]>('versions');
-  const promoted = await request<Version>('promoteVersion', {
+  const [automatic] = await request('versions');
+  const promoted = await request('promoteVersion', {
     projectPath: h.projectPath,
     id: automatic.id,
     name: 'Premier jet',
@@ -58,19 +56,20 @@ it('promotes an automatic state in place and groups captures without treating na
     name: 'Premier jet',
     automatic: false,
   });
-  const named = await request<Version>('capture', { name: 'Sauvegarde automatique', scope: null });
+  const named = await request('capture', { name: 'Sauvegarde automatique', scope: null });
   await h.write('Suite.');
-  const auto2 = await request<Version>('automaticVersion', {
+  const auto2 = await request('automaticVersion', {
     projectPath: h.projectPath,
     scope: h.id,
   });
   await h.write('Encore.');
-  const auto3 = await request<Version>('automaticVersion', {
+  const auto3 = await request('automaticVersion', {
     projectPath: h.projectPath,
     scope: h.id,
   });
+  if (!auto2 || !auto3) throw new Error('Les captures automatiques sont attendues.');
   expect(auto3.sessionId).toBe(auto2.sessionId);
-  const groups = historySessions(await request<Version[]>('versions'));
+  const groups = historySessions(await request('versions'));
   expect(groups.find((g) => g.some((v) => v.id === named.id))).toHaveLength(1);
   const session = groups.find((g) => g.some((v) => v.id === auto3.id))!;
   expect(session.some((v) => v.id === auto2.id)).toBe(true);
@@ -83,29 +82,25 @@ it('merges independent edits and restores the preintegration snapshot', async ()
   await h.write('A\n\nB\n\nZ');
   await request('switchBranch', { projectPath: h.projectPath, id: 'main' });
   await h.write('X\n\nB\n\nC');
-  const preview = await request<MergePreview>('mergePreview', {
+  const preview = await request('mergePreview', {
     projectPath: h.projectPath,
     source: variant,
   });
   expect(preview.entries[0]).toMatchObject({ conflict: false, result: { text: 'X\n\nB\n\nZ' } });
-  const merged = await request<Project>('mergeBranch', {
+  const merged = await request('mergeBranch', {
     projectPath: h.projectPath,
     source: variant,
     token: preview.token,
     resolutions: [],
   });
   expect(merged.sections[0].text).toBe('X\n\nB\n\nZ');
-  const recovery = (await request<Version[]>('versions')).find(
-    (v) => v.name === 'Avant intégration',
-  )!;
+  const recovery = (await request('versions')).find((v) => v.name === 'Avant intégration')!;
   expect(
-    (
-      await request<MergePreview>('mergePreview', { projectPath: h.projectPath, source: variant })
-    ).entries.some((e) => e.changed),
+    (await request('mergePreview', { projectPath: h.projectPath, source: variant })).entries.some(
+      (e) => e.changed,
+    ),
   ).toBe(false);
-  expect((await request<Project>('restore', { id: recovery.id })).sections[0].text).toBe(
-    'X\n\nB\n\nC',
-  );
+  expect((await request('restore', { id: recovery.id })).sections[0].text).toBe('X\n\nB\n\nC');
 });
 it('requires resolutions and rejects stale reviews before any mutation', async () => {
   const h = await setup();
@@ -114,7 +109,7 @@ it('requires resolutions and rejects stale reviews before any mutation', async (
   await h.write('Variante.');
   await request('switchBranch', { projectPath: h.projectPath, id: 'main' });
   await h.write('Principal.');
-  const preview = await request<MergePreview>('mergePreview', {
+  const preview = await request('mergePreview', {
     projectPath: h.projectPath,
     source: variant,
   });
@@ -138,13 +133,13 @@ it('requires resolutions and rejects stale reviews before any mutation', async (
       resolutions: [{ id: h.id, choice: 'incoming' }],
     }),
   ).rejects.toThrow('changé');
-  const fresh = await request<MergePreview>('mergePreview', {
+  const fresh = await request('mergePreview', {
     projectPath: h.projectPath,
     source: variant,
   });
   expect(
     (
-      await request<Project>('mergeBranch', {
+      await request('mergeBranch', {
         projectPath: h.projectPath,
         source: variant,
         token: fresh.token,
@@ -160,19 +155,19 @@ it.each(['current', 'incoming'] as const)(
     await h.write('Origine.');
     const variant = await h.branch();
     await h.write('Variante.');
-    let section = (await request<Project>('open', { path: h.projectPath })).sections[0];
+    let section = (await request('open', { path: h.projectPath })).sections[0];
     await request('update', { section: { ...section, synopsis: 'Résumé de la variante' } });
     await request('switchBranch', { projectPath: h.projectPath, id: 'main' });
     await h.write('Principal.');
-    section = (await request<Project>('open', { path: h.projectPath })).sections[0];
+    section = (await request('open', { path: h.projectPath })).sections[0];
     await request('update', { section: { ...section, title: 'Titre principal' } });
-    const preview = await request<MergePreview>('mergePreview', {
+    const preview = await request('mergePreview', {
       projectPath: h.projectPath,
       source: variant,
     });
     expect(preview.entries[0].fields).toEqual(['text']);
     expect(preview.entries[0].title).toBe('Titre principal');
-    const merged = await request<Project>('mergeBranch', {
+    const merged = await request('mergeBranch', {
       projectPath: h.projectPath,
       source: variant,
       token: preview.token,
@@ -191,7 +186,7 @@ it('does not mutate either draft when a chosen text is incompatible with the pre
   const variant = await h.branch();
   await h.write('Court.');
   await request('switchBranch', { projectPath: h.projectPath, id: 'main' });
-  const current = await request<Project>('open', { path: h.projectPath });
+  const current = await request('open', { path: h.projectPath });
   await request('save', {
     patches: [
       {
@@ -208,7 +203,7 @@ it('does not mutate either draft when a chosen text is incompatible with the pre
       },
     ],
   });
-  const preview = await request<MergePreview>('mergePreview', {
+  const preview = await request('mergePreview', {
     projectPath: h.projectPath,
     source: variant,
   });
@@ -221,10 +216,9 @@ it('does not mutate either draft when a chosen text is incompatible with the pre
       resolutions: [{ id: h.id, choice: 'incoming' }],
     }),
   ).rejects.toThrow('plan ne correspond pas');
-  expect((await request<Project>('bootstrap')).sections[0].text).toBe('Long\nSuite.');
+  expect((await request('bootstrap'))!.sections[0].text).toBe('Long\nSuite.');
   expect(
-    (await request<Project>('switchBranch', { projectPath: h.projectPath, id: variant }))
-      .sections[0].text,
+    (await request('switchBranch', { projectPath: h.projectPath, id: variant })).sections[0].text,
   ).toBe('Court.');
 });
 it('keeps excluded changes available and preserves named branch origins', async () => {
@@ -232,11 +226,11 @@ it('keeps excluded changes available and preserves named branch origins', async 
   await h.write('Origine.');
   const variant = await h.branch();
   await h.write('Variante.');
-  const preview = await request<MergePreview>('mergePreview', {
+  const preview = await request('mergePreview', {
     projectPath: h.projectPath,
     source: variant,
   });
-  const merged = await request<Project>('mergeBranch', {
+  const merged = await request('mergeBranch', {
     projectPath: h.projectPath,
     source: variant,
     token: preview.token,
@@ -244,9 +238,9 @@ it('keeps excluded changes available and preserves named branch origins', async 
   });
   expect(merged.sections[0].text).toBe('Origine.');
   expect(
-    (
-      await request<MergePreview>('mergePreview', { projectPath: h.projectPath, source: variant })
-    ).entries.some((e) => e.changed),
+    (await request('mergePreview', { projectPath: h.projectPath, source: variant })).entries.some(
+      (e) => e.changed,
+    ),
   ).toBe(true);
   await expect(request('switchBranch', { projectPath: 'wrong', id: variant })).rejects.toThrow(
     'changé',
@@ -281,11 +275,11 @@ it('integrates inherited edits when a variant is created from another variant', 
   await request('createBranch', { projectPath: h.projectPath, name: 'Petite-fille' });
   const child = (await h.state()).activeBranch;
   await h.write('X\n\nB\n\nZ');
-  const preview = await request<MergePreview>('mergePreview', {
+  const preview = await request('mergePreview', {
     projectPath: h.projectPath,
     source: child,
   });
-  const merged = await request<Project>('mergeBranch', {
+  const merged = await request('mergeBranch', {
     projectPath: h.projectPath,
     source: child,
     token: preview.token,
@@ -330,15 +324,11 @@ it('restores a variant origin while preserving the outgoing draft', async () => 
   const branchId = await h.branch();
   const origin = (await h.state()).branches.find((branch) => branch.id === branchId)!.baseVersion!;
   await h.write('Autre fin.');
-  const restored = await request<Project>('restore', { id: origin });
+  const restored = await request('restore', { id: origin });
   expect(restored.sections[0].text).toBe('Origine.');
   expect((await h.state()).activeBranch).toBe(branchId);
-  const backup = (await request<Version[]>('versions')).find(
-    (v) => v.name === 'Avant restauration',
-  )!;
-  expect((await request<Version>('version', { id: backup.id })).sections[0].text).toBe(
-    'Autre fin.',
-  );
+  const backup = (await request('versions')).find((v) => v.name === 'Avant restauration')!;
+  expect((await request('version', { id: backup.id })).sections[0].text).toBe('Autre fin.');
 });
 
 it('rejects restoration of a version from an unrelated variant', async () => {
@@ -346,9 +336,9 @@ it('rejects restoration of a version from an unrelated variant', async () => {
   await h.write('Origine.');
   await h.branch();
   await h.write('Piste A.');
-  const version = await request<Version>('capture', { name: 'Piste A', scope: null });
+  const version = await request('capture', { name: 'Piste A', scope: null });
   await request('switchBranch', { projectPath: h.projectPath, id: 'main' });
   await request('createBranch', { projectPath: h.projectPath, name: 'Piste B' });
   await expect(request('restore', { id: version.id })).rejects.toThrow('autre variante');
-  expect((await request<Project>('bootstrap')).sections[0].text).toBe('Origine.');
+  expect((await request('bootstrap'))!.sections[0].text).toBe('Origine.');
 });

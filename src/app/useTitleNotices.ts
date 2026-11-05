@@ -1,8 +1,23 @@
+import { t } from '../i18n';
+import { noteEventLabel } from '../notes/useNoteActivity';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useContextMenuNotice } from '../components/ContextMenu';
 import type { Workspace } from './useWorkspace';
 
-type NoticeKind = 'library' | 'error' | 'recovery' | 'export' | 'context';
+type NoticeKind =
+  | 'library'
+  | 'error'
+  | 'recovery'
+  | 'export'
+  | 'context'
+  | 'note'
+  | 'activity-error'
+  | 'save'
+  | 'version'
+  | 'links'
+  | 'index'
+  | 'loading'
+  | 'operation';
 type NoticeTone = 'success' | 'info' | 'error';
 
 export type TitleNotice = {
@@ -16,7 +31,7 @@ export type TitleNotice = {
 const NOTICE_DURATION = 5000;
 
 // Informational notices expire independently; errors stay until dismissed or retried.
-export function useTitleNotices(workspace: Workspace) {
+export function useTitleNotices(workspace: Workspace, memoryPending = false) {
   const contextNotice = useContextMenuNotice();
   const [notices, setNotices] = useState<TitleNotice[]>([]);
   const serial = useRef(0);
@@ -137,10 +152,78 @@ export function useTitleNotices(workspace: Workspace) {
     else removeKind('context');
   }, [contextNotice.message, enqueue, removeKind]);
 
+  useEffect(() => {
+    if (workspace.activity?.latest)
+      enqueue('note', noteEventLabel(workspace.activity?.latest), 'info');
+  }, [workspace.activity?.latest, enqueue]);
+  useEffect(() => {
+    if (workspace.activity?.error) enqueue('activity-error', workspace.activity?.error, 'error');
+    else removeKind('activity-error');
+  }, [workspace.activity?.error, enqueue, removeKind]);
+  const previousSave = useRef({ path: projectPath, state: workspace.doc.status });
+  useEffect(() => {
+    const previous = previousSave.current;
+    const state = workspace.doc.status;
+    previousSave.current = { path: projectPath, state };
+    if (previous.path !== projectPath) return;
+    if (state === 'saved') {
+      if (previous.state && previous.state !== 'saved')
+        enqueue('save', 'Modifications enregistrées', 'success');
+    } else if (state === 'saving') enqueue('save', 'Enregistrement…', 'info');
+    else if (state === 'editing') enqueue('save', 'Modifications en cours', 'info');
+    else if (state === 'error' && !error)
+      enqueue('save', 'Modifications non enregistrées', 'error');
+    else removeKind('save');
+  }, [projectPath, workspace.doc.status, error, enqueue, removeKind]);
+  useEffect(() => {
+    if (workspace.doc.versionStatus === 'error' && workspace.doc.status === 'saved')
+      enqueue('version', 'Texte enregistré · Réessayer la version automatique', 'error');
+    else removeKind('version');
+  }, [workspace.doc.versionStatus, workspace.doc.status, enqueue, removeKind]);
+  useEffect(() => {
+    if (workspace.doc.status === 'saved' && memoryPending && !workspace.searching)
+      enqueue('links', 'Actualisation des liens…', 'info');
+    else removeKind('links');
+  }, [memoryPending, workspace.doc.status, workspace.searching, enqueue, removeKind]);
+  const progress = workspace.progress;
+  useEffect(() => {
+    if (progress)
+      enqueue(
+        'index',
+        t('Préparation des sources · {0} / {1}', { 0: progress.done, 1: progress.total }),
+        'info',
+      );
+    else removeKind('index');
+  }, [progress?.done, progress?.total, enqueue, removeKind]);
+  const setDialogLoading = useCallback(
+    (loading: boolean) => {
+      if (loading) enqueue('loading', 'Ouverture…', 'info');
+      else removeKind('loading');
+    },
+    [enqueue, removeKind],
+  );
+  const notify = useCallback(
+    (message: string, tone: NoticeTone = 'info') => enqueue('operation', message, tone),
+    [enqueue],
+  );
   return {
+    notify,
     notices,
     dismiss,
-    hasPending: !!error || recovery || (surface !== 'export' && exportJob.state !== 'ready'),
-    hasError: !!error || (surface !== 'export' && exportJob.state === 'error'),
+    setDialogLoading,
+    hasPending:
+      !!error ||
+      recovery ||
+      workspace.doc.status !== 'saved' ||
+      workspace.doc.versionStatus === 'error' ||
+      !!progress ||
+      memoryPending ||
+      (surface !== 'export' && exportJob.state !== 'ready'),
+    hasError:
+      !!error ||
+      workspace.doc.status === 'error' ||
+      workspace.doc.versionStatus === 'error' ||
+      !!workspace.activity?.error ||
+      (surface !== 'export' && exportJob.state === 'error'),
   };
 }

@@ -1,0 +1,222 @@
+.versions-list {
+  margin-top: 35px;
+}
+.versions-list > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--theme-hover, #eee);
+}
+.versions-list > div > div {
+  margin-right: auto;
+}
+.versions-list strong {
+  font: 21px var(--literary);
+  display: block;
+}
+.versions-list small {
+  font-size: 10px;
+  color: var(--theme-quiet, #999);
+  display: block;
+  margin-top: 5px;
+}
+.versions-list button {
+  font-size: 10px;
+}
+.compare-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+.compare-toolbar select {
+  width: auto !important;
+  font-size: 11px !important;
+}
+.compare-labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  font-size: 11px;
+  color: var(--theme-quiet, #999);
+  padding: 12px 16px;
+}
+.comparison {
+  max-height: 52vh;
+  overflow: auto;
+}
+.compare-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+}
+.compare-row > div {
+  padding: 18px 24px;
+  font: 21px/1.6 var(--literary);
+  white-space: pre-wrap;
+}
+.compare-row > div + div {
+  border-left: 1px solid var(--theme-hover, #eee);
+}
+.compare-row.changed {
+  cursor: pointer;
+}
+.compare-row.changed:before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 30px;
+  width: 4px;
+  height: 14px;
+  margin-left: -2px;
+  background: var(--theme-quiet, #aaa);
+  border-radius: 3px;
+}
+.compare-row.changed:hover {
+  background: var(--theme-paper, #fcfcfc);
+}
+.take-passage {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 9px;
+  background: var(--theme-paper, white);
+  border: 1px solid var(--theme-hover, #eee);
+}
+.removed {
+  background: var(--theme-removed-bg, #f9dddd);
+  text-decoration: line-through;
+}
+.added {
+  background: var(--theme-added-bg, #e0f1df);
+}
+.inline-confirm {
+  background: var(--theme-paper, #fafafa);
+  border: 1px solid var(--theme-hover, #eee);
+  padding: 15px;
+  margin-top: 20px;
+  font-size: 12px;
+}
+.export-progress {
+  padding: 30px 0;
+  font-size: 13px;
+  color: var(--theme-muted, #777);
+}
+.indeterminate {
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--theme-hover, #eee),
+    var(--theme-muted, #777),
+    var(--theme-hover, #eee)
+  );
+  background-size: 200% 100%;
+  display: block;
+  animation: progress 2s linear infinite;
+}
+.export-result {
+  font-family: var(--literary);
+  font-size: 22px;
+  overflow-wrap: anywhere;
+}
+.formats {
+  margin: 0 0 30px;
+}
+.notice {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 80px);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--theme-paper, #fff);
+  border: 1px solid var(--theme-line, #e5e5e5);
+  border-radius: 7px;
+  box-shadow: 0 8px 35px #00000009;
+  padding: 14px 20px;
+  z-index: 100;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.notice > span {
+  flex: 1;
+}
+.notice button {
+  font-size: 11px;
+  white-space: nowrap;
+}
+.notice.recovery {
+  top: 85px;
+}
+.error-notice {
+  bottom: 65px;
+  width: 800px;
+}
+.project-list-item {
+  display: block;
+  width: 100%;
+  font-family: var(--literary);
+  font-size: 24px;
+  text-align: left;
+}
+.dialog .welcome {
+  height: auto;
+  padding: 30px 0;
+}
+.dialog .welcome h1 {
+  display: none;
+}
+.dialog .welcome > p {
+  display: none;
+}
+@keyframes progress {
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes slide-in {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@media (max-width: 1100px) {
+  .source-card {
+    left: auto;
+    right: 20px;
+  }
+}
+@media (max-width: 800px) {
+  .notice {
+    width: calc(100vw - 30px);
+    max-width: none;
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+  .notice > span {
+    flex-basis: 100%;
+  }
+  .dialog {
+    padding: 23px;
+  }
+  .settings {
+    right: 20px;
+  }
+  .source-card {
+    right: 20px;
+    left: auto;
+  }
+  .compare-row > div {
+    padding: 15px;
+    font-size: 18px;
+  }
+  .compare-toolbar {
+    flex-wrap: wrap;
+  }
+}

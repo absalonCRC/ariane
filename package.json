@@ -1,6 +1,6 @@
 {
   "name": "ariane",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,8 @@
     "check": "tsc -b",
     "test": "vitest run",
     "format": "prettier --write src tests scripts",
-    "verify": "npm run verify:resources && npm run test:packaging && npm run build && npm test && cargo test --locked --manifest-path src-tauri/Cargo.toml && cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
+    "verify:architecture": "node scripts/check-architecture.mjs",
+    "verify": "npm run verify:architecture && npm run verify:resources && npm run test:packaging && npm run build && npm test && cargo test --locked --manifest-path src-tauri/Cargo.toml && cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
     "setup:resources": "python3 scripts/setup-resources.py",
     "verify:resources": "python3 scripts/verify-resources.py",
     "test:packaging": "python3 -m unittest discover -s scripts/tests -v"

@@ -3,10 +3,10 @@ import { act, createRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { describe, expect, it, vi } from 'vitest';
 import type { EditorHandle } from '../src/editor/Editor';
+import { ReviewPanel } from '../src/revision/ReviewPanel';
 
 const request = vi.hoisted(() => vi.fn());
-vi.mock('../src/app/client', () => ({ native: true, request }));
-import { ReviewPanel } from '../src/revision/ReviewPanel';
+vi.mock('../src/platform/client', () => ({ native: true, request }));
 
 describe('révision locale', () => {
   it('affiche la grammaire pendant que le modèle calcule et ignore sa réponse après application', async () => {

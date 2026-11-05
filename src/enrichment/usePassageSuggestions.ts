@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { request } from '../app/client';
-import type { Section, Source, SaveState } from '../app/types';
+import { request } from '../platform/client';
+import type { Section } from '../contracts/project';
+import type { Source } from '../contracts/sources';
+import type { SaveState } from '../app/workspace/types';
 import type { VisibleText } from '../editor/Editor';
 import { passageKey, visiblePassages, type Passage } from './passages';
 
@@ -63,7 +65,7 @@ export function usePassageSuggestions(
         try {
           for (const block of pending) {
             const sources = block.text.trim()
-              ? await request<Source[]>('suggest', {
+              ? await request('suggest', {
                   text: block.text.slice(0, 8000),
                   depth,
                   allowEnd: true,

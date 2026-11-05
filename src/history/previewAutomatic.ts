@@ -1,6 +1,6 @@
-import type { Project, Version } from '../app/types';
+import type { Project } from '../contracts/project';
+import type { Version } from '../contracts/history';
 import { descendants } from '../project/tree';
-
 // The browser preview has a small localStorage quota; native projects use 128 MiB in SQLite.
 const budget = 2 * 1024 * 1024;
 export const versionKey = (path: string) => 'ariane.preview.versions.' + path;

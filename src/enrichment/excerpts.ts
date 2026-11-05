@@ -1,5 +1,4 @@
-import type { Section } from '../app/types';
-
+import type { Section } from '../contracts/project';
 /** A short quotation of existing text, with Markdown furniture removed. */
 export function plainExcerpt(markdown: string, limit = 180): string {
   const lines = markdown.split(/\r?\n/);

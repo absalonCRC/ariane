@@ -1,10 +1,17 @@
+import type { Project } from '../contracts/project';
+import type { ManuscriptOperation } from '../contracts/library';
 import { t, useLocale } from '../i18n';
 import { useState } from 'react';
 import { Dialog } from '../components/Dialog';
-import type { Workspace } from '../app/useWorkspace';
-import type { ManuscriptOperation } from './library';
 import { ordered } from './tree';
-export function ManuscriptDialog({ workspace: w }: { workspace: Workspace }) {
+export interface ManuscriptInput {
+  manuscriptSelection: { section: string; from: number; to: number; text: string } | null;
+  p: Project | null;
+  libraryBusy: boolean;
+  close: () => void;
+  manuscriptOperation: (operation: ManuscriptOperation) => Promise<void>;
+}
+export function ManuscriptDialog({ workspace: w }: { workspace: ManuscriptInput }) {
   useLocale();
   const selected = w.manuscriptSelection!;
   const source = w.p!.sections.find((s) => s.id === selected.section)!;

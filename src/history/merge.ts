@@ -1,5 +1,6 @@
 import { validOutline } from '../editor/outline/model';
-import type { MergeEntry, Section } from '../app/types';
+import type { MergeEntry } from '../contracts/history';
+import type { Section } from '../contracts/project';
 
 const normalized = (section: Section | null) =>
   section && {

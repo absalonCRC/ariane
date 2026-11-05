@@ -1,11 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import {
-  applyLibraryOperation,
-  structureSnapshot,
-  type LibraryOperation,
-} from '../src/project/library';
+import { applyLibraryOperation, structureSnapshot } from '../src/project/library';
+import { type LibraryOperation } from '../src/contracts/library';
 import { scenesFor } from '../src/project/tree';
-import type { Project, Section } from '../src/app/types';
+import type { Project, Section } from '../src/contracts/project';
 const section = (
   id: string,
   position: number,

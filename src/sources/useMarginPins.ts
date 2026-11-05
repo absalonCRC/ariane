@@ -1,8 +1,14 @@
+import type { NoteActivityController } from '../notes/useNoteActivity';
 import { useEffect, useRef, useState } from 'react';
-import { request } from '../app/client';
-import type { Source } from '../app/types';
+import { request } from '../platform/client';
+import type { Source } from '../contracts/sources';
 
-export function useMarginPins(path: string | undefined, section: string | undefined, version = 0) {
+export function useMarginPins(
+  path: string | undefined,
+  section: string | undefined,
+  version = 0,
+  activity?: Pick<NoteActivityController, 'record'>,
+) {
   const scope = `${path ?? ''}\u001f${section ?? ''}`;
   const current = useRef(scope);
   current.current = scope;
@@ -16,7 +22,7 @@ export function useMarginPins(path: string | undefined, section: string | undefi
     const atRevision = revision.current;
     setError('');
     if (path && section)
-      void request<Source[]>('marginPins', { projectPath: path, section })
+      void request('marginPins', { projectPath: path, section })
         .then((sources) => {
           if (alive && current.current === scope && atRevision === revision.current)
             setValue({ scope, sources });
@@ -35,15 +41,22 @@ export function useMarginPins(path: string | undefined, section: string | undefi
     setBusy(true);
     setError('');
     try {
-      const sources = await request<Source[]>(
-        typeof source === 'string' ? 'unpinSource' : 'pinSource',
-        {
-          projectPath: path,
+      const sources = await request(typeof source === 'string' ? 'unpinSource' : 'pinSource', {
+        projectPath: path,
+        section,
+        id: typeof source === 'string' ? source : source.id,
+      });
+      if (current.current === scope) {
+        const target =
+          typeof source === 'string' ? value.sources.find((item) => item.id === source) : source;
+        void activity?.record({
+          kind: typeof source === 'string' ? 'unpinned' : 'pinned',
+          title: target?.title ?? 'Note',
+          sourceId: typeof source === 'string' ? source : source.id,
           section,
-          id: typeof source === 'string' ? source : source.id,
-        },
-      );
-      if (current.current === scope) setValue({ scope, sources });
+        });
+        setValue({ scope, sources });
+      }
       return current.current === scope;
     } catch (e) {
       if (current.current === scope) setError(String(e));

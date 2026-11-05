@@ -10,7 +10,7 @@ import { formatMarkdown } from '../src/editor/formatMarkdown';
 import { compose, sectionMapping } from '../src/editor/composite';
 import { outlineEditor } from '../src/editor/outline/state';
 import { outlinePresentation } from '../src/editor/outline/view';
-import type { Section } from '../src/app/types';
+import type { Section } from '../src/contracts/project';
 
 const views: EditorView[] = [];
 function editor(doc: string, cursor: number) {
@@ -40,18 +40,23 @@ describe('tableaux Markdown dans le manuscrit', () => {
     const view = editor('| Nom | Valeur |\n| --- | --- |\n| Alpha | Deux |', 0);
     const wrapper = view.dom.querySelector('.markdown-table-preview')!;
     expect(wrapper.querySelector('.markdown-table-viewport table')).not.toBeNull();
-    const buttons = [...wrapper.querySelectorAll<HTMLButtonElement>('.markdown-table-actions button')];
+    const buttons = [
+      ...wrapper.querySelectorAll<HTMLButtonElement>('.markdown-table-actions button'),
+    ];
     expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual([
       'Ajouter une ligne',
       'Supprimer la ligne',
       'Ajouter une colonne',
       'Supprimer la colonne',
     ]);
-    expect(buttons.every((button) =>
-      button.dataset.tooltip === button.getAttribute('aria-label') &&
-      !button.textContent &&
-      button.querySelector('svg[aria-hidden="true"]'),
-    )).toBe(true);
+    expect(
+      buttons.every(
+        (button) =>
+          button.dataset.tooltip === button.getAttribute('aria-label') &&
+          !button.textContent &&
+          button.querySelector('svg[aria-hidden="true"]'),
+      ),
+    ).toBe(true);
   });
 
   it('permet de modifier une cellule directement et de retrouver le Markdown avec annulation', () => {

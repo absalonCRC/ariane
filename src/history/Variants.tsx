@@ -1,15 +1,15 @@
 import { comparePassages, readingWords, reprisePassage, sectionChanges } from './comparison';
 import { ReadingDiff } from './ReadingDiff';
 import { useEffect, useState } from 'react';
-import { request } from '../app/client';
+import { request } from '../platform/client';
 import type {
   HistoryState,
   MergeEntry,
   MergePreview,
   MergeResolution,
-  Project,
   Version,
-} from '../app/types';
+} from '../contracts/history';
+import type { Project } from '../contracts/project';
 import { localizeMessage, t } from '../i18n';
 import { versionDate } from './VersionTimeline';
 
@@ -54,8 +54,6 @@ export function Variants(p: {
   const [choices, setChoices] = useState<Record<string, MergeResolution>>({});
   const [passages, setPassages] = useState<Record<string, boolean>>({});
   const [included, setIncluded] = useState<Record<string, boolean>>({});
-  const call = <T,>(type: string, args: Record<string, unknown> = {}) =>
-    request<T>(type, { projectPath: p.project.path, ...args });
   async function create(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || busy) return;
@@ -63,7 +61,8 @@ export function Variants(p: {
     setError('');
     try {
       await p.flush();
-      const next = await call<Project>('createBranch', {
+      const next = await request('createBranch', {
+        projectPath: p.project.path,
         name: name.trim(),
         fromVersion: p.fromVersion?.id ?? null,
       });
@@ -84,7 +83,7 @@ export function Variants(p: {
     setNotice('');
     try {
       await p.flush();
-      setPreview(await call<MergePreview>('mergePreview', { source: id }));
+      setPreview(await request('mergePreview', { projectPath: p.project.path, source: id }));
       setChoices({});
       setIncluded({});
       setPassages({});
@@ -116,7 +115,8 @@ export function Variants(p: {
             });
         }
       }
-      const next = await call<Project>('mergeBranch', {
+      const next = await request('mergeBranch', {
+        projectPath: p.project.path,
         source: preview.source.id,
         token: preview.token,
         resolutions,

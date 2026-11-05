@@ -1,15 +1,9 @@
 import { stageDraft, type SectionDraft } from './draft';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { request } from '../app/client';
-import {
-  defaultSettings,
-  type Project,
-  type Section,
-  type Settings,
-  type SaveState,
-  type Outline,
-  type Version,
-} from '../app/types';
+import { request } from '../platform/client';
+import { defaultSettings, type Settings } from '../contracts/settings';
+import { type Project, type Section, type Outline } from '../contracts/project';
+import { type SaveState } from '../app/workspace/types';
 export function useProject(onError: (e: unknown) => void) {
   const [project, setProject] = useState<Project | null>(null);
   const ref = useRef<Project | null>(null);
@@ -77,10 +71,7 @@ export function useProject(onError: (e: unknown) => void) {
     setStatus('saving');
     const task = (async () => {
       try {
-        const result = await request<{
-          sections: { id: string; revision: number }[];
-          mirrorErrors: { id: string; message: string }[];
-        }>('save', { patches });
+        const result = await request('save', { patches });
         for (const ack of result.sections) {
           const s = sectionIndex.current.get(ack.id);
           if (s) s.revision = ack.revision;
@@ -118,7 +109,7 @@ export function useProject(onError: (e: unknown) => void) {
       for (const [scope, token] of pending) {
         if (ref.current?.path !== path || activation.current !== session) return;
         if (sectionIndex.current.has(scope)) {
-          const version = await request<Version | null>('automaticVersion', {
+          const version = await request('automaticVersion', {
             projectPath: path,
             scope,
           });
@@ -185,7 +176,8 @@ export function useProject(onError: (e: unknown) => void) {
         ref.current.settings = next;
         const task = (settingsSaving.current ?? Promise.resolve())
           .catch(() => {})
-          .then(() => request<void>('settings', { value: next }));
+          .then(() => request('settings', { value: next }))
+          .then(() => {});
         settingsSaving.current = task;
         void task.then(() => {
           if (settingsSaving.current === task) settingsSaving.current = null;
@@ -236,3 +228,5 @@ export function useProject(onError: (e: unknown) => void) {
     replaceSections,
   };
 }
+
+export type ProjectController = ReturnType<typeof useProject>;

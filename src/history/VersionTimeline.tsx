@@ -1,4 +1,4 @@
-import type { Version } from '../app/types';
+import type { Version } from '../contracts/history';
 import { t, localeTag } from '../i18n';
 
 export function versionDate(value: string) {

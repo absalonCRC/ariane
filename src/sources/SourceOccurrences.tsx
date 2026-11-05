@@ -1,6 +1,7 @@
 import { t, useLocale } from '../i18n';
 import { useMemo, useState } from 'react';
-import type { Section, Source } from '../app/types';
+import type { Section } from '../contracts/project';
+import type { Source } from '../contracts/sources';
 import { sourceOccurrences, type SourceOccurrence } from './occurrences';
 export function SourceOccurrences({
   source,

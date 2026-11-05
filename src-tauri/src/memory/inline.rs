@@ -37,6 +37,8 @@ fn candidates(sources: &[Source], title: &str) -> Vec<EntityCandidate> {
 #[derive(Serialize)]
 pub struct InlineEntities {
     created: bool,
+    #[serde(rename = "createdSources")]
+    created_sources: Vec<Source>,
     text: String,
     mentions: Vec<Mention>,
 }
@@ -165,6 +167,7 @@ fn collect(
     mentions.sort_by_key(|m| (m.from, std::cmp::Reverse(m.to)));
     Ok(InlineEntities {
         created: false,
+        created_sources: vec![],
         text: section.text,
         mentions,
     })
@@ -182,18 +185,19 @@ pub fn inline_entities(
 pub fn resolve_inline_entities(root: &Path,index: &Path,section: &str,revision:i64) -> Result<InlineEntities> {
     let result = inline_entities(root,index,section,revision)?;
     let mut created = false;
+    let mut created_sources = vec![];
     for mention in &result.mentions {
         let settings: String = storage::database(root)?.query_row("SELECT value FROM meta WHERE key='settings'",[],|r|r.get(0)).app()?;
         if serde_json::from_str::<serde_json::Value>(&settings).app()?["enrichment"].as_bool()==Some(false) { break; }
         if mention.source_id.is_none() && mention.candidates.is_empty() {
-            create_detected_entity(root,index,section,revision,mention.from,mention.to,&mention.kind)?;
+            created_sources.push(create_detected_entity(root,index,section,revision,mention.from,mention.to,&mention.kind)?);
             created = true;
         }
     }
     if created {
         crate::enrichment::run(root,index)?;
         let mut result=inline_entities(root,index,section,revision)?;
-        result.created=true; Ok(result)
+        result.created=true; result.created_sources=created_sources; Ok(result)
     } else { Ok(result) }
 }
 fn remember_resolution(root:&Path,section:&str,from:usize,title:&str,source:&str) -> Result<()> {

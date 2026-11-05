@@ -5,11 +5,11 @@ const controls = [
   '.menu-control',
   '.voice-control',
   '.focus-mode-trigger',
+  '.resume-trigger',
   '.header-search',
   '.writing-counter',
   '.depth-control',
   '.settings-control',
-  '.save-state',
   '.goal-status',
   '.binder-footer-actions',
 ].join(', ');
@@ -70,7 +70,8 @@ export function updateChromeObstructions(root: HTMLElement) {
       );
       if (!candidates.length) continue;
       const style = getComputedStyle(element);
-      if (style.visibility === 'hidden' || style.display === 'none' || style.opacity === '0') continue;
+      if (style.visibility === 'hidden' || style.display === 'none' || style.opacity === '0')
+        continue;
       let fragments: Box[];
       if (element instanceof HTMLInputElement) {
         const title = titleBox(element, box);
@@ -83,11 +84,13 @@ export function updateChromeObstructions(root: HTMLElement) {
         fragments = Array.from(range.getClientRects());
       } else fragments = [];
       for (const target of candidates) {
-        if (fragments.some((fragment) => overlaps(target.box, fragment, clip))) target.covered = true;
+        if (fragments.some((fragment) => overlaps(target.box, fragment, clip)))
+          target.covered = true;
       }
     }
   }
-  for (const { element, covered } of targets) element.toggleAttribute('data-content-behind', covered);
+  for (const { element, covered } of targets)
+    element.toggleAttribute('data-content-behind', covered);
 }
 
 export function useChromeObstructions(
@@ -158,9 +161,9 @@ export function useChromeObstructions(
       root.removeEventListener('input', schedule, true);
       root.removeEventListener('transitionend', schedule, true);
       window.removeEventListener('resize', schedule);
-      root.querySelectorAll('[data-content-behind]').forEach((element) =>
-        element.removeAttribute('data-content-behind'),
-      );
+      root
+        .querySelectorAll('[data-content-behind]')
+        .forEach((element) => element.removeAttribute('data-content-behind'));
     };
   }, [root, sidebarOpen, history]);
 }

@@ -2,9 +2,9 @@
 import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, expect, it, vi } from 'vitest';
-import type { Project, Version } from '../src/app/types';
+import type { Project } from '../src/contracts/project';
 vi.mock('@tauri-apps/api/core', () => ({ isTauri: () => false, invoke: vi.fn() }));
-import { request } from '../src/app/client';
+import { request } from '../src/platform/client';
 import { History } from '../src/history/History';
 let root: Root | undefined, host: HTMLDivElement;
 afterEach(async () => {
@@ -46,11 +46,11 @@ async function render(p: Project) {
   await act(async () => root!.render(<Harness />));
 }
 it('opens without making a checkpoint and promotes a capture through the session history', async () => {
-  const p = await request<Project>('create', { path: 'history-ui', name: 'Roman' }),
+  const p = await request('create', { path: 'history-ui', name: 'Roman' }),
     id = p.sections[0].id;
   await request('save', { patches: [{ id, revision: 0, text: 'Premier texte.' }] });
-  const before = await request<Version[]>('versions');
-  await render(await request<Project>('open', { path: p.path }));
+  const before = await request('versions');
+  await render(await request('open', { path: p.path }));
   expect(await request('versions')).toEqual(before);
   await act(async () => button('Historique').click());
   expect(host.querySelector('.version-session')).not.toBeNull();
@@ -62,16 +62,16 @@ it('opens without making a checkpoint and promotes a capture through the session
       .querySelector('form')!
       .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })),
   );
-  const after = await request<Version[]>('versions');
+  const after = await request('versions');
   expect(after).toHaveLength(before.length);
   expect(after[0]).toMatchObject({ id: before[0].id, name: 'Premier jet', automatic: false });
   expect(host.textContent).toContain('Premier jet');
 });
 it('creates a variant and opens a review, requiring an explicit conflict choice', async () => {
-  const p = await request<Project>('create', { path: 'variant-ui', name: 'Roman' }),
+  const p = await request('create', { path: 'variant-ui', name: 'Roman' }),
     id = p.sections[0].id;
   await request('save', { patches: [{ id, revision: 0, text: 'Origine.' }] });
-  await render(await request<Project>('open', { path: p.path }));
+  await render(await request('open', { path: p.path }));
   await act(async () => button('Variantes').click());
   await input(host.querySelector('.variant-create input')!, 'Autre fin');
   await act(async () =>
@@ -80,12 +80,12 @@ it('creates a variant and opens a review, requiring an explicit conflict choice'
       .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })),
   );
   expect(host.textContent).toContain('Variante créée.');
-  let live = await request<Project>('open', { path: p.path });
+  let live = await request('open', { path: p.path });
   await request('save', {
     patches: [{ id, revision: live.sections[0].revision, text: 'Variante.' }],
   });
   await request('switchBranch', { projectPath: p.path, id: 'main' });
-  live = await request<Project>('open', { path: p.path });
+  live = await request('open', { path: p.path });
   await request('save', {
     patches: [{ id, revision: live.sections[0].revision, text: 'Principal.' }],
   });
@@ -93,7 +93,7 @@ it('creates a variant and opens a review, requiring an explicit conflict choice'
   await act(async () => root!.unmount());
   root = undefined;
   host.remove();
-  await render(await request<Project>('open', { path: p.path }));
+  await render(await request('open', { path: p.path }));
   await act(async () => button('Variantes').click());
   await act(async () => button('Relire et intégrer').click());
   expect(button('Intégrer au texte principal').disabled).toBe(true);
@@ -105,23 +105,23 @@ it('creates a variant and opens a review, requiring an explicit conflict choice'
   expect(button('Intégrer au texte principal').disabled).toBe(false);
   await act(async () => button('Intégrer au texte principal').click());
   expect(host.textContent).toContain('Variante intégrée.');
-  expect((await request<Project>('bootstrap')).sections[0].text).toBe('Variante.');
+  expect((await request('bootstrap'))!.sections[0].text).toBe('Variante.');
 });
 
 it('previews and integrates only the selected passages', async () => {
-  const p = await request<Project>('create', { path: 'selective-ui', name: 'Roman' });
+  const p = await request('create', { path: 'selective-ui', name: 'Roman' });
   const id = p.sections[0].id;
   const original = 'Aube.\n\nMilieu.\n\nSoir.';
   await request('save', { patches: [{ id, revision: 0, text: original }] });
   await request('createBranch', { projectPath: p.path, name: 'Autre direction' });
-  const variant = await request<Project>('open', { path: p.path });
+  const variant = await request('open', { path: p.path });
   await request('save', {
     patches: [
       { id, revision: variant.sections[0].revision, text: 'Crépuscule.\n\nMilieu.\n\nNuit.' },
     ],
   });
   await request('switchBranch', { projectPath: p.path, id: 'main' });
-  await render(await request<Project>('open', { path: p.path }));
+  await render(await request('open', { path: p.path }));
   await act(async () => button('Variantes').click());
   await act(async () => button('Relire et intégrer').click());
   const passages = host.querySelectorAll<HTMLInputElement>('.merge-passages input');
@@ -136,5 +136,5 @@ it('previews and integrates only the selected passages', async () => {
   expect(host.querySelectorAll('.merge-prose-pair .diff-prose')[1].textContent).toContain('Soir.');
   await act(async () => includeScene.click());
   await act(async () => button('Intégrer au texte principal').click());
-  expect((await request<Project>('bootstrap')).sections[0].text).toBe('Aube.\n\nMilieu.\n\nNuit.');
+  expect((await request('bootstrap'))!.sections[0].text).toBe('Aube.\n\nMilieu.\n\nNuit.');
 });

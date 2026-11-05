@@ -1,9 +1,8 @@
 import { ChangeSet } from '@codemirror/state';
 import { diffChars } from 'diff';
-import type { Section } from '../app/types';
-import type { EntityBatch } from './entityTypes';
+import type { Section } from '../contracts/project';
+import type { EntityBatch } from '../contracts/entities';
 import { passages } from './passages';
-
 /** Retain literal names through context edits, including within their own block. */
 export function rebaseEntities(batch: EntityBatch, section: Section): EntityBatch {
   if (batch.text === section.text) return { ...batch, revision: section.revision };

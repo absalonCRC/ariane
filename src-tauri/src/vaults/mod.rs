@@ -23,9 +23,7 @@ use rusqlite::{params, Connection};
 use std::{
     fs,
     path::{Path, PathBuf},
-    sync::{
-        atomic::AtomicBool,
-        Mutex},
+    sync::{atomic::AtomicBool, Mutex},
 };
 pub fn index_db(path: &Path) -> Result<Connection> {
     let c = Connection::open(path).app()?;
@@ -50,8 +48,13 @@ pub fn index_db(path: &Path) -> Result<Connection> {
         let mut rows = columns.query_map([], |r| r.get::<_, String>(1)).app()?;
         rows.any(|row| row.is_ok_and(|name| name == "verified"))
     };
-    if !has_verified { c.execute("ALTER TABLE source_file_state ADD COLUMN verified INTEGER NOT NULL DEFAULT 0", [],
-        ).app()?; }
+    if !has_verified {
+        c.execute(
+            "ALTER TABLE source_file_state ADD COLUMN verified INTEGER NOT NULL DEFAULT 0",
+            [],
+        )
+        .app()?;
+    }
     crate::vectors::migrate_batch(&c)?;
     Ok(c)
 }
@@ -138,15 +141,25 @@ pub fn allowed(s: &Source, vaults: &[Vault]) -> bool {
 /// Scope predicate uses only indexed metadata; foreign payloads are never parsed.
 pub(crate) const SCOPE_SQL: &str = "EXISTS(SELECT 1 FROM json_each(?1) v WHERE json_extract(v.value,'$.id')=s.vault AND (json_array_length(v.value,'$.scope')=0 OR EXISTS(SELECT 1 FROM json_each(v.value,'$.scope') f WHERE s.path=f.value OR substr(s.path,1,length(f.value)+1)=f.value||'/')))";
 pub(crate) fn scope_json(vaults: &[Vault]) -> Result<String> {
-    serde_json::to_string(&vaults.iter().map(|v| serde_json::json!({"id":v.id,"scope":v.scope})).collect::<Vec<_>>(),
-    ).app()
+    serde_json::to_string(
+        &vaults
+            .iter()
+            .map(|v| serde_json::json!({"id":v.id,"scope":v.scope}))
+            .collect::<Vec<_>>(),
+    )
+    .app()
 }
 #[cfg(test)]
 pub fn all(index: &Path, vaults: &[Vault]) -> Result<Vec<Source>> {
-    let c=index_db(index)?;
-    let mut q=c.prepare(&format!("SELECT payload FROM sources s WHERE {SCOPE_SQL}")).app()?;
-    let rows=q.query_map([scope_json(vaults)?],|r|r.get::<_,String>(0)).app()?;
-    rows.map(|r|serde_json::from_str(&r.app()?).app()).collect()
+    let c = index_db(index)?;
+    let mut q = c
+        .prepare(&format!("SELECT payload FROM sources s WHERE {SCOPE_SQL}"))
+        .app()?;
+    let rows = q
+        .query_map([scope_json(vaults)?], |r| r.get::<_, String>(0))
+        .app()?;
+    rows.map(|r| serde_json::from_str(&r.app()?).app())
+        .collect()
 }
 
 pub fn source(index: &Path, id: &str, vaults: &[Vault]) -> Result<Source> {
@@ -196,7 +209,14 @@ pub fn index_with_activity(
     activity: &crate::memory_engine::Activity,
     progress: impl Fn(serde_json::Value),
 ) -> Result<serde_json::Value> {
-    scan::run(root, index, resources, engine, cancel, Some(activity), progress,
+    scan::run(
+        root,
+        index,
+        resources,
+        engine,
+        cancel,
+        Some(activity),
+        progress,
     )
 }
 /// Make a newly created project fiche available immediately, without a model or
@@ -251,6 +271,13 @@ pub fn index_created_entity(root: &Path, index: &Path, path: &Path) -> Result<So
     Ok(source)
 }
 
+pub fn remove(root: &Path, id: &str) -> Result<()> {
+    project::database(root)?
+        .execute("DELETE FROM vaults WHERE id=?", [id])
+        .app()?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -261,33 +288,59 @@ mod tests {
         crate::project::create(&root, "Test").unwrap();
         let vault = temp.path().join("vault");
         fs::create_dir(&vault).unwrap();
-        fs::write(vault.join("note.md"), format!("{}\n\n{}", "Première partie. ".repeat(120), "Autre partie. ".repeat(120)),
-        ).unwrap();
+        fs::write(
+            vault.join("note.md"),
+            format!(
+                "{}\n\n{}",
+                "Première partie. ".repeat(120),
+                "Autre partie. ".repeat(120)
+            ),
+        )
+        .unwrap();
         connect(&root, &vault).unwrap();
         let path = temp.path().join("index.sqlite");
         let resources = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources");
         let engine = Mutex::new(Engine::default());
         let cancel = AtomicBool::new(false);
-        index(&root,&path,&resources,&engine,&cancel, |_| {}).unwrap();
+        index(&root, &path, &resources, &engine, &cancel, |_| {}).unwrap();
         let db = index_db(&path).unwrap();
         let records = {
-            let mut q = db.prepare("SELECT id,vector FROM chunks ORDER BY id").unwrap();
-            q.query_map([], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,Vec<u8>>(1)?))).unwrap().collect::<std::result::Result<Vec<_>,_>>().unwrap()
+            let mut q = db
+                .prepare("SELECT id,vector FROM chunks ORDER BY id")
+                .unwrap();
+            q.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, Vec<u8>>(1)?)))
+                .unwrap()
+                .collect::<std::result::Result<Vec<_>, _>>()
+                .unwrap()
         };
         assert!(records.len() >= 2);
-        db.execute("UPDATE chunks SET vector=NULL WHERE id=?", [records[0].0]).unwrap();
-        index(&root,&path,&resources,&engine,&cancel, |_| {}).unwrap();
+        db.execute("UPDATE chunks SET vector=NULL WHERE id=?", [records[0].0])
+            .unwrap();
+        index(&root, &path, &resources, &engine, &cancel, |_| {}).unwrap();
         let restored = {
-            let mut q = db.prepare("SELECT id,vector FROM chunks ORDER BY id").unwrap();
-            q.query_map([], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,Vec<u8>>(1)?))).unwrap().collect::<std::result::Result<Vec<_>,_>>().unwrap()
+            let mut q = db
+                .prepare("SELECT id,vector FROM chunks ORDER BY id")
+                .unwrap();
+            q.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, Vec<u8>>(1)?)))
+                .unwrap()
+                .collect::<std::result::Result<Vec<_>, _>>()
+                .unwrap()
         };
-        assert_eq!(records,restored);
-        db.execute("UPDATE chunks SET model='embeddinggemma-2-Q8_0',vector='[1]'", [],
-        ).unwrap();
-        let report = index(&root,&path,&resources,&engine,&cancel, |_| {}).unwrap();
+        assert_eq!(records, restored);
+        db.execute(
+            "UPDATE chunks SET model='embeddinggemma-2-Q8_0',vector='[1]'",
+            [],
+        )
+        .unwrap();
+        let report = index(&root, &path, &resources, &engine, &cancel, |_| {}).unwrap();
         assert_eq!(report["errors"], serde_json::json!([]));
-        let migrated: i64 = db.query_row("SELECT count(*) FROM chunks WHERE model=? AND length(vector)>10", [crate::inference::MODEL_ID], |r|r.get(0),
-            ).unwrap();
+        let migrated: i64 = db
+            .query_row(
+                "SELECT count(*) FROM chunks WHERE model=? AND length(vector)>10",
+                [crate::inference::MODEL_ID],
+                |r| r.get(0),
+            )
+            .unwrap();
         assert_eq!(migrated, records.len() as i64);
     }
     #[test]
@@ -298,12 +351,21 @@ mod tests {
         let fixture = temp.path().join("vault");
         fs::create_dir_all(fixture.join("Personnes")).unwrap();
         fs::create_dir_all(fixture.join("Lieux")).unwrap();
-        fs::write(fixture.join("Personnes/Pierre Plantard.md"), "---\ntype: Personne\naliases: [Pierre]\n---\n# Pierre Plantard\nUne personne.\n",
-        ).unwrap();
-        fs::write(fixture.join("Personnes/Pierre Perret.md"), "---\ntype: Personne\naliases: [Pierre]\n---\n# Pierre Perret\nUne autre personne.\n",
-        ).unwrap();
-        fs::write(fixture.join("Lieux/Ville.md"), "---\ntype: Lieu\n---\n# Ville\nLes souvenirs et les villes.\n",
-        ).unwrap();
+        fs::write(
+            fixture.join("Personnes/Pierre Plantard.md"),
+            "---\ntype: Personne\naliases: [Pierre]\n---\n# Pierre Plantard\nUne personne.\n",
+        )
+        .unwrap();
+        fs::write(
+            fixture.join("Personnes/Pierre Perret.md"),
+            "---\ntype: Personne\naliases: [Pierre]\n---\n# Pierre Perret\nUne autre personne.\n",
+        )
+        .unwrap();
+        fs::write(
+            fixture.join("Lieux/Ville.md"),
+            "---\ntype: Lieu\n---\n# Ville\nLes souvenirs et les villes.\n",
+        )
+        .unwrap();
         connect(&project, &fixture).unwrap();
         let indexpath = temp.path().join("index.sqlite");
         let resources = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources");

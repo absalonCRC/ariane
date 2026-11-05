@@ -1,7 +1,8 @@
 import { t, useLocale } from '../i18n';
 import { useEffect, useRef, useState } from 'react';
-import { request } from './client';
-import type { Project, Source } from './types';
+import { request } from '../platform/client';
+import type { Project } from '../contracts/project';
+import type { Source } from '../contracts/sources';
 import {
   ManuscriptSearch,
   emptyManuscript,
@@ -118,7 +119,7 @@ export function useVaultSearch(project: Project | null, query: string, version =
     let alive = true;
     setResult(null);
     const timer = setTimeout(() => {
-      void request<Source[]>('search', { query: term })
+      void request('search', { query: term })
         .then((sources) => {
           if (alive) setResult({ path: project.path, query: term, sources, error: '' });
         })

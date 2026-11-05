@@ -1,16 +1,10 @@
 import { localizeMessage, t, useLocale } from '../i18n';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { native, request } from '../app/client';
+import { native, request } from '../platform/client';
 import type { EditorHandle } from '../editor/Editor';
 import type { ReviewTarget } from '../editor/reviewTarget';
-import { reviewSuggestions, type LanguageIssue, type ReviewSuggestion } from './suggestions';
+import { reviewSuggestions, type ReviewSuggestion } from './suggestions';
 
-type Result = {
-  issues: LanguageIssue[];
-  model: string | null;
-  languageError: string | null;
-  modelError: string | null;
-};
 export function ReviewPanel({
   editor,
   language,
@@ -35,7 +29,7 @@ export function ReviewPanel({
     setBusy(false);
     if (!open) return;
     let live = true;
-    void request<{ available: boolean }>('revisionStatus')
+    void request('revisionStatus')
       .then((status) => {
         if (live) setAvailable(status.available);
       })
@@ -65,7 +59,7 @@ export function ReviewPanel({
     setBusy(true);
     setMessage('');
     try {
-      let result = await request<Result>('revisionCheck', {
+      let result = await request('revisionCheck', {
         text: selected.text,
         language,
         stage: 'language',
@@ -79,7 +73,7 @@ export function ReviewPanel({
       }
       setItems(reviewSuggestions(selected.text, result.issues, null, selected.protected));
       const grammatical = result;
-      const model = await request<Result>('revisionCheck', {
+      const model = await request('revisionCheck', {
         text: selected.text,
         language,
         stage: 'model',

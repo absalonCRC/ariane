@@ -459,13 +459,6 @@
   font: 12px var(--ui);
   color: var(--workspace-muted);
 }
-.writing-branch-badge {
-  max-width: 210px;
-  font: 12px var(--ui);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 @media (max-width: 1000px) {
   .history-text-list {
     width: 130px;

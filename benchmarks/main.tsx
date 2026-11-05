@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Editor, type EditorHandle } from '../src/editor/Editor';
-import { defaultSettings, type Section } from '../src/app/types';
+import { defaultSettings } from '../src/contracts/settings';
+import { type Section } from '../src/contracts/project';
 import '@fontsource/eb-garamond/latin-400.css';
 import '../src/styles/tokens.css';
 import '../src/styles/editor.css';

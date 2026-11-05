@@ -1275,7 +1275,7 @@ mod tests {
         write(d.path(), &id, "Origine.");
         create_branch(d.path(), "Fin", None).unwrap();
         let branch = variant(d.path());
-        let path = project::scene_path(d.path(), &id);
+        let path = d.path().join("manuscrit").join(format!("{id}.md"));
         std::fs::write(&path, "Modification externe.").unwrap();
         assert!(switch_branch(d.path(), "main")
             .unwrap_err()

@@ -11,10 +11,9 @@ import {
 } from '@codemirror/state';
 import { invertedEffects, isolateHistory } from '@codemirror/commands';
 import { EditorView } from '@codemirror/view';
-import type { Outline, Section } from '../../app/types';
+import type { Outline, Section } from '../../contracts/project';
 import { touchedSpans, type Span } from '../composite';
 import { initialOutline } from './model';
-
 export interface OutlineEntry {
   id: string;
   parent: string | null;

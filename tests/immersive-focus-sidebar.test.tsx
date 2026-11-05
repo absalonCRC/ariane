@@ -2,10 +2,10 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
+import { useWorkspace } from '../src/app/useWorkspace';
 
 const request = vi.hoisted(() => vi.fn());
-vi.mock('../src/app/client', () => ({ request, native: false }));
-import { useWorkspace } from '../src/app/useWorkspace';
+vi.mock('../src/platform/client', () => ({ request, native: false }));
 
 it('opens the sidebar on demand in focus and restores its previous state on exit', async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });

@@ -1,11 +1,5 @@
-import type {
-  MergePreview,
-  MergeResolution,
-  Project,
-  Section,
-  Version,
-  WritingBranch,
-} from '../app/types';
+import type { MergePreview, MergeResolution, Version, WritingBranch } from '../contracts/history';
+import type { Project, Section } from '../contracts/project';
 import { descendants } from '../project/tree';
 import { validOutline } from '../editor/outline/model';
 import { mergeSections, validateMergedSections } from './merge';

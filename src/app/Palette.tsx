@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { Search } from 'lucide-react';
 import { useExitPresence } from '../components/useExitPresence';
 export interface Command {
+  id?: string;
   label: string;
   detail?: string;
   action: () => void;

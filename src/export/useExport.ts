@@ -1,8 +1,8 @@
 import { t, useLocale } from '../i18n';
 import { useState } from 'react';
 import { choosePath } from '../app/choosePath';
-import { native, request } from '../app/client';
-import type { Project } from '../app/types';
+import { native, request } from '../platform/client';
+import type { Project } from '../contracts/project';
 import { manuscriptSections, scenesFor } from '../project/tree';
 
 // The job outlives its dialog, so writing can continue without losing its result.
@@ -45,7 +45,7 @@ export function useExport() {
       if (!path) return;
       setState('working');
       setResult(
-        await request<string>('export', {
+        await request('export', {
           path,
           format,
           scope: scope === 'project' ? null : active,

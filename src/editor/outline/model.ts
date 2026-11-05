@@ -1,6 +1,5 @@
 import { markdownLanguage } from '@codemirror/lang-markdown';
-import type { Outline } from '../../app/types';
-
+import type { Outline } from '../../contracts/project';
 export function validOutline(
   text: string,
   outline: Outline | null | undefined,

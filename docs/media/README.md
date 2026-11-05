@@ -1,6 +1,12 @@
 # Ariane presentation media
 
-Captured for the 0.2.0-alpha.1 presentation on 2 November 2026.
+## Current screenshots — ariane 0.3.2
+
+The main README uses screenshots and short animations from [ariane 0.3.2](0.3.2), captured on **5 November 2026**. The stills were retouched for presentation; the animations show real interactions. See [the current capture notes](0.3.2/README.md) for the edits, source version, views and isolation method.
+
+## Earlier film and screenshots — 0.2.0-alpha.1
+
+The film and the older images directly in this directory were captured for the 0.2.0-alpha.1 presentation on 2 November 2026. They are preserved as historical media. **The film does not represent the current interface.** The provenance below describes that earlier production.
 
 ## Provenance
 
@@ -18,7 +24,7 @@ This demonstrates the actual local transcription and insertion pipeline, not a s
 
 ### Demo material
 
-*The Human Thread — Studio* and the earlier *Motion* project contain fictional writing about AI and authorship. The new *The Connected Page* project uses illustrative prose naming Ada Lovelace and London; it is not a historical quotation or a sourced historical assertion. Its created entry belongs to the demo project. Existing external vaults are not modified.
+_The Human Thread — Studio_ and the earlier _Motion_ project contain fictional writing about AI and authorship. The new _The Connected Page_ project uses illustrative prose naming Ada Lovelace and London; it is not a historical quotation or a sourced historical assertion. Its created entry belongs to the demo project. Existing external vaults are not modified.
 
 [Portable essay and research material](../../examples/the-human-thread). Native demo projects, source recordings, production scripts and audio masters remain in the local Ariane Showcase folder; V4 and V5 exports are preserved.
 
@@ -36,19 +42,19 @@ The opening uses Ariane’s own key, space and carriage-return samples from `src
 
 ## Film sequence
 
-| Time | Visible action |
-| --- | --- |
-| 00:00–00:06 | Macro typing with mechanical keys, then a reveal of the page. |
-| 00:06–00:10 | A Markdown table becomes editable; a cell changes. |
-| 00:10–00:11.1 | Generated thread transition. |
-| 00:11.1–00:18.3 | Names receive automatic colors; a detected person becomes a project-vault entry. |
-| 00:18.3–00:23 | Search returns manuscript and vault results; an entry opens. |
-| 00:23–00:28.8 | Local dictation and its inserted text. |
-| 00:28.8–00:40 | Thread transition; mouse drags above, below and inside a line; move and unfold a branch. |
-| 00:40–00:45.6 | Paragraph and sentence focus. |
-| 00:45.6–00:51.6 | Word counter, then a running 25-minute Pomodoro. |
-| 00:51.6–00:53.7 | Earlier and current drafts side by side. |
-| 00:53.7–00:59.5 | Animated thread, official wordmark and closing text. |
+| Time            | Visible action                                                                           |
+| --------------- | ---------------------------------------------------------------------------------------- |
+| 00:00–00:06     | Macro typing with mechanical keys, then a reveal of the page.                            |
+| 00:06–00:10     | A Markdown table becomes editable; a cell changes.                                       |
+| 00:10–00:11.1   | Generated thread transition.                                                             |
+| 00:11.1–00:18.3 | Names receive automatic colors; a detected person becomes a project-vault entry.         |
+| 00:18.3–00:23   | Search returns manuscript and vault results; an entry opens.                             |
+| 00:23–00:28.8   | Local dictation and its inserted text.                                                   |
+| 00:28.8–00:40   | Thread transition; mouse drags above, below and inside a line; move and unfold a branch. |
+| 00:40–00:45.6   | Paragraph and sentence focus.                                                            |
+| 00:45.6–00:51.6 | Word counter, then a running 25-minute Pomodoro.                                         |
+| 00:51.6–00:53.7 | Earlier and current drafts side by side.                                                 |
+| 00:53.7–00:59.5 | Animated thread, official wordmark and closing text.                                     |
 
 ## Narration transcript
 

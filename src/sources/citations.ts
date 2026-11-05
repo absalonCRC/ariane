@@ -1,4 +1,4 @@
-import type { Source } from '../app/types';
+import type { Source } from '../contracts/sources';
 export function sourceRef(s: Source) {
   return 'source-' + s.id.slice(0, 10) + (s.fingerprint ? '-' + s.fingerprint.slice(0, 8) : '');
 }

@@ -1,19 +1,10 @@
 import { localizeMessage, t, useLocale } from '../i18n';
 import { Presence } from '../components/Presence';
 import type { Workspace } from './useWorkspace';
-import { request } from './client';
-import type { Project } from './types';
+import { request } from '../platform/client';
 import { X } from 'lucide-react';
-import { useContextMenuNotice } from '../components/ContextMenu';
-export function WorkspaceNotices({
-  workspace,
-  embedded = false,
-}: {
-  workspace: Workspace;
-  embedded?: boolean;
-}) {
+export function WorkspaceNotices({ workspace }: { workspace: Workspace; embedded?: boolean }) {
   useLocale();
-  const contextNotice = useContextMenuNotice();
   const {
     recovery,
     setRecovery,
@@ -28,31 +19,27 @@ export function WorkspaceNotices({
   } = workspace;
   return (
     <>
-      <Presence kind="notice">
-        {!embedded && workspace.libraryNotice && !error && !recovery && (
-          <div className="notice library-notice" role="status">
-            <span>{localizeMessage(workspace.libraryNotice.message)}</span>
-            {workspace.libraryNotice.undo && doc.project?.canUndoStructure && (
-              <button
-                disabled={workspace.libraryBusy}
-                onClick={() => void workspace.operate({ action: 'undo' })}
-              >
-                {t('Annuler')}
-              </button>
-            )}
-            <button
-              className="icon-button"
-              aria-label={t('Fermer le message de rangement')}
-              onClick={() => workspace.setLibraryNotice(null)}
-            >
-              <X size={14} />
-            </button>
-          </div>
-        )}
-      </Presence>
+      {doc.versionStatus === 'error' && doc.status === 'saved' && (
+        <div className="path-notice-detail path-notice-error" role="alert">
+          <span>{t('Texte enregistré · Réessayer la version automatique')}</span>
+          <button onClick={() => void doc.checkpoint().catch(fail)}>{t('Réessayer')}</button>
+        </div>
+      )}
+      {workspace.progress && (
+        <div className="path-notice-detail" role="status">
+          <span>
+            {t('Préparation des sources · {0} / {1}', {
+              0: workspace.progress.done,
+              1: workspace.progress.total,
+            })}
+          </span>
+          <progress max={workspace.progress.total} value={workspace.progress.done} />
+          <button onClick={() => void request('cancelIndex').catch(fail)}>{t('Suspendre')}</button>
+        </div>
+      )}
       <Presence kind="notice">
         {surface !== 'export' && exportJob.state !== 'ready' && (
-          <div className={embedded ? 'path-notice-detail' : 'notice recovery'} role="status">
+          <div className={'path-notice-detail'} role="status">
             <span>
               {exportJob.state === 'working'
                 ? t('Export en cours…')
@@ -69,7 +56,7 @@ export function WorkspaceNotices({
       </Presence>
       <Presence kind="notice">
         {recovery && (
-          <div className={embedded ? 'path-notice-detail' : 'notice recovery'}>
+          <div className={'path-notice-detail'}>
             <span>{t('Votre texte a été récupéré.')}</span>
             <button onClick={() => setRecovery(false)}>{t('Reprendre l’écriture')}</button>
             <button
@@ -85,10 +72,7 @@ export function WorkspaceNotices({
       </Presence>
       <Presence kind="notice">
         {error && (
-          <div
-            className={embedded ? 'path-notice-detail path-notice-error' : 'notice error-notice'}
-            role="alert"
-          >
+          <div className={'path-notice-detail path-notice-error'} role="alert">
             <span>
               {error.startsWith('EXTERNAL:')
                 ? t('Ce texte a été modifié ailleurs. Une copie sera conservée avant résolution.')
@@ -98,7 +82,7 @@ export function WorkspaceNotices({
               <>
                 <button
                   onClick={() =>
-                    void request<Project>('resolveExternal', {
+                    void request('resolveExternal', {
                       id: error.split(':')[1],
                       keepLocal: false,
                       pending:
@@ -116,7 +100,7 @@ export function WorkspaceNotices({
                 </button>
                 <button
                   onClick={() =>
-                    void request<Project>('resolveExternal', {
+                    void request('resolveExternal', {
                       id: error.split(':')[1],
                       keepLocal: true,
                       pending:
@@ -153,16 +137,6 @@ export function WorkspaceNotices({
           </div>
         )}
       </Presence>
-      {!embedded && (
-        <Presence kind="notice">
-          {contextNotice.message && (
-            <div className="notice recovery" role="alert">
-              <span>{localizeMessage(contextNotice.message)}</span>
-              <button onClick={contextNotice.clear}>{t('Fermer')}</button>
-            </div>
-          )}
-        </Presence>
-      )}
     </>
   );
 }

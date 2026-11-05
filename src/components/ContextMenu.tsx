@@ -32,7 +32,7 @@ interface MenuEvent {
   preventDefault: () => void;
   stopPropagation: () => void;
 }
-type OpenMenu = (event: MenuEvent, content: MenuContent) => void;
+export type OpenMenu = (event: MenuEvent, content: MenuContent) => void;
 const MenuOpenContext = createContext(false);
 export const useContextMenuOpen = () => useContext(MenuOpenContext);
 const MenuNoticeContext = createContext<{ message: string; clear: () => void }>({

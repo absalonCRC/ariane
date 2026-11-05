@@ -1,8 +1,8 @@
 import { t, useLocale, localeTag } from '../i18n';
 import { Fragment, useEffect, useState } from 'react';
 import { Archive, Pin } from 'lucide-react';
-import { request } from '../app/client';
-import type { ProjectEntry } from '../app/types';
+import { request } from '../platform/client';
+import type { ProjectEntry } from '../contracts/project';
 export function ProjectCatalog({
   onOpen,
   onError,
@@ -22,7 +22,7 @@ export function ProjectCatalog({
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     let alive = true;
-    void request<ProjectEntry[]>('projects')
+    void request('projects')
       .then((v) => {
         if (alive) setEntries(v);
       })
