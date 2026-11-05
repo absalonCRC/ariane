@@ -15,7 +15,7 @@ The page stays at the centre. The structure, notes and tools are there when you 
 
 [![ariane 0.3.2: a fictional manuscript in the literary writing view, with contextual notes in the margin](docs/media/0.3.2/edited/writing.png)](docs/media/0.3.2/edited/writing.png)
 
-*The screenshots come from the experimental ariane 0.3.2 on macOS, using the fictional project The atlas of small things. Window controls and cursors were retouched for presentation; [see the capture notes](docs/media/0.3.2/README.md).* [Try the current version](#try-ariane).
+_The screenshots come from the experimental ariane 0.3.2 on macOS, using the fictional project The atlas of small things. Window controls and cursors were retouched for presentation; [see the capture notes](docs/media/0.3.2/README.md)._ [Try the current version](#try-ariane).
 
 ## How ariane fits into your work
 
@@ -159,7 +159,7 @@ Export the whole manuscript or the current section as **Markdown, PDF, Word or E
 
 The dictation sequence uses GPT-generated audio supplied to the real local transcription and editor pipeline in a dedicated capture build. [Recording methods and media provenance](docs/media/README.md) explain the setup.
 
-*The Human Thread* is fictional demo material about AI and authorship. The newer *The Connected Page* project uses illustrative prose naming Ada Lovelace and London, rather than historical quotations.
+_The Human Thread_ is fictional demo material about AI and authorship. The newer _The Connected Page_ project uses illustrative prose naming Ada Lovelace and London, rather than historical quotations.
 
 [Explore the demo material](examples/the-human-thread) · [Media provenance and film transcript](docs/media/README.md)
 

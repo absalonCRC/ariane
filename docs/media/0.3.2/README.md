@@ -12,20 +12,20 @@ Captured on **5 November 2026** from the macOS application, in its English inter
 
 ## Views
 
-| Image | Visible state |
-| --- | --- |
-| [Writing](edited/writing.png) | Literary writing surface, current header controls and contextual notes. |
-| [Dark theme](edited/dark.png) | The same writing surface in the dark theme. |
-| [Settings](edited/settings.png) | Writing and reading controls for typography, focus, scrolling and reading comfort. |
-| [Source card](edited/sources.png) | A contextual card for Clara Dumas, with linked manuscript occurrences. |
-| [Source reader](edited/research.png) | The full source reader beside the manuscript. |
-| [Resume](edited/resume.png) | Resume panel and genuine note activity from the demonstration session. |
-| [Outliner](edited/outliner.png) | Nested passages in the working outline. |
-| [Tables](edited/tables.png) | A live Markdown table in the demonstration project. |
-| [Search](edited/search.png) | The current native search interface. |
-| [Focus](edited/focus.png) | Paragraph focus in the manuscript. |
-| [Versions](edited/versions.png) | Native side-by-side draft comparison. |
-| [Export](edited/export.png) | The four available export formats. |
+| Image                                | Visible state                                                                      |
+| ------------------------------------ | ---------------------------------------------------------------------------------- |
+| [Writing](edited/writing.png)        | Literary writing surface, current header controls and contextual notes.            |
+| [Dark theme](edited/dark.png)        | The same writing surface in the dark theme.                                        |
+| [Settings](edited/settings.png)      | Writing and reading controls for typography, focus, scrolling and reading comfort. |
+| [Source card](edited/sources.png)    | A contextual card for Clara Dumas, with linked manuscript occurrences.             |
+| [Source reader](edited/research.png) | The full source reader beside the manuscript.                                      |
+| [Resume](edited/resume.png)          | Resume panel and genuine note activity from the demonstration session.             |
+| [Outliner](edited/outliner.png)      | Nested passages in the working outline.                                            |
+| [Tables](edited/tables.png)          | A live Markdown table in the demonstration project.                                |
+| [Search](edited/search.png)          | The current native search interface.                                               |
+| [Focus](edited/focus.png)            | Paragraph focus in the manuscript.                                                 |
+| [Versions](edited/versions.png)      | Native side-by-side draft comparison.                                              |
+| [Export](edited/export.png)          | The four available export formats.                                                 |
 
 ## Animations
 
