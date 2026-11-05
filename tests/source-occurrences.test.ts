@@ -1,7 +1,8 @@
 import { expect, it } from 'vitest';
 import { sourceOccurrences } from '../src/sources/occurrences';
 import { composeCitation } from '../src/sources/citations';
-import type { Section, Source } from '../src/app/types';
+import type { Section } from '../src/contracts/project';
+import type { Source } from '../src/contracts/sources';
 const source: Source = {
   id: '0123456789-entity',
   fingerprint: 'abcdef012345',

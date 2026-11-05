@@ -1,5 +1,16 @@
 # Journal des changements
 
+## 0.3.2 — 2026-11-05, version de développement
+
+- Refactorisation modulaire du frontend, de l’éditeur et du backend Rust, sans changement intentionnel des comportements ou des formats de projet.
+- Contrats IPC typés, séparation des responsabilités et vérification automatique des frontières d’architecture.
+- Documentation de l’architecture, des règles de travail et des limites de validation mise à jour.
+- Reprise accessible dans l’en-tête, historique persistant des événements de notes et notifications dans la capsule supérieure.
+- Profondeur : comportement horizontal d’origine sur grand écran, panneau stable au-dessus du bouton sur écran étroit.
+- Déplacement de la fenêtre macOS depuis la partie libre de la barre supérieure.
+
+Voir les [notes 0.3.2](docs/release-notes-0.3.2.md) et le [bilan de refactorisation](docs/refactorisation-modulaire.md).
+
 ## 0.3.1 — 2026-11-04, version de développement
 
 - Navigation : sélection active par la couleur du texte et de l’icône, flous progressifs plus courts, accès et sortie du focus en haut à droite, sidebar accessible en focus et slider de profondeur stabilisé selon la taille de fenêtre.

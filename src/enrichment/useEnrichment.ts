@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { native, request } from '../app/client';
-import type { SaveState } from '../app/types';
+import { native, request } from '../platform/client';
+import type { SaveState } from '../app/workspace/types';
 
 export function useEnrichment(
   path: string | undefined,
@@ -25,7 +25,7 @@ export function useEnrichment(
       }
       running.current = true;
       try {
-        const result = await request<{ changed: boolean; pending?: boolean }>('enrich', {
+        const result = await request('enrich', {
           projectPath: path,
         });
         if (alive && result.changed) onRefresh();

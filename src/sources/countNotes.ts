@@ -1,5 +1,4 @@
-import type { Source } from '../app/types';
-
+import type { Source } from '../contracts/sources';
 /** Count each suggested Markdown note from a vault only once. */
 export function countVaultNotes(sources: readonly Source[]): number {
   return new Set(

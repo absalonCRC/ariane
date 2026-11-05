@@ -2,10 +2,10 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
-import type { Section } from '../src/app/types';
-const request = vi.hoisted(() => vi.fn());
-vi.mock('../src/app/client', () => ({ request, native: false }));
+import type { Section } from '../src/contracts/project';
 import { useWorkspace } from '../src/app/useWorkspace';
+const request = vi.hoisted(() => vi.fn());
+vi.mock('../src/platform/client', () => ({ request, native: false }));
 
 const section = (id: string, title: string): Section => ({
   id,
@@ -136,7 +136,7 @@ it('navigates to an entity occurrence while keeping its source readable and requ
   }
   const root = createRoot(document.createElement('div'));
   const target = { ...section('target', 'Le quai'), text: 'La lune. Élise arrive.' };
-  const source = { id: 'entity', title: 'Élise' } as import('../src/app/types').Source;
+  const source = { id: 'entity', title: 'Élise' } as import('../src/contracts/sources').Source;
   const reveal = vi.fn(() => true);
   try {
     await act(async () => root.render(<Harness />));
@@ -184,12 +184,12 @@ it('reports a completed library operation and undoes it through the same durable
     settings: { active: 'a' },
     recovered: false,
   };
-  let stored = original as import('../src/app/types').Project;
+  let stored = original as import('../src/contracts/project').Project;
   request.mockReset();
   request.mockImplementation(async (command: string, args: Record<string, unknown>) => {
     if (command === 'bootstrap') return null;
     if (command === 'libraryOperation') {
-      const op = args.operation as import('../src/project/library').LibraryOperation;
+      const op = args.operation as import('../src/contracts/library').LibraryOperation;
       stored =
         op.action === 'undo'
           ? original

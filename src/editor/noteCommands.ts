@@ -1,3 +1,4 @@
+import type { NoteRef } from '../contracts/notes';
 import { setNoteLinkData } from './noteLinks';
 import { Prec, type EditorState } from '@codemirror/state';
 import { keymap, type EditorView } from '@codemirror/view';
@@ -12,13 +13,6 @@ import {
 } from '@codemirror/autocomplete';
 import { t } from '../i18n';
 
-export interface NoteRef {
-  id: string;
-  title: string;
-  kind: string;
-  path: string;
-  vaultId: string;
-}
 export interface NoteTrigger {
   from: number;
   to: number;

@@ -1,69 +1,96 @@
 # Organisation du code
 
-Ariane est une application macOS Tauri 2, Rust, React/TypeScript et CodeMirror 6. La référence visuelle est `maquette-imagegen/04.png` ; l’interface utilise EB Garamond embarquée, une surface blanche et des commandes contextuelles.
+Ariane est une application macOS Tauri 2, Rust, React/TypeScript et CodeMirror 6. Elle conserve les projets localement et sépare l’écriture, les sources externes et les traitements documentaires. Ce document décrit le code après la refactorisation modulaire de novembre 2026 ; les fonctionnalités retirées restent décrites dans `annulations-2026-11-01.md`.
 
-## Frontend
+## Frontières des modules
 
-- `src/app/App.tsx` compose l’espace d’écriture. Il ne gère ni le stockage des fichiers ni l’inférence.
-- `src/app/useNativeClose.ts` partage le chemin de sauvegarde entre le bouton de fermeture et la demande native de quitter l’application.
-- `src/app/useWorkspace.ts` coordonne la session, les commandes et les surfaces. `WorkspaceDialogs` et `WorkspaceNotices` rendent les dialogues et les états transversaux.
-- `src/project/useProject.ts` possède le tampon des scènes modifiées, la file de sauvegarde et les révisions confirmées. Une sauvegarde en échec conserve son tampon. Le titre utilise un état local distinct pour préserver le focus de l’éditeur.
-- `src/editor/` contient CodeMirror, le Markdown contextuel, la concentration, les titres de scène et le document composite. `sectionMapping` inclut les limites de scènes dans l’historique d’annulation. La saisie n’est pas contrôlée par React et ne transmet pas le manuscrit entier à chaque touche. Le comptage recalcule les scènes modifiées ; l’échantillon documentaire visible est limité à 8 000 caractères. Les identifiants techniques des notes de bas de page sont masqués hors édition de leur marqueur.
-- `src/sources/` présente les annotations de marge, fiches, recherches, lecteurs et citations. La source complète s’ouvre en lecture seule. Une fiche associée au projet est une copie éditable indépendante.
-- `src/history/` compare les variantes. Les différences sont détaillées à la sélection et la reprise sélective vérifie la révision courante.
-- `src/export/` sépare le dialogue du travail d’export persistant. Fermer le dialogue ne perd ni sa progression ni son résultat ; la conversion et son annulation s’effectuent dans Rust.
-- `src/revision/` contient les règles de style explicables ; l’orthographe est confiée à la WebView et aux langues disponibles sur macOS.
-- `src/styles/` sépare les tokens, l’éditeur et les surfaces de l’application.
+```mermaid
+flowchart TD
+  App[app : composition et navigation] --> Features[project / editor / sources / enrichment / history / voice]
+  Features --> Contracts[contracts : données et IPC typé]
+  Features --> Client[platform/client : transport]
+  Client --> Browser[platform/browser : aperçu local]
+  Client --> Dispatch[api/dispatch : validation et admission]
+  Dispatch --> Routing[api : contexte du projet et routage par domaine]
+  Routing --> Domain[project / vaults / memory / history / voice / export]
+  Domain --> Storage[SQLite, miroirs et moteurs locaux]
+```
 
-Le transport `request` a deux adaptateurs. Dans Tauri, toutes les opérations passent par Rust. Le navigateur fournit une persistance locale pour la conception et la vérification de l’interface ; il ne simule pas une recherche IA ni une connexion à des fichiers natifs.
+Les contrats ne dépendent ni de React, ni de Tauri, ni des contrôleurs. Les fonctions métier ne dépendent pas d’`App` ou du type global `Workspace`. Les interfaces de domaine sont importées directement depuis leur propriétaire ; les anciennes façades `app/types.ts` et `app/client.ts` ont été retirées.
 
-## Backend
+`npm run verify:architecture` vérifie ces frontières et la présence des mêmes 74 noms de commandes dans `Requests`, `Responses` et l’énumération Rust. Ce contrôle ne prouve pas l’équivalence de chaque champ JSON : les tests de comportement, le témoin IPC partagé et la recette native complètent le typage.
 
-- `platform.rs` conserve les menus natifs et remplace « Quitter » par une demande de sauvegarde à l’éditeur. Le backend ne valide la sortie qu’après confirmation du frontend.
-- `api.rs` définit les requêtes typées et les achemine vers les modules métier, hors du fil d’interface.
-- `project/` gère les transactions SQLite, les révisions, les miroirs Markdown, les conflits et les copies de récupération. `library.rs` applique les opérations de rangement par lot dans une transaction immédiate et conserve un journal structurel indépendant des textes. `catalog.rs` référence les projets locaux, leur épinglage et leur archivage.
-- `vaults/` lit les dossiers connectés, YAML, tags, alias et PDF. SQLite FTS5 et les chunks sont dans une base d’index distincte des manuscrits.
-- `retrieval/` distingue identification exacte, liens explicites, tags et proximité sémantique. Un prénom ambigu n’identifie pas automatiquement une personne. Les résultats sont filtrés par périmètre du projet. Pendant une occupation du modèle, la recherche interactive garde ses résultats textuels sans attendre la file d’indexation.
-- `inference/` possède le processus llama.cpp, son authentification locale et son cycle de vie. Seule l’adresse de bouclage est utilisée. Le modèle installé est EmbeddingGemma 300M Q8, testé en 768 dimensions ; il ne rédige pas de contenu.
-- `history/` conserve les versions de texte, structure, paramètres, références et fiches. Les listes ne chargent pas les corps de toutes les anciennes versions.
-- `export/` assemble les sections, conserve les notes et traite les références avec des styles CSL locaux. Pandoc et Typst sont embarqués. L’annulation arrête le groupe de processus de conversion.
+## Frontend : responsabilités et état
 
-## Format de projet
+| Module | Responsabilité et propriétaire de l’état |
+| --- | --- |
+| `app/App.tsx` | Compose les domaines, relie leurs événements, conserve les états de présentation transversaux et les points d’ancrage des portails. |
+| `app/chrome/` | En-tête et géométrie du panneau commun recherche/dictée. `useBottomPanel` libère son observer et son timer. |
+| `app/writing/WritingSurface.tsx` | Maintient titre et éditeur dans la même `.manuscript-column`, sans conteneur supplémentaire. Versions masque cette surface sans détruire l’éditeur. |
+| `app/useWorkspace.ts` | Possède navigation, sélection, session et verrous des opérations UI ; compose les contrôleurs. `WorkspaceDialogs`, `WorkspaceNotices` et `useTitleNotices` sont des adaptateurs de cette couche de composition. |
+| `app/commands/useWorkspaceCommands.ts` | Registre des commandes à identifiants stables, raccourcis et abonnement au menu natif. Conserve les différences de sauvegarde/navigation entre palette et menus natifs. |
+| `project/useProject.ts` | Propriétaire unique des brouillons, de la file de sauvegarde et des révisions confirmées. Un échec conserve le tampon ; un acquittement ancien ne remplace pas une édition récente. |
+| `project/operations.ts` | Opérations de bibliothèque, création, métadonnées, ouverture et réorganisation ; reçoit les mêmes verrous et files que le coordinateur. Aucun deuxième état de projet. |
+| `project/Binder.tsx`, `project/binder/` | Vue de bibliothèque, contrôleur de sélection/virtualisation et ligne d’arbre. Les clés restent les identifiants des sections. La création prépare le nom dans la sidebar avant validation. |
+| `editor/Editor.tsx`, `editor/runtime/` | Le composant possède les refs et les effets React ; `mount` possède une instance CodeMirror et son nettoyage ; `commands` expose l’interface impérative ; `revision` actualise les marques. |
+| `sources/` | Lecteurs, recherche, navigation des sources et épinglage ; `actions` gère lecture/citation, `margin/DocumentaryMargin` rend la marge documentaire. |
+| `enrichment/` | Suggestions et fiches dérivées du manuscrit. Les hooks reçoivent des interfaces d’entrée explicites, pas le type global `Workspace`. Leurs contrôles de contexte et de fraîcheur restent auprès des tâches asynchrones. |
+| `history/` | `useHistory` possède chargements, sélection, comparaison et restauration ; `History` rend la vue ; `HistoryTools` rend les outils dans le portail existant. |
+| `voice/` | `useVoiceSession` possède acquisition, sessions, files audio, annulation et nettoyage ; `VoiceButton` rend les commandes et contenus du panneau. |
+| `export/`, `revision/` | Contrôleurs et vues existants : un export continue lorsque son dialogue est fermé ; les propositions de révision restent des suggestions. |
 
-Un dossier contient `ariane.sqlite`, `manuscrit/<identifiant>.md` et, si nécessaire, `recuperation/`. SQLite est le journal durable et la source transactionnelle du projet ; les Markdown sont des miroirs lisibles, réconciliés au démarrage. Une écriture validée en base mais interrompue avant la matérialisation est reprise. Un projet avec conflit externe s’ouvre avec les identifiants en conflit ; une ouverture échouée ne change pas le projet actif du backend. Les modifications externes des Markdown sont détectées ; la résolution conserve une copie de l’autre version, y compris le tampon local non encore sauvegardé. Les fichiers de récupération ne sont pas supprimés automatiquement.
+La saisie reste gérée par les transactions CodeMirror. React ne contrôle pas le texte à chaque touche. `sectionMapping`, les identifiants de l’outline, les offsets UTF-16, l’historique d’annulation et les abstractions de défilement restent communs aux commandes et au rendu. Le changement de panneau ne doit pas reconstruire l’éditeur.
 
-Les sections ont un rôle `manuscript` ou `note` et un état `trashed`. Les sections actives et la corbeille sont transmises séparément ; les snapshots de versions conservent les deux. Les anciens projets reçoivent les valeurs par défaut sans changement de leur texte. Le catalogue `library.sqlite` vit dans les données de l’application et ne remplace pas les bases indépendantes des projets.
+`projectSearch.ts` calcule les occurrences sur les textes courants, brouillons compris. `useUnifiedSearch` interroge les vaults séparément, avec temporisation et rejet des réponses périmées. La navigation révèle les passages repliés. Les états durables du projet et les états d’affichage restent distincts.
 
-Les sauvegardes portent des révisions et ne réécrivent que les scènes modifiées. L’historique automatique est limité en fréquence, pas en nombre de versions. Les snapshots sont locaux ; aucun compte GitHub ni dépôt distant n’est utilisé.
+## Contrats et plateformes
 
-Les vaults sont enregistrés dans le projet en lecture seule. L’index partagé et la dernière session sont placés dans le dossier de données de l’application. Une réconciliation périodique vérifie les changements ; une indexation suspendue reste suspendue jusqu’à reprise explicite. Le modèle, les outils et les polices sont livrés localement.
+`contracts/` contient les DTO par domaine : projet, réglages, sources, versions, mémoire, entités, annotations, notes, import et révision. `requests.ts` associe une commande à ses paramètres et son résultat : les appelants ne choisissent plus arbitrairement le type de retour de `request`.
 
-## Ajouter une fonction
+`platform/client.ts` sélectionne le transport. Dans Tauri, il invoque toujours `dispatch` avec `{ request: { type, ...paramètres } }`. `platform/browser/client.ts` conserve les clés de stockage et les possibilités de l’aperçu navigateur. Celui-ci ne simule ni accès aux fichiers natifs, ni inférence, ni fonctions retirées. Les résultats ignorés par tous les appelants restent explicitement `unknown` lorsque leur forme diffère entre plateformes ; ils doivent être précisés avant un nouvel usage.
 
-1. Définir les données dans `model.rs` et `src/app/types.ts` si elles traversent l’IPC.
-2. Implémenter la règle dans son module métier Rust, avec un test portant sur le résultat ou la conservation des données.
-3. Ajouter une variante à `Request`, puis son acheminement dans `api.rs`.
-4. Placer l’interface dans le module de fonction concerné ; conserver `App` comme composition.
-5. Vérifier les scénarios concernés, `npm run build`, `npm test`, `cargo test` et Clippy.
+Les commandes, événements, formats persistés, valeurs par défaut et ressources ne changent pas avec ce découpage. Le JSON `tests/fixtures/ipc-save.json` est consommé par les tests TypeScript et Rust pour vérifier notamment révisions, caractères accentués, emoji et offsets UTF-16.
 
-Les migrations de schéma et les changements de modèle devront être explicitement versionnés avant une distribution plus large. La génération actuelle est une première version locale, pas une certification de tous les objectifs du plan.
+## Backend : contexte, transactions et moteurs
 
-## Espace Writer
+- `api/request.rs` définit le protocole serde ; `api/state.rs` conserve les ressources partagées. `api/dispatch.rs` valide et admet la requête avant `spawn_blocking`, puis conserve le permis jusqu’à sa fin.
+- `api/mod.rs` capture le projet courant et garde le verrou OS vivant pendant l’opération. Les modules `project_commands`, `memory_commands`, `vault_commands`, `source_commands` et `version_commands` routent vers les domaines. `api/session.rs` ne publie le nouveau projet actif qu’après ouverture et sauvegarde de session réussies.
+- `project/schema.rs` possède ouverture de base, schéma et sauvegarde avant migration ; `queries.rs` lit les sections ; `mutations.rs` applique les mutations élémentaires ; `mirrors.rs` réconcilie les fichiers ; `storage.rs` garde la transaction de sauvegarde, les révisions et la reprise après commit. `library.rs`, `manuscript.rs`, `annotations.rs`, `links.rs` et `catalog.rs` conservent leurs responsabilités existantes.
+- `memory/passages.rs` synchronise les passages et calcule les travaux en attente ; `memory/context.rs` lit contexte, entités, passages, session et rejets ; `memory/mod.rs` conserve l’application transactionnelle des résultats et la normalisation. Les files, caches, contrôles de fraîcheur et moteurs restent séparés dans leurs modules existants.
+- `vaults/` lit les dossiers externes, YAML, tags, alias et PDF. L’index FTS5 et les données dérivées restent dans une base distincte. Une source externe s’ouvre en lecture seule ; une fiche appartenant à Ariane est distincte.
+- `retrieval/` distingue identité exacte, liens explicites, tags et proximité sémantique. Les résultats restent filtrés par périmètre. `inference/`, `memory_engine/` et `voice/` conservent leurs processus, priorités et protocoles ; le découpage ne modifie aucun modèle ni seuil.
+- `history/` conserve les versions de texte, structure, paramètres, références et fiches. `export/` assemble et convertit avec les ressources locales existantes ; son annulation arrête le groupe de processus.
+- `platform.rs` conserve les menus macOS et la demande de sauvegarde avant sortie. `app/useNativeClose.ts` partage le chemin de fermeture/quitter ; le backend attend la confirmation du frontend.
 
-`src/writer/` contient la bibliothèque, le plan/statistiques, le traitement des métadonnées, l’expansion des blocs de scènes, les calculs de tableaux et l’aperçu. L’aperçu est chargé à la demande et ne fait pas exécuter de HTML fourni par les documents. Les images sont lues par un IPC limité au projet ; les références réseau ne sont pas téléchargées par l’aperçu.
+## Format de projet et invariants
 
-`src/editor/writerCommands.ts` contient les commandes Markdown et substitutions de frappe. `authorship.ts` mappe les annotations sur les changements et retire l’attribution de provenance du texte inséré au milieu d’une référence. Les annotations sont conservées dans les réglages du projet, hors du Markdown exporté. Les écritures de réglages sont séquencées ; les changements de projets attendent la sauvegarde de l’état courant.
+Un dossier contient `ariane.sqlite`, `manuscrit/<identifiant>.md` et, si nécessaire, `recuperation/`. SQLite reste la source transactionnelle ; les Markdown sont des miroirs lisibles. La transaction est validée avant matérialisation. Une erreur de miroir ne transforme pas un commit réussi en perte des données ; la reprise, les conflits externes et les copies de récupération restent explicitement gérés.
 
-`linguistics.ts` analyse le texte visible après temporisation. Le programme Swift `scripts/syntax.swift`, embarqué dans `resources/engine/syntax`, utilise NaturalLanguage et renvoie des positions UTF-16. La révision de style combine répétitions, longueurs de phrases et listes explicites fr/en/de/es ; ces règles ne constituent pas une équivalence avec le dictionnaire d’iA Writer. Les suggestions documentaires automatiques s’activent avec l’affichage des sources.
+Les sections conservent rôle, inclusion et corbeille ; le champ historique `role` reste lisible sans imposer deux arborescences. La file de sauvegarde conserve les révisions et séquence les métadonnées avant les opérations qui en dépendent. Le catalogue `library.sqlite` et la dernière session ne remplacent pas les bases propres aux projets.
 
-`src-tauri/src/documents.rs` gère les imports, les pièces jointes et le moteur grammatical. Les images des archives DOCX/ODT/EPUB sont extraites dans un sous-dossier unique du projet. La lecture de pièces jointes refuse les chemins qui sortent du projet après résolution des liens symboliques.
+`import.rs` ajoute les textes convertis au projet actif dans une transaction et ne copie que les images nécessaires. Les annotations restent indépendantes du Markdown et des exports ; une annotation ambiguë n’est pas réattachée arbitrairement. Les fonctions retirées de réorganisation, de remplacement global ou d’import ne sont pas réintroduites.
 
-La bibliothèque expose une seule arborescence Textes ; le champ historique `role` reste lisible pour compatibilité et ne sépare plus les documents. `projectSearch.ts` calcule les occurrences sur les textes courants (y compris les modifications non encore enregistrées), dans l’ordre du projet et avec les offsets UTF-16 de l’éditeur. `useUnifiedSearch` interroge indépendamment le moteur des vaults avec temporisation et rejette les réponses périmées après changement de requête ou de projet. La navigation révèle également un passage replié. Pendant une recherche explicite, les résultats des vaults occupent la marge et l’analyse automatique de mémoire est suspendue. `vaults/browse.rs` fournit les types et leurs effectifs dans le périmètre connecté, puis les entités par pages de 50.
+## Styles et maintenance
 
-### Import, réorganisation et annotations
+Les points d’entrée `styles/editor.css` et `styles/surfaces.css` importent leurs groupes de règles dans un ordre explicite. Les autres feuilles gardent leur ordre de chargement. Les règles transversales et correctives restent dans leur position de cascade : ne pas les déplacer dans un composant sans vérifier leur priorité et les vues concernées.
 
-`import.rs` prépare la conversion avant d’ajouter les textes au projet actif dans une transaction SQLite. Seules les images nécessaires sont copiées dans `assets/import-…`. Aucun nouveau projet, archive des originaux ou manifeste d’import n’est créé. DOCX utilise le Pandoc embarqué avec limites de taille et délai.
+Pour ajouter une fonction :
 
-`project/manuscript.rs` conserve les commandes de séparation et réunion par copie de texte. Le déplacement de passage, les versions automatiques propres à ces opérations, les contrôles de révision supplémentaires et le transport des notes/identités de passages ont été retirés. Les sauvegardes existantes restent inchangées.
+1. Définir les données dans le contrat métier approprié et, si elles traversent l’IPC, dans les modèles Rust et `contracts/requests.ts`.
+2. Implémenter la règle dans son domaine ; garder un propriétaire unique de son état et de ses ressources.
+3. Ajouter la variante dans `api/request.rs` et son routage dans le domaine concerné, sans déplacer les contrôles d’admission ou de contexte.
+4. Composer la vue dans `App` avec les seules données et commandes nécessaires. Préserver montage, focus, sélection et nettoyage.
+5. Vérifier les comportements concernés puis `npm run verify` avec `RUST_TEST_THREADS=1` pour les tests de moteurs locaux. Compléter par une recette navigateur et native selon les capacités touchées.
 
-Les annotations sont indépendantes du Markdown et des exports. Elles conservent texte, contexte, statut et révision. Le client ne réattache pas une annotation ambiguë. L’adaptateur navigateur des nouvelles fonctions a été retiré : annotations et réorganisation utilisent l’application native. Le remplacement global n’est plus proposé.
+Les règles opérationnelles et les erreurs à éviter sont consignées dans `AGENTS.md`. La taille d’un fichier appelle une revue de responsabilités, pas une multiplication automatique de wrappers. `App`, le coordinateur de session et les contrôleurs de domaine gardent volontairement les interactions dont ils possèdent l’invariant.
+
+## Activité des notes et chrome natif
+
+Les ajouts fonctionnels qui suivent la refactorisation sont distincts des extractions mécaniques :
+
+- `notes/useNoteActivity` possède le journal affiché, les écritures en attente, leur reprise et la pagination. Les événements automatiques possèdent une clé stable par contexte ; les actions explicites ont une clé unique pour rester répétables et pour que leur réessai soit idempotent. Les changements de projet et la fermeture attendent les écritures en attente.
+- `notes/useNoteObservations` observe les détections et suggestions affichées ainsi que les ouvertures de cartes et de lecteurs. Les créations, classements, résolutions, associations, citations, épinglages et modifications sont signalés après succès par leurs contrôleurs. Une consultation enregistrée indique l’ouverture du lecteur, sans prétendre que le contenu a été lu intégralement.
+- `project/activity.rs` conserve ces événements dans la table additive `note_activity` du SQLite du projet. Le journal garde les métadonnées (type, titre, identifiants, date), sans copie du corps du manuscrit. Il n’est pas rétroactif et n’est pas effacé par une restauration de version. L’adaptateur navigateur utilise son stockage local distinct.
+- Le panneau « Reprendre le fil » charge le journal par pages de 50 et permet de rouvrir les sources. Les événements persistés alimentent les notifications brèves de `useTitleNotices` ; le rechargement de l’historique ne les rejoue pas. Sauvegarde, actualisation des liens, indexation et ouverture des surfaces utilisent aussi cette capsule supérieure, avec leurs actions dans les détails. Les anciens états et bandeaux de notification du bas sont retirés.
+- `DepthControl` garde son déploiement horizontal sur grand écran. À 1 100 px et moins, seul le slider devient un panneau positionné au-dessus du bouton ; le bouton reste ancré.
+- `chrome/WindowDragRegion` ajoute une surface transparente sous les commandes de la barre supérieure, sur l’accueil et l’espace d’écriture. Elle appelle explicitement `startDragging()` de [Tauri](https://v2.tauri.app/learn/window-customization/) sur un clic gauche et utilise l’autorisation native existante. Les échecs rejoignent la capsule supérieure. Les commandes et le menu du titre restent au-dessus de cette surface.

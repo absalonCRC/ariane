@@ -1,8 +1,7 @@
 import { t } from '../i18n';
 import { ArrowUpRight, Copy, Quote, Link2 } from 'lucide-react';
-import type { Source } from '../app/types';
+import type { Source } from '../contracts/sources';
 import type { MenuAction, MenuContent } from '../components/ContextMenu';
-
 export const sourceExcerpt = (source: Source) =>
   source.text
     .slice(0, 700)

@@ -1,6 +1,5 @@
 import { t, useLocale, localeTag } from '../i18n';
-import type { Settings } from '../app/types';
-
+import type { Settings } from '../contracts/settings';
 export function ReadingComfort({
   value,
   onChange,

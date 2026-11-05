@@ -1,58 +1,38 @@
+import type { NoteActivityController } from '../notes/useNoteActivity';
+import type { RefObject, Dispatch, SetStateAction } from 'react';
+import type { EditorHandle, VisibleText } from '../editor/types';
+import type { Project } from '../contracts/project';
+import type { Source } from '../contracts/sources';
+import type { ProjectController } from '../project/useProject';
 import type { PanelOrigin } from '../components/useSharedPanel';
+import type {
+  MemoryPosition,
+  MemoryPassage,
+  Evidence,
+  MemoryResult,
+  SessionContext,
+} from '../contracts/memory';
 import { useEffect, useRef, useState } from 'react';
 import { t } from '../i18n';
-import { native, request } from '../app/client';
-import type { Workspace } from '../app/useWorkspace';
+import { native, request } from '../platform/client';
 import { passages, passageKey } from './passages';
+export interface MemoryInput {
+  activity?: Pick<NoteActivityController, 'record'>;
+  doc: ProjectController;
+  editor: RefObject<EditorHandle | null>;
+  p: Project | null;
+  sourceVersion: number;
+  enrichmentVersion: number;
+  viewport: VisibleText | null;
+  memorySessionSaver: RefObject<() => Promise<unknown>>;
+  active: string | null;
+  reader: Source | null;
+  searching: boolean;
+  setCard: Dispatch<SetStateAction<{ source: Source; top: number; origin?: PanelOrigin } | null>>;
+  setReader: Dispatch<SetStateAction<Source | null>>;
+  setSearch: (query: string | null) => void;
+}
 
-export interface MemoryPosition {
-  section: string;
-  node: string | null;
-  offset: number;
-  cursor: number;
-}
-export interface MemoryPassage {
-  id?: string;
-  section: string;
-  node: string | null;
-  title: string;
-  quote: string;
-  hash: string;
-  score?: number;
-}
-export interface MemoryEntity {
-  id: string;
-  title: string;
-  kind: string;
-  passageCount?: number;
-}
-export interface Evidence {
-  id: string;
-  hash: string;
-  title: string;
-  sourceId: string;
-  fingerprint: string;
-  page: number | null;
-  quote: string;
-  reason: string;
-}
-export interface MemoryResult {
-  entities: MemoryEntity[];
-  recall: MemoryPassage | null;
-  evidence?: Evidence | null;
-  anchorHash: string;
-  analyzed?: number;
-  pending?: boolean;
-  busy?: boolean;
-  deferred?: boolean;
-  stale?: boolean;
-  modelError?: string | null;
-}
-export interface SessionContext extends MemoryPosition {
-  sourceId?: string | null;
-  sourcePage?: number | null;
-  recent: { section: string; node: string | null }[];
-}
 export type MemoryView =
   | { kind: 'entity'; id: string }
   | { kind: 'recall'; passage: MemoryPassage }
@@ -60,7 +40,7 @@ export type MemoryView =
   | { kind: 'resume' }
   | { kind: 'list' };
 
-export function useMemory(workspace: Workspace) {
+export function useMemory(workspace: MemoryInput) {
   const { doc, editor, p } = workspace;
   const [result, setResult] = useState<MemoryResult | null>(null);
   const [anchor, setAnchor] = useState<MemoryPosition | null>(null);
@@ -174,7 +154,7 @@ export function useMemory(workspace: Workspace) {
     setEntityError('');
     activity(true);
     if (native && p?.path) {
-      void request<SessionContext>('memorySession', { projectPath: p.path })
+      void request('memorySession', { projectPath: p.path })
         .then((value) => {
           if (!alive) return;
           loaded.current = p.path;
@@ -256,7 +236,7 @@ export function useMemory(workspace: Workspace) {
       const start = epoch.current;
       const before = signature(position);
       try {
-        const value = await request<MemoryResult>('memoryQueue', {
+        const value = await request('memoryQueue', {
           projectPath: path,
           section: position.section,
           node: position.node,
@@ -317,17 +297,7 @@ export function useMemory(workspace: Workspace) {
       entitiesInFlight.current = true;
       const start = epoch.current;
       try {
-        const value = await request<{
-          available?: boolean;
-          analyzed?: boolean;
-          entities?: MemoryEntity[];
-          anchorHash?: string;
-          pending?: boolean;
-          retryMs?: number;
-          deferred?: boolean;
-          busy?: boolean;
-          stale?: boolean;
-        }>('memoryEntities', {
+        const value = await request('memoryEntities', {
           projectPath: path,
           section: position.section,
           node: position.node,
@@ -414,6 +384,11 @@ export function useMemory(workspace: Workspace) {
     const item = result?.recall ?? result?.evidence;
     if (!item?.id || !p) return;
     await request('memoryDismiss', { projectPath: p.path, id: item.id, hash: item.hash });
+    void workspace.activity?.record({
+      kind: 'dismissed',
+      title: item.title,
+      section: anchor?.section,
+    });
     const position = editor.current?.context();
     for (const [key, value] of cache.current) {
       if (

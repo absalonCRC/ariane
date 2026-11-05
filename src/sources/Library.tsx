@@ -1,3 +1,4 @@
+import type { NoteEventInput } from '../contracts/noteActivity';
 import { localizeMessage, t, useLocale } from '../i18n';
 import { AnimatedDetails } from '../components/AnimatedDetails';
 import { Presence } from '../components/Presence';
@@ -5,8 +6,8 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Plus, RefreshCw, FolderOpen, Pause, X } from 'lucide-react';
 import { choosePath } from '../app/choosePath';
 import { listen } from '@tauri-apps/api/event';
-import { request, native } from '../app/client';
-import type { Vault } from '../app/types';
+import { request, native } from '../platform/client';
+import type { Vault } from '../contracts/sources';
 import { Dialog, Empty } from '../components/Dialog';
 export interface IndexProgress {
   done: number;
@@ -40,6 +41,8 @@ export function Library({
   onIndexProgress,
   onBusy,
   onMemory,
+  onNoteActivity,
+  onNotice,
 }: {
   embedded?: boolean;
   onClose: () => void;
@@ -48,6 +51,8 @@ export function Library({
   onIndexProgress: (v: IndexProgress | null) => void;
   onBusy: (v: boolean) => void;
   onMemory?: () => void;
+  onNoteActivity?: (event: NoteEventInput) => unknown;
+  onNotice?: (message: string, tone?: 'info' | 'success' | 'error') => void;
 }) {
   useLocale();
   const [vaults, setVaults] = useState<Vault[]>([]);
@@ -61,18 +66,24 @@ export function Library({
   const [entityDescription, setEntityDescription] = useState('');
   const owned = vaults.find((v) => v.owned);
   useEffect(() => {
-    void request<Vault[]>('vaults').then(setVaults).catch(onError);
-    void request<{ available: boolean }>('engineStatus').then((v) => setAvailable(v.available));
+    void request('vaults').then(setVaults).catch(onError);
+    void request('engineStatus').then((v) => setAvailable(v.available));
   }, [onError]);
   async function index() {
     setBusy(true);
     onBusy(true);
     setReport([]);
     try {
-      const result = await request<{ errors: string[]; cancelled?: boolean; semantic: boolean }>(
-        'index',
-      );
+      const result = await request('index');
       setReport(result.errors);
+      onNotice?.(
+        result.cancelled
+          ? t('Indexation suspendue.')
+          : result.errors.length
+            ? t('Certaines sources n’ont pas pu être indexées.')
+            : t('Les sources sont prêtes.'),
+        result.cancelled ? 'info' : result.errors.length ? 'error' : 'success',
+      );
       if (!result.errors.length)
         setReport([result.cancelled ? t('Indexation suspendue.') : t('Les sources sont prêtes.')]);
       setVaults(await request('vaults'));
@@ -125,6 +136,7 @@ export function Library({
       });
       setEntityName('');
       setEntityDescription('');
+      onNoteActivity?.({ kind: 'created', title: entityName.trim() });
       setAdding(false);
       void index();
     } catch (e) {
@@ -258,9 +270,7 @@ export function Library({
                   aria-label={t('Déconnecter ') + v.name}
                   disabled={busy}
                   onClick={() =>
-                    void request<Vault[]>('removeVault', { id: v.id })
-                      .then(setVaults)
-                      .catch(onError)
+                    void request('removeVault', { id: v.id }).then(setVaults).catch(onError)
                   }
                 >
                   <X size={13} />

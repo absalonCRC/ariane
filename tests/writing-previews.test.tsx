@@ -4,8 +4,8 @@ import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { Settings } from '../src/app/Settings';
 import { Editor } from '../src/editor/Editor';
-import { defaultSettings, type Section, type Settings as Values } from '../src/app/types';
-
+import { defaultSettings, type Settings as Values } from '../src/contracts/settings';
+import { type Section } from '../src/contracts/project';
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 
 it('previews fonts and scrolling in the editor without saving until selection', async () => {

@@ -5,9 +5,8 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { WritingModes } from '../src/components/WritingModes';
 import { DepthControl } from '../src/components/DepthControl';
 import { Settings } from '../src/app/Settings';
-import { defaultSettings } from '../src/app/types';
+import { defaultSettings } from '../src/contracts/settings';
 import { ControlHints } from '../src/components/ControlHints';
-
 let host: HTMLDivElement;
 let root: ReturnType<typeof createRoot>;
 beforeEach(() => {

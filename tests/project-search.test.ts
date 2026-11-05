@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { searchManuscript } from '../src/app/projectSearch';
-import type { Section } from '../src/app/types';
+import type { Section } from '../src/contracts/project';
 const section = (id: string, text: string, extras: Partial<Section> = {}): Section => ({
   id,
   title: id,

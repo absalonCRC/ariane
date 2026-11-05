@@ -8,9 +8,8 @@ import {
   type ReactNode,
 } from 'react';
 import { Check, CircleAlert, FileText, Folder, Info, Plus, X } from 'lucide-react';
-import type { Project, Section } from '../app/types';
+import type { Project, Section } from '../contracts/project';
 import { sectionPath } from './tree';
-
 export type PathNotification = {
   id: number;
   message: string;

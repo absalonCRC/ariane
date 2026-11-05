@@ -1,7 +1,6 @@
 import { t } from '../i18n';
 import { diffArrays, diffWordsWithSpace } from 'diff';
-import type { Section } from '../app/types';
-
+import type { Section } from '../contracts/project';
 export function sectionChanges(left?: Section, right?: Section): string[] {
   if (!left || !right) return [left ? t('Élément retiré') : t('Élément ajouté')];
   const changes: string[] = [];

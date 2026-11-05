@@ -1,26 +1,6 @@
+import type { EntityMention } from '../contracts/entities';
 import type { CSSProperties } from 'react';
-import type { Outline } from '../app/types';
-export interface EntityCandidate {
-  id: string;
-  title: string;
-  kind: string;
-}
-export interface EntityMention {
-  candidates?: EntityCandidate[];
-  from: number;
-  to: number;
-  title: string;
-  kind: string;
-  sourceId: string | null;
-  entityId: string | null;
-}
-export interface EntityBatch {
-  outline?: Outline | null;
-  section: string;
-  revision: number;
-  text: string;
-  mentions: EntityMention[];
-}
+
 export interface SelectedEntity extends EntityMention {
   blockFrom?: number;
   blockTo?: number;

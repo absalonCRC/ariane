@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Source } from '../src/app/types';
+import type { Source } from '../src/contracts/sources';
 import { countVaultNotes } from '../src/sources/countNotes';
-
 function source(id: string, path: string, vaultId = 'vault-a'): Source {
   return {
     id,

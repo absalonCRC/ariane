@@ -2,10 +2,10 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { VoiceButton } from '../src/voice/VoiceButton';
 
 const request = vi.hoisted(() => vi.fn());
-vi.mock('../src/app/client', () => ({ native: true, request }));
-import { VoiceButton } from '../src/voice/VoiceButton';
+vi.mock('../src/platform/client', () => ({ native: true, request }));
 
 describe('voice gestures and live transcription', () => {
   let root: Root;

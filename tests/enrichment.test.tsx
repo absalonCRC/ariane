@@ -2,11 +2,12 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
-import type { Source, SaveState } from '../src/app/types';
-const request = vi.hoisted(() => vi.fn());
-vi.mock('../src/app/client', () => ({ native: true, request }));
+import type { Source } from '../src/contracts/sources';
+import type { SaveState } from '../src/app/workspace/types';
 import { useEnrichment } from '../src/enrichment/useEnrichment';
 import { EnrichmentView } from '../src/enrichment/EnrichmentView';
+const request = vi.hoisted(() => vi.fn());
+vi.mock('../src/platform/client', () => ({ native: true, request }));
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT =
   true;
 

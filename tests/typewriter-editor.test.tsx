@@ -3,8 +3,8 @@ import { act, createRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { Editor, type EditorHandle } from '../src/editor/Editor';
-import { defaultSettings, type Section } from '../src/app/types';
-
+import { defaultSettings } from '../src/contracts/settings';
+import { type Section } from '../src/contracts/project';
 const audio = vi.hoisted(() => ({ play: vi.fn(), destroy: vi.fn() }));
 vi.mock('../src/editor/typewriterSound', () => ({ createTypewriterSound: () => audio }));
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });

@@ -1,4 +1,4 @@
-import type { Section } from '../app/types';
+import type { Section } from '../contracts/project';
 import { childrenByParent } from './tree';
 export type Inclusion = { total: number; included: number };
 export function inclusionBySection(sections: Section[]): Map<string, Inclusion> {

@@ -2,12 +2,12 @@ import { localizeMessage, t, useLocale } from '../i18n';
 import { usePanelFocus } from '../components/usePanelFocus';
 import { SourceOccurrences } from './SourceOccurrences';
 import type { SourceOccurrence } from './occurrences';
-import type { Section } from '../app/types';
+import type { Section } from '../contracts/project';
 import { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { ProgressiveMarkdown } from './ProgressiveMarkdown';
-import type { Source } from '../app/types';
-import { request } from '../app/client';
+import type { Source } from '../contracts/sources';
+import { request } from '../platform/client';
 import { useContextMenu } from '../components/ContextMenu';
 import { selectedSourceText, sourceContext } from './contextMenu';
 import { SourceAliases } from './SourceAliases';
@@ -61,7 +61,7 @@ export function Reader({
     setUrl('');
     setError('');
     if (['PDF', 'Image'].includes(s.kind))
-      void request<{ url: string; mime: string }>('sourceFile', { id: s.id })
+      void request('sourceFile', { id: s.id })
         .then((f) => {
           if (!alive) return;
           setUrl(f.url);

@@ -1,4 +1,4 @@
-import type { Section } from '../app/types';
+import type { Section } from '../contracts/project';
 import { childrenByParent } from './tree';
 export function visibleTree(sections: Section[], collapsed: ReadonlySet<string>) {
   const children = childrenByParent(sections);

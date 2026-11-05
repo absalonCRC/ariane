@@ -1,14 +1,14 @@
 import { t, useLocale } from '../i18n';
 import { SourceOccurrences } from './SourceOccurrences';
 import type { SourceOccurrence } from './occurrences';
-import type { Section } from '../app/types';
+import type { Section } from '../contracts/project';
 import { useSharedPanel, type PanelOrigin } from '../components/useSharedPanel';
 import { X, Quote, ArrowUpRight, Link2 } from 'lucide-react';
 import { useContextMenu } from '../components/ContextMenu';
 import { sourceContext, sourceExcerpt } from './contextMenu';
-import type { Source } from '../app/types';
+import type { Source } from '../contracts/sources';
 import { composeCitation } from './citations';
-import type { Settings } from '../app/types';
+import type { Settings } from '../contracts/settings';
 import { entityTint } from '../enrichment/entityTypes';
 import { MarginPinAction, type MarginPinProps } from './MarginPinAction';
 export function SourceCard({

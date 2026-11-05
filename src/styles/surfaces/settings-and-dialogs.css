@@ -1,0 +1,138 @@
+.settings h2 {
+  font-family: var(--ui);
+  font-size: 18px;
+}
+.settings label {
+  margin-top: 25px;
+}
+.settings label > span {
+  float: right;
+  color: var(--theme-secondary, #555);
+}
+.settings label:last-child {
+  margin-bottom: 0;
+}
+.segmented {
+  display: flex;
+  background: var(--theme-surface, #f7f7f7);
+  border-radius: 5px;
+  padding: 3px;
+  margin-top: 11px;
+  gap: 3px;
+}
+.segmented button {
+  flex: 1;
+  font-size: 11px;
+  padding: 8px 7px;
+  white-space: nowrap;
+}
+.segmented .active {
+  background: var(--theme-paper, white);
+  box-shadow: 0 1px 3px #0001;
+  color: var(--theme-ink, #222);
+}
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--theme-quiet, #aaa);
+  font-size: 10px;
+}
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.check-label input {
+  display: inline-block;
+  margin: 0;
+  accent-color: var(--theme-ink, #333);
+}
+.project-menu {
+  position: fixed;
+  right: 25px;
+  top: 79px;
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  min-width: 190px;
+  padding: 8px;
+}
+.project-menu button {
+  justify-content: flex-start;
+}
+.dialog {
+  border: 1px solid var(--theme-line, #e4e4e4);
+  border-radius: 8px;
+  box-shadow: 0 20px 100px #00000012;
+  background: var(--theme-paper, #fff);
+  width: 520px;
+  max-width: 92vw;
+  max-height: 86vh;
+  overflow: auto;
+  padding: 28px 32px;
+}
+.dialog.wide {
+  width: 1050px;
+}
+.dialog::backdrop {
+  background: var(--theme-glaze-soft, #ffffffbd);
+  backdrop-filter: blur(3px);
+}
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+.dialog form > .primary {
+  margin-top: 4px;
+}
+.form-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+.command-search {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--theme-hover, #e8e8e8);
+  color: var(--theme-quiet, #999);
+}
+.command-search input {
+  border: 0 !important;
+  padding-left: 0 !important;
+}
+.command-list {
+  max-height: 45vh;
+  overflow: auto;
+  margin: 18px -8px;
+}
+.command-list button {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 10px;
+  font-size: 13px;
+}
+.command-list small {
+  color: var(--theme-quiet, #aaa);
+  font-size: 10px;
+}
+.source-card {
+  position: fixed;
+  left: calc(max(120px, 100vw * 0.13) + min(750px, 100vw - 480px) + 25px);
+  width: var(--writing-panel-width);
+  padding: 24px;
+  z-index: 35;
+  max-height: 75vh;
+  overflow: auto;
+}

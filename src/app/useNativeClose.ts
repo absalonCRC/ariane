@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { native, request } from './client';
+import { native, request } from '../platform/client';
 export function useNativeClose(
   flush: () => Promise<void>,
   saveSession: () => Promise<unknown>,

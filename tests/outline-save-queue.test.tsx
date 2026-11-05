@@ -2,11 +2,11 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
-import type { Outline, Project } from '../src/app/types';
-const request = vi.hoisted(() => vi.fn());
-vi.mock('../src/app/client', () => ({ request }));
+import type { Outline, Project } from '../src/contracts/project';
 import { sectionDraft } from '../src/project/draft';
 import { useProject } from '../src/project/useProject';
+const request = vi.hoisted(() => vi.fn());
+vi.mock('../src/platform/client', () => ({ request }));
 
 it.each(['eager', 'deferred'])(
   'un accusé ancien ne supprime pas une indentation plus récente (%s)',

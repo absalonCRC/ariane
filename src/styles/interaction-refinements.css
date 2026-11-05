@@ -130,6 +130,7 @@
 .app[data-scrolling='true'] .menu-control::before,
 .app[data-scrolling='true'] .voice-control::before,
 .app[data-scrolling='true'] .focus-mode-trigger,
+.app[data-scrolling='true'] .resume-trigger,
 .app[data-scrolling='true'] .header-search::before,
 .app[data-scrolling='true'] .settings-control::before,
 .app[data-scrolling='true'] .writing-counter,
@@ -138,6 +139,7 @@
 .app .menu-control[data-content-behind]::before,
 .app .voice-control[data-content-behind]::before,
 .app .focus-mode-trigger[data-content-behind],
+.app .resume-trigger[data-content-behind],
 .app .header-search[data-content-behind]::before,
 .app .settings-control[data-content-behind]::before,
 .app .writing-counter[data-content-behind],
@@ -153,8 +155,8 @@
 .app .writing-counter[data-timer-active='true'] button:not([aria-pressed='true']) {
   color: var(--theme-secondary, #555);
 }
-.save-state, .goal-status { isolation: isolate; }
-.save-state::before, .goal-status::before {
+.goal-status { isolation: isolate; }
+.goal-status::before {
   content: '';
   position: absolute;
   z-index: -1;
@@ -163,11 +165,8 @@
   background: transparent;
   transition: background-color 140ms ease;
 }
-.app[data-scrolling='true'] .save-state:has(.state-label)::before,
 .app[data-scrolling='true'] .goal-status::before,
-.app .save-state[data-content-behind]:has(.state-label)::before,
 .app .goal-status[data-content-behind]::before { background: var(--theme-surface, #f2f2f2); }
-.app:has(.binder-footer[data-expanded='false']) .save-state { left: 72px; }
 
 .control-hint {
   z-index: 1010;

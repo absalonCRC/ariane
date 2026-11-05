@@ -1,7 +1,7 @@
 import { wordFocusMode, wordFocusRange } from './focus';
 import { StateField, StateEffect } from '@codemirror/state';
 import { entityColor } from '../enrichment/entityTypes';
-import type { NoteRef } from './noteCommands';
+import type { NoteRef } from '../contracts/notes';
 import {
   Decoration,
   ViewPlugin,

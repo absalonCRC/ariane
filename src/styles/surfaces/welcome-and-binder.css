@@ -1,0 +1,117 @@
+.welcome {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+.welcome h1 {
+  font-size: 44px;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+.welcome > div:not(.dialog) {
+  display: flex;
+  gap: 20px;
+}
+.welcome > div > button {
+  border: 1px solid var(--theme-line, #e3e3e3);
+  border-radius: 6px;
+  padding: 14px 28px;
+}
+.welcome > p {
+  font-size: 11px;
+  color: var(--theme-quiet, #a0a0a0);
+  margin: 0;
+}
+.return-project {
+  position: fixed;
+  top: 45px;
+  left: 35px;
+}
+.binder {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  background: var(--theme-paper, #fafafa);
+  border-right: 1px solid var(--theme-hover, #e8e8e8);
+  z-index: 36;
+  padding: 60px 18px 20px;
+  animation: slide-in 0.18s ease-out;
+}
+.binder .panel-top {
+  padding: 0 8px;
+  margin-bottom: 22px;
+}
+.binder .panel-top > span {
+  font-size: 12px;
+}
+.binder-manuscript {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  font-family: var(--literary);
+  font-size: 18px;
+  margin-bottom: 8px;
+  padding-left: 8px;
+  gap: 5px;
+}
+.tree {
+  max-height: calc(100vh - 420px);
+  overflow: auto;
+}
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 38px;
+  border-radius: 5px;
+}
+.tree-row:hover {
+  background: var(--theme-hover, #f0f0f0);
+}
+.tree-row.selected {
+  background: var(--theme-hover, #ededed);
+}
+.tree-title {
+  font-family: var(--literary);
+  font-size: 17px;
+  text-align: left;
+  justify-content: flex-start;
+  flex: 1;
+  padding: 8px 0;
+}
+.disclose {
+  padding: 2px;
+  width: 16px;
+  color: var(--theme-muted, #888);
+}
+.row-add {
+  padding: 3px;
+  opacity: 0;
+}
+.tree-row:hover .row-add {
+  opacity: 1;
+}
+.binder-add {
+  display: flex;
+  gap: 2px;
+  margin-top: 10px;
+}
+.binder-add button {
+  font-size: 10px;
+  padding: 6px;
+}
+.settings {
+  position: fixed;
+  right: 26px;
+  top: 80px;
+  width: 310px;
+  padding: 22px 24px;
+  z-index: 40;
+  max-height: calc(100vh - 130px);
+  overflow: auto;
+}

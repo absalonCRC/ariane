@@ -1,17 +1,11 @@
+import type { Report } from '../contracts/import';
 import { localizeMessage, t, useLocale } from '../i18n';
 import { useState } from 'react';
 import { choosePath } from '../app/choosePath';
 import { Dialog } from '../components/Dialog';
-import { native, request } from '../app/client';
-import type { Project } from '../app/types';
-interface Report {
-  source: string;
-  projectName: string;
-  projectPath?: string;
-  items: { source: string; title: string; folder: string; format: string }[];
-  copiedFiles: number;
-  warnings: string[];
-}
+import { native, request } from '../platform/client';
+import type { Project } from '../contracts/project';
+
 export function ImportProject({
   onOpen,
   onClose,
@@ -36,7 +30,7 @@ export function ImportProject({
         directory,
         title: directory ? t('Dossier Markdown ou TextBundle') : t('Importer un manuscrit'),
       });
-      if (typeof source === 'string') setReport(await request<Report>('importPreview', { source }));
+      if (typeof source === 'string') setReport(await request('importPreview', { source }));
     } catch (e) {
       setError(String(e));
     } finally {
@@ -49,7 +43,7 @@ export function ImportProject({
     setError('');
     try {
       await beforeImport?.();
-      const result = await request<{ project: Project; report: Report }>('importIntoProject', {
+      const result = await request('importIntoProject', {
         source: report.source,
         projectPath,
       });

@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { marginLayout } from '../src/sources/marginLayout';
-import type { Source } from '../src/app/types';
+import type { Source } from '../src/contracts/sources';
 const source = (id: string) => ({ id }) as Source;
 const groups = [
   { id: 1, top: 100, sources: [source('a'), source('b')] },

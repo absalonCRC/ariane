@@ -1,5 +1,4 @@
-import type { Section } from '../app/types';
-
+import type { Section } from '../contracts/project';
 export interface Passage {
   section: string;
   node: string | null;

@@ -9,7 +9,9 @@ import { LanguageSwitcher } from '../src/components/LanguageSwitcher';
 import { Welcome } from '../src/app/Welcome';
 import { Settings } from '../src/app/Settings';
 import { Preparation } from '../src/project/Preparation';
-import { defaultSettings, type Section, type Source } from '../src/app/types';
+import { defaultSettings } from '../src/contracts/settings';
+import { type Section } from '../src/contracts/project';
+import { type Source } from '../src/contracts/sources';
 import { libraryOperationMessage } from '../src/project/library';
 import { composeCitation } from '../src/sources/citations';
 import {
@@ -22,7 +24,7 @@ import {
 } from '../src/i18n';
 import messages from '../src/i18n/messages.json';
 
-vi.mock('../src/app/client', () => ({ native: false, request: vi.fn(async () => []) }));
+vi.mock('../src/platform/client', () => ({ native: false, request: vi.fn(async () => []) }));
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 HTMLDialogElement.prototype.show = function () {
   this.setAttribute('open', '');
@@ -276,7 +278,7 @@ it('keeps the refined inclusion notices and localizes them without editing the p
     ],
     settings: {},
     recovered: false,
-  } satisfies import('../src/app/types').Project;
+  } satisfies import('../src/contracts/project').Project;
   const original = structuredClone(project);
   setLocale('en');
   expect(

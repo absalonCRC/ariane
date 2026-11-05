@@ -3,9 +3,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { localizeMessage, t, useLocale } from '../i18n';
 import { entityTint } from '../enrichment/entityTypes';
 import { plainExcerpt } from '../enrichment/excerpts';
-import type { Source } from '../app/types';
+import type { Source } from '../contracts/sources';
 import { MarginPinAction } from './MarginPinAction';
-
 export function FloatingVaultResults({
   query,
   sources,

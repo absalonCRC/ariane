@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { SourceBrowser } from '../src/sources/Browser';
 const { request } = vi.hoisted(() => ({ request: vi.fn() }));
-vi.mock('../src/app/client', () => ({ request }));
+vi.mock('../src/platform/client', () => ({ request }));
 it('browses types and scopes entities by vault without a sidebar search field', async () => {
   (
     globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }

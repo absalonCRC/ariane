@@ -643,7 +643,7 @@
 }
 
 /* Presentation only: background readers and analysis retain their state. */
-.app[data-focus='true'] > :not(.writing-layout):not(.statusbar):not(.app-header):not(.chrome-blur-top):not(.edge-trigger):not(.binder-footer[data-expanded='true']):not(.motion-presence[data-motion='sidebar']),
+.app[data-focus='true'] > :not(.writing-layout):not(.statusbar):not(.app-header):not(.chrome-blur-top):not(.window-drag-region):not(.window-title:has(.path-menu[data-notifying='true'])):not(.edge-trigger):not(.binder-footer[data-expanded='true']):not(.motion-presence[data-motion='sidebar']),
 .app[data-focus='true'] .statusbar > :not(.bottom-controls):not(.chrome-blur-bottom),
 .app[data-focus='true'] .app-header > :not(.header-right),
 .app[data-focus='true'] .document-title,
@@ -653,7 +653,8 @@
 .app[data-focus='true'] .entity-proposal {
   display: none !important;
 }
-.app[data-focus='true'] .header-right .menu-control {
+.app[data-focus='true'] .header-right .menu-control,
+.app[data-focus='true'] .header-right .resume-trigger {
   display: none;
 }
 .app[data-focus='true'] .writing-layout {

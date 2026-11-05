@@ -3,8 +3,7 @@ import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import { AlignLeft, CaseSensitive, Play, Pause, RotateCcw, WholeWord } from 'lucide-react';
 import { usePomodoro } from '../timer/usePomodoro';
 import { durations, formatTime } from '../timer/pomodoro';
-import type { Settings } from '../app/types';
-
+import type { Settings } from '../contracts/settings';
 type Mode = Settings['countMode'];
 export function WritingCounter({
   words,

@@ -2,11 +2,12 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
-import type { Project, Section, Version } from '../src/app/types';
-const request = vi.hoisted(() => vi.fn());
-vi.mock('../src/app/client', () => ({ request }));
+import type { Project, Section } from '../src/contracts/project';
+import type { Version } from '../src/contracts/history';
 import { History } from '../src/history/History';
 import { setLocale } from '../src/i18n';
+const request = vi.hoisted(() => vi.fn());
+vi.mock('../src/platform/client', () => ({ request }));
 const scene: Section = {
   id: 'a',
   title: 'Le quai',

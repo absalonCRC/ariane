@@ -1,8 +1,8 @@
 import { localizeMessage, t, useLocale } from '../i18n';
 import { AnimatedDetails } from '../components/AnimatedDetails';
 import { useState } from 'react';
-import { request } from '../app/client';
-import type { Source } from '../app/types';
+import { request } from '../platform/client';
+import type { Source } from '../contracts/sources';
 
 export function EnrichmentView({
   source,
@@ -27,9 +27,7 @@ export function EnrichmentView({
     setBusy(true);
     setError('');
     try {
-      onChange(
-        await request<Source>('ignoreEnrichment', { projectPath, source: source.id, evidence }),
-      );
+      onChange(await request('ignoreEnrichment', { projectPath, source: source.id, evidence }));
     } catch (e) {
       setError(String(e));
     } finally {

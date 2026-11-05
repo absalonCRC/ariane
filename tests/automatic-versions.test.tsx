@@ -2,11 +2,11 @@
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import type { Project } from '../src/app/types';
-const request = vi.hoisted(() => vi.fn());
-vi.mock('../src/app/client', () => ({ request }));
+import type { Project } from '../src/contracts/project';
 import { useProject } from '../src/project/useProject';
 import { sectionDraft } from '../src/project/draft';
+const request = vi.hoisted(() => vi.fn());
+vi.mock('../src/platform/client', () => ({ request }));
 
 let hook: ReturnType<typeof useProject>, root: Root;
 const onError = vi.fn();

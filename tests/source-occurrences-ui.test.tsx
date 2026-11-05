@@ -4,8 +4,8 @@ import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
 import { SourceOccurrences } from '../src/sources/SourceOccurrences';
 import { Reader } from '../src/sources/Reader';
-import type { Section, Source } from '../src/app/types';
-
+import type { Section } from '../src/contracts/project';
+import type { Source } from '../src/contracts/sources';
 it('shows separate reference and name counts while keeping precise navigation', async () => {
   (
     globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }
