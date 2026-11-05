@@ -1,12 +1,19 @@
 import { t, useLocale } from '../i18n';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { request } from '../platform/client';
-import type { Version } from '../contracts/history';
+import type { HistoryState, Version } from '../contracts/history';
+import type { Project } from '../contracts/project';
 import { comparePassages, reprisePassage, sectionChanges } from './comparison';
 import { descendants } from '../project/tree';
 import type { HistoryProps } from './types';
+
 export function useHistory(p: HistoryProps) {
   const locale = useLocale();
+  const [tab, setTab] = useState<'changes' | 'history' | 'variants'>(p.initialTab ?? 'changes');
+  const [history, setHistory] = useState<HistoryState>({ activeBranch: 'main', branches: [] });
+  const [epoch, setEpoch] = useState(0);
+  const [promoting, setPromoting] = useState<Version | null>(null);
+  const [origin, setOrigin] = useState<Version | null>(null);
   const [versions, setVersions] = useState<Version[]>([]);
   const [moreVersions, setMoreVersions] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -18,6 +25,10 @@ export function useHistory(p: HistoryProps) {
   });
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    p.onBusyChange?.(busy);
+    return () => p.onBusyChange?.(false);
+  }, [busy, p.onBusyChange]);
   const [error, setError] = useState('');
   const [name, setName] = useState('');
   const [creating, setCreating] = useState(false);
@@ -33,20 +44,40 @@ export function useHistory(p: HistoryProps) {
     if (activeScene) setScene(activeScene.id);
   }, [p.active, p.project.sections]);
   const [onlyChanged, setOnlyChanged] = useState(false);
-  const [view, setView] = useState<'source' | 'reading'>('source');
+  const [view, setView] = useState<'source' | 'reading'>('reading');
   const [confirm, setConfirm] = useState<Version | null>(null);
   const [changeIndex, setChangeIndex] = useState(-1);
   const diffRef = useRef<HTMLDivElement>(null);
+  const seenVersionRevision = useRef(p.versionRevision ?? 0);
+  const currentVersionRevision = useRef(p.versionRevision ?? 0);
+  currentVersionRevision.current = p.versionRevision ?? 0;
   useEffect(() => {
     let alive = true;
+    const revisionAtStart = p.versionRevision ?? 0;
+    seenVersionRevision.current = revisionAtStart;
     void p
       .flush()
-      .then(() => request('versions'))
-      .then((values) => {
+      .then(() =>
+        Promise.all([
+          request('versions'),
+          request('historyState', { projectPath: p.project.path }),
+        ]),
+      )
+      .then(([values, state]) => {
         if (alive) {
-          setVersions(values);
-          setMoreVersions(values.length === 50);
-          setLeftId(values[0]?.id ?? 'current');
+          if (currentVersionRevision.current === revisionAtStart) {
+            setVersions(values);
+            setMoreVersions(values.length === 50);
+          }
+          setHistory(state?.branches ? state : { activeBranch: 'main', branches: [] });
+          const branch = state?.branches?.find((b) => b.id === state.activeBranch);
+          setLeftId(
+            branch?.headVersion ??
+              values.find((v) => !v.automatic && !v.scope)?.id ??
+              branch?.baseVersion ??
+              values[0]?.id ??
+              'current',
+          );
         }
       })
       .catch((e) => {
@@ -58,7 +89,37 @@ export function useHistory(p: HistoryProps) {
     return () => {
       alive = false;
     };
-  }, [p.project.path]);
+  }, [p.project.path, epoch]);
+  useEffect(() => {
+    const revision = p.versionRevision ?? 0;
+    if (busy || revision === seenVersionRevision.current) return;
+    const previousRevision = seenVersionRevision.current;
+    seenVersionRevision.current = revision;
+    let alive = true;
+    let completed = false;
+    const pages = Math.max(1, Math.ceil(versions.length / 50));
+    void (async () => {
+      const all: Version[] = [];
+      let lastPage: Version[] = [];
+      for (let page = 0; page < pages; page++) {
+        lastPage = await request('versions', { offset: page * 50 });
+        if (!alive) return;
+        all.push(...lastPage);
+        if (lastPage.length < 50) break;
+      }
+      completed = true;
+      setVersions(all);
+      setMoreVersions(lastPage.length === 50);
+      if (!versions.length && leftId === 'current' && all.length) setLeftId(all[0].id);
+    })().catch((error) => {
+      if (alive) setError(String(error));
+    });
+    return () => {
+      alive = false;
+      if (!completed && seenVersionRevision.current === revision)
+        seenVersionRevision.current = previousRevision;
+    };
+  }, [p.versionRevision, p.project.path, epoch, busy]);
   useEffect(() => {
     if (!leftId) return;
     let alive = true;
@@ -80,7 +141,11 @@ export function useHistory(p: HistoryProps) {
     return () => {
       alive = false;
     };
-  }, [leftId, rightId, p.project.path]);
+  }, [leftId, rightId, p.project.path, epoch]);
+  const comparisonVersions = [...versions];
+  for (const version of [loaded.left, loaded.right])
+    if (version && !comparisonVersions.some((v) => v.id === version.id))
+      comparisonVersions.unshift(version);
   const incompatible =
     loaded.left?.scope && loaded.right?.scope && loaded.left.scope !== loaded.right.scope;
   const entries = useMemo(() => {
@@ -138,10 +203,17 @@ export function useHistory(p: HistoryProps) {
     setError('');
     try {
       await p.flush();
-      const version = await request('capture', {
-        name: name.trim(),
-        scope: scope === 'project' ? null : p.active,
-      });
+      const version = promoting
+        ? await request('promoteVersion', {
+            projectPath: p.project.path,
+            id: promoting.id,
+            name: name.trim(),
+          })
+        : await request('capture', {
+            name: name.trim(),
+            scope: scope === 'project' ? null : p.active,
+          });
+      setPromoting(null);
       setVersions(await request('versions'));
       setLeftId(version.id);
       setRightId('current');
@@ -185,6 +257,28 @@ export function useHistory(p: HistoryProps) {
       setBusy(false);
     }
   }
+  async function changed(next: Project) {
+    p.onRestore(next);
+    setLoaded({ left: null, right: null });
+    setRightId('current');
+    setLeftId('');
+    setLoading(true);
+    setEpoch((v) => v + 1);
+  }
+  async function switchBranch(id: string, write = false) {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      await (p.checkpoint ?? p.flush)();
+      await changed(await request('switchBranch', { projectPath: p.project.path, id }));
+      if (write) p.onClose();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
   function nextChange(direction: number) {
     if (!changes.length) return;
     const next =
@@ -199,6 +293,13 @@ export function useHistory(p: HistoryProps) {
       ?.scrollIntoView({ block: 'center', behavior: 'instant' });
   }
   return {
+    tab,
+    setTab,
+    history,
+    promoting,
+    setPromoting,
+    origin,
+    setOrigin,
     versions,
     setVersions,
     moreVersions,
@@ -212,6 +313,7 @@ export function useHistory(p: HistoryProps) {
     loaded,
     loading,
     busy,
+    setBusy,
     error,
     setError,
     name,
@@ -229,7 +331,9 @@ export function useHistory(p: HistoryProps) {
     setConfirm,
     changeIndex,
     diffRef,
+    comparisonVersions,
     incompatible,
+    entries,
     visible,
     selected,
     metadata,
@@ -240,6 +344,8 @@ export function useHistory(p: HistoryProps) {
     capture,
     restore,
     apply,
+    changed,
+    switchBranch,
     nextChange,
   };
 }

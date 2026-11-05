@@ -238,3 +238,34 @@ it('dates both version selectors and offers Markdown reading without changing pa
   await act(async () => button('Source').click());
   expect(host.querySelector('del')).not.toBeNull();
 });
+
+it('refreshes an open history when a new automatic version is created, without changing the comparison', async () => {
+  const auto = {
+    ...version,
+    id: 'auto-new',
+    name: 'Sauvegarde automatique',
+    automatic: true,
+    sessionId: 'session',
+    created: '2026-11-05T13:15:44Z',
+  };
+  const props = {
+    project,
+    active: 'a',
+    flush: async () => {},
+    onApply: apply,
+    onRestore: restore,
+    onClose: close,
+    onError: vi.fn(),
+  };
+  await act(async () => root.render(<History {...props} versionRevision={0} />));
+  const current = host.querySelector<HTMLSelectElement>('[aria-label="Version de référence"]')!;
+  expect(current.value).toBe('v1');
+  request.mockImplementation(async (cmd: string) =>
+    cmd === 'versions' ? [auto, version] : cmd === 'version' ? version : undefined,
+  );
+  await act(async () => root.render(<History {...props} versionRevision={1} />));
+  expect([...current.options].map((option) => option.value)).toContain('auto-new');
+  expect(current.value).toBe('v1');
+  await act(async () => button('Historique').click());
+  expect(host.textContent).toContain('Séance d’écriture');
+});

@@ -126,7 +126,7 @@ Keep a **word, sentence or paragraph** in focus while the surrounding text dims.
 
 </details>
 
-Versions are saved automatically as you write, after a pause and when leaving a text. Keep a named draft before trying another direction. Compare earlier and current wording side by side, move through the changes and recover an individual passage. ariane saves a version before applying a passage or restoring a snapshot. Automatic history is deduplicated and bounded; named drafts stay preserved.
+Versions are saved automatically as you write, after a pause and when leaving a text. Automatic captures are grouped into writing sessions, and naming a capture preserves it. Independent variants keep their own drafts and automatic history. The top title capsule shows the active variant and lets you switch through its project menu. Compare wording, choose passages and resolve differences before bringing a variant into the main text. The previous state remains recoverable. See [Versions and writing variants](docs/versionnement-ecriture.md) for the workflow and migration details.
 
 ![ariane 0.3.2 comparing an earlier and current draft in its native two-column Versions view](docs/media/0.3.2/edited/versions.png)
 
@@ -165,9 +165,9 @@ _The Human Thread_ is fictional demo material about AI and authorship. The newer
 
 ## Try ariane
 
-**ariane 0.3.2 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
+**ariane 0.3.3 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
 
-There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.3.2 development notes](docs/release-notes-0.3.2.md) · [Roadmap to 1.0.0](docs/roadmap-1.0.0.md)
+There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.3.3 development notes](docs/release-notes-0.3.3.md) · [Roadmap to 1.0.0](docs/roadmap-1.0.0.md)
 
 <details>
 <summary>Build from source</summary>

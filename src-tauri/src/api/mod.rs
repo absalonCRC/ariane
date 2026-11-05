@@ -286,6 +286,12 @@ pub fn handle(
                 request @ (Request::Versions { .. }
                 | Request::Version { .. }
                 | Request::AutomaticVersion { .. }
+                | Request::HistoryState { .. }
+                | Request::CreateBranch { .. }
+                | Request::SwitchBranch { .. }
+                | Request::PromoteVersion { .. }
+                | Request::MergePreview { .. }
+                | Request::MergeBranch { .. }
                 | Request::Capture { .. }
                 | Request::Restore { .. }
                 | Request::Export { .. }) => {

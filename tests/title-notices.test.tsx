@@ -24,6 +24,7 @@ let controls: {
   setExport: Dispatch<SetStateAction<'ready' | 'working' | 'done' | 'error'>>;
   setSurface: Dispatch<SetStateAction<Surface>>;
   setSave: Dispatch<SetStateAction<Workspace['doc']['status']>>;
+  setVersion: Dispatch<SetStateAction<Workspace['doc']['versionStatus']>>;
   setProgress: Dispatch<SetStateAction<Workspace['progress']>>;
   setMemoryPending: Dispatch<SetStateAction<boolean>>;
   setDialogLoading: (loading: boolean) => void;
@@ -61,6 +62,7 @@ function Harness() {
   const [exportState, setExport] = useState<'ready' | 'working' | 'done' | 'error'>('ready');
   const [surface, setSurface] = useState<Surface>('none');
   const [save, setSave] = useState<Workspace['doc']['status']>('saved');
+  const [version, setVersion] = useState<Workspace['doc']['versionStatus']>('saved');
   const [progress, setProgress] = useState<Workspace['progress']>(null);
   const [memoryPending, setMemoryPending] = useState(false);
   controls = {
@@ -69,6 +71,7 @@ function Harness() {
     setExport,
     setSurface,
     setSave,
+    setVersion,
     setProgress,
     setMemoryPending,
     setDialogLoading: () => {},
@@ -84,7 +87,14 @@ function Harness() {
     setSurface,
     exportJob: { state: exportState, reset: () => setExport('ready') },
     progress,
-    doc: { project, status: save, ref: { current: project }, flush: async () => {} },
+    doc: {
+      project,
+      status: save,
+      versionStatus: version,
+      ref: { current: project },
+      flush: async () => {},
+      checkpoint: async () => setVersion('saved'),
+    },
     activate: () => {},
     fail: () => {},
     libraryBusy: false,
@@ -156,6 +166,28 @@ it('shows a colored library notice for five seconds and restores the breadcrumb'
   );
   expect(host.querySelector('.path-heading')).toBe(originalCapsule);
   expect(host.querySelector('.title-notice')).toBeNull();
+});
+
+it('keeps a failed automatic version in the top capsule until retry succeeds', async () => {
+  await act(async () => controls.setVersion('error'));
+  expect(host.querySelector('.path-heading')?.textContent).toContain(
+    'Réessayer la version automatique',
+  );
+  expect(host.querySelector('.path-notice-row')?.getAttribute('data-tone')).toBe('error');
+  await act(async () => vi.advanceTimersByTime(60000));
+  expect(host.querySelector('.path-menu')?.getAttribute('data-notifying')).toBe('true');
+  await act(async () =>
+    host.querySelector<HTMLButtonElement>('[aria-label="Fermer la notification"]')!.click(),
+  );
+  expect(host.querySelector('.path-notice-dot')).not.toBeNull();
+  await act(async () => host.querySelector<HTMLButtonElement>('.path-trigger')!.click());
+  const retry = [...host.querySelectorAll<HTMLButtonElement>('.path-notices button')].find(
+    (button) => button.textContent === 'Réessayer',
+  );
+  expect(retry).toBeDefined();
+  await act(async () => retry!.click());
+  expect(host.querySelector('.path-menu')?.getAttribute('data-notifying')).toBe('false');
+  expect(host.querySelector('.path-notice-dot')).toBeNull();
 });
 
 it('keeps conflicts visible until dismissed and exposes resolution actions', async () => {

@@ -1,10 +1,9 @@
 import type { NoteEvent, NoteEventInput } from '../../contracts/noteActivity';
 import { previewCheckpoint } from '../../history/previewAutomatic';
+import { previewHistory } from '../../history/previewBranches';
 import { t } from '../../i18n';
-import { descendants } from '../../project/tree';
 import type { Project, Section, TextPatch } from '../../contracts/project';
 import type { Source, Vault } from '../../contracts/sources';
-import type { Version } from '../../contracts/history';
 import {
   applyLibraryOperation,
   structureSnapshot,
@@ -131,6 +130,8 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
     return p;
   }
   const p = project();
+  const history = previewHistory(p, type, a);
+  if (history) return history.value;
   if (type === 'noteActivity' || type === 'recordNoteActivity') {
     if (a.projectPath !== p.path) throw new Error('Le projet actif a changé.');
     const key = 'ariane.preview.note-activity.' + p.path;
@@ -365,55 +366,6 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
   }
   if (type === 'index') return { errors: [], semantic: false };
   if (type === 'source') return previewSources(p.path).find((source) => source.id === a.id);
-  const versionKey = 'ariane.preview.versions.' + p.path;
-  if (type === 'version')
-    return (JSON.parse(localStorage.getItem(versionKey) || '[]') as Version[]).find(
-      (v) => v.id === a.id,
-    );
-  if (type === 'versions')
-    return (JSON.parse(localStorage.getItem(versionKey) || '[]') as Version[])
-      .slice(Number(a.offset || 0), Number(a.offset || 0) + 50)
-      .map((v) => ({ ...v, sections: [] }));
-  if (type === 'automaticVersion') {
-    if (a.projectPath !== p.path) throw new Error('Le projet actif a changé.');
-    const version = previewCheckpoint(p, String(a.scope));
-    return version ? { ...version, sections: [] } : null;
-  }
-  if (type === 'capture') {
-    const versions = JSON.parse(localStorage.getItem(versionKey) || '[]') as Version[];
-    const v = {
-      id: crypto.randomUUID(),
-      name: String(a.name),
-      created: new Date().toISOString(),
-      scope: a.scope as string | null,
-      sections: a.scope
-        ? descendants([...p.sections, ...(p.trash || [])], String(a.scope))
-        : [...p.sections, ...(p.trash || [])],
-    };
-    versions.unshift(v);
-    localStorage.setItem(versionKey, JSON.stringify(versions));
-    return v;
-  }
-  if (type === 'restore') {
-    const versions = JSON.parse(localStorage.getItem(versionKey) || '[]') as Version[];
-    const v = versions.find((v) => v.id === a.id);
-    if (!v) throw new Error(t('Version introuvable'));
-    browserRequest('capture', { name: 'Avant restauration', scope: v.scope });
-    const previous = [...p.sections, ...(p.trash || [])];
-    const snapshot = v.scope ? descendants(v.sections, v.scope) : v.sections;
-    const affected = new Set(
-      v.scope
-        ? [...descendants(previous, v.scope), ...snapshot].map((s) => s.id)
-        : previous.map((s) => s.id),
-    );
-    const restored = [...previous.filter((s) => !affected.has(s.id)), ...snapshot];
-    p.sections = restored.filter((s) => !s.trashed);
-    p.trash = restored.filter((s) => s.trashed);
-    p.canUndoStructure = false;
-    localStorage.removeItem('ariane.preview.structure.' + p.path);
-    store(p);
-    return p;
-  }
   if (type === 'suggest' || type === 'search') {
     const input = String(type === 'suggest' ? a.text : a.query).toLocaleLowerCase();
     return previewSources(p.path).filter((source) =>

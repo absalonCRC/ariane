@@ -4070,5 +4070,293 @@
   "Certaines sources n’ont pas pu être indexées.": [
     "Some sources could not be indexed.",
     "No se han podido indexar algunas fuentes."
+  ],
+  "Texte enregistré · Réessayer la version automatique": [
+    "Text saved · Retry automatic version",
+    "Texto guardado · Reintentar la versión automática"
+  ],
+  "Variantes et versions : {0}": [
+    "Variants and versions: {0}",
+    "Variantes y versiones: {0}"
+  ],
+  "Texte principal": [
+    "Main text",
+    "Texto principal"
+  ],
+  "Variante active": [
+    "Active variant",
+    "Variante activa"
+  ],
+  "Gérer les variantes": [
+    "Manage variants",
+    "Gestionar variantes"
+  ],
+  "Nommer une version": [
+    "Name a version",
+    "Nombrar una versión"
+  ],
+  "Votre texte est enregistré pendant l’écriture. Les versions automatiques gardent les étapes de chaque séance.": [
+    "Your text is saved as you write. Automatic versions keep the stages of each writing session.",
+    "El texto se guarda mientras escribes. Las versiones automáticas conservan las etapas de cada sesión."
+  ],
+  "Parcourir les versions": [
+    "Browse versions",
+    "Explorar versiones"
+  ],
+  "Modifications": [
+    "Changes",
+    "Cambios"
+  ],
+  "Historique": [
+    "History",
+    "Historial"
+  ],
+  "Variantes": [
+    "Variants",
+    "Variantes"
+  ],
+  "Textes de la comparaison": [
+    "Texts in this comparison",
+    "Textos de la comparación"
+  ],
+  "Ajouté": [
+    "Added",
+    "Añadido"
+  ],
+  "Retiré": [
+    "Removed",
+    "Retirado"
+  ],
+  "Modifié": [
+    "Changed",
+    "Modificado"
+  ],
+  "Les versions automatiques apparaîtront au fil de l’écriture. Vous pouvez aussi nommer une première étape.": [
+    "Automatic versions will appear as you write. You can also name a first milestone.",
+    "Las versiones automáticas aparecerán mientras escribes. También puedes nombrar una primera etapa."
+  ],
+  "Variante créée. Vous pouvez reprendre l’écriture.": [
+    "Variant created. You can continue writing.",
+    "Variante creada. Puedes seguir escribiendo."
+  ],
+  "Variante intégrée. L’état précédent est disponible dans l’historique.": [
+    "Variant integrated. The previous state is available in the history.",
+    "Variante integrada. El estado anterior está disponible en el historial."
+  ],
+  "Variantes du texte": [
+    "Text variants",
+    "Variantes del texto"
+  ],
+  "Relecture avant intégration": [
+    "Review before integration",
+    "Revisión antes de integrar"
+  ],
+  "Revenir aux variantes": [
+    "Back to variants",
+    "Volver a las variantes"
+  ],
+  "Relisez les changements. Les passages modifiés des deux côtés demandent votre choix.": [
+    "Review the changes. Passages changed on both sides need your choice.",
+    "Revisa los cambios. Los pasajes modificados en ambos lados requieren tu elección."
+  ],
+  "{0} changements de références ou de réglages seront également intégrés.": [
+    "{0} reference or setting changes will also be integrated.",
+    "También se integrarán {0} cambios de referencias o ajustes."
+  ],
+  "À départager": [
+    "Needs a choice",
+    "Requiere una elección"
+  ],
+  "Intégrer ce changement": [
+    "Include this change",
+    "Incluir este cambio"
+  ],
+  "Changement de structure ou de préparation : votre choix porte sur toute la scène.": [
+    "Structure or preparation change: your choice applies to the whole scene.",
+    "Cambio de estructura o preparación: tu elección se aplica a toda la escena."
+  ],
+  "Voir le texte d’origine": [
+    "View the original text",
+    "Ver el texto original"
+  ],
+  "Texte absent": [
+    "Text absent",
+    "Texto ausente"
+  ],
+  "Variante": [
+    "Variant",
+    "Variante"
+  ],
+  "Résultat proposé": [
+    "Proposed result",
+    "Resultado propuesto"
+  ],
+  "Résoudre cette divergence": [
+    "Resolve this difference",
+    "Resolver esta diferencia"
+  ],
+  "Garder le texte principal": [
+    "Keep the main text",
+    "Conservar el texto principal"
+  ],
+  "Reprendre la variante": [
+    "Use the variant",
+    "Usar la variante"
+  ],
+  "Réécrire ce passage": [
+    "Rewrite this passage",
+    "Reescribir este pasaje"
+  ],
+  "Passage réécrit": [
+    "Rewritten passage",
+    "Pasaje reescrito"
+  ],
+  "Aucun changement à intégrer.": [
+    "No changes to integrate.",
+    "No hay cambios para integrar."
+  ],
+  "{0} divergences à départager": [
+    "{0} differences need a choice",
+    "{0} diferencias requieren una elección"
+  ],
+  "Relecture prête": [
+    "Review ready",
+    "Revisión lista"
+  ],
+  "Actualiser la comparaison": [
+    "Refresh comparison",
+    "Actualizar la comparación"
+  ],
+  "Intégrer au texte principal": [
+    "Integrate into the main text",
+    "Integrar en el texto principal"
+  ],
+  "Explorer une autre direction": [
+    "Explore another direction",
+    "Explorar otra dirección"
+  ],
+  "Chaque variante garde son brouillon et ses sauvegardes automatiques. Vous pourrez relire ses changements avant de les intégrer.": [
+    "Each variant keeps its own draft and automatic versions. You can review its changes before integrating them.",
+    "Cada variante conserva su borrador y sus versiones automáticas. Puedes revisar sus cambios antes de integrarlos."
+  ],
+  "Nom de la variante": [
+    "Variant name",
+    "Nombre de la variante"
+  ],
+  "Une fin plus ouverte…": [
+    "A more open ending…",
+    "Un final más abierto…"
+  ],
+  "Créer et écrire": [
+    "Create and write",
+    "Crear y escribir"
+  ],
+  "À partir de « {0} »": [
+    "From “{0}”",
+    "A partir de «{0}»"
+  ],
+  "Utiliser le texte actuel": [
+    "Use the current text",
+    "Usar el texto actual"
+  ],
+  "Vous écrivez ici": [
+    "You are writing here",
+    "Estás escribiendo aquí"
+  ],
+  "Relire et intégrer": [
+    "Review and integrate",
+    "Revisar e integrar"
+  ],
+  "Historique des versions": [
+    "Version history",
+    "Historial de versiones"
+  ],
+  "Les versions automatiques sont regroupées par séance. Nommez un état pour le conserver durablement.": [
+    "Automatic versions are grouped by session. Name a state to keep it permanently.",
+    "Las versiones automáticas se agrupan por sesión. Nombra un estado para conservarlo de forma permanente."
+  ],
+  "Section et ses scènes": [
+    "Section and its scenes",
+    "Sección y sus escenas"
+  ],
+  "Nommer cette version": [
+    "Name this version",
+    "Nombrar esta versión"
+  ],
+  "Créer une variante depuis cet état": [
+    "Create a variant from this state",
+    "Crear una variante desde este estado"
+  ],
+  "Séance d’écriture": [
+    "Writing session",
+    "Sesión de escritura"
+  ],
+  "{0} états · {1} textes concernés": [
+    "{0} states · {1} texts involved",
+    "{0} estados · {1} textos afectados"
+  ],
+  "Réglage du projet": [
+    "Project setting",
+    "Ajuste del proyecto"
+  ],
+  "Référence du texte": [
+    "Text reference",
+    "Referencia del texto"
+  ],
+  "Nommez cette variante.": [
+    "Name this variant.",
+    "Nombra esta variante."
+  ],
+  "Une variante porte déjà ce nom.": [
+    "A variant already has this name.",
+    "Ya existe una variante con este nombre."
+  ],
+  "Choisissez une version de tout le projet pour créer une variante.": [
+    "Choose a whole-project version to create a variant.",
+    "Elige una versión de todo el proyecto para crear una variante."
+  ],
+  "Cette version appartient à une autre variante.": [
+    "This version belongs to another variant.",
+    "Esta versión pertenece a otra variante."
+  ],
+  "Choisissez une variante à intégrer.": [
+    "Choose a variant to integrate.",
+    "Elige una variante para integrar."
+  ],
+  "Le texte a changé depuis la relecture. Actualisez la comparaison.": [
+    "The text has changed since the review. Refresh the comparison.",
+    "El texto ha cambiado desde la revisión. Actualiza la comparación."
+  ],
+  "Le plan ne correspond pas au texte choisi. Choisissez l’autre texte ou réécrivez le passage.": [
+    "The outline does not match the chosen text. Choose the other text or rewrite the passage.",
+    "El esquema no coincide con el texto elegido. Elige el otro texto o reescribe el pasaje."
+  ],
+  "Choisissez une résolution pour chaque passage en divergence.": [
+    "Choose a resolution for each conflicting passage.",
+    "Elige una solución para cada pasaje en conflicto."
+  ],
+  "Choisissez une résolution pour chaque référence en divergence.": [
+    "Choose a resolution for each conflicting reference.",
+    "Elige una solución para cada referencia en conflicto."
+  ],
+  "Cette intégration crée une arborescence incompatible. Revoyez les déplacements et suppressions.": [
+    "This integration creates an incompatible structure. Review moves and deletions.",
+    "Esta integración crea una estructura incompatible. Revisa los movimientos y las eliminaciones."
+  ],
+  "Passages à intégrer": [
+    "Passages to include",
+    "Pasajes para integrar"
+  ],
+  "Retrait du passage": [
+    "Passage removal",
+    "Eliminación del pasaje"
+  ],
+  "{0} état{1} · {2} texte{3}": [
+    "{0} state{1} · {2} text{3}",
+    "{0} estado{1} · {2} texto{3}"
+  ],
+  "{0} divergence{1} à départager": [
+    "{0} difference{1} need a choice",
+    "{0} diferencia{1} requieren una elección"
   ]
 }

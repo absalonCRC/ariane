@@ -67,7 +67,7 @@ pub async fn admit(kind: &str) -> Result<tokio::sync::OwnedSemaphorePermit> {
 pub fn validate(request: &Value) -> Result<()> {
     let kind = request["type"].as_str().ok_or("Commande invalide")?;
     let max = match kind {
-        "save" => 128 * 1024 * 1024,
+        "save" | "mergeBranch" => 128 * 1024 * 1024,
         "voiceTranscribe" => 28 * 1024 * 1024,
         "update" | "resolveExternal" => 64 * 1024 * 1024,
         _ => 1024 * 1024,

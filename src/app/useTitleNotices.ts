@@ -13,6 +13,7 @@ type NoticeKind =
   | 'note'
   | 'activity-error'
   | 'save'
+  | 'version'
   | 'links'
   | 'index'
   | 'loading'
@@ -175,6 +176,11 @@ export function useTitleNotices(workspace: Workspace, memoryPending = false) {
     else removeKind('save');
   }, [projectPath, workspace.doc.status, error, enqueue, removeKind]);
   useEffect(() => {
+    if (workspace.doc.versionStatus === 'error' && workspace.doc.status === 'saved')
+      enqueue('version', 'Texte enregistré · Réessayer la version automatique', 'error');
+    else removeKind('version');
+  }, [workspace.doc.versionStatus, workspace.doc.status, enqueue, removeKind]);
+  useEffect(() => {
     if (workspace.doc.status === 'saved' && memoryPending && !workspace.searching)
       enqueue('links', 'Actualisation des liens…', 'info');
     else removeKind('links');
@@ -209,12 +215,14 @@ export function useTitleNotices(workspace: Workspace, memoryPending = false) {
       !!error ||
       recovery ||
       workspace.doc.status !== 'saved' ||
+      workspace.doc.versionStatus === 'error' ||
       !!progress ||
       memoryPending ||
       (surface !== 'export' && exportJob.state !== 'ready'),
     hasError:
       !!error ||
       workspace.doc.status === 'error' ||
+      workspace.doc.versionStatus === 'error' ||
       !!workspace.activity?.error ||
       (surface !== 'export' && exportJob.state === 'error'),
   };

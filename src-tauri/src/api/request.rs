@@ -1,4 +1,4 @@
-use crate::{model::*, project};
+use crate::{history, model::*, project};
 use serde::Deserialize;
 fn all_revision_stages() -> String {
     "all".into()
@@ -170,6 +170,33 @@ pub enum Request {
     AutomaticVersion {
         project_path: String,
         scope: String,
+    },
+    HistoryState {
+        project_path: String,
+    },
+    CreateBranch {
+        project_path: String,
+        name: String,
+        from_version: Option<String>,
+    },
+    SwitchBranch {
+        project_path: String,
+        id: String,
+    },
+    PromoteVersion {
+        project_path: String,
+        id: String,
+        name: String,
+    },
+    MergePreview {
+        project_path: String,
+        source: String,
+    },
+    MergeBranch {
+        project_path: String,
+        source: String,
+        token: String,
+        resolutions: Vec<history::MergeResolution>,
     },
     Restore {
         id: String,

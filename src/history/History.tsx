@@ -1,19 +1,15 @@
-import { HistoryTools } from './HistoryTools';
-import { useHistory } from './useHistory';
-import type { HistoryProps } from './types';
 import { localizeMessage, t, localeTag } from '../i18n';
 import { createPortal } from 'react-dom';
-import ReactMarkdown, { type Components } from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { request } from '../platform/client';
 import type { Version } from '../contracts/history';
+import type { HistoryProps } from './types';
+import { useHistory } from './useHistory';
+import { HistoryTools } from './HistoryTools';
 import { Plus, ArrowDown, ArrowUp, ArrowRight, ArrowLeft } from 'lucide-react';
+import { VersionTimeline } from './VersionTimeline';
+import { Variants } from './Variants';
+import { ReadingDiff } from './ReadingDiff';
 import '../styles/history-refinements.css';
-
-const comparisonMarkdown: Components = {
-  a: ({ children }) => <span>{children}</span>,
-  img: ({ alt }) => <span>{alt || t('Image')}</span>,
-};
 
 function versionLabel(version: Version) {
   const created = new Date(version.created);
@@ -28,9 +24,15 @@ function versionLabel(version: Version) {
       }).format(created);
   return `${version.name === 'Sauvegarde automatique' ? t('Sauvegarde automatique') : version.name} · ${date}`;
 }
-
 export function History(p: HistoryProps) {
   const {
+    tab,
+    setTab,
+    history,
+    promoting,
+    setPromoting,
+    origin,
+    setOrigin,
     versions,
     setVersions,
     moreVersions,
@@ -44,6 +46,7 @@ export function History(p: HistoryProps) {
     loaded,
     loading,
     busy,
+    setBusy,
     error,
     setError,
     name,
@@ -61,7 +64,9 @@ export function History(p: HistoryProps) {
     setConfirm,
     changeIndex,
     diffRef,
+    comparisonVersions,
     incompatible,
+    entries,
     visible,
     selected,
     metadata,
@@ -72,6 +77,8 @@ export function History(p: HistoryProps) {
     capture,
     restore,
     apply,
+    changed,
+    switchBranch,
     nextChange,
   } = useHistory(p);
   return (
@@ -95,12 +102,39 @@ export function History(p: HistoryProps) {
           <ArrowLeft size={13} /> {t('Revenir au texte')}
         </button>
         <span>{t('Versions du texte')}</span>
+        <button
+          className="history-create-toggle"
+          disabled={busy}
+          onClick={() => {
+            setPromoting(null);
+            setCreating(true);
+          }}
+        >
+          <Plus size={13} />
+          {t('Nommer une version')}
+        </button>
       </header>
-      <p className="history-auto-hint">
-        {t(
-          'Les versions se créent automatiquement après une pause et au fil de l’écriture. Vous pouvez aussi nommer un état à conserver.',
-        )}
-      </p>
+      <nav className="history-tabs" aria-label={t('Parcourir les versions')}>
+        {(['changes', 'history', 'variants'] as const).map((value) => (
+          <button
+            key={value}
+            aria-current={tab === value ? 'page' : undefined}
+            disabled={busy}
+            onClick={() => setTab(value)}
+          >
+            {value === 'changes'
+              ? t('Modifications')
+              : value === 'history'
+                ? t('Historique')
+                : t('Variantes')}
+          </button>
+        ))}
+      </nav>
+      {error && (
+        <p className="workspace-error" role="alert">
+          {localizeMessage(error)}
+        </p>
+      )}
       <div className="history-capture">
         {' '}
         {creating && (
@@ -120,13 +154,17 @@ export function History(p: HistoryProps) {
                 onChange={(e) => setName(e.target.value)}
               />
             </label>
-            <label>
-              {t('Portée')}
-              <select value={scope} onChange={(e) => setScope(e.target.value)}>
-                <option value="project">{t('Tout le projet')}</option>
-                {p.active && <option value="section">{t('Section actuelle et ses scènes')}</option>}
-              </select>
-            </label>
+            {!promoting && (
+              <label>
+                {t('Portée')}
+                <select value={scope} onChange={(e) => setScope(e.target.value)}>
+                  <option value="project">{t('Tout le projet')}</option>
+                  {p.active && (
+                    <option value="section">{t('Section actuelle et ses scènes')}</option>
+                  )}
+                </select>
+              </label>
+            )}
             <button className="history-save" disabled={busy || !name.trim()}>
               <Plus size={14} />
               {t('Conserver')}
@@ -134,21 +172,104 @@ export function History(p: HistoryProps) {
             <button
               type="button"
               className="history-create-cancel"
-              onClick={() => setCreating(false)}
+              onClick={() => {
+                setCreating(false);
+                setPromoting(null);
+              }}
             >
               {t('Annuler')}
             </button>
           </form>
         )}
       </div>
-      <div className="history-workspace">
+      {tab === 'history' && (
+        <VersionTimeline
+          versions={versions}
+          busy={busy}
+          onCompare={(v) => {
+            setLeftId(v.id);
+            setRightId('current');
+            setTab('changes');
+          }}
+          onName={(v) => {
+            setPromoting(v);
+            setName('');
+            setCreating(true);
+          }}
+          onFork={(v) => {
+            setOrigin(v);
+            setTab('variants');
+          }}
+        />
+      )}
+      {tab === 'history' && moreVersions && versions.length >= 50 && (
+        <button
+          disabled={loadingMore}
+          onClick={async () => {
+            setLoadingMore(true);
+            try {
+              const page = await request('versions', { offset: versions.length });
+              setVersions((old) => [
+                ...old,
+                ...page.filter((v) => !old.some((a) => a.id === v.id)),
+              ]);
+              setMoreVersions(page.length === 50);
+            } catch (e) {
+              setError(String(e));
+            } finally {
+              setLoadingMore(false);
+            }
+          }}
+        >
+          {t('Charger les versions précédentes')}
+        </button>
+      )}
+      {tab === 'variants' && (
+        <Variants
+          project={p.project}
+          state={history}
+          busy={busy}
+          flush={p.checkpoint ?? p.flush}
+          onSwitch={(id) => switchBranch(id, true)}
+          onWrite={p.onClose}
+          onBusyChange={setBusy}
+          onChanged={changed}
+          fromVersion={origin}
+          onClearOrigin={() => setOrigin(null)}
+        />
+      )}
+      <div className="history-workspace" hidden={tab !== 'changes'}>
+        {(versions.length > 0 || loaded.left) && (
+          <nav className="history-text-list" aria-label={t('Textes de la comparaison')}>
+            {entries
+              .filter((e) => !onlyChanged || e.changed)
+              .map((entry) => (
+                <button
+                  key={entry.id}
+                  aria-current={entry.id === selected?.id ? 'page' : undefined}
+                  onClick={() => {
+                    setScene(entry.id);
+                    if (p.project.sections.some((s) => s.id === entry.id))
+                      p.onSelectText?.(entry.id);
+                  }}
+                >
+                  <span>{entry.title}</span>
+                  {entry.changed && (
+                    <small>
+                      {!entry.left ? t('Ajouté') : !entry.right ? t('Retiré') : t('Modifié')}
+                    </small>
+                  )}
+                </button>
+              ))}
+          </nav>
+        )}
         <section className="history-comparison" aria-label={t('Comparaison des versions')}>
-          {!loading && !versions.length && !error ? (
+          {!loading && !versions.length && !loaded.left && !error ? (
             <div className="history-first-version">
               <h2>{t('Aucune version enregistrée')}</h2>
               <p>
                 {t(
-                  'Vos prochaines modifications créeront automatiquement des versions. Vous pourrez les comparer et reprendre les passages de votre choix.',
+                  'Les versions automatiques apparaîtront au fil de l’écriture. Vous pouvez aussi nommer une première étape.',
                 )}
               </p>
               <button onClick={() => setCreating(true)}>
@@ -167,7 +288,7 @@ export function History(p: HistoryProps) {
                     onChange={(e) => setLeftId(e.target.value)}
                   >
                     <option value="current">{t('Texte actuel')}</option>
-                    {versions.map((v) => (
+                    {comparisonVersions.map((v) => (
                       <option key={v.id} value={v.id}>
                         {versionLabel(v)}
                       </option>
@@ -183,7 +304,7 @@ export function History(p: HistoryProps) {
                     onChange={(e) => setRightId(e.target.value)}
                   >
                     <option value="current">{t('Texte actuel')}</option>
-                    {versions.map((v) => (
+                    {comparisonVersions.map((v) => (
                       <option key={v.id} value={v.id}>
                         {versionLabel(v)}
                       </option>
@@ -294,11 +415,6 @@ export function History(p: HistoryProps) {
                   </div>
                 </div>
               </div>
-              {error && (
-                <p className="workspace-error" role="alert">
-                  {localizeMessage(error)}
-                </p>
-              )}
               {confirm && (
                 <div className="history-confirm" role="alert">
                   <p>
@@ -372,12 +488,7 @@ export function History(p: HistoryProps) {
                           </span>
                           <div className={'diff-prose' + (view === 'reading' ? ' is-reading' : '')}>
                             {view === 'reading' ? (
-                              <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={comparisonMarkdown}
-                              >
-                                {row.left.join('\n\n')}
-                              </ReactMarkdown>
+                              <ReadingDiff words={row.words} side="left" />
                             ) : (
                               row.words
                                 .filter((w) => !w.added)
@@ -406,12 +517,7 @@ export function History(p: HistoryProps) {
                           </span>
                           <div className={'diff-prose' + (view === 'reading' ? ' is-reading' : '')}>
                             {view === 'reading' ? (
-                              <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={comparisonMarkdown}
-                              >
-                                {row.right.join('\n\n')}
-                              </ReactMarkdown>
+                              <ReadingDiff words={row.words} side="right" />
                             ) : (
                               row.words
                                 .filter((w) => !w.removed)

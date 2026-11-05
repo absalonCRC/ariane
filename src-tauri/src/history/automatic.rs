@@ -30,11 +30,12 @@ pub fn checkpoint(root: &Path, scope: &str) -> Result<Option<Version>> {
 pub(crate) fn checkpoint_with(c: &Connection, scope: &str, force: bool) -> Result<Option<Version>> {
     project::validate_id(scope)?;
     prepare(c)?;
-    let last: Option<(String,String)> = c.query_row(
-        "SELECT v.created,a.fingerprint FROM versions v JOIN automatic_versions a ON a.id=v.id WHERE v.scope=? ORDER BY v.created DESC,v.id DESC LIMIT 1",
-        [scope], |r| Ok((r.get(0)?,r.get(1)?))).optional().app()?;
+    let branch = super::branches::active(c)?;
+    let last: Option<(String,String,Option<String>)> = c.query_row(
+        "SELECT v.created,a.fingerprint,v.session_id FROM versions v JOIN automatic_versions a ON a.id=v.id WHERE v.scope=? AND v.branch_id=? ORDER BY v.created DESC,v.id DESC LIMIT 1",
+        params![scope,branch], |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional().app()?;
     if !force
-        && last.as_ref().is_some_and(|(created, _)| {
+        && last.as_ref().is_some_and(|(created, _, _)| {
             DateTime::parse_from_rfc3339(created)
                 .is_ok_and(|time| Utc::now().signed_duration_since(time).num_seconds() < 300)
         })
@@ -54,7 +55,7 @@ pub(crate) fn checkpoint_with(c: &Connection, scope: &str, force: bool) -> Resul
     let fingerprint = project::hash(&payload);
     if last
         .as_ref()
-        .is_some_and(|(_, previous)| previous == &fingerprint)
+        .is_some_and(|(_, previous, _)| previous == &fingerprint)
     {
         return Ok(None);
     }
@@ -63,7 +64,15 @@ pub(crate) fn checkpoint_with(c: &Connection, scope: &str, force: bool) -> Resul
     if bytes > BUDGET {
         return Ok(None);
     }
-    let version = insert(c, "Sauvegarde automatique", Some(scope.to_owned()), state)?;
+    let mut version = insert(c, "Sauvegarde automatique", Some(scope.to_owned()), state)?;
+    let previous_session: Option<(String,Option<String>)> = c.query_row(
+        "SELECT created,session_id FROM versions WHERE branch_id=? AND session_id IS NOT NULL ORDER BY created DESC,id DESC LIMIT 1",
+        [&branch], |r| Ok((r.get(0)?,r.get(1)?))).optional().app()?;
+    version.session_id = previous_session.and_then(|(created,session)| {
+        DateTime::parse_from_rfc3339(&created).ok().filter(|t| Utc::now().signed_duration_since(*t).num_seconds()<1800).and(session)
+    }).or_else(|| Some(uuid::Uuid::new_v4().to_string()));
+    version.automatic=true;
+    c.execute("UPDATE versions SET session_id=? WHERE id=?",params![version.session_id,version.id]).app()?;
     c.execute(
         "INSERT INTO automatic_versions VALUES(?,?,?)",
         params![version.id, fingerprint, bytes],
@@ -73,7 +82,7 @@ pub(crate) fn checkpoint_with(c: &Connection, scope: &str, force: bool) -> Resul
     Ok(Some(version))
 }
 fn prune(c: &Connection, now: DateTime<Utc>, budget: i64) -> Result<()> {
-    let mut q = c.prepare("SELECT v.id,v.scope,v.created,a.bytes FROM versions v JOIN automatic_versions a ON a.id=v.id ORDER BY v.created DESC,v.id DESC").app()?;
+    let mut q = c.prepare("SELECT v.id,COALESCE(v.branch_id,'main') || ':' || v.scope,v.created,a.bytes FROM versions v JOIN automatic_versions a ON a.id=v.id ORDER BY v.created DESC,v.id DESC").app()?;
     let rows = q
         .query_map([], |r| {
             Ok((
@@ -244,7 +253,7 @@ mod tests {
         for n in 0..120 {
             let created = (Utc::now() - chrono::Duration::minutes(n * 30)).to_rfc3339();
             c.execute(
-                "INSERT INTO versions VALUES(?,?,?,?,'[]')",
+                "INSERT INTO versions(id,name,created,scope,payload) VALUES(?,?,?,?,'[]')",
                 params![format!("auto-{n}"), "Auto", created, id],
             )
             .unwrap();

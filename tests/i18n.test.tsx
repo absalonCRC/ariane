@@ -238,7 +238,11 @@ it('refreshes editor widgets in place while preserving manuscript text and selec
     }),
   });
   try {
-    expect(view.dom.querySelector('[aria-label="Ajouter une ligne"]')).not.toBeNull();
+    // CodeMirror can finish parsing in the background when the process is busy.
+    await vi.waitFor(
+      () => expect(view.dom.querySelector('[aria-label="Ajouter une ligne"]')).not.toBeNull(),
+      { timeout: 5000 },
+    );
     for (const [locale, rowLabel] of [
       ['en', 'Add row'],
       ['es', 'Añadir una fila'],

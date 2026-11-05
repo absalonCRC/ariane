@@ -1,5 +1,15 @@
 # Journal des changements
 
+## 0.3.3 — 2026-11-05, version de développement
+
+- Les sauvegardes automatiques restent actives, regroupées par séance, limitées et dédupliquées ; elles actualisent l’historique ouvert et peuvent être nommées pour être conservées.
+- Variantes d’écriture indépendantes avec brouillons, historique et sauvegardes automatiques propres, créées depuis le texte courant ou une version complète.
+- Relecture du texte principal et de la variante, sélection de passages, résolution explicite des divergences et conservation des modifications indépendantes.
+- Copies avant intégration et restauration, vérification des conflits externes et migration SQLite avec sauvegarde préalable du projet.
+- Variante active visible dans la capsule supérieure ; changement de piste et accès à la gestion depuis son menu d’arborescence. Les échecs de capture y sont également signalés.
+
+Voir les [notes 0.3.3](docs/release-notes-0.3.3.md) et le [guide des versions](docs/versionnement-ecriture.md).
+
 ## 0.3.2 — 2026-11-05, version de développement
 
 - Refactorisation modulaire du frontend, de l’éditeur et du backend Rust, sans changement intentionnel des comportements ou des formats de projet.

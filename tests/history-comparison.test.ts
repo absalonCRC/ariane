@@ -38,17 +38,67 @@ it('marks only changed words, preserving accents and punctuation', () => {
 it('recognizes scene structure and preparation changes without text edits', async () => {
   const { sectionChanges } = await import('../src/history/comparison');
   const base = {
-    id: 'one', parent: null, title: 'Un', kind: 'scene' as const, position: 0,
-    text: 'Même texte', revision: 0, synopsis: '', status: 'Brouillon', goal: 0,
-    role: 'manuscript' as const, included: true,
+    id: 'one',
+    parent: null,
+    title: 'Un',
+    kind: 'scene' as const,
+    position: 0,
+    text: 'Même texte',
+    revision: 0,
+    synopsis: '',
+    status: 'Brouillon',
+    goal: 0,
+    role: 'manuscript' as const,
+    included: true,
   };
-  const next = { ...base, parent: 'chapter', position: 2, role: 'note' as const,
-    synopsis: 'Suite', status: 'Terminé', goal: 500, included: false,
+  const next = {
+    ...base,
+    parent: 'chapter',
+    position: 2,
+    role: 'note' as const,
+    synopsis: 'Suite',
+    status: 'Terminé',
+    goal: 500,
+    included: false,
     outline: { version: 1 as const, nodes: [{ id: 'n', parent: null, start: 0 }] },
   };
   expect(sectionChanges(base, next)).toEqual([
-    'Emplacement modifié', 'Ordre modifié', 'Espace modifié',
-    'Inclusion dans le manuscrit modifiée', 'Synopsis modifié',
-    'Statut modifié', 'Objectif modifié', 'Plan du texte modifié',
+    'Emplacement modifié',
+    'Ordre modifié',
+    'Espace modifié',
+    'Inclusion dans le manuscrit modifiée',
+    'Synopsis modifié',
+    'Statut modifié',
+    'Objectif modifié',
+    'Plan du texte modifié',
   ]);
+});
+
+it('preserves paragraph boundaries when joining review rows for Markdown reading', async () => {
+  const { readingWords } = await import('../src/history/comparison');
+  const rows = comparePassages('A\n\nB\n\nC', 'A\n\nX\n\nC');
+  const words = readingWords(rows);
+  expect(
+    words
+      .filter((w) => !w.added)
+      .map((w) => w.value)
+      .join(''),
+  ).toBe('A\n\nB\n\nC');
+  expect(
+    words
+      .filter((w) => !w.removed)
+      .map((w) => w.value)
+      .join(''),
+  ).toBe('A\n\nX\n\nC');
+});
+
+it.each([
+  ['A\n\nB','A\n\nX\n\nB'],
+  ['A\n\nX\n\nB','A\n\nB'],
+  ['','A'],['A',''],['A\n\n','A\n\n\n\n'],
+])('keeps reading boundaries on insertions and removals (%s)',async(left,right)=>{
+  const {readingWords}=await import('../src/history/comparison');
+  const words=readingWords(comparePassages(left,right));
+  expect(words.filter(w=>!w.added).map(w=>w.value).join('')).toBe(left);
+  expect(words.filter(w=>!w.removed).map(w=>w.value).join('')).toBe(right);
 });

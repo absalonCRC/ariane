@@ -5,6 +5,8 @@ import { useBottomPanel } from './chrome/useBottomPanel';
 import { MemorySuggestion } from '../enrichment/MemorySuggestion';
 import { DocumentaryMargin } from '../sources/margin/DocumentaryMargin';
 import { WorkspaceHeader } from './chrome/WorkspaceHeader';
+import { BranchMenu } from '../history/BranchMenu';
+import { useWritingBranches } from '../history/useWritingBranches';
 import { marginLayout } from '../sources/marginLayout';
 import { useNoteCreation } from '../enrichment/useNoteCreation';
 import { useInlineEntities } from '../enrichment/useInlineEntities';
@@ -54,6 +56,23 @@ export function App() {
   }, [locale, workspace.fail]);
   const scrollActivity = useScrollActivity();
   const memory = useMemory(workspace);
+  const [historyBusy, setHistoryBusy] = useState(false);
+  const [variantsRequest, setVariantsRequest] = useState(0);
+  useEffect(() => {
+    if (!workspace.historyMode) setVariantsRequest(0);
+  }, [workspace.historyMode]);
+  const branches = useWritingBranches({
+    path: workspace.p?.path ?? null,
+    generation: workspace.doc.generation,
+    checkpoint: workspace.doc.checkpoint,
+    onChanged: (project) => {
+      workspace.activate(project);
+      workspace.setHistoryMode(false);
+      workspace.setSurface('none');
+      setVariantsRequest(0);
+    },
+    onError: workspace.fail,
+  });
   const titleNotices = useTitleNotices(workspace, memory.pending);
   const createNote = useNoteCreation(workspace);
   const inlineEntities = useInlineEntities(
@@ -281,27 +300,29 @@ export function App() {
               void workspace.operate({ action: 'undo' });
             },
           }
-        : (notice.kind === 'error' || notice.kind === 'save') &&
-            !workspace.error.startsWith('EXTERNAL:') &&
-            doc.status === 'error'
-          ? {
-              label: t('Réessayer'),
-              onClick: () => {
-                titleNotices.dismiss(notice);
-                if (doc.status === 'error') void doc.flush().catch(fail);
-              },
-            }
-          : notice.kind === 'index'
-            ? { label: t('Suspendre'), onClick: () => void request('cancelIndex').catch(fail) }
-            : notice.kind === 'export'
-              ? {
-                  label: t('Voir'),
-                  onClick: () => {
-                    titleNotices.dismiss(notice);
-                    setSurface('export');
-                  },
-                }
-              : undefined,
+        : notice.kind === 'version' && doc.versionStatus === 'error'
+          ? { label: t('Réessayer'), onClick: () => void doc.checkpoint().catch(fail) }
+          : (notice.kind === 'error' || notice.kind === 'save') &&
+              !workspace.error.startsWith('EXTERNAL:') &&
+              doc.status === 'error'
+            ? {
+                label: t('Réessayer'),
+                onClick: () => {
+                  titleNotices.dismiss(notice);
+                  if (doc.status === 'error') void doc.flush().catch(fail);
+                },
+              }
+            : notice.kind === 'index'
+              ? { label: t('Suspendre'), onClick: () => void request('cancelIndex').catch(fail) }
+              : notice.kind === 'export'
+                ? {
+                    label: t('Voir'),
+                    onClick: () => {
+                      titleNotices.dismiss(notice);
+                      setSurface('export');
+                    },
+                  }
+                : undefined,
     showDetails:
       (notice.kind === 'error' &&
         (workspace.error.startsWith('EXTERNAL:') || doc.status !== 'error')) ||
@@ -347,7 +368,7 @@ export function App() {
         </button>
       )}
       <WorkspaceHeader
-        libraryBusy={workspace.libraryBusy}
+        libraryBusy={workspace.libraryBusy || historyBusy || branches.busy}
         binder={binder}
         historyMode={workspace.historyMode}
         immersiveFocus={doc.settings.immersiveFocus}
@@ -375,6 +396,31 @@ export function App() {
           hasPending={titleNotices.hasPending}
           hasError={titleNotices.hasError}
           noticeDetails={<WorkspaceNotices workspace={workspace} embedded />}
+          branchName={(() => {
+            const branch = branches.state?.branches.find(
+              (item) => item.id === branches.state?.activeBranch,
+            );
+            return branch ? (branch.isMain ? t('Texte principal') : branch.name) : undefined;
+          })()}
+          branchMenu={
+            branches.state
+              ? (close) => (
+                  <BranchMenu
+                    state={branches.state!}
+                    busy={branches.busy || historyBusy || workspace.libraryBusy}
+                    onSwitch={async (id) => {
+                      await branches.switchBranch(id);
+                      close();
+                    }}
+                    onManage={() => {
+                      close();
+                      setVariantsRequest((value) => value + 1);
+                      setSurface('history');
+                    }}
+                  />
+                )
+              : undefined
+          }
         />
       </div>
       <SidebarDock
@@ -383,7 +429,7 @@ export function App() {
         onToggleTheme={() =>
           workspace.appearance.change(workspace.appearance.dark ? 'light' : 'dark')
         }
-        busy={workspace.libraryBusy}
+        busy={workspace.libraryBusy || historyBusy || branches.busy}
         onActionsHost={setSidebarActionsHost}
       />
       <Presence kind="sidebar">
@@ -398,7 +444,7 @@ export function App() {
             onOpenProject={workspace.openProject}
             onError={fail}
             sourceVersion={workspace.sourceVersion}
-            busy={workspace.libraryBusy}
+            busy={workspace.libraryBusy || historyBusy || branches.busy}
             project={p}
             active={active}
             reveal={workspace.revealInBinder}
@@ -440,8 +486,8 @@ export function App() {
         )}
       </Presence>
       <main
-        inert={workspace.libraryBusy}
-        aria-busy={workspace.libraryBusy}
+        inert={workspace.libraryBusy || branches.busy}
+        aria-busy={workspace.libraryBusy || historyBusy || branches.busy}
         className={
           'writing-layout' +
           (((surface === 'settings' && !workspace.historyMode ? scrollPreview : null) ??
@@ -460,7 +506,7 @@ export function App() {
           editorProps={{
             sections: scenes,
             generation: doc.generation,
-            readOnly: workspace.libraryBusy,
+            readOnly: workspace.libraryBusy || branches.busy,
             settings: doc.settings,
             immersiveFocus: focusActive,
             projectPath: p.path,
@@ -520,12 +566,17 @@ export function App() {
         {workspace.historyMode && (
           <Suspense fallback={<p className="history-empty">{t('Ouverture des versions…')}</p>}>
             <History
-              key={p.path}
+              key={p.path + ':' + variantsRequest}
+              initialTab={variantsRequest ? 'variants' : 'changes'}
               project={p}
               active={active}
-              flush={doc.checkpoint}
+              flush={doc.flush}
+              checkpoint={doc.checkpoint}
+              versionRevision={doc.versionRevision}
+              onBusyChange={setHistoryBusy}
               onClose={() => {
                 workspace.setHistoryMode(false);
+                setVariantsRequest(0);
                 setSurface('none');
               }}
               toolsHost={versionToolsHost}
@@ -695,6 +746,7 @@ export function App() {
         </div>
         <div
           className="bottom-controls"
+          inert={historyBusy || branches.busy}
           data-panel={panelMode}
           data-anchor={panelMode === 'none' ? lastPanel.current : panelMode}
           data-morph={morphPanel}

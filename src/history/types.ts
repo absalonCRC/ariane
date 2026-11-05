@@ -4,6 +4,10 @@ export interface HistoryProps {
   active: string | null;
   onClose: () => void;
   flush: () => Promise<void>;
+  checkpoint?: () => Promise<void>;
+  versionRevision?: number;
+  onBusyChange?: (busy: boolean) => void;
+  initialTab?: 'changes' | 'history' | 'variants';
   onRestore: (p: Project) => void;
   onApply: (id: string, text: string, revision: number) => Promise<void>;
   onError: (e: unknown) => void;

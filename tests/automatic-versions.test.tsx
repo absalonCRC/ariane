@@ -141,3 +141,60 @@ it('keeps a failed checkpoint pending for retry', async () => {
     scope: 'scene',
   });
 });
+
+it('reports an automatic-version failure independently of the saved text', async () => {
+  await act(async () => {
+    hook.edit(new Map([['scene', 'Texte conservé']]));
+    await hook.flush();
+  });
+  request.mockRejectedValueOnce(new Error('snapshot failed'));
+  await act(async () => {
+    await expect(hook.checkpoint()).rejects.toThrow('snapshot failed');
+  });
+  expect(hook.status).toBe('saved');
+  expect(hook.versionStatus).toBe('error');
+  request.mockResolvedValueOnce(null);
+  await act(async () => hook.checkpoint());
+  expect(hook.versionStatus).toBe('saved');
+});
+it('waits for pending settings before allowing a workspace switch', async () => {
+  let done!: () => void;
+  request.mockImplementation((type) =>
+    type === 'settings'
+      ? new Promise<void>((resolve) => {
+          done = resolve;
+        })
+      : Promise.resolve({ sections: [], mirrorErrors: [] }),
+  );
+  await act(async () => hook.configure({ font: 'sans' }));
+  let settled = false;
+  await act(async () => {
+    void hook.flush().then(() => {
+      settled = true;
+    });
+    await Promise.resolve();
+  });
+  expect(settled).toBe(false);
+  await act(async () => {
+    done();
+    await hook.flush();
+  });
+  expect(settled).toBe(true);
+});
+
+it('notifies the version view only when a checkpoint creates a version', async () => {
+  await act(async () => {
+    hook.edit(new Map([['scene', 'Texte.']]));
+    await hook.flush();
+  });
+  request.mockResolvedValueOnce({ id: 'checkpoint', name: 'Sauvegarde automatique' });
+  await act(async () => hook.checkpoint());
+  expect(hook.versionRevision).toBe(1);
+  await act(async () => {
+    hook.edit(new Map([['scene', 'Texte inchangé.']]));
+    await hook.flush();
+  });
+  request.mockResolvedValueOnce(null);
+  await act(async () => hook.checkpoint());
+  expect(hook.versionRevision).toBe(1);
+});

@@ -19,6 +19,12 @@ export function WorkspaceNotices({ workspace }: { workspace: Workspace; embedded
   } = workspace;
   return (
     <>
+      {doc.versionStatus === 'error' && doc.status === 'saved' && (
+        <div className="path-notice-detail path-notice-error" role="alert">
+          <span>{t('Texte enregistré · Réessayer la version automatique')}</span>
+          <button onClick={() => void doc.checkpoint().catch(fail)}>{t('Réessayer')}</button>
+        </div>
+      )}
       {workspace.progress && (
         <div className="path-notice-detail" role="status">
           <span>

@@ -7,7 +7,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { Check, CircleAlert, FileText, Folder, Info, Plus, X } from 'lucide-react';
+import { Check, CircleAlert, FileText, Folder, GitBranch, Info, Plus, X } from 'lucide-react';
 import type { Project, Section } from '../contracts/project';
 import { sectionPath } from './tree';
 export type PathNotification = {
@@ -81,6 +81,8 @@ export function PathMenu({
   hasPending = false,
   hasError = false,
   noticeDetails,
+  branchName,
+  branchMenu,
 }: {
   project: Project;
   selected: Section | undefined;
@@ -91,6 +93,8 @@ export function PathMenu({
   hasPending?: boolean;
   hasError?: boolean;
   noticeDetails?: ReactNode;
+  branchName?: string;
+  branchMenu?: (close: () => void) => ReactNode;
 }) {
   useLocale();
   const [open, setOpen] = useState(false);
@@ -201,11 +205,12 @@ export function PathMenu({
               className="path-trigger"
               ref={trigger}
               aria-label={
-                primary
+                (primary
                   ? t('Arborescence du projet · ') + primary.message
                   : hasPending
                     ? t('Arborescence du projet · notifications à consulter')
-                    : t('Arborescence du projet')
+                    : t('Arborescence du projet')) +
+                (branchName ? ' · ' + t('Variante active') + ' : ' + branchName : '')
               }
               aria-expanded={open}
               aria-controls="path-tree"
@@ -215,6 +220,12 @@ export function PathMenu({
                 <NoticeLabel notice={primary} />
               ) : (
                 <span className="path-title-text">{title}</span>
+              )}
+              {branchName && (
+                <span className="path-branch-current">
+                  <GitBranch size={12} aria-hidden="true" />
+                  <span>{branchName}</span>
+                </span>
               )}
               {hasPending && !primary && (
                 <span className="path-notice-dot" data-error={hasError} aria-hidden="true" />
@@ -244,6 +255,10 @@ export function PathMenu({
         </div>
       </div>
       <div className="path-popover" id="path-tree" aria-hidden={!open} inert={!open}>
+        {branchMenu?.(() => {
+          setOpen(false);
+          returnFocus();
+        })}
         <nav aria-label={t('Hiérarchie de la page courante')}>
           <div className="path-tree-root">
             <Folder size={14} />

@@ -6,7 +6,7 @@ use crate::{
 };
 use rusqlite::{params, Connection, TransactionBehavior};
 use std::path::Path;
-pub(super) fn scene_disk(root: &super::io::Dir, id: &str) -> Result<Option<String>> {
+pub(crate) fn scene_disk(root: &super::io::Dir, id: &str) -> Result<Option<String>> {
     super::validate_id(id)?;
     match root.child("manuscrit", false)? {
         Some(dir) => dir.read(&format!("{id}.md")),

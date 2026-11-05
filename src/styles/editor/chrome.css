@@ -128,6 +128,60 @@
   transform: translateX(-50%) translateY(0) scale(1);
   transition-delay: 0s;
 }
+.path-branch-current {
+  display: inline-flex;
+  flex: 0 1 150px;
+  align-items: center;
+  min-width: 72px;
+  gap: 5px;
+  padding-left: 8px;
+  border-left: 1px solid var(--theme-line, #d8d8d8);
+  color: var(--theme-muted, #777);
+  white-space: nowrap;
+}
+.path-branch-current svg { flex: none; }
+.path-branch-current span { overflow: hidden; text-overflow: ellipsis; }
+.path-branches {
+  padding: 4px 4px 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--theme-line, #d8d8d8);
+}
+.path-branches-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 8px;
+  color: var(--theme-muted, #777);
+  font: 11px var(--ui);
+}
+.path-branches-list { max-height: min(25vh, 150px); overflow: auto; }
+.path-branch-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 29px;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  text-align: left;
+  font: 12px var(--ui);
+}
+.path-branch-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.path-branch-item svg { flex: none; }
+.path-branch-item:hover, .path-branch-item:focus-visible,
+.path-branches-manage:hover, .path-branches-manage:focus-visible {
+  background: var(--theme-hover, #e8e8e8);
+}
+.path-branch-item[aria-current='true'] { color: var(--theme-ink, #222); font-weight: 600; }
+.path-branches-manage {
+  min-height: 26px;
+  margin: 4px 0 0;
+  padding: 4px 8px;
+  border-radius: 10px;
+  color: var(--theme-muted, #777);
+  font: 11px var(--ui);
+}
 .path-popover nav {
   max-height: min(45vh, 320px);
   overflow: auto;

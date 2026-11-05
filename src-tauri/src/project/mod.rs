@@ -1,5 +1,5 @@
 mod guard;
-mod io;
+pub(crate) mod io;
 mod storage;
 pub(crate) mod tree;
 pub(crate) use guard::with_lock;
@@ -12,6 +12,7 @@ mod outline;
 mod queries;
 mod schema;
 pub use mirrors::resolve_external;
+pub(crate) use mirrors::scene_disk;
 #[cfg(any(test, feature = "performance-harness"))]
 pub use mutations::add;
 pub use mutations::{create, reorder, settings, update};

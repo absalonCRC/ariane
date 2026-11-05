@@ -11,6 +11,9 @@ export function useProject(onError: (e: unknown) => void) {
   const [settings, setSettingsState] = useState<Settings>(defaultSettings);
   const settingsRef = useRef(settings);
   const [status, setStatus] = useState<SaveState>('saved');
+  const [versionStatus, setVersionStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+  const [versionRevision, setVersionRevision] = useState(0);
+  const activation = useRef(0);
   const [generation, setGeneration] = useState(0);
   const editListeners = useRef(new Set<() => void>());
   const subscribeEdits = useCallback((listener: () => void) => {
@@ -22,6 +25,7 @@ export function useProject(onError: (e: unknown) => void) {
   const dirty = useRef(new Map<string, SectionDraft>());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saving = useRef<Promise<void> | null>(null);
+  const settingsSaving = useRef<Promise<void> | null>(null);
   const changed = useRef(new Map<string, symbol>());
   const checkpointTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
@@ -32,6 +36,8 @@ export function useProject(onError: (e: unknown) => void) {
     [],
   );
   const activate = useCallback((p: Project) => {
+    activation.current++;
+    setVersionStatus('saved');
     if (timer.current) clearTimeout(timer.current);
     if (checkpointTimer.current) clearTimeout(checkpointTimer.current);
     changed.current.clear();
@@ -48,6 +54,7 @@ export function useProject(onError: (e: unknown) => void) {
     setGeneration((x) => x + 1);
   }, []);
   const flush = useCallback(async (): Promise<void> => {
+    while (settingsSaving.current) await settingsSaving.current;
     if (timer.current) clearTimeout(timer.current);
     if (saving.current) {
       await saving.current;
@@ -89,18 +96,33 @@ export function useProject(onError: (e: unknown) => void) {
     if (dirty.current.size) return flush();
   }, [onError]);
   const checkpoint = useCallback(async () => {
-    const path = ref.current?.path;
+    const path = ref.current?.path,
+      session = activation.current;
     if (!path) return;
     if (checkpointTimer.current) clearTimeout(checkpointTimer.current);
     await flush();
-    if (ref.current?.path !== path) return;
+    if (ref.current?.path !== path || activation.current !== session) return;
     const pending = new Map(changed.current);
-    for (const [scope, token] of pending) {
-      if (ref.current?.path !== path) return;
-      if (sectionIndex.current.has(scope)) {
-        await request('automaticVersion', { projectPath: path, scope });
+    if (!pending.size) return;
+    setVersionStatus('saving');
+    try {
+      for (const [scope, token] of pending) {
+        if (ref.current?.path !== path || activation.current !== session) return;
+        if (sectionIndex.current.has(scope)) {
+          const version = await request('automaticVersion', {
+            projectPath: path,
+            scope,
+          });
+          if (activation.current !== session) return;
+          if (version) setVersionRevision((revision) => revision + 1);
+        }
+        if (activation.current !== session) return;
+        if (changed.current.get(scope) === token) changed.current.delete(scope);
       }
-      if (changed.current.get(scope) === token) changed.current.delete(scope);
+      setVersionStatus('saved');
+    } catch (e) {
+      if (activation.current === session) setVersionStatus('error');
+      throw e;
     }
   }, [flush]);
   const scheduleCheckpoint = useCallback(
@@ -152,7 +174,14 @@ export function useProject(onError: (e: unknown) => void) {
       setSettingsState(next);
       if (ref.current) {
         ref.current.settings = next;
-        void request('settings', { value: next }).catch(onError);
+        const task = (settingsSaving.current ?? Promise.resolve())
+          .catch(() => {})
+          .then(() => request('settings', { value: next }))
+          .then(() => {});
+        settingsSaving.current = task;
+        void task.then(() => {
+          if (settingsSaving.current === task) settingsSaving.current = null;
+        }, onError);
       }
     },
     [onError],
@@ -189,6 +218,8 @@ export function useProject(onError: (e: unknown) => void) {
     settingsRef,
     configure,
     status,
+    versionStatus,
+    versionRevision,
     generation,
     edit,
     editDraft,
