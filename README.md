@@ -108,9 +108,9 @@ ariane is for novels, essays, documented narratives, theses and any long-form wo
 
 ## Try ariane
 
-**ariane 0.3.1 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
+**ariane 0.3.2 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
 
-There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.3.1 development notes](docs/release-notes-0.3.1.md) · [Roadmap to 1.0.0](docs/roadmap-1.0.0.md)
+There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.3.2 development notes](docs/release-notes-0.3.2.md) · [Roadmap to 1.0.0](docs/roadmap-1.0.0.md)
 
 <details>
 <summary>Build from source</summary>

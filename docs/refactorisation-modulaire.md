@@ -52,4 +52,4 @@ La conservation de cinq captures ne démontre pas l’équivalence de tous les �
 
 Les invariants de sauvegarde, de révision, de conflits externes, de contexte asynchrone et de nettoyage sont couverts par les suites existantes et les contrôles ciblés ; cette couverture ne constitue pas une garantie d’absence de toute régression.
 
-Aucun format n’ayant changé, le retour au code précédent ne demande pas de migration inverse. Revenir par commits ciblés en conservant les données et copies de récupération ; ne jamais réinitialiser un manuscrit ou supprimer les travaux locaux pour annuler une refactorisation. Aucune publication ou fusion n’est incluse dans cette branche locale.
+Aucun format n’ayant changé, le retour au code précédent ne demande pas de migration inverse. Revenir par commits ciblés en conservant les données et copies de récupération ; ne jamais réinitialiser un manuscrit ou supprimer les travaux locaux pour annuler une refactorisation. La demande de fusion vers main reste soumise à revue ; aucune release ni fusion automatique n’est incluse.
