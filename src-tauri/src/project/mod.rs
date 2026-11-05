@@ -1,6 +1,6 @@
 mod storage;
 pub(crate) mod tree;
-mod io;
+pub(crate) mod io;
 mod guard;
 pub use guard::ProjectGuard;
 pub(crate) use guard::with_lock;

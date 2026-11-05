@@ -100,4 +100,14 @@ pub struct Version {
     pub created: String,
     pub scope: Option<String>,
     pub sections: Vec<Section>,
+    #[serde(default)]
+    pub automatic: bool,
+    #[serde(default)]
+    pub branch_id: Option<String>,
+    #[serde(default)]
+    pub parent_id: Option<String>,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub merge_parent_id: Option<String>,
 }

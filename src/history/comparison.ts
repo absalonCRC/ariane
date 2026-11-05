@@ -56,3 +56,19 @@ export function reprisePassage(current: string, row: ReturnType<typeof comparePa
   paragraphs.splice(row.rightStart, row.right.length, ...row.left);
   return paragraphs.join('\n\n');
 }
+
+export function readingWords(rows: ReturnType<typeof comparePassages>) {
+  const words: ReturnType<typeof comparePassages>[number]['words'] = [];
+  let left = false,
+    right = false;
+  for (const row of rows) {
+    const leftBreak = left && row.left.length > 0,
+      rightBreak = right && row.right.length > 0;
+    if (leftBreak || rightBreak)
+      words.push({ value: '\n\n', count: 1, added: !leftBreak, removed: !rightBreak });
+    words.push(...row.words);
+    left ||= row.left.length > 0;
+    right ||= row.right.length > 0;
+  }
+  return words;
+}

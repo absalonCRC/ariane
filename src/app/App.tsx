@@ -1,3 +1,4 @@
+import { BranchBadge } from '../history/BranchBadge';
 import { marginLayout } from '../sources/marginLayout';
 import { entityTint } from '../enrichment/entityTypes';
 import { useNoteCreation } from '../enrichment/useNoteCreation';
@@ -79,6 +80,7 @@ export function App() {
           document.title = `ariane — recette : ${String(error)}`;
         });
   });
+  const [historyBusy, setHistoryBusy] = useState(false);
   const [textSelection, setTextSelection] = useState<SelectionAnchor | null>(null);
   const [lines, setLines] = useState(1);
   const [characters, setCharacters] = useState(0);
@@ -383,9 +385,15 @@ export function App() {
           <ChevronRight size={17} strokeWidth={1.5} aria-hidden="true" />
         </button>
       )}
-      <header className="app-header" inert={workspace.libraryBusy}>
+      <header className="app-header" inert={workspace.libraryBusy || historyBusy}>
         <ArianeWordmark compact={!binder} />
         <div className="header-right">
+          <BranchBadge
+            path={p.path}
+            generation={doc.generation}
+            onOpen={() => setSurface('history')}
+            onError={fail}
+          />
           {!workspace.historyMode && (
             <button
               className="focus-mode-trigger"
@@ -468,7 +476,7 @@ export function App() {
         onToggleTheme={() =>
           workspace.appearance.change(workspace.appearance.dark ? 'light' : 'dark')
         }
-        busy={workspace.libraryBusy}
+        busy={workspace.libraryBusy || historyBusy}
         onActionsHost={setSidebarActionsHost}
       />
       <Presence kind="sidebar">
@@ -483,7 +491,7 @@ export function App() {
             onOpenProject={workspace.openProject}
             onError={fail}
             sourceVersion={workspace.sourceVersion}
-            busy={workspace.libraryBusy}
+            busy={workspace.libraryBusy || historyBusy}
             project={p}
             active={active}
             reveal={workspace.revealInBinder}
@@ -526,7 +534,7 @@ export function App() {
       </Presence>
       <main
         inert={workspace.libraryBusy}
-        aria-busy={workspace.libraryBusy}
+        aria-busy={workspace.libraryBusy || historyBusy}
         className={
           'writing-layout' +
           (((surface === 'settings' && !workspace.historyMode ? scrollPreview : null) ??
@@ -635,7 +643,10 @@ export function App() {
               key={p.path}
               project={p}
               active={active}
-              flush={doc.checkpoint}
+              flush={doc.flush}
+              checkpoint={doc.checkpoint}
+              versionRevision={doc.versionRevision}
+              onBusyChange={setHistoryBusy}
               onClose={() => {
                 workspace.setHistoryMode(false);
                 setSurface('none');
@@ -952,6 +963,11 @@ export function App() {
           <span />
         </div>
         <div className="save-state" role="status">
+          {doc.status === 'saved' && doc.versionStatus === 'error' && (
+            <button onClick={() => void doc.checkpoint().catch(fail)}>
+              {t('Texte enregistré · Réessayer la version automatique')}
+            </button>
+          )}
           {doc.status === 'saved' && memory.pending && !searching && t('Actualisation des liens…')}
           <Presence kind="content">
             {doc.status !== 'saved' && (
@@ -967,6 +983,7 @@ export function App() {
         </div>
         <div
           className="bottom-controls"
+          inert={historyBusy}
           data-panel={panelMode}
           data-anchor={panelMode === 'none' ? lastPanel.current : panelMode}
           data-morph={morphPanel}

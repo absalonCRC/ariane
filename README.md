@@ -34,7 +34,7 @@ Use an existing Obsidian vault in **read-only mode**, or create a vault owned by
 
 ## Keep the thought. Reconsider the sentence.
 
-Versions are saved automatically as you write, after a pause and when leaving a text. Automatic history is deduplicated and bounded; named drafts stay preserved. Compare earlier wording and recover an individual passage. ariane also saves a version before applying a passage or restoring a snapshot.
+Versions are saved automatically as you write, after a pause and when leaving a text. Automatic captures are grouped into writing sessions; naming a capture preserves it permanently. Independent variants keep their own drafts and automatic history. Review wording, choose passages, and resolve differences before integrating a variant into the main text. The previous state stays recoverable. See [Versions and writing variants](docs/versionnement-ecriture.md) for the workflow, migration and recovery details.
 
 ![Earlier and current wording, enlarged from the two columns of ariane’s native comparison view](docs/media/versions.jpg)
 

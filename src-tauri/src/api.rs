@@ -168,6 +168,12 @@ pub enum Request {
         scope: Option<String>,
     },
     AutomaticVersion { project_path: String, scope: String },
+    HistoryState { project_path: String },
+    CreateBranch { project_path: String, name: String, from_version: Option<String> },
+    SwitchBranch { project_path: String, id: String },
+    PromoteVersion { project_path: String, id: String, name: String },
+    MergePreview { project_path: String, source: String },
+    MergeBranch { project_path: String, source: String, token: String, resolutions: Vec<history::MergeResolution> },
     Restore {
         id: String,
     },
@@ -800,6 +806,30 @@ pub fn handle(
                 Request::AutomaticVersion { project_path, scope } => {
                     if Path::new(&project_path) != root { return Err("Le projet actif a changé.".into()); }
                     json(history::checkpoint(&root, &scope)?.map(|mut version| { version.sections.clear(); version }))
+                }
+                Request::HistoryState {project_path} => {
+                    if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+                    json(history::history_state(&root)?)
+                }
+                Request::CreateBranch {project_path,name,from_version} => {
+                    if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+                    json(history::create_branch(&root,&name,from_version)?)
+                }
+                Request::SwitchBranch {project_path,id} => {
+                    if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+                    json(history::switch_branch(&root,&id)?)
+                }
+                Request::PromoteVersion {project_path,id,name} => {
+                    if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+                    json(history::promote_version(&root,&id,&name)?)
+                }
+                Request::MergePreview {project_path,source} => {
+                    if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+                    json(history::merge_preview(&root,&source)?)
+                }
+                Request::MergeBranch {project_path,source,token,resolutions} => {
+                    if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+                    json(history::merge_branch(&root,&source,&token,resolutions)?)
                 }
                 Request::Capture { name, scope } => json(history::capture(&root, &name, scope)?),
                 Request::Restore { id } => json(history::restore(&root, &id)?),

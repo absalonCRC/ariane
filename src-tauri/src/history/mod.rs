@@ -1,4 +1,6 @@
 mod automatic;
+mod branches;
+pub use branches::{history_state, create_branch, switch_branch, promote_version, merge_preview, merge_branch, MergeResolution};
 pub use automatic::checkpoint;
 pub(crate) use automatic::checkpoint_with;
 use crate::{
@@ -9,19 +11,21 @@ use crate::{
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-#[derive(Serialize, Deserialize, Default)]
-struct Snapshot {
-    sections: Vec<Section>,
+#[derive(Serialize, Deserialize, Default, Clone)]
+pub(super) struct Snapshot {
+    pub sections: Vec<Section>,
     #[serde(default)]
-    settings: serde_json::Value,
+    pub settings: serde_json::Value,
     #[serde(default)]
-    citations: Vec<(String, String)>,
+    pub citations: Vec<(String, String)>,
     #[serde(default)]
-    links: Vec<(String, String, String)>,
+    pub links: Vec<(String, String, String)>,
     #[serde(default)]
-    pins: Vec<(String, String)>,
+    pub pins: Vec<(String, String)>,
+    #[serde(default)]
+    pub annotations: Option<Vec<(String,String)>>,
 }
-fn unpack(payload: &str) -> Result<Snapshot> {
+pub(super) fn unpack(payload: &str) -> Result<Snapshot> {
     if payload.trim_start().starts_with('[') {
         Ok(Snapshot {
             sections: serde_json::from_str(payload).app()?,
@@ -40,12 +44,15 @@ pub fn descendants(all: &[Section], id: &str) -> Vec<Section> {
 }
 pub fn capture(root: &Path, name: &str, scope: Option<String>) -> Result<Version> {
     crate::project::with_lock(root, || {
-        let c = project::database(root)?;
-        let snapshot = snapshot(&c, &scope)?;
-        insert(&c, name, scope, snapshot)
+        let mut c = project::database(root)?;
+        let tx=c.transaction().app()?;
+        let snapshot = snapshot(&tx, &scope)?;
+        let version=insert(&tx, name, scope, snapshot)?;
+        tx.commit().app()?;
+        Ok(version)
     })
 }
-fn snapshot(c: &Connection, scope: &Option<String>) -> Result<Snapshot> {
+pub(super) fn snapshot(c: &Connection, scope: &Option<String>) -> Result<Snapshot> {
     let sections = if let Some(id) = &scope {
         project::validate_id(id)?;
         let mut q = c.prepare("WITH RECURSIVE chosen(id) AS (SELECT id FROM sections WHERE id=? UNION SELECT s.id FROM sections s JOIN chosen ON s.parent=chosen.id) SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE id IN chosen ORDER BY position,id").app()?;
@@ -83,12 +90,17 @@ fn snapshot(c: &Connection, scope: &Option<String>) -> Result<Snapshot> {
         let rows = q.query_map([&ids], |r| Ok((r.get(0)?, r.get(1)?))).app()?;
         rows.collect::<std::result::Result<Vec<_>, _>>().app()?
     } else { vec![] };
-    Ok(Snapshot { sections, settings: serde_json::from_str(&settings).app()?, citations, links, pins })
+    let annotations = if c.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='annotations')",[],|r|r.get::<_,bool>(0)).app()? {
+        let mut q=c.prepare("SELECT id,payload FROM annotations WHERE ?1 IS NULL OR json_extract(payload,'$.section') IN (SELECT value FROM json_each(?2)) ORDER BY id").app()?;
+        let values=q.query_map(params![scope,ids],|r|Ok((r.get(0)?,r.get(1)?))).app()?.collect::<std::result::Result<Vec<_>,_>>().app()?;
+        Some(values)
+    } else {Some(vec![])};
+    Ok(Snapshot { sections, annotations, settings: serde_json::from_str(&settings).app()?, citations, links, pins })
 }
 fn has_pins(c: &Connection) -> Result<bool> {
     c.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='margin_pins')", [], |r| r.get(0)).app()
 }
-fn insert(c: &Connection, name: &str, scope: Option<String>, snapshot: Snapshot) -> Result<Version> {
+pub(super) fn insert(c: &Connection, name: &str, scope: Option<String>, snapshot: Snapshot) -> Result<Version> {
     let payload = serde_json::to_string(&snapshot).app()?;
     let v = Version {
         id: uuid::Uuid::new_v4().to_string(),
@@ -96,15 +108,23 @@ fn insert(c: &Connection, name: &str, scope: Option<String>, snapshot: Snapshot)
         created: chrono::Utc::now().to_rfc3339(),
         scope,
         sections: snapshot.sections,
+        automatic: false,
+        branch_id: Some(branches::active(c)?),
+        parent_id: c.query_row("SELECT head_version FROM history_branches WHERE id=?",[branches::active(c)?],|r|r.get(0)).app()?,
+        session_id: None,
+        merge_parent_id:None,
     };
     if v.name.is_empty() {
         return Err("Nommez cette version.".into());
     }
     c.execute(
-        "INSERT INTO versions VALUES(?,?,?,?,?)",
-        params![v.id, v.name, v.created, v.scope, payload],
+        "INSERT INTO versions(id,name,created,scope,payload,branch_id,parent_id,session_id) VALUES(?,?,?,?,?,?,?,?)",
+        params![v.id, v.name, v.created, v.scope, payload,v.branch_id,v.parent_id,v.session_id],
     )
     .app()?;
+    if v.scope.is_none() && name != "Origine de la variante" {
+        c.execute("UPDATE history_branches SET head_version=? WHERE id=?",params![v.id,v.branch_id]).app()?;
+    }
     Ok(v)
 }
 // The list deliberately excludes manuscript payloads; a version is loaded on demand.
@@ -113,7 +133,7 @@ pub fn list(root: &Path) -> Result<Vec<Version>> { list_page(root, 0) }
 pub fn list_page(root: &Path, offset: usize) -> Result<Vec<Version>> {
     let c = project::database(root)?;
     let mut q = c
-        .prepare("SELECT id,name,created,scope FROM versions ORDER BY created DESC,id DESC LIMIT 50 OFFSET ?")
+        .prepare("SELECT v.id,v.name,v.created,v.scope,v.branch_id,v.parent_id,v.session_id,a.id IS NOT NULL,v.merge_parent_id FROM versions v LEFT JOIN automatic_versions a ON a.id=v.id WHERE COALESCE(v.branch_id,'main')=(SELECT value FROM meta WHERE key='active_branch') ORDER BY v.created DESC,v.id DESC LIMIT 50 OFFSET ?")
         .app()?;
     let rows = q
         .query_map([i64::try_from(offset).unwrap_or(i64::MAX)], |r| {
@@ -123,6 +143,7 @@ pub fn list_page(root: &Path, offset: usize) -> Result<Vec<Version>> {
                 created: r.get(2)?,
                 scope: r.get(3)?,
                 sections: vec![],
+                branch_id: r.get(4)?, parent_id:r.get(5)?,session_id:r.get(6)?,automatic:r.get(7)?,merge_parent_id:r.get(8)?,
             })
         })
         .app()?;
@@ -132,7 +153,7 @@ pub fn get(root: &Path, id: &str) -> Result<Version> {
     let c = project::database(root)?;
     let mut v = c
         .query_row(
-            "SELECT id,name,created,scope FROM versions WHERE id=?",
+            "SELECT v.id,v.name,v.created,v.scope,v.branch_id,v.parent_id,v.session_id,a.id IS NOT NULL,v.merge_parent_id FROM versions v LEFT JOIN automatic_versions a ON a.id=v.id WHERE v.id=?",
             [id],
             |r| {
                 Ok(Version {
@@ -141,6 +162,7 @@ pub fn get(root: &Path, id: &str) -> Result<Version> {
                     created: r.get(2)?,
                     scope: r.get(3)?,
                     sections: vec![],
+                    branch_id:r.get(4)?,parent_id:r.get(5)?,session_id:r.get(6)?,automatic:r.get(7)?,merge_parent_id:r.get(8)?,
                 })
             },
         )
@@ -164,76 +186,31 @@ pub fn restore(root: &Path, id: &str) -> Result<Project> {
         if let Some(parent) = &section.parent { project::validate_id(parent)?; }
         if let Some(outline) = &section.outline { project::validate_outline(outline,&section.text)?; }
     }
-    capture(root, "Avant restauration", v.scope.clone())?;
     let mut c = project::database(root)?;
-    let payload: String = c
-        .query_row("SELECT payload FROM versions WHERE id=?", [id], |r| {
-            r.get(0)
-        })
-        .app()?;
-    let snapshot = unpack(&payload)?;
-    for section in &snapshot.sections {
-        project::validate_id(&section.id)?;
-        if let Some(parent) = &section.parent { project::validate_id(parent)?; }
-        if let Some(outline) = &section.outline { project::validate_outline(outline, &section.text)?; }
-    }
-    let before = project::all_sections(&c)?;
-    let affected = if let Some(scope) = &v.scope {
-        descendants(&before, scope)
-    } else {
-        before.clone()
-    };
-    let tx = c.transaction().app()?;
-    let pins_exist = has_pins(&tx)?;
-    for s in &affected {
-        if pins_exist { tx.execute("DELETE FROM margin_pins WHERE section=?", [&s.id]).app()?; }
-        tx.execute("DELETE FROM sections WHERE id=?", [&s.id])
-            .app()?;
-        tx.execute("DELETE FROM links WHERE section=?", [&s.id])
-            .app()?;
-    }
-    for s in &snapshot.sections {
-        if let Some(outline) = &s.outline {
-            crate::project::validate_outline(outline, &s.text)?;
+    if !branches::can_restore(&c, &v)? { return Err("Cette version appartient à une autre variante.".into()); }
+    let payload: String = c.query_row("SELECT payload FROM versions WHERE id=?",[id],|r|r.get(0)).app()?;
+    let restored=unpack(&payload)?;
+    let current=snapshot(&c,&None)?;
+    let mut next=restored.clone();
+    if let Some(scope)=&v.scope {
+        let affected:std::collections::HashSet<_>=descendants(&current.sections,scope).iter().map(|s|s.id.clone()).chain(restored.sections.iter().map(|s|s.id.clone())).collect();
+        next=current.clone();
+        next.sections.retain(|s|!affected.contains(&s.id));next.sections.extend(restored.sections);
+        next.links.retain(|(section,_,_)|!affected.contains(section));next.links.extend(restored.links);
+        next.pins.retain(|(section,_)|!affected.contains(section));next.pins.extend(restored.pins);
+        if let Some(annotations)=restored.annotations {
+            let values=next.annotations.get_or_insert_with(Vec::new);
+            values.retain(|(_,payload)|serde_json::from_str::<serde_json::Value>(payload).ok().and_then(|v|v["section"].as_str().map(str::to_owned)).is_none_or(|id|!affected.contains(&id)));
+            values.extend(annotations);
         }
-        let rev = before
-            .iter()
-            .find(|old| old.id == s.id)
-            .map_or(s.revision, |old| old.revision)
-            + 1;
-        tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,mirror,outline,role,trashed,included) VALUES(?,?,?,?,?,?,?,?,?,?,'',?,?,?,?)",params![s.id,s.parent,s.title,s.kind,s.position,s.text,rev,s.synopsis,s.status,s.goal,s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included]).app()?;
+        for (id,payload) in restored.citations {next.citations.retain(|(existing,_)|*existing!=id);next.citations.push((id,payload));}
     }
-    if v.scope.is_none() {
-        tx.execute("DELETE FROM citations", []).app()?;
-        tx.execute(
-            "INSERT OR REPLACE INTO meta VALUES('settings',?)",
-            [snapshot.settings.to_string()],
-        )
-        .app()?;
-    }
-    for (id, payload) in snapshot.citations {
-        tx.execute(
-            "INSERT OR REPLACE INTO citations VALUES(?,?)",
-            params![id, payload],
-        )
-        .app()?;
-    }
-    for (section, id, payload) in snapshot.links {
-        tx.execute(
-            "INSERT OR REPLACE INTO links VALUES(?,?,?)",
-            params![section, id, payload],
-        )
-        .app()?;
-    }
-    if !snapshot.pins.is_empty() {
-        tx.execute_batch("CREATE TABLE IF NOT EXISTS margin_pins(section TEXT NOT NULL,source TEXT NOT NULL,PRIMARY KEY(section,source));").app()?;
-        for (section, source) in snapshot.pins {
-            tx.execute("INSERT OR IGNORE INTO margin_pins VALUES(?,?)", params![section,source]).app()?;
-        }
-    }
-    tx.execute("DELETE FROM structure_history", []).app()?;
+    branches::validate(&next)?;
+    let tx=c.transaction().app()?;
+    insert(&tx,"Avant restauration",v.scope.clone(),snapshot(&tx,&v.scope)?)?;
+    branches::replace(&tx,root,&next)?;
     tx.commit().app()?;
-    project::load(root)
+    branches::load_applied(root)
     })
 }
 #[cfg(test)]

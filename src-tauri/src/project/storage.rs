@@ -8,7 +8,7 @@ use std::{fs, path::Path};
 pub fn hash(s: &str) -> String {
     format!("{:x}", Sha256::digest(s.as_bytes()))
 }
-const SCHEMA_VERSION: i64 = 1;
+const SCHEMA_VERSION: i64 = 2;
 /// SQLite itself refuses symlink filenames. Files used by the mirror protocol are
 /// opened relative to a verified directory descriptor in `io`.
 pub fn database(root: &Path) -> Result<Connection> {
@@ -31,11 +31,12 @@ pub fn database(root: &Path) -> Result<Connection> {
     let schema: i64 = c.pragma_query_value(None, "user_version", |r| r.get(0)).app()?;
     if schema > SCHEMA_VERSION { return Err("Ce projet nécessite une version plus récente d’ariane.".into()); }
     if schema < SCHEMA_VERSION {
+        if schema > 0 { backup_before_migration(root, &c, "versions")?; }
         // Recheck under SQLite's write lock: another process might have migrated
         // between the first check and this transaction.
         let tx = c.transaction_with_behavior(TransactionBehavior::Immediate).app()?;
         let current: i64 = tx.pragma_query_value(None, "user_version", |r| r.get(0)).app()?;
-        if current < SCHEMA_VERSION {
+        if current < 1 {
             tx.execute_batch("CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
  CREATE TABLE IF NOT EXISTS sections(id TEXT PRIMARY KEY,parent TEXT,title TEXT NOT NULL,kind TEXT NOT NULL,position INTEGER NOT NULL,text TEXT NOT NULL DEFAULT '',revision INTEGER NOT NULL DEFAULT 0,synopsis TEXT NOT NULL DEFAULT '',status TEXT NOT NULL DEFAULT 'Brouillon',goal INTEGER NOT NULL DEFAULT 0,mirror TEXT NOT NULL DEFAULT '');
  CREATE TABLE IF NOT EXISTS versions(id TEXT PRIMARY KEY,name TEXT NOT NULL,created TEXT NOT NULL,scope TEXT,payload TEXT NOT NULL);
@@ -52,8 +53,22 @@ pub fn database(root: &Path) -> Result<Connection> {
             tx.execute_batch("CREATE INDEX IF NOT EXISTS versions_created ON versions(created DESC,id DESC);
  CREATE INDEX IF NOT EXISTS versions_scope_name_created ON versions(scope,name,created DESC);
  CREATE INDEX IF NOT EXISTS sections_parent ON sections(parent);").app()?;
-            tx.pragma_update(None, "user_version", SCHEMA_VERSION).app()?;
         }
+        if current < 2 {
+            let columns=tx.prepare("PRAGMA table_info(versions)").app()?.query_map([],|r|r.get::<_,String>(1)).app()?.collect::<std::result::Result<std::collections::HashSet<_>,_>>().app()?;
+            for column in ["branch_id","parent_id","session_id","merge_parent_id"] {
+                if !columns.contains(column) {tx.execute_batch(&format!("ALTER TABLE versions ADD COLUMN {column} TEXT")).app()?;}
+            }
+            tx.execute_batch("CREATE TABLE IF NOT EXISTS history_branches(id TEXT PRIMARY KEY,name TEXT NOT NULL,created TEXT NOT NULL,is_main INTEGER NOT NULL DEFAULT 0,base_version TEXT,head_version TEXT,draft TEXT NOT NULL,base_payload TEXT NOT NULL DEFAULT '{}');
+ CREATE TABLE IF NOT EXISTS automatic_versions(id TEXT PRIMARY KEY REFERENCES versions(id) ON DELETE CASCADE,fingerprint TEXT NOT NULL,bytes INTEGER NOT NULL);
+ INSERT INTO history_branches(id,name,created,is_main,base_version,head_version,draft)
+ SELECT 'main','Texte principal',strftime('%Y-%m-%dT%H:%M:%fZ','now'),1,NULL,NULL,'{}'
+ WHERE NOT EXISTS(SELECT 1 FROM history_branches WHERE id='main');
+ INSERT INTO meta(key,value) VALUES('active_branch','main') ON CONFLICT(key) DO NOTHING;
+ UPDATE versions SET branch_id='main' WHERE branch_id IS NULL;
+ CREATE INDEX IF NOT EXISTS versions_branch_created ON versions(branch_id,created DESC,id DESC);").app()?;
+        }
+        tx.pragma_update(None, "user_version", SCHEMA_VERSION).app()?;
         tx.commit().app()?;
         c.pragma_update(None, "journal_mode", "WAL").app()?;
     }
@@ -160,7 +175,7 @@ pub(crate) fn load_unlocked(root: &Path) -> Result<Project> {
         conflicts,
     })
 }
-fn scene_disk(root: &super::io::Dir, id: &str) -> Result<Option<String>> {
+pub(crate) fn scene_disk(root: &super::io::Dir, id: &str) -> Result<Option<String>> {
     super::validate_id(id)?;
     match root.child("manuscrit", false)? {
         Some(dir) => dir.read(&format!("{id}.md")),
