@@ -11,6 +11,14 @@ fn all_revision_stages() -> String {
 )]
 pub enum Request {
     Bootstrap,
+    NoteActivity {
+        project_path: String,
+        before: Option<i64>,
+    },
+    RecordNoteActivity {
+        project_path: String,
+        value: project::activity::EventInput,
+    },
     AppLanguage {
         value: String,
     },

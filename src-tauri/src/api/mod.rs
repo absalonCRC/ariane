@@ -226,7 +226,9 @@ pub fn handle(
                 )
             };
             match other {
-                request @ (Request::Annotations { .. }
+                request @ (Request::NoteActivity { .. }
+                | Request::RecordNoteActivity { .. }
+                | Request::Annotations { .. }
                 | Request::AddAnnotation { .. }
                 | Request::UpdateAnnotation { .. }
                 | Request::ManuscriptOperation { .. }

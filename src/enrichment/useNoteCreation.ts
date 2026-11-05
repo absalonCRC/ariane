@@ -1,9 +1,11 @@
+import type { NoteActivityController } from '../notes/useNoteActivity';
 import type { Project } from '../contracts/project';
 import type { Dispatch, SetStateAction } from 'react';
 import type { ProjectController } from '../project/useProject';
 import { useCallback, useEffect, useRef } from 'react';
 import { request } from '../platform/client';
 export interface NoteCreationInput {
+  activity?: Pick<NoteActivityController, 'record'>;
   p: Project | null;
   setSourceVersion: Dispatch<SetStateAction<number>>;
   fail: (e: unknown) => void;
@@ -31,6 +33,11 @@ export function useNoteCreation(workspace: NoteCreationInput) {
     const source = await request('createQuickNote', { projectPath: path, name, context });
     const current = () => epoch === generation.current && latest.current.p?.path === path;
     if (!current()) return source;
+    void latest.current.activity?.record({
+      kind: 'created',
+      title: source.title,
+      sourceId: source.id,
+    });
     latest.current.setSourceVersion((v) => v + 1);
     const run = async () => {
       if (!current()) return;
@@ -42,7 +49,14 @@ export function useNoteCreation(workspace: NoteCreationInput) {
         });
         if (!current()) return;
         if (result.pending) schedule();
-        else if (result.source) latest.current.setSourceVersion((v) => v + 1);
+        else if (result.source) {
+          void latest.current.activity?.record({
+            kind: 'classified',
+            title: result.source.title,
+            sourceId: source.id,
+          });
+          latest.current.setSourceVersion((v) => v + 1);
+        }
       } catch (e) {
         if (current()) latest.current.fail(e);
       }

@@ -1,3 +1,5 @@
+import { NoteActivity } from '../notes/NoteActivity';
+import type { NoteActivityController } from '../notes/useNoteActivity';
 import type { Project, Section } from '../contracts/project';
 import type { Dispatch, SetStateAction } from 'react';
 import type { Source } from '../contracts/sources';
@@ -19,6 +21,7 @@ import { passageExcerpt } from './excerpts';
 import { entityTint } from './entityTypes';
 import './memory-refinements.css';
 export interface MemoryReaderInput {
+  activity?: NoteActivityController;
   p: Project | null;
   scenes: Section[];
   locatePassage: (
@@ -75,7 +78,15 @@ export function MemoryReader({
     if (view?.kind === 'entity')
       void request('memoryEntity', { projectPath: path!, id: view.id })
         .then((value) => {
-          if (alive) setEntity(value);
+          if (alive) {
+            setEntity(value);
+            void workspace.activity?.record({
+              kind: 'opened',
+              title: value.title,
+              entityId: value.id,
+              section: workspace.doc.settings.active,
+            });
+          }
         })
         .catch((e) => {
           if (alive) setError(String(e));
@@ -294,6 +305,24 @@ export function MemoryReader({
       {view.kind === 'resume' && (
         <div className="resume-content">
           <h2 aria-hidden={projectMenuOpen || writingMenuOpen}>{t('Reprendre le fil')}</h2>
+          {workspace.activity && (
+            <NoteActivity
+              activity={workspace.activity}
+              onOpen={(event) => {
+                if (event.entityId && !event.sourceId)
+                  memory.open({ kind: 'entity', id: event.entityId });
+                else if (event.sourceId)
+                  void request('source', { id: event.sourceId })
+                    .then((source) => {
+                      if (workspace.doc.ref.current?.path !== path) return;
+                      memory.close();
+                      workspace.setReader(source);
+                    })
+                    .catch((e) => setError(String(e)));
+              }}
+            />
+          )}
+
           {resume?.section ? (
             <>
               <div className="resume-entry resume-current">

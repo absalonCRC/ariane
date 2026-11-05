@@ -1,8 +1,14 @@
+import type { NoteActivityController } from '../notes/useNoteActivity';
 import { useEffect, useRef, useState } from 'react';
 import { request } from '../platform/client';
 import type { Source } from '../contracts/sources';
 
-export function useMarginPins(path: string | undefined, section: string | undefined, version = 0) {
+export function useMarginPins(
+  path: string | undefined,
+  section: string | undefined,
+  version = 0,
+  activity?: Pick<NoteActivityController, 'record'>,
+) {
   const scope = `${path ?? ''}\u001f${section ?? ''}`;
   const current = useRef(scope);
   current.current = scope;
@@ -40,7 +46,17 @@ export function useMarginPins(path: string | undefined, section: string | undefi
         section,
         id: typeof source === 'string' ? source : source.id,
       });
-      if (current.current === scope) setValue({ scope, sources });
+      if (current.current === scope) {
+        const target =
+          typeof source === 'string' ? value.sources.find((item) => item.id === source) : source;
+        void activity?.record({
+          kind: typeof source === 'string' ? 'unpinned' : 'pinned',
+          title: target?.title ?? 'Note',
+          sourceId: typeof source === 'string' ? source : source.id,
+          section,
+        });
+        setValue({ scope, sources });
+      }
       return current.current === scope;
     } catch (e) {
       if (current.current === scope) setError(String(e));

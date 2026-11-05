@@ -12,7 +12,9 @@ import { ArianeWordmark } from '../components/ArianeWordmark';
 export function Welcome({
   onOpen,
   onError,
+  beforeOpen,
 }: {
+  beforeOpen?: () => Promise<void>;
   onOpen: (p: Project) => void;
   onError: (e: unknown) => void;
 }) {
@@ -49,6 +51,7 @@ export function Welcome({
         if (typeof folder !== 'string') return;
         path = folder + '/' + name.trim().replace(/[/:\\]/g, '-');
       }
+      await beforeOpen?.();
       const project = await request('create', {
         path,
         name: name.trim(),
@@ -66,6 +69,7 @@ export function Welcome({
   async function openProject(path: string) {
     setBusy(true);
     try {
+      await beforeOpen?.();
       onOpen(await request('open', { path }));
       setScreen('none');
     } catch (e) {

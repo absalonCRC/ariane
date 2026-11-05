@@ -1,3 +1,4 @@
+import type { NoteActivityController } from '../notes/useNoteActivity';
 import type { Project, Section } from '../contracts/project';
 import type { VisibleText, EditorHandle } from '../editor/types';
 import type { RefObject, Dispatch, SetStateAction } from 'react';
@@ -10,6 +11,7 @@ import type { EntityBatch } from '../contracts/entities';
 import type { SelectedEntity } from './entityTypes';
 import { rebaseEntities } from './entityBatches';
 export interface EntityInput {
+  activity?: Pick<NoteActivityController, 'record'>;
   p: Project | null;
   doc: ProjectController;
   viewport: VisibleText | null;
@@ -88,6 +90,13 @@ export function useInlineEntities(
           });
           if (!alive || latest.current.p?.path !== p.path) return;
           if (value.created) workspace.setSourceVersion((v) => v + 1);
+          for (const source of value.createdSources ?? [])
+            void workspace.activity?.record({
+              kind: 'created',
+              title: source.title,
+              sourceId: source.id,
+              section: section.id,
+            });
           if (value.text === section.text) {
             values.push({
               ...value,
@@ -176,6 +185,12 @@ export function useInlineEntities(
       if (latest.current.p?.path !== path) return;
       setSelected(null);
       setRefresh((v) => v + 1);
+      void workspace.activity?.record({
+        kind: 'resolved',
+        title: value.title,
+        sourceId: value.id,
+        section: selected.section,
+      });
       workspace.setReader(value);
       workspace.setSourceVersion((v) => v + 1);
     } catch (e) {
@@ -199,6 +214,12 @@ export function useInlineEntities(
         kind: selected.kind,
       });
       if (latest.current.p?.path !== path) return;
+      void workspace.activity?.record({
+        kind: 'created',
+        title: source.title,
+        sourceId: source.id,
+        section: selected.section,
+      });
       setSelected(null);
       workspace.setSourceVersion((v) => v + 1);
       setRefresh((v) => v + 1);

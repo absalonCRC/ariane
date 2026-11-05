@@ -32,3 +32,5 @@ pub mod catalog;
 
 pub mod annotations;
 pub mod manuscript;
+
+pub mod activity;

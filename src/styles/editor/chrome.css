@@ -1,3 +1,12 @@
+.window-drag-region {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 36px;
+  z-index: 41;
+  user-select: none;
+  cursor: grab;
+}
+.window-drag-region:active { cursor: grabbing; }
 .app {
   height: 100vh;
   overflow: hidden;
@@ -47,8 +56,8 @@
 .window-title {
   position: fixed;
   top: 0;
-  left: 90px;
-  right: 90px;
+  left: 130px;
+  right: 130px;
   padding-top: 12px;
   padding-inline: 0;
   overflow: visible;
@@ -252,7 +261,8 @@
   font-size: 11px;
   color: var(--theme-quiet, #929292);
 }
-.focus-mode-trigger {
+.focus-mode-trigger,
+.resume-trigger {
   display: grid;
   place-items: center;
   flex: 0 0 32px;
@@ -263,7 +273,9 @@
   color: var(--theme-muted, #888);
 }
 .focus-mode-trigger:hover,
-.focus-mode-trigger:focus-visible {
+.focus-mode-trigger:focus-visible,
+.resume-trigger:hover,
+.resume-trigger:focus-visible {
   background: var(--theme-surface, #f2f2f2);
 }
 .menu-control {

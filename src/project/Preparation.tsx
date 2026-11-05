@@ -1,3 +1,4 @@
+import type { NoteEventInput } from '../contracts/noteActivity';
 import { localizeMessage, t, useLocale } from '../i18n';
 import { useState, useEffect } from 'react';
 import type { Section } from '../contracts/project';
@@ -5,10 +6,12 @@ import type { Source } from '../contracts/sources';
 import { Dialog } from '../components/Dialog';
 import { request } from '../platform/client';
 export function Preparation({
+  onNoteActivity,
   section,
   onSave,
   onClose,
 }: {
+  onNoteActivity?: (event: NoteEventInput) => unknown;
   section: Section;
   onSave: (s: Section) => Promise<void>;
   onClose: () => void;
@@ -31,8 +34,15 @@ export function Preparation({
           setBusy(true);
           try {
             await onSave(value);
-            for (const source of links)
+            for (const source of links) {
               await request('associate', { section: section.id, id: source.id, payload: source });
+              onNoteActivity?.({
+                kind: 'associated',
+                title: source.title,
+                sourceId: source.id,
+                section: section.id,
+              });
+            }
             onClose();
           } catch (e) {
             setError(String(e));

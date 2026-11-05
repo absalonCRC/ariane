@@ -11,6 +11,24 @@ pub(super) fn handle(
     request: Request,
 ) -> Result<serde_json::Value> {
     match request {
+        Request::NoteActivity {
+            project_path,
+            before,
+        } => {
+            if Path::new(&project_path) != root {
+                return Err("Le projet actif a changé.".into());
+            }
+            project::activity::list(&root, before)
+        }
+        Request::RecordNoteActivity {
+            project_path,
+            value,
+        } => {
+            if Path::new(&project_path) != root {
+                return Err("Le projet actif a changé.".into());
+            }
+            project::activity::record(&root, value)
+        }
         Request::Annotations { project_path } => {
             if Path::new(&project_path) != root {
                 return Err("Le projet actif a changé.".into());

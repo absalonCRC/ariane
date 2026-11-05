@@ -1,8 +1,8 @@
-import { localizeMessage, t, useLocale } from '../i18n';
+import { t, useLocale } from '../i18n';
 import { ImportProject } from '../project/ImportProject';
 import { ManuscriptDialog } from '../project/ManuscriptDialog';
 import { Presence } from '../components/Presence';
-import { lazy, Suspense, useState, useCallback } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import type { Workspace } from './useWorkspace';
 import { choosePath } from './choosePath';
 import { native } from '../platform/client';
@@ -14,17 +14,26 @@ const Library = lazy(() => import('../sources/Library').then((m) => ({ default: 
 
 const Export = lazy(() => import('../export/Export').then((m) => ({ default: m.Export })));
 
+function LoadingNotice({ onLoading }: { onLoading?: (loading: boolean) => void }) {
+  useEffect(() => {
+    onLoading?.(true);
+    return () => onLoading?.(false);
+  }, [onLoading]);
+  return null;
+}
 
 export function WorkspaceDialogs({
   workspace,
   onMemory,
+  onLoading,
+  onNotice,
 }: {
   workspace: Workspace;
+  onLoading?: (loading: boolean) => void;
+  onNotice?: (message: string, tone?: 'info' | 'success' | 'error') => void;
   onMemory?: () => void;
 }) {
   useLocale();
-  const [settingsError, setSettingsError] = useState('');
-  const settingsFail = useCallback((e: unknown) => setSettingsError(String(e)), []);
   const {
     surface,
     doc,
@@ -40,7 +49,7 @@ export function WorkspaceDialogs({
   } = workspace;
   if (!p) return null;
   return (
-    <Suspense fallback={<div className="notice recovery">{t('Ouverture…')}</div>}>
+    <Suspense fallback={<LoadingNotice onLoading={onLoading} />}>
       {surface === 'import' && (
         <ImportProject
           projectPath={p.path}
@@ -62,15 +71,12 @@ export function WorkspaceDialogs({
             onHistory={() => workspace.setSurface('history')}
             sources={
               <>
-                {settingsError && (
-                  <p role="alert" className="error-text">
-                    {localizeMessage(settingsError)}
-                  </p>
-                )}
                 <Library
+                  onNotice={onNotice}
+                  onNoteActivity={workspace.activity.record}
                   embedded
                   onClose={close}
-                  onError={settingsFail}
+                  onError={fail}
                   onRefresh={() => setSourceVersion((v) => v + 1)}
                   onIndexProgress={setProgress}
                   onBusy={(v) => {
@@ -89,6 +95,8 @@ export function WorkspaceDialogs({
       <Presence>
         {surface === 'sources' && (
           <Library
+            onNotice={onNotice}
+            onNoteActivity={workspace.activity.record}
             onMemory={
               onMemory
                 ? () => {
@@ -109,7 +117,13 @@ export function WorkspaceDialogs({
       </Presence>
       <Presence>
         {surface === 'prepare' && selected && (
-          <Preparation key={selected.id} section={selected} onClose={close} onSave={update} />
+          <Preparation
+            onNoteActivity={workspace.activity.record}
+            key={selected.id}
+            section={selected}
+            onClose={close}
+            onSave={update}
+          />
         )}
       </Presence>
       <Presence>

@@ -23,6 +23,10 @@ let controls: {
   setError: Dispatch<SetStateAction<string>>;
   setExport: Dispatch<SetStateAction<'ready' | 'working' | 'done' | 'error'>>;
   setSurface: Dispatch<SetStateAction<Surface>>;
+  setSave: Dispatch<SetStateAction<Workspace['doc']['status']>>;
+  setProgress: Dispatch<SetStateAction<Workspace['progress']>>;
+  setMemoryPending: Dispatch<SetStateAction<boolean>>;
+  setDialogLoading: (loading: boolean) => void;
 };
 
 function MenuFailure() {
@@ -56,7 +60,19 @@ function Harness() {
   const [recovery, setRecovery] = useState(false);
   const [exportState, setExport] = useState<'ready' | 'working' | 'done' | 'error'>('ready');
   const [surface, setSurface] = useState<Surface>('none');
-  controls = { setLibraryNotice, setError, setExport, setSurface };
+  const [save, setSave] = useState<Workspace['doc']['status']>('saved');
+  const [progress, setProgress] = useState<Workspace['progress']>(null);
+  const [memoryPending, setMemoryPending] = useState(false);
+  controls = {
+    setLibraryNotice,
+    setError,
+    setExport,
+    setSurface,
+    setSave,
+    setProgress,
+    setMemoryPending,
+    setDialogLoading: () => {},
+  };
   const workspace = {
     libraryNotice,
     setLibraryNotice,
@@ -67,13 +83,15 @@ function Harness() {
     surface,
     setSurface,
     exportJob: { state: exportState, reset: () => setExport('ready') },
-    doc: { project, status: 'saved', ref: { current: project }, flush: async () => {} },
+    progress,
+    doc: { project, status: save, ref: { current: project }, flush: async () => {} },
     activate: () => {},
     fail: () => {},
     libraryBusy: false,
     operate: async () => {},
   } as unknown as Workspace;
-  const notices = useTitleNotices(workspace);
+  const notices = useTitleNotices(workspace, memoryPending);
+  controls.setDialogLoading = notices.setDialogLoading;
   return (
     <>
       <MenuFailure />
@@ -241,4 +259,35 @@ it('keeps export status available from the path menu after its capsule closes', 
   expect(host.querySelector('.path-notices')?.textContent).toContain('Voir l’export');
   await act(async () => controls.setSurface('export'));
   expect(host.querySelector('.path-notice-dot')).toBeNull();
+});
+
+it('routes pending and completed saves into the same upper capsule', async () => {
+  const capsule = host.querySelector('.path-heading');
+  await act(async () => controls.setSave('editing'));
+  expect(capsule?.textContent).toContain('Modifications en cours');
+  await act(async () => controls.setSave('saving'));
+  expect(capsule?.textContent).toContain('Enregistrement…');
+  await act(async () => controls.setSave('saved'));
+  expect(capsule?.textContent).toContain('Modifications enregistrées');
+  await act(async () => vi.advanceTimersByTime(5000));
+  expect(host.querySelector('.path-menu')?.getAttribute('data-notifying')).toBe('false');
+});
+it('routes link updates, indexing and opening status into the upper capsule', async () => {
+  await act(async () => controls.setMemoryPending(true));
+  expect(host.querySelector('.path-heading')?.textContent).toContain('Actualisation des liens…');
+  await act(async () => controls.setMemoryPending(false));
+  expect(host.querySelector('.path-heading')?.textContent).not.toContain(
+    'Actualisation des liens…',
+  );
+  await act(async () =>
+    controls.setProgress({ done: 2, total: 9, file: 'note.md', semantic: false }),
+  );
+  expect(host.querySelector('.path-heading')?.textContent).toContain('2 / 9');
+  expect(host.querySelector('.path-notice-detail progress')?.getAttribute('value')).toBe('2');
+  await act(async () => controls.setProgress(null));
+  await act(async () => controls.setDialogLoading(true));
+  expect(host.querySelector('.path-heading')?.textContent).toContain('Ouverture…');
+  await act(async () => controls.setDialogLoading(false));
+  expect(host.querySelector('.path-heading')?.textContent).not.toContain('Ouverture…');
+  expect(host.querySelector('.notice, .save-state, .index-strip')).toBeNull();
 });

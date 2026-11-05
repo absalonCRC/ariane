@@ -1,3 +1,4 @@
+import type { NoteActivityController } from '../notes/useNoteActivity';
 import type { RefObject, Dispatch, SetStateAction } from 'react';
 import type { EditorHandle, VisibleText } from '../editor/types';
 import type { Project } from '../contracts/project';
@@ -16,6 +17,7 @@ import { t } from '../i18n';
 import { native, request } from '../platform/client';
 import { passages, passageKey } from './passages';
 export interface MemoryInput {
+  activity?: Pick<NoteActivityController, 'record'>;
   doc: ProjectController;
   editor: RefObject<EditorHandle | null>;
   p: Project | null;
@@ -382,6 +384,11 @@ export function useMemory(workspace: MemoryInput) {
     const item = result?.recall ?? result?.evidence;
     if (!item?.id || !p) return;
     await request('memoryDismiss', { projectPath: p.path, id: item.id, hash: item.hash });
+    void workspace.activity?.record({
+      kind: 'dismissed',
+      title: item.title,
+      section: anchor?.section,
+    });
     const position = editor.current?.context();
     for (const [key, value] of cache.current) {
       if (

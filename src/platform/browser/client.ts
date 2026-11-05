@@ -1,3 +1,4 @@
+import type { NoteEvent, NoteEventInput } from '../../contracts/noteActivity';
 import { previewCheckpoint } from '../../history/previewAutomatic';
 import { t } from '../../i18n';
 import { descendants } from '../../project/tree';
@@ -130,6 +131,25 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
     return p;
   }
   const p = project();
+  if (type === 'noteActivity' || type === 'recordNoteActivity') {
+    if (a.projectPath !== p.path) throw new Error('Le projet actif a changé.');
+    const key = 'ariane.preview.note-activity.' + p.path;
+    const items: NoteEvent[] = JSON.parse(localStorage.getItem(key) || '[]');
+    if (type === 'noteActivity') {
+      const page = items.filter((e) => a.before == null || e.id < Number(a.before));
+      return { items: page.slice(0, 50), hasMore: page.length > 50 };
+    }
+    const value = a.value as NoteEventInput;
+    const existing = value.dedupKey ? items.find((e) => e.dedupKey === value.dedupKey) : null;
+    if (existing) return { inserted: false, event: existing };
+    const event: NoteEvent = {
+      ...value,
+      id: (items[0]?.id ?? 0) + 1,
+      created: new Date().toISOString(),
+    };
+    localStorage.setItem(key, JSON.stringify([event, ...items]));
+    return { inserted: true, event };
+  }
   if (['annotations', 'addAnnotation', 'updateAnnotation', 'manuscriptOperation'].includes(type))
     throw new Error(t('Cette fonction est disponible dans l’application Mac.'));
   if (type === 'libraryOperation') {

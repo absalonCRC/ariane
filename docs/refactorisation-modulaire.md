@@ -53,3 +53,15 @@ La conservation de cinq captures ne démontre pas l’équivalence de tous les �
 Les invariants de sauvegarde, de révision, de conflits externes, de contexte asynchrone et de nettoyage sont couverts par les suites existantes et les contrôles ciblés ; cette couverture ne constitue pas une garantie d’absence de toute régression.
 
 Aucun format n’ayant changé, le retour au code précédent ne demande pas de migration inverse. Revenir par commits ciblés en conservant les données et copies de récupération ; ne jamais réinitialiser un manuscrit ou supprimer les travaux locaux pour annuler une refactorisation. La demande de fusion vers main reste soumise à revue ; aucune release ni fusion automatique n’est incluse.
+
+## Ajustements fonctionnels demandés après la refactorisation
+
+Les modifications suivantes sont volontaires et postérieures aux captures d’équivalence de la refactorisation : accès « Reprendre le fil » dans l’en-tête, journal local des événements de notes, centralisation des notifications globales dans la capsule supérieure, adaptation du slider aux petits écrans et zone de glissement de la fenêtre. La comparaison de pixels précédente ne doit pas être utilisée pour prétendre que ces nouveaux parcours sont identiques à l’ancienne interface.
+
+Validation de cet état 0.3.2 : **333 tests TypeScript, 158 tests Rust et 27 tests Python réussis** ; **2 tests TypeScript et 12 tests Rust ignorés**. Le build, les 23 ressources, les 76 noms IPC, Clippy et les contrôles de publication sont validés. Les tests ajoutés couvrent persistance, déduplication, pagination, réessai idempotent, réponses périmées, événements de notes, notifications de sauvegarde/liens/indexation/chargement et appel de déplacement natif.
+
+Recette navigateur sur un projet témoin distinct : création de note avec notification en haut, suggestion et consultation retrouvées dans le journal, persistance après réouverture, notification de sauvegarde sans affichage en bas, notification visible en mode focus. Mesures du slider à 390, 800, 1 000, 1 100 et 1 440 px : bouton stable verticalement ; panneau au-dessus à 1 100 px et moins ; comportement horizontal conservé à 1 440 px.
+
+Le bundle final est nommé **ariane**, signé ad hoc et non notarié. Son lancement et l’affichage du journal natif ont été vérifiés. Le mouvement physique de la fenêtre n’a pas été confirmé par les gestes automatisés ; l’appel explicite à `startDragging()` et la remontée de ses erreurs sont couverts par un test, mais une vérification manuelle du glissement reste nécessaire. Aucun manuscrit de travail n’a été saisi ou modifié par la recette ; les essais de texte ont utilisé le projet témoin navigateur.
+
+Le journal commence avec les événements observés après cette mise à jour, sans reconstruire les actions antérieures. Les consultations enregistrent une ouverture du lecteur et non une preuve de lecture intégrale. Les erreurs de formulaires et contenus de rapport restent des éléments du panneau concerné ; les notifications globales utilisent la capsule supérieure.

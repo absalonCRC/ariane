@@ -1,3 +1,4 @@
+import type { NoteEventInput } from '../contracts/noteActivity';
 import { localizeMessage, t, useLocale } from '../i18n';
 import { AnimatedDetails } from '../components/AnimatedDetails';
 import { Presence } from '../components/Presence';
@@ -40,6 +41,8 @@ export function Library({
   onIndexProgress,
   onBusy,
   onMemory,
+  onNoteActivity,
+  onNotice,
 }: {
   embedded?: boolean;
   onClose: () => void;
@@ -48,6 +51,8 @@ export function Library({
   onIndexProgress: (v: IndexProgress | null) => void;
   onBusy: (v: boolean) => void;
   onMemory?: () => void;
+  onNoteActivity?: (event: NoteEventInput) => unknown;
+  onNotice?: (message: string, tone?: 'info' | 'success' | 'error') => void;
 }) {
   useLocale();
   const [vaults, setVaults] = useState<Vault[]>([]);
@@ -71,6 +76,14 @@ export function Library({
     try {
       const result = await request('index');
       setReport(result.errors);
+      onNotice?.(
+        result.cancelled
+          ? t('Indexation suspendue.')
+          : result.errors.length
+            ? t('Certaines sources n’ont pas pu être indexées.')
+            : t('Les sources sont prêtes.'),
+        result.cancelled ? 'info' : result.errors.length ? 'error' : 'success',
+      );
       if (!result.errors.length)
         setReport([result.cancelled ? t('Indexation suspendue.') : t('Les sources sont prêtes.')]);
       setVaults(await request('vaults'));
@@ -123,6 +136,7 @@ export function Library({
       });
       setEntityName('');
       setEntityDescription('');
+      onNoteActivity?.({ kind: 'created', title: entityName.trim() });
       setAdding(false);
       void index();
     } catch (e) {

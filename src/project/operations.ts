@@ -9,6 +9,7 @@ import type { Surface } from '../app/workspace/types';
 import { ordered } from './tree';
 import type { ProjectController } from './useProject';
 interface OperationContext {
+  beforeSwitch?: () => Promise<void>;
   libraryLock: RefObject<boolean>;
   setLibraryBusy: Dispatch<SetStateAction<boolean>>;
   doc: ProjectController;
@@ -41,6 +42,7 @@ interface OperationContext {
   p: Project | null;
 }
 export function createProjectOperations({
+  beforeSwitch,
   libraryLock,
   setLibraryBusy,
   doc,
@@ -72,6 +74,7 @@ export function createProjectOperations({
         await request('settings', {
           value: { ...doc.settingsRef.current, cursor: cursor.current },
         });
+      await beforeSwitch?.();
       const project = await request('open', { path });
       if (section)
         project.settings = {

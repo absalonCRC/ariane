@@ -1,3 +1,5 @@
+import { WindowDragRegion } from './chrome/WindowDragRegion';
+import { useNoteObservations } from '../notes/useNoteObservations';
 import { WritingSurface } from './writing/WritingSurface';
 import { useBottomPanel } from './chrome/useBottomPanel';
 import { MemorySuggestion } from '../enrichment/MemorySuggestion';
@@ -13,7 +15,7 @@ import { Presence, usePresenceValue } from '../components/Presence';
 import { SelectionToolbar, type SelectionAnchor } from '../components/SelectionToolbar';
 import { WritingCounter } from '../components/WritingCounter';
 import { DepthControl } from '../components/DepthControl';
-import { ChevronRight, Pause, GitCompareArrows } from 'lucide-react';
+import { ChevronRight, GitCompareArrows } from 'lucide-react';
 import { Palette } from './Palette';
 import { request, native } from '../platform/client';
 import { Welcome } from './Welcome';
@@ -50,9 +52,9 @@ export function App() {
     document.documentElement.lang = locale;
     if (native) void request('appLanguage', { value: locale }).catch(workspace.fail);
   }, [locale, workspace.fail]);
-  const titleNotices = useTitleNotices(workspace);
   const scrollActivity = useScrollActivity();
   const memory = useMemory(workspace);
+  const titleNotices = useTitleNotices(workspace, memory.pending);
   const createNote = useNoteCreation(workspace);
   const inlineEntities = useInlineEntities(
     workspace,
@@ -60,6 +62,17 @@ export function App() {
     memory.entityError,
     memory.entityRevision,
   );
+  useNoteObservations({
+    path: workspace.p?.path,
+    activity: workspace.activity,
+    active: workspace.active,
+    sources: workspace.sources,
+    card: workspace.card?.source ?? null,
+    reader: workspace.reader,
+    batches: inlineEntities.batches,
+    result: memory.result,
+    node: memory.anchor?.node,
+  });
   useEffect(() => {
     if (import.meta.env.VITE_PERFORMANCE === '1')
       void import('../performance/native')
@@ -118,7 +131,6 @@ export function App() {
     setReader,
     searching,
     setSearch,
-    progress,
     groupOpen,
     setGroupOpen,
     ready,
@@ -151,7 +163,7 @@ export function App() {
     !newProject &&
     !workspace.newSection;
   const pinSection = workspace.editor.current?.context()?.section ?? workspace.scenes[0]?.id;
-  const marginPins = useMarginPins(p?.path, pinSection, associationVersion);
+  const marginPins = useMarginPins(p?.path, pinSection, associationVersion, workspace.activity);
   const pinIds = new Set(marginPins.sources.map((s) => s.id));
   const pinSource = (source: Source) =>
     void marginPins.pin(source).then((added) => {
@@ -213,7 +225,8 @@ export function App() {
   if (!p || newProject)
     return (
       <>
-        <Welcome onOpen={activate} onError={fail} />
+        <WindowDragRegion onError={workspace.fail} />
+        <Welcome beforeOpen={workspace.activity.flush} onOpen={activate} onError={fail} />
         {newProject && (
           <button className="return-project" onClick={() => setNewProject(false)}>
             {t('Revenir au projet')}
@@ -268,7 +281,7 @@ export function App() {
               void workspace.operate({ action: 'undo' });
             },
           }
-        : notice.kind === 'error' &&
+        : (notice.kind === 'error' || notice.kind === 'save') &&
             !workspace.error.startsWith('EXTERNAL:') &&
             doc.status === 'error'
           ? {
@@ -278,19 +291,22 @@ export function App() {
                 if (doc.status === 'error') void doc.flush().catch(fail);
               },
             }
-          : notice.kind === 'export'
-            ? {
-                label: t('Voir'),
-                onClick: () => {
-                  titleNotices.dismiss(notice);
-                  setSurface('export');
-                },
-              }
-            : undefined,
+          : notice.kind === 'index'
+            ? { label: t('Suspendre'), onClick: () => void request('cancelIndex').catch(fail) }
+            : notice.kind === 'export'
+              ? {
+                  label: t('Voir'),
+                  onClick: () => {
+                    titleNotices.dismiss(notice);
+                    setSurface('export');
+                  },
+                }
+              : undefined,
     showDetails:
       (notice.kind === 'error' &&
         (workspace.error.startsWith('EXTERNAL:') || doc.status !== 'error')) ||
-      notice.kind === 'recovery',
+      notice.kind === 'recovery' ||
+      notice.kind === 'index',
     onDismiss: () => titleNotices.dismiss(notice),
   }));
   return (
@@ -310,6 +326,7 @@ export function App() {
         (workspace.historyMode ? 'versions-mode' : '')
       }
     >
+      <WindowDragRegion onError={workspace.fail} />
       <div className="chrome-blur chrome-blur-top" aria-hidden="true">
         <span />
         <span />
@@ -335,6 +352,12 @@ export function App() {
         historyMode={workspace.historyMode}
         immersiveFocus={doc.settings.immersiveFocus}
         onToggleFocus={workspace.toggleFocus}
+        resumeOpen={memory.view?.kind === 'resume'}
+        onResume={() => {
+          setMenu(false);
+          if (memory.view?.kind === 'resume') memory.close();
+          else memory.open({ kind: 'resume' });
+        }}
         menu={menu}
         setMenu={setMenu}
         commands={commands}
@@ -563,13 +586,6 @@ export function App() {
             suggestionExcerpt={suggestionExcerpt}
           />
         )}
-      <Presence kind="content">
-        {!workspace.historyMode && memory.showResume && !memory.view && !reader && (
-          <button className="memory-resume" onClick={() => memory.open({ kind: 'resume' })}>
-            {t('Reprendre le fil')}
-          </button>
-        )}
-      </Presence>
       <Presence kind="anchored">
         {!workspace.historyMode &&
           memory.suggestion &&
@@ -621,6 +637,12 @@ export function App() {
                 payload: card.source,
               })
                 .then(() => {
+                  void workspace.activity.record({
+                    kind: 'associated',
+                    title: card.source.title,
+                    sourceId: card.source.id,
+                    section: active,
+                  });
                   setCard(null);
                   setAssociationVersion((version) => version + 1);
                   setSurface('prepare');
@@ -644,6 +666,12 @@ export function App() {
             projectPath={p.path}
             onChange={(source) => {
               if (doc.ref.current?.path === p.path) {
+                void workspace.activity.record({
+                  kind: 'updated',
+                  title: source.title,
+                  sourceId: source.id,
+                  section: active,
+                });
                 setReader((current) => (current?.id === source.id ? source : current));
                 workspace.refreshEnrichment();
                 workspace.setSourceVersion((v) => v + 1);
@@ -664,20 +692,6 @@ export function App() {
         <div className="chrome-blur chrome-blur-bottom" aria-hidden="true">
           <span />
           <span />
-        </div>
-        <div className="save-state" role="status">
-          {doc.status === 'saved' && memory.pending && !searching && t('Actualisation des liens…')}
-          <Presence kind="content">
-            {doc.status !== 'saved' && (
-              <span className="state-label" key={doc.status}>
-                {doc.status === 'saving'
-                  ? t('Enregistrement…')
-                  : doc.status === 'error'
-                    ? t('Modifications non enregistrées')
-                    : t('Modifications en cours')}
-              </span>
-            )}
-          </Presence>
         </div>
         <div
           className="bottom-controls"
@@ -831,21 +845,12 @@ export function App() {
           )}
         </div>
       </footer>
-      <Presence kind="notice">
-        {progress && (
-          <div className="index-strip">
-            <progress max={progress.total} value={progress.done} />
-            <span>
-              {t('Préparation des sources · {0} / {1}', { 0: progress.done, 1: progress.total })}
-            </span>
-            <button onClick={() => void request('cancelIndex')}>
-              <Pause size={11} />
-              {t('Suspendre')}
-            </button>
-          </div>
-        )}
-      </Presence>
-      <WorkspaceDialogs workspace={workspace} onMemory={() => memory.open({ kind: 'list' })} />
+      <WorkspaceDialogs
+        onNotice={titleNotices.notify}
+        onLoading={titleNotices.setDialogLoading}
+        workspace={workspace}
+        onMemory={() => memory.open({ kind: 'list' })}
+      />
     </div>
   );
 }

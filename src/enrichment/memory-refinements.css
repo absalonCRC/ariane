@@ -42,3 +42,10 @@
 .reader.memory-reader[data-partitioned='true'] .resume-content .resume-entry {
   padding: 10px 0;
 }
+
+.note-activity { margin: 24px 0; }
+.note-activity h3 { font: 11px var(--ui); color: var(--theme-muted, #777); }
+.note-activity ol { list-style: none; padding: 0; margin: 16px 0; }
+.note-activity li { display: grid; gap: 5px; padding: 12px 0; border-bottom: 1px solid var(--theme-line, #ddd); }
+.note-activity-action, .note-activity time { font: 10px var(--ui); color: var(--theme-muted, #777); }
+.note-activity li button, .note-activity li strong { text-align: left; font: 17px var(--literary); overflow-wrap: anywhere; }

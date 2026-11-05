@@ -303,14 +303,6 @@
   background: var(--surface);
   border-left: 1px solid var(--line);
 }
-.memory-resume {
-  position: fixed;
-  right: 30px;
-  bottom: 60px;
-  color: var(--theme-muted, #777);
-  font-family: var(--literary);
-  font-size: 15px;
-}
 .memory-reader blockquote {
   margin: 24px 0;
   font-family: var(--literary);

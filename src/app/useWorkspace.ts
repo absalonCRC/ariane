@@ -1,3 +1,4 @@
+import { useNoteActivity } from '../notes/useNoteActivity';
 import { useWorkspaceCommands } from './commands/useWorkspaceCommands';
 import { createSourceActions } from '../sources/actions';
 import { createProjectOperations } from '../project/operations';
@@ -29,6 +30,7 @@ export function useWorkspace() {
   const [error, setError] = useState('');
   const fail = useCallback((e: unknown) => setError(String(e)), []);
   const doc = useProject(fail);
+  const activity = useNoteActivity(doc.project?.path);
   const [annotationsOpen, setAnnotationsOpen] = useState(false);
   const [annotationTarget, setAnnotationTarget] = useState<AnnotationTarget | null>(null);
   const [manuscriptSelection, setManuscriptSelection] =
@@ -168,13 +170,15 @@ export function useWorkspace() {
   useNativeClose(
     doc.checkpoint,
     () =>
-      doc.ref.current
-        ? memorySessionSaver.current().then(() =>
-            request('settings', {
-              value: { ...doc.settingsRef.current, cursor: cursor.current },
-            }),
-          )
-        : Promise.resolve(),
+      activity.flush().then(() =>
+        doc.ref.current
+          ? memorySessionSaver.current().then(() =>
+              request('settings', {
+                value: { ...doc.settingsRef.current, cursor: cursor.current },
+              }),
+            )
+          : Promise.resolve(),
+      ),
     fail,
   );
   const p = doc.project;
@@ -368,6 +372,7 @@ export function useWorkspace() {
     update,
     apply,
   } = createProjectOperations({
+    beforeSwitch: activity.flush,
     libraryLock,
     setLibraryBusy,
     doc,
@@ -388,6 +393,7 @@ export function useWorkspace() {
     p,
   });
   const { registerCitation, cite, read } = createSourceActions({
+    activity,
     editor,
     doc,
     setCard,
@@ -478,6 +484,7 @@ export function useWorkspace() {
     });
   }, [passageSources, viewport, groupOpen]);
   return {
+    activity,
     appearance,
     exportJob,
     libraryBusy,

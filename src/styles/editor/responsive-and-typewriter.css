@@ -33,10 +33,6 @@
   .document-title {
     font-size: 31px !important;
   }
-  .statusbar .save-state {
-    max-width: 160px;
-    line-height: 1.4;
-  }
 }
 
 .footnote-marker {

@@ -3998,5 +3998,77 @@
   "Vos prochaines modifications créeront automatiquement des versions. Vous pourrez les comparer et reprendre les passages de votre choix.": [
     "Your next edits will automatically create versions. You can compare them and recover passages of your choice.",
     "Tus próximas modificaciones crearán versiones automáticamente. Podrás compararlas y recuperar los pasajes que elijas."
+  ],
+  "Activité des notes": [
+    "Note activity",
+    "Actividad de las notas"
+  ],
+  "Les détections, suggestions et actions sur les notes apparaîtront ici.": [
+    "Note detections, suggestions and actions will appear here.",
+    "Las detecciones, sugerencias y acciones sobre las notas aparecerán aquí."
+  ],
+  "Afficher les événements précédents": [
+    "Show earlier events",
+    "Mostrar eventos anteriores"
+  ],
+  "Note détectée": [
+    "Note detected",
+    "Nota detectada"
+  ],
+  "Note suggérée": [
+    "Note suggested",
+    "Nota sugerida"
+  ],
+  "Note ouverte": [
+    "Note opened",
+    "Nota abierta"
+  ],
+  "Consultation ouverte": [
+    "Reading opened",
+    "Consulta abierta"
+  ],
+  "Note créée": [
+    "Note created",
+    "Nota creada"
+  ],
+  "Note classée": [
+    "Note classified",
+    "Nota clasificada"
+  ],
+  "Note associée": [
+    "Note associated",
+    "Nota asociada"
+  ],
+  "Note citée": [
+    "Note cited",
+    "Nota citada"
+  ],
+  "Note épinglée": [
+    "Note pinned",
+    "Nota fijada"
+  ],
+  "Note détachée": [
+    "Note unpinned",
+    "Nota desfijada"
+  ],
+  "Note modifiée": [
+    "Note updated",
+    "Nota modificada"
+  ],
+  "Note identifiée": [
+    "Note identified",
+    "Nota identificada"
+  ],
+  "Suggestion masquée": [
+    "Suggestion hidden",
+    "Sugerencia oculta"
+  ],
+  "Modifications enregistrées": [
+    "Changes saved",
+    "Cambios guardados"
+  ],
+  "Certaines sources n’ont pas pu être indexées.": [
+    "Some sources could not be indexed.",
+    "No se han podido indexar algunas fuentes."
   ]
 }

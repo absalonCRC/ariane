@@ -1,3 +1,4 @@
+import type { NoteEventInput, NoteEvent, NoteEventPage } from './noteActivity';
 import type { Project, Section, TextPatch, ProjectEntry } from './project';
 import type { Settings } from './settings';
 import type { Source, SourcePage, Vault } from './sources';
@@ -44,6 +45,8 @@ export interface IndexReport {
   semantic: boolean;
 }
 export interface Requests {
+  noteActivity: { projectPath: string; before?: number | null };
+  recordNoteActivity: { projectPath: string; value: NoteEventInput };
   bootstrap: {};
   appLanguage: { value: string };
   annotations: { projectPath: string };
@@ -179,6 +182,8 @@ export interface Requests {
 }
 
 export interface Responses {
+  noteActivity: NoteEventPage;
+  recordNoteActivity: { inserted: boolean; event: NoteEvent };
   bootstrap: Project | null;
   appLanguage: unknown;
   annotations: Annotation[];
@@ -230,7 +235,10 @@ export interface Responses {
   memoryQueue: MemoryResult;
   memoryEntities: EntityAnalysis;
   memoryContext: MemoryResult;
-  inlineEntities: Omit<EntityBatch, 'section' | 'revision'> & { created?: boolean };
+  inlineEntities: Omit<EntityBatch, 'section' | 'revision'> & {
+    created?: boolean;
+    createdSources?: Source[];
+  };
   resolveDetectedEntity: Source;
   updateSourceAliases: Source;
   createDetectedEntity: Source;
