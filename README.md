@@ -4,85 +4,150 @@
     <img src="src/assets/ariane-wordmark-lowercase.png" alt="ariane" width="230">
   </picture>
   <p><strong>Keep the human thread.</strong></p>
-  <p>A quiet, local writing app for your manuscript, research and optional AI assistance on your Mac.</p>
-  <p>English · Français · Español</p>
-  <p><a href="#a-page-with-room-to-think">Discover ariane</a> · <a href="#see-ariane-in-action">Watch the film</a> · <a href="#try-ariane">Try ariane</a></p>
+  <p>A writing desk for your manuscript and everything that helps you write it.</p>
+  <p>Interface: English · Français · Español</p>
+  <p><a href="#how-ariane-fits-into-your-work">Discover ariane</a> · <a href="#a-page-designed-for-reading-and-writing">Explore the design</a> · <a href="#see-ariane-in-action">Watch the film</a> · <a href="#try-ariane">Try ariane</a></p>
 </div>
 
-[![ariane’s writing page with the sidebar closed, literary typography and discreet source mentions in the margin](docs/media/writing.jpg)](docs/media/writing.jpg)
+**ariane is a local writing app for macOS, built for manuscripts that grow alongside notes and research.** Write a novel, develop an essay or work through a documented narrative. Shape chapters and scenes, consult a source beside the sentence, compare drafts and pick up where you left off, in the same writing space.
 
-## A page with room to think
+The page stays at the centre. The structure, notes and tools are there when you need them; your words remain yours to write and revise. **No account or cloud service is required to write.**
 
-A title. Your words. Room around them. The library stays tucked away until you need it. Open your manuscript’s structure, then return to the page.
+[![ariane 0.3.2: a fictional manuscript in the literary writing view, with contextual notes in the margin](docs/media/0.3.2/edited/writing.png)](docs/media/0.3.2/edited/writing.png)
 
-Adjust the reading width, line spacing and focus mode to suit the way you write. ariane keeps the tools within reach and gives the sentence the space.
+_The screenshots come from the experimental ariane 0.3.2 on macOS, using the fictional project The atlas of small things. Window controls and cursors were retouched for presentation; [see the capture notes](docs/media/0.3.2/README.md)._ [Try the current version](#try-ariane).
 
-## The right context, beside the sentence
+## How ariane fits into your work
 
-Names in your draft receive automatic colors by entity type and stay visible while you edit their context. Newly detected entities automatically receive an entry in the project’s vault; ambiguous names ask you to choose an existing entry or create a separate one. Add aliases to an entry so former names and pseudonyms refer to that same entry, or open an existing research note beside the sentence. Inspect its source and linked passages, then insert a reference when it belongs in your work.
+A long text carries more than its paragraphs: a character’s earlier name, the note behind a claim, a scene you moved yesterday, a sentence that worked better in the first draft. ariane gives these things a place around the manuscript.
 
-![The full ariane window with a source card opened from a detected mention of Mara Vale](docs/media/sources.jpg)
+1. **Start a project and write.** Keep chapters, scenes and working texts in the binder, then close it when you want more room on the page.
+2. **Bring in context when you need it.** Connect a read-only Obsidian vault or create notes owned by the project. Open a note beside your text, follow its linked passages or insert a reference.
+3. **Return to your work.** The resume panel brings back your working context and recent note activity. Search, annotations and the outliner help you find and shape what matters.
+4. **Revisit and share the manuscript.** Compare versions, recover a passage and export the whole manuscript or the current section.
 
-Use an existing Obsidian vault in **read-only mode**, or create a vault owned by the project. Local memory can suggest related research notes and bring back earlier manuscript passages, with links to their source. Mentions with the same name retain separate passage references. You decide what is relevant; a suggestion is not a verified claim.
+You can also use ariane simply to write. Research connections and local AI modules are optional; your manuscript stays on your Mac.
+
+## A page designed for reading and writing
+
+The writing surface takes its cues from a printed page: a literary title, a measured text column and generous margins. **EB Garamond** gives the manuscript its book-like texture; **Figtree** and **Source Code Pro** offer sans-serif and monospace alternatives. Adjust the type size, column width and line spacing to make the page comfortable for you. Notes and controls emerge around the text, leaving the manuscript as the visual anchor.
+
+The small controls have specific jobs:
+
+- The **binder** holds the structure and can close to give the page more room. Its opening handle follows the pointer along the left edge.
+- **Source notes sit in the margin**, beside the text they relate to. A mention opens a contextual card; the full reader is there when you want to look further.
+- The **word count opens into a counter and Pomodoro timer**. Writing and reading controls gather under **Aa**, including typography, focus and scrolling.
+- A **single status capsule at the top** carries save states, note activity, indexing and errors. Details and available actions open from there.
+- **Light, dark and system themes** carry through the writing surface and its panels. Interface language is available in English, French and Spanish, independently of the manuscript’s language.
+
+Short transitions accompany panels as they open and close, and follow the system’s reduced-motion preference. The immersive focus mode clears the surrounding tools when you want to stay with the page.
+
+![ariane 0.3.2 in dark mode, showing the same fictional manuscript](docs/media/0.3.2/edited/dark.png)
 
 <details>
-<summary>From a source card to the full note</summary>
+<summary>See the writing and reading controls</summary>
 
-<p align="center"><img src="docs/media/research.jpg" alt="A close-up of ariane’s read-only source reader" width="330"></p>
+![The writing and reading panel in ariane 0.3.2, with typography, focus, scrolling and reading-comfort controls](docs/media/0.3.2/edited/settings.png)
 
 </details>
 
-## Keep the thought. Reconsider the sentence.
+## Research that meets you in the sentence
 
-Versions are saved automatically as you write, after a pause and when leaving a text. Automatic history is deduplicated and bounded; named drafts stay preserved. Compare earlier wording and recover an individual passage. ariane also saves a version before applying a passage or restoring a snapshot.
+Write a person’s name or a place into a scene. With the local entity module installed, ariane can recognize it, give it a color by type and create an entry in the project’s vault. Existing research notes can appear alongside the passage. Open the card to inspect its details and the places where it appears in your manuscript.
 
-![Earlier and current wording, enlarged from the two columns of ariane’s native comparison view](docs/media/versions.jpg)
-
-*Two excerpts from the side-by-side comparison, stacked here for readability.*
-
-## A structure that stays out of the way
-
-Chapters, scenes and working notes sit behind the page. Reorder them, read the assembled manuscript or import writing into the open project.
-
-Inside a page, the **outliner** lets you nest ideas, move an entire branch and fold it away. Drag a line above, below or inside another line, or use the keyboard to reshape the thought.
-
-![ariane’s native outliner with a moved branch and its nested child](docs/media/outliner.jpg)
-
-**Live Markdown** renders headings, emphasis and tables while you write. Table cells remain directly editable, and the text stays portable.
-
-<p align="center"><img src="docs/media/tables.jpg" alt="A close-up of an editable Markdown table: writing task, useful assistance and human decision" width="720"></p>
-
-## Your pace, your focus
-
-Keep the current **word, paragraph or sentence** in focus, or use typewriter scrolling to keep your place on the page, with optional mechanical key and carriage-return sounds. Follow the word, character or line count, and start a **25-minute Pomodoro** when it is time to settle into a draft. Optional **local dictation** lets you capture a thought aloud. The project’s names and aliases keep its lexicon up to date. Review uncertain names and recover the original transcript when cleanup changes the wording.
-
-![Paragraph focus in the native editor, with surrounding paragraphs softly dimmed](docs/media/focus.jpg)
-
-## Daylight. Late night. Your language.
-
-Light, dark and system themes. An interface in **English, French or Spanish**. Your language choice is remembered; your manuscript keeps its own language.
-
-![A close view of ariane’s dark writing surface and typography, with the sidebar closed](docs/media/dark.jpg)
-
-## Find it. Finish it. Take it with you.
-
-Search project texts from the page. Find vault notes by wording or meaning, with priority for exact titles and unambiguous aliases. Export your whole manuscript or the current section as **Markdown, PDF, Word or EPUB**, with citations.
+![ariane 0.3.2 with a source card for the fictional character Clara Dumas beside her scene](docs/media/0.3.2/edited/sources.png)
 
 <details>
-<summary>Search without leaving the page</summary>
+<summary>See a note open beside the manuscript</summary>
 
-<p align="center"><img src="docs/media/search.jpg" alt="Close-up of the search popover, with manuscript passages matching human thread" width="640"></p>
+![Animation recorded in ariane 0.3.2: a contextual note opens beside the manuscript](docs/media/0.3.2/actions/note.gif)
+
+![Animation recorded in ariane 0.3.2: the full source reader opens from the note](docs/media/0.3.2/actions/reader.gif)
 
 </details>
 
-<details>
-<summary>Four formats, one export panel</summary>
+Connect an existing **Obsidian vault in read-only mode**, or keep new notes in a vault owned by the project. External notes stay in their original files. Add aliases to a project entry so a former name or pseudonym points to the same person; when a name is ambiguous, choose the relevant entry or confirm a separate one.
 
-<p align="center"><img src="docs/media/export.jpg" alt="Close-up of the native export panel with Markdown, PDF, Word and EPUB formats" width="390"></p>
+The **source-depth control** broadens the research around a passage: detected notes, direct links, shared themes and more distant connections. Local semantic retrieval can suggest notes with related meaning and recall earlier manuscript passages. Each suggestion leads back to its source so you can assess it. A matching name or a semantic connection does not establish a fact.
+
+Use annotations for your own questions and reminders. They stay attached to a selected passage, separate from the manuscript and its exports. When a source belongs in the text, insert a citation or reference at the cursor.
+
+<details>
+<summary>Read the source beside your manuscript</summary>
+
+![The current native source reader, opened on a fictional research note](docs/media/0.3.2/edited/research.png)
 
 </details>
 
-The project stays local in SQLite with readable Markdown mirrors. ariane detects conflicting external edits and preserves a recovery copy during resolution.
+## Pick up the thread of your work
+
+The resume button in the upper-right corner opens your last working passage, the previous passage and the last source consulted when that context is available. A local activity journal records detected, suggested, opened and created notes, along with actions such as classification, association, citation, pinning and editing. Reopen a note directly from its entry.
+
+![ariane 0.3.2 with the resume panel and its local note-activity journal](docs/media/0.3.2/edited/resume.png)
+
+<details>
+<summary>See the resume panel open</summary>
+
+![Animation recorded in ariane 0.3.2: the resume panel opens with recent note activity](docs/media/0.3.2/actions/resume.gif)
+
+</details>
+
+New activity appears briefly in the top capsule while you work. The journal keeps the dated entries for later; opening it does not replay old notifications. It starts with activity observed by the updated app and does not reconstruct earlier actions.
+
+## From an idea to a manuscript
+
+Keep chapters, scenes and working texts in the binder. Reorder them, choose which texts belong in the manuscript and read the included scenes continuously. Import Markdown, plain text, Word or TextBundle material into the open project as it grows.
+
+Inside a page, the **outliner** works at the scale of an idea. Nest a passage beneath another, move its whole branch and fold it away. Drag above, below or inside a line, or use Tab, Shift+Tab and Option+↑/↓ from the keyboard. The hierarchy is saved with the text.
+
+![A native ariane 0.3.2 outline with nested scenes and working questions](docs/media/0.3.2/edited/outliner.png)
+
+**Live Markdown** renders headings, emphasis and tables as you write. Table cells remain editable in place. Search within the open text, or find vault notes by wording and meaning, with priority given to exact titles and unambiguous aliases.
+
+<details>
+<summary>Editable tables and contextual search</summary>
+
+![An editable Markdown table in ariane 0.3.2](docs/media/0.3.2/edited/tables.png)
+
+![The current native search surface with results from the demonstration project](docs/media/0.3.2/edited/search.png)
+
+</details>
+
+## Find a rhythm, then revisit the draft
+
+Keep a **word, sentence or paragraph** in focus while the surrounding text dims. Typewriter scrolling keeps your place on the page; optional mechanical key and carriage-return sounds add an audible rhythm. Check words, characters or lines from the counter, or begin a **25-minute Pomodoro**.
+
+![Paragraph focus in ariane 0.3.2, with the surrounding prose dimmed](docs/media/0.3.2/edited/focus.png)
+
+<details>
+<summary>See immersive focus mode</summary>
+
+![Animation recorded in ariane 0.3.2: the surrounding controls and notes recede as immersive focus opens](docs/media/0.3.2/actions/focus.gif)
+
+</details>
+
+Versions are saved automatically as you write, after a pause and when leaving a text. Keep a named draft before trying another direction. Compare earlier and current wording side by side, move through the changes and recover an individual passage. ariane saves a version before applying a passage or restoring a snapshot. Automatic history is deduplicated and bounded; named drafts stay preserved.
+
+![ariane 0.3.2 comparing an earlier and current draft in its native two-column Versions view](docs/media/0.3.2/edited/versions.png)
+
+## Local assistance, at your request
+
+Optional **local dictation** lets you speak a thought into the page. Click for continuous dictation, or hold the microphone button to talk and release to transcribe. Project names and aliases supply its lexicon. Review uncertain names and recover the original transcript when cleanup changes the wording.
+
+For revision, select a passage and ask ariane to review it. Grammar suggestions appear first, followed by suggestions from the local model, using nearby text as context. Each correction needs your choice. Suggestions can be wrong or miss something; your manuscript remains yours to revise.
+
+Entity detection, dictation and revision use engines running on your Mac. An Internet connection is needed to download and install the engines and models. **You can write, save and export without installing the optional modules.**
+
+## A manuscript you can take with you
+
+Export the whole manuscript or the current section as **Markdown, PDF, Word or EPUB**, with citations. The project stays local in SQLite with readable Markdown mirrors. ariane detects conflicting external edits and preserves a recovery copy during resolution.
+
+<details>
+<summary>Choose an export format</summary>
+
+![The native ariane 0.3.2 export panel with Markdown, PDF, Word and EPUB formats](docs/media/0.3.2/edited/export.png)
+
+</details>
 
 ## See ariane in action
 
@@ -90,21 +155,13 @@ The project stays local in SQLite with readable Markdown mirrors. ariane detects
 
 [![ariane — In context: watch the 59.5-second film](docs/media/film-poster.jpg)](https://github.com/absalonCRC/ariane/raw/refs/heads/main/docs/media/ariane-film.mp4)
 
-The film follows native interactions in **ariane 0.2.0-alpha.1 on macOS**: live Markdown, automatic entity colors and entry creation, search results, local transcription, mouse outlining, focus, word counts, Pomodoro and draft comparison. It opens on a line being typed, with ariane’s mechanical key sounds before the music. A male English voice-over follows the actions, with animated paper-and-thread transitions made using Imagegen and Fal.
+**This film is an earlier look at ariane 0.2.0-alpha.1, not a recording of the current interface.** The screenshots above show 0.3.2. The film follows native interactions on macOS: live Markdown, automatic entity colors and entry creation, search results, local transcription, mouse outlining, focus, word counts, Pomodoro and draft comparison. It opens on a line being typed, with ariane’s mechanical key sounds before the music. A male English voice-over follows the actions, with animated paper-and-thread transitions made using Imagegen and Fal.
 
 The dictation sequence uses GPT-generated audio supplied to the real local transcription and editor pipeline in a dedicated capture build. [Recording methods and media provenance](docs/media/README.md) explain the setup.
 
-*The Human Thread* is fictional demo material about AI and authorship. The newer *The Connected Page* project uses illustrative prose naming Ada Lovelace and London, rather than historical quotations.
+_The Human Thread_ is fictional demo material about AI and authorship. The newer _The Connected Page_ project uses illustrative prose naming Ada Lovelace and London, rather than historical quotations.
 
 [Explore the demo material](examples/the-human-thread) · [Media provenance and film transcript](docs/media/README.md)
-
-## Local by design
-
-**No account or cloud service is required to write.** Your manuscript and its processing stay on your Mac. Engines and models need an Internet connection when they are downloaded and installed.
-
-Optional local modules add entity detection, dictation and revision assistance. For a selected passage, revision shows grammar suggestions first, followed by suggestions from the local model. Nearby text supplies context. Revision suggestions remain yours to review; each correction needs your choice. You can write, save and export without installing these modules.
-
-ariane is for novels, essays, documented narratives, theses and any long-form work that grows alongside research. It also works as a quiet place to write with no connected vault.
 
 ## Try ariane
 
