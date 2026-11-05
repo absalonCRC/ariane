@@ -5,7 +5,7 @@ export function prepareTextInsertion(view: EditorView, current: () => EditorView
   let expected = view.state.doc;
   let { from, to } = view.state.selection.main;
   const insert = (text: string): boolean => {
-    if (current() !== view || view.state.doc !== expected) return false;
+    if (current() !== view || view.state.doc !== expected || view.state.readOnly) return false;
     const transaction = view.state.update({
       changes: { from, to, insert: text },
       selection: { anchor: from + text.length },

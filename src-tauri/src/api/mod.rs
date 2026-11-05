@@ -226,7 +226,8 @@ pub fn handle(
                 )
             };
             match other {
-                request @ (Request::NoteActivity { .. }
+                request @ (Request::SmartTagOperation { .. }
+                | Request::NoteActivity { .. }
                 | Request::RecordNoteActivity { .. }
                 | Request::Annotations { .. }
                 | Request::AddAnnotation { .. }

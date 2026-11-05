@@ -4,20 +4,20 @@ use crate::{
 };
 use rusqlite::{Connection, OptionalExtension, Row};
 pub fn sections(c: &Connection) -> Result<Vec<Section>> {
-    let mut q = c.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE trashed=0 ORDER BY position,id").app()?;
+    let mut q = c.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids FROM sections WHERE trashed=0 ORDER BY position,id").app()?;
     let rows = q.query_map([], row_section).app()?;
     rows.collect::<std::result::Result<Vec<_>, _>>().app()
 }
 
 pub fn all_sections(c: &Connection) -> Result<Vec<Section>> {
-    let mut q=c.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections ORDER BY position,id").app()?;
+    let mut q=c.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids FROM sections ORDER BY position,id").app()?;
     let rows = q.query_map([], row_section).app()?;
     rows.collect::<std::result::Result<Vec<_>, _>>().app()
 }
 
 pub fn section(c: &Connection, id: &str) -> Result<Option<Section>> {
     super::validate_id(id)?;
-    c.query_row("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE id=? AND trashed=0", [id], row_section)
+    c.query_row("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids FROM sections WHERE id=? AND trashed=0", [id], row_section)
         .optional().app()
 }
 
@@ -47,6 +47,7 @@ pub(crate) fn row_section(r: &Row<'_>) -> rusqlite::Result<Section> {
         .transpose()?;
     Ok(Section {
         id,
+        tag_ids: serde_json::from_str(&r.get::<_, String>(14)?).map_err(|e| rusqlite::Error::FromSqlConversionFailure(14, rusqlite::types::Type::Text, Box::new(e)))?,
         parent: r.get(1)?,
         title: r.get(2)?,
         kind: r.get(3)?,

@@ -10,4 +10,5 @@ export type Surface =
   | 'export'
   | 'projects'
   | 'import'
-  | 'manuscript';
+  | 'manuscript'
+  | 'tags';

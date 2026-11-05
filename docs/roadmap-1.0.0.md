@@ -2,7 +2,7 @@
 
 Date de cadrage : **4 novembre 2026**. Échéance impérative demandée : **version stable prête à être distribuée avant le 1er janvier 2027**. Cible de livraison : **30 décembre 2026**, avec le 31 décembre comme dernier jour de réserve.
 
-Statut : **roadmap issue des 20 réponses ; implémentation de développement 0.3.0 réalisée le 4 novembre 2026**. Les versions suivantes restent planifiées. La recette de dictée au microphone en application native et l’endurance restent à compléter ; aucune publication publique n’est effectuée.
+Statut : **roadmap issue des 20 réponses ; jalons de développement 0.3.0 et 0.4.0 implémentés les 4–5 novembre 2026**. Les jalons 0.5.0 et suivants restent planifiés ; voir les notes de version pour les preuves et limites de qualification. La recette de dictée au microphone en application native et l’endurance restent à compléter ; aucune release publique du paquet final n’est publiée.
 
 > Exécution future : réaliser les lots dans l’ordre de leurs dépendances, avec une démonstration et une recette à chaque version. Les jalons décrivent des résultats utilisables. Les changements de périmètre nécessitent une nouvelle décision du propriétaire du projet ; aucun élément convenu n’est reporté automatiquement après la 1.0.0.
 
@@ -14,7 +14,7 @@ Statut : **roadmap issue des 20 réponses ; implémentation de développement 0.
 
 ## 1. Faisabilité et engagement de périmètre
 
-Les 12 idées initiales et tous les ajouts retenus font partie de la 1.0.0. Cela comprend les relations entre entités, les vues filtrées, les commandes et raccourcis personnalisables, la reprise complète et les objectifs de mots. Les versions initiales sont volontairement précises : tags sans champs, vues filtrées en consultation, prédiction d’un mot, relations dans les fiches et lecteur PDF/image.
+Les 12 idées initiales et tous les ajouts retenus font partie de la 1.0.0. Cela comprend les relations entre entités, les vues filtrées, les commandes et raccourcis personnalisables, la reprise complète et les objectifs de mots. Les versions initiales sont volontairement précises : tags avec propriétés personnalisées depuis les précisions du 5 novembre, vues filtrées en consultation, prédiction d’un mot, relations dans les fiches et lecteur PDF/image.
 
 Le calendrier repose sur un travail presque quotidien avec Codex et des validations régulières de l’utilisateur. Du 4 novembre au 31 décembre, il existe **58 jours calendaires et 42 jours du lundi au vendredi, avant prise en compte des jours fériés**. La période des fêtes réduit potentiellement la disponibilité des testeurs.
 
@@ -31,7 +31,7 @@ Si un jalon dépasse son enveloppe, publier immédiatement une prévision révis
 | 03 | Apple Silicon et macOS 26+ uniquement pour la 1.0.0. |
 | 04 | Priorités d’usage : mode focus, smart-tags, puis persistance et actualisation locale des suggestions. |
 | 05 | Le focus conserve une correction orthographique et une suggestion du prochain mot discrètes. |
-| 06 | Smart-tags simples : nom, couleur, catégorie/type, sans champs personnalisés ni règles d’attribution automatique. |
+| 06 | Smart-tags : nom, couleur, catégorie/type. Décision révisée le 5 novembre : propriétés typées héritables et alimentation configurée depuis les mentions, sans inférence automatique de relations sémantiques. |
 | 07 | Héritage entre lignes d’outline et dans la hiérarchie chapitres/sections/scènes/contenu. |
 | 08 | Une source modifiée actualise automatiquement les suggestions concernées seulement. |
 | 09 | Le mode compact crée des notes dans une boîte de réception globale, à rattacher ensuite à un projet. |
@@ -118,20 +118,28 @@ L’ordre des premiers lots respecte la priorité focus puis tags. La persistanc
 
 **Suivi du 4 novembre.** Implémentation de la 0.3.0, versions npm/Cargo/Tauri alignées. Vérification complète réussie : 304 tests TypeScript, 27 Python, 141 Rust, ressources, build et Clippy. Paquet macOS local construit, version 0.3.0 arm64, signature ad hoc et 23 ressources embarquées vérifiées. Recette de rendu Chrome/Playwright en 1440 × 1000 et 800 × 650, avec projet fictif et page héritée, sans erreur console. Les cas ignorés de la suite, la dictée réelle en focus et l’endurance sont documentés dans [les notes 0.3.0](https://github.com/absalonCRC/ariane/blob/main/docs/release-notes-0.3.0.md).
 
-### 0.4.0 — Structurer avec des smart-tags simples
+### 0.4.0 — Smart-tags, propriétés et vues
 
 **Résultat.** Appliquer plusieurs smart-tags inline à une ligne d’outline ou à un chapitre, une section, une note ou une scène. Un tag possède un nom, une couleur et un type/catégorie. Son identité reste stable lors d’un renommage.
 
-- [ ] Créer les définitions et affectations explicites des tags ; séparer les smart-tags du projet des tags déjà lus dans les sources externes.
-- [ ] Calculer l’héritage à travers la structure des textes et celle de l’outline. Afficher discrètement la provenance d’un tag hérité et éviter les doublons entre héritage et affectation directe.
-- [ ] Ajouter une saisie inline par `#` et autocomplétion ; un tag saisi devient une métadonnée attachée au bon élément, sans polluer le texte littéraire exporté.
-- [ ] Créer le gestionnaire d’administration : créer, renommer, typer, colorer, fusionner, supprimer et afficher le nombre d’utilisations. Les opérations modifient les affectations, jamais le texte du manuscrit.
-- [ ] Garantir les tags à travers déplacements, annulation/rétablissement, corbeille, restauration d’une version, scission et réunion des textes.
-- [ ] Ajouter **Shift + clic sur les points de l’outline** pour sélectionner le contenu complet des lignes. Convention proposée : le premier Shift-clic établit l’ancre, les suivants étendent une plage contiguë ; les descendants d’une branche sélectionnée sont inclus, même repliés. Ne pas déclencher en même temps le pliage ou le glisser-déposer. Vérifier le geste avec l’utilisateur pendant la recette.
+- [x] Créer les définitions et affectations explicites des tags ; séparer les smart-tags du projet des tags déjà lus dans les sources externes.
+- [x] Calculer l’héritage à travers la structure des textes et celle de l’outline. Afficher discrètement la provenance d’un tag hérité et éviter les doublons entre héritage et affectation directe.
+- [x] Ajouter une saisie inline par `#` et autocomplétion ; un tag saisi devient une métadonnée attachée au bon élément, sans polluer le texte littéraire exporté.
+- [x] Créer le gestionnaire d’administration : créer, renommer, typer, colorer, fusionner, supprimer et afficher le nombre d’utilisations. Les opérations modifient les affectations, jamais le texte du manuscrit.
+- [x] Garantir les tags à travers déplacements, annulation/rétablissement, corbeille, restauration d’une version, scission et réunion des textes.
+- [x] Ajouter **Shift + clic sur les points de l’outline** pour sélectionner le contenu complet des lignes. Convention proposée : le premier Shift-clic établit l’ancre, les suivants étendent une plage contiguë ; les descendants d’une branche sélectionnée sont inclus, même repliés. Ne pas déclencher en même temps le pliage ou le glisser-déposer. Vérifier le geste avec l’utilisateur pendant la recette.
 
 **Recette de sortie.** Un chapitre et une ligne parent transmettent leurs tags à tous leurs descendants ; déplacer une branche réévalue uniquement son héritage, en conservant ses tags propres. Renommer/fusionner un tag conserve les liens. Fermer/réouvrir puis restaurer une version retrouve les tags attendus. Une sélection Shift permet de copier exactement le contenu complet des lignes, y compris une branche repliée.
 
 **Dépendance.** Identités et métadonnées de 0.3.0. Le gestionnaire de tags n’ajoute pas de vue de navigation permanente : celle-ci arrivera dans la recherche en 0.5.0.
+
+**Précisions du 5 novembre, demandées par l’utilisateur.** Création/réutilisation automatique par `#nom`, couleurs distinctes à la création, libellés à la fin du passage (le placement à gauche essayé pendant la recette est abandonné), points d’outline colorés selon les tags effectifs, répétitions de libellés masquées sur les enfants sans retirer l’héritage. Le gestionnaire est une page plein écran accessible depuis la sidebar ; aucun formulaire d’ajout sous le titre. Un clic sur un tag ouvre une projection temporaire en lecture seule, directs et hérités compris, puis rejoint l’original par clic. Ce parcours simple de 0.5.0 est avancé ; les requêtes combinées, vues enregistrées et raccourcis restent au jalon suivant. Les [notes 0.4.0](release-notes-0.4.0.md) distinguent implémentation, recette et limites. Le geste Maj-clic reste à valider par l’utilisateur.
+
+**Ajouts validés pendant la recette du 5 novembre.** Les tags du titre se saisissent par `#nom`, s’affichent sur la même ligne en petite typographie, près du titre, et sont hérités par toutes les lignes de la page. Fond capsule et croix de retrait apparaissent au survol ; la croix retire une affectation, pas la définition du tag. Les points sans tag restent masqués hors survol ; un chevron distinct possède le pliage. Un clic sur le point ouvre les propriétés de la ligne dans la marge droite.
+
+Les propriétés des tags sont du texte, une date, un nombre, une case ou un lien nommé vers une note ou une ligne existante. Les mentions actuelles et non ambiguës alimentent les champs de lien configurés par type ; les valeurs saisies restent prioritaires. Cette évolution lève l’exclusion initiale des champs personnalisés. Les identités stables et références préparent le graphe interconnecté souhaité ; sa visualisation complète n’est pas livrée ici.
+
+La vue d’un tag couvre toutes les pages et les héritages. Elle conserve le chrome, la recherche et le compteur adapté aux passages affichés. Le bouton à la place de « Aa » alterne texte/tableau ; le tableau présente toutes les propriétés actives et adapte sa largeur aux colonnes. La profondeur est désactivée pendant le filtre. La capsule de titre et de notifications est réutilisée selon le contexte ; la branche apparaît uniquement si une variante existe, et jamais pendant une notification.
 
 ### 0.5.0 — Retrouver, relier et commander depuis la recherche
 
@@ -250,7 +258,7 @@ Les décisions de l’entretien sont conservées dans la section 2. Les points c
 | Sujet | Convention proposée pour la 1.0.0 |
 | --- | --- |
 | Portée des tags | Définitions et affectations propres au projet. Les sources externes gardent leurs tags d’origine. Pas de synchronisation interprojets implicite. |
-| Type d’un smart-tag | Catégorie descriptive configurable, sans ajout de champs ni de règles automatiques. Cela reste distinct du type d’une entité. |
+| Type d’un smart-tag | Catégorie descriptive configurable, distincte du type d’une entité. Depuis la demande du 5 novembre, chaque tag peut aussi définir des propriétés typées héritables. |
 | Héritage | Union dynamique des tags directs et des ancêtres, sans copier toutes les affectations dans chaque enfant. Pas d’exceptions négatives d’héritage dans cette première version. Retirer un tag direct ne masque pas un même tag encore hérité. |
 | Métadonnées inline | Les smart-tags sont visibles au bon endroit dans l’éditeur, conservés dans les données du projet et exclus par défaut du texte littéraire exporté. Ils restent restaurables avec le projet et ses versions. |
 | Scission/réunion | Les IDs des passages non modifiés sont conservés autant que possible. Les tags directs d’un bloc scindé suivent les fragments ; les fusions dédupliquent les tags. Les liens ambigus sont signalés, pas devinés. |

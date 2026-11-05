@@ -4,22 +4,13 @@ import type { BinderProps } from './binder/types';
 import { t } from '../i18n';
 import { createPortal } from 'react-dom';
 import { SidebarDock } from '../components/SidebarDock';
+import { BinderActions } from './BinderActions';
 import { trackSidebarPointer } from './sidebarPointer';
 import { Dialog } from '../components/Dialog';
 import { SourceBrowser } from '../sources/Browser';
 import { ProjectCatalog } from './ProjectCatalog';
 import { descendants, sectionPath, canMoveToParent } from './tree';
-import {
-  ChevronDown,
-  ChevronLeft,
-  Plus,
-  Copy,
-  Trash2,
-  Undo2,
-  MoreHorizontal,
-  GitCompareArrows,
-  Settings2,
-} from 'lucide-react';
+import { ChevronDown, ChevronLeft, Plus, Copy, Trash2, Undo2, MoreHorizontal } from 'lucide-react';
 
 const draftId = '__ariane_new_section__';
 export function Binder(p: BinderProps) {
@@ -61,31 +52,12 @@ export function Binder(p: BinderProps) {
   } = controller;
 
   const footerActions = (
-    <>
-      <button
-        aria-current={p.historyMode ? 'page' : undefined}
-        aria-label={t('Versions')}
-        data-tooltip={t('Versions')}
-        onClick={() => p.onSurface('history')}
-      >
-        <GitCompareArrows size={17} aria-hidden="true" />
-      </button>
-      <button
-        aria-label={t('Corbeille')}
-        aria-pressed={trash}
-        data-tooltip={t('Corbeille')}
-        onClick={() => changeView('trash')}
-      >
-        <Trash2 size={17} aria-hidden="true" />
-      </button>
-      <button
-        aria-label={t('Paramètres')}
-        data-tooltip={t('Paramètres')}
-        onClick={() => p.onSurface('preferences')}
-      >
-        <Settings2 size={17} aria-hidden="true" />
-      </button>
-    </>
+    <BinderActions
+      historyMode={p.historyMode}
+      trash={trash}
+      onSurface={p.onSurface}
+      onTrash={() => changeView('trash')}
+    />
   );
   return (
     <aside

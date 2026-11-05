@@ -152,9 +152,9 @@ mod tests {
         let id = &p.sections[0].id;
         project::save(root,vec![crate::model::TextPatch {id:id.clone(),revision:0,
             text:"Alpha.\nBeta.\nGamma.".into(),outline:Some(crate::model::Outline {version:1,nodes:vec![
-                crate::model::OutlineNode{id:"a".into(),parent:None,start:0},
-                crate::model::OutlineNode{id:"b".into(),parent:None,start:7},
-                crate::model::OutlineNode{id:"c".into(),parent:None,start:13},
+                crate::model::OutlineNode{ properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],id:"a".into(),parent:None,start:0},
+                crate::model::OutlineNode{ properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],id:"b".into(),parent:None,start:7},
+                crate::model::OutlineNode{ properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],id:"c".into(),parent:None,start:13},
             ]})}]).unwrap();
         sync(root).unwrap();
         let mut vector = vec![0f32;768]; vector[0] = 1.;
@@ -176,9 +176,9 @@ mod tests {
         let project = project::create(root,"Blocs").unwrap();
         let id = &project.sections[0].id;
         let outline = |middle: &str| crate::model::Outline { version: 1, nodes: vec![
-            crate::model::OutlineNode {id:"a".into(),parent:None,start:0},
-            crate::model::OutlineNode {id:"b".into(),parent:None,start:7},
-            crate::model::OutlineNode {id:"c".into(),parent:None,start:7+middle.encode_utf16().count()+1},
+            crate::model::OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],id:"a".into(),parent:None,start:0},
+            crate::model::OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],id:"b".into(),parent:None,start:7},
+            crate::model::OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],id:"c".into(),parent:None,start:7+middle.encode_utf16().count()+1},
         ]};
         project::save(root,vec![crate::model::TextPatch {id:id.clone(),revision:0,text:"Alpha.\nBeta.\nGamma.".into(),outline:Some(outline("Beta."))}]).unwrap();
         let engine = Mutex::new(Engine::default());

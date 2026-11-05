@@ -2,7 +2,7 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { expect, it, vi } from 'vitest';
-import { WindowDragRegion } from '../src/app/chrome/WindowDragRegion';
+import { WindowDragRegion } from '../src/components/WindowDragRegion';
 const drag = vi.hoisted(() => vi.fn(async () => {}));
 vi.mock('@tauri-apps/api/window', () => ({ getCurrentWindow: () => ({ startDragging: drag }) }));
 vi.mock('../src/platform/client', () => ({ native: true }));

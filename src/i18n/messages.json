@@ -4358,5 +4358,497 @@
   "{0} divergence{1} à départager": [
     "{0} difference{1} need a choice",
     "{0} diferencia{1} requieren una elección"
+  ],
+  "Gérer les smart-tags": [
+    "Manage smart tags",
+    "Gestionar smart-tags"
+  ],
+  "Maj-clic : sélectionner la branche": [
+    "Shift-click: select branch",
+    "Mayús-clic: seleccionar la rama"
+  ],
+  "Le texte a changé. Saisissez à nouveau le smart-tag.": [
+    "The text changed. Enter the smart tag again.",
+    "El texto ha cambiado. Vuelve a introducir el smart-tag."
+  ],
+  "Smart-tag du projet": [
+    "Project smart tag",
+    "Smart-tag del proyecto"
+  ],
+  "Hérité de {0}": [
+    "Inherited from {0}",
+    "Heredado de {0}"
+  ],
+  "Retirer le tag {0}": [
+    "Remove tag {0}",
+    "Retirar la etiqueta {0}"
+  ],
+  "Tag hérité": [
+    "Inherited tag",
+    "Etiqueta heredada"
+  ],
+  "Ajouter un smart-tag": [
+    "Add a smart tag",
+    "Añadir un smart-tag"
+  ],
+  "Nom du smart-tag": [
+    "Smart tag name",
+    "Nombre del smart-tag"
+  ],
+  "Choisir ou créer un smart-tag": [
+    "Choose or create a smart tag",
+    "Elegir o crear un smart-tag"
+  ],
+  "Les tags organisent les textes sans apparaître dans les exports. Les tags des sources restent distincts.": [
+    "Tags organize your texts without appearing in exports. Source tags remain separate.",
+    "Las etiquetas organizan los textos sin aparecer en las exportaciones. Las etiquetas de las fuentes siguen separadas."
+  ],
+  "{0} affectations directes": [
+    "{0} direct assignments",
+    "{0} asignaciones directas"
+  ],
+  "Fusionner ou supprimer {0}": [
+    "Merge or delete {0}",
+    "Fusionar o eliminar {0}"
+  ],
+  "Créer un smart-tag": [
+    "Create a smart tag",
+    "Crear un smart-tag"
+  ],
+  "Couleur": [
+    "Color",
+    "Color"
+  ],
+  "Le texte sera conservé. Une version du projet permettra de restaurer les tags précédents.": [
+    "Your text will be kept. A project version will let you restore the previous tags.",
+    "El texto se conservará. Una versión del proyecto permitirá restaurar las etiquetas anteriores."
+  ],
+  "Fusionner vers": [
+    "Merge into",
+    "Fusionar con"
+  ],
+  "Choisir un smart-tag": [
+    "Choose a smart tag",
+    "Elegir un smart-tag"
+  ],
+  "Supprimer ce smart-tag": [
+    "Delete this smart tag",
+    "Eliminar este smart-tag"
+  ],
+  "Fusionner": [
+    "Merge",
+    "Fusionar"
+  ],
+  "Smart-tag invalide.": [
+    "Invalid smart tag.",
+    "Smart-tag no válido."
+  ],
+  "Ce nom de smart-tag existe déjà.": [
+    "This smart tag name already exists.",
+    "Este nombre de smart-tag ya existe."
+  ],
+  "Limite de smart-tags atteinte.": [
+    "Smart tag limit reached.",
+    "Se ha alcanzado el límite de smart-tags."
+  ],
+  "Smart-tag introuvable.": [
+    "Smart tag not found.",
+    "Smart-tag no encontrado."
+  ],
+  "Fusion de smart-tags invalide.": [
+    "Invalid smart tag merge.",
+    "Fusión de smart-tags no válida."
+  ],
+  "Affectation de smart-tags invalide.": [
+    "Invalid smart tag assignment.",
+    "Asignación de smart-tags no válida."
+  ],
+  "Smart-tag indisponible.": [
+    "Smart tag unavailable.",
+    "Smart-tag no disponible."
+  ],
+  "Avant modification des smart-tags": [
+    "Before smart tag changes",
+    "Antes de los cambios de smart-tags"
+  ],
+  "Smart-tags": [
+    "Smart tags",
+    "Smart-tags"
+  ],
+  "Smart-tags du projet": [
+    "Project smart tags",
+    "Smart-tags del proyecto"
+  ],
+  "{0} smart-tags": [
+    "{0} smart tags",
+    "{0} smart-tags"
+  ],
+  "Nouveau tag": [
+    "New tag",
+    "Nueva etiqueta"
+  ],
+  "Rechercher un smart-tag": [
+    "Search smart tags",
+    "Buscar un smart-tag"
+  ],
+  "Toutes les catégories": [
+    "All categories",
+    "Todas las categorías"
+  ],
+  "Sans catégorie": [
+    "Uncategorized",
+    "Sin categoría"
+  ],
+  "Écrivez #histoire dans le manuscrit pour créer ou retrouver un tag automatiquement.": [
+    "Write #story in your manuscript to create or find a tag automatically.",
+    "Escribe #historia en el manuscrito para crear o recuperar una etiqueta automáticamente."
+  ],
+  "Administration du smart-tag": [
+    "Smart tag administration",
+    "Administración del smart-tag"
+  ],
+  "Des repères pour votre écriture": [
+    "Reference points for your writing",
+    "Referencias para tu escritura"
+  ],
+  "Sélectionnez un tag pour modifier son nom, sa couleur, sa catégorie et ses affectations.": [
+    "Select a tag to edit its name, color, category and assignments.",
+    "Selecciona una etiqueta para editar su nombre, color, categoría y asignaciones."
+  ],
+  "Voir les passages dans le texte": [
+    "View passages in the text",
+    "Ver los pasajes en el texto"
+  ],
+  "Affectations": [
+    "Assignments",
+    "Asignaciones"
+  ],
+  "Les affectations directes transmettent le tag à leurs descendants. La corbeille est incluse ci-dessous.": [
+    "Direct assignments pass the tag to their descendants. Items in the trash are included below.",
+    "Las asignaciones directas transmiten la etiqueta a sus descendientes. La papelera se incluye a continuación."
+  ],
+  "Passage vide": [
+    "Empty passage",
+    "Pasaje vacío"
+  ],
+  "Tout ce texte et ses descendants": [
+    "This entire text and its descendants",
+    "Todo este texto y sus descendientes"
+  ],
+  "Retirer cette affectation": [
+    "Remove this assignment",
+    "Quitar esta asignación"
+  ],
+  "Retirer": [
+    "Remove",
+    "Quitar"
+  ],
+  "Affecter à un texte": [
+    "Assign to a text",
+    "Asignar a un texto"
+  ],
+  "Choisir un texte": [
+    "Choose a text",
+    "Elegir un texto"
+  ],
+  "Affecter": [
+    "Assign",
+    "Asignar"
+  ],
+  "Fusion et suppression": [
+    "Merge and delete",
+    "Fusión y eliminación"
+  ],
+  "Fusionner ou supprimer ce tag": [
+    "Merge or delete this tag",
+    "Fusionar o eliminar esta etiqueta"
+  ],
+  "Afficher les passages avec {0}": [
+    "Show passages tagged {0}",
+    "Mostrar los pasajes con {0}"
+  ],
+  "Vue filtrée par smart-tag": [
+    "View filtered by smart tag",
+    "Vista filtrada por smart-tag"
+  ],
+  "{0} passages dans {1} textes": [
+    "{0} passages in {1} texts",
+    "{0} pasajes en {1} textos"
+  ],
+  "Vue temporaire en lecture seule · Cliquez sur un passage pour modifier son original.": [
+    "Temporary read-only view · Click a passage to edit its original.",
+    "Vista temporal de solo lectura · Haz clic en un pasaje para editar su original."
+  ],
+  "Aucun passage ne porte ce smart-tag.": [
+    "No passages have this smart tag.",
+    "Ningún pasaje tiene este smart-tag."
+  ],
+  "Ouvrir le passage original dans {0}": [
+    "Open the original passage in {0}",
+    "Abrir el pasaje original en {0}"
+  ],
+  "Passage introuvable.": [
+    "Passage not found.",
+    "Pasaje no encontrado."
+  ],
+  "{0} passage{1} dans {2} texte{3}": [
+    "{0} passage{1} in {2} text{3}",
+    "{0} pasaje{1} en {2} texto{3}"
+  ],
+  "{0} smart-tag{1}": [
+    "{0} smart tag{1}",
+    "{0} smart-tag{1}"
+  ],
+  "Détail de la ligne": [
+    "Line details",
+    "Detalle de la línea"
+  ],
+  "Recherche": [
+    "Search",
+    "Búsqueda"
+  ],
+  "Accueil": [
+    "Home",
+    "Inicio"
+  ],
+  "Contexte de la vue · {0}": [
+    "View context · {0}",
+    "Contexto de la vista · {0}"
+  ],
+  "Propriétés de la ligne": [
+    "Line properties",
+    "Propiedades de la línea"
+  ],
+  "Fermer les propriétés": [
+    "Close properties",
+    "Cerrar propiedades"
+  ],
+  "Les tags de cette ligne ne définissent pas encore de propriétés.": [
+    "This line’s tags do not define any properties yet.",
+    "Las etiquetas de esta línea todavía no definen propiedades."
+  ],
+  "Valeur à adapter au nouveau type. La valeur conservée est : {0}": [
+    "Update this value for the new type. The retained value is: {0}",
+    "Adapta este valor al nuevo tipo. El valor conservado es: {0}"
+  ],
+  "Rétablir la valeur héritée": [
+    "Restore inherited value",
+    "Restablecer el valor heredado"
+  ],
+  "Plusieurs valeurs ont été conservées lors de la réunion. Choisissez celle à utiliser.": [
+    "Several values were retained when joining. Choose which one to use.",
+    "Se conservaron varios valores al unir. Elige el que quieras usar."
+  ],
+  "Mentions repérées": [
+    "Detected mentions",
+    "Menciones detectadas"
+  ],
+  "Ces liens viennent du texte ; ils ne confirment pas une relation entre les notes.": [
+    "These links come from the text; they do not confirm a relationship between the notes.",
+    "Estos enlaces proceden del texto; no confirman una relación entre las notas."
+  ],
+  "Configurer les propriétés des tags": [
+    "Configure tag properties",
+    "Configurar las propiedades de las etiquetas"
+  ],
+  "Référence": [
+    "Reference",
+    "Referencia"
+  ],
+  "Retirer la relation {0}": [
+    "Remove relation {0}",
+    "Eliminar la relación {0}"
+  ],
+  "Relier une note ou une ligne pour {0}": [
+    "Link a note or line for {0}",
+    "Enlazar una nota o línea para {0}"
+  ],
+  "Rechercher une note ou une ligne…": [
+    "Search for a note or line…",
+    "Buscar una nota o línea…"
+  ],
+  "Ligne du manuscrit": [
+    "Manuscript line",
+    "Línea del manuscrito"
+  ],
+  "Propriétés des lignes": [
+    "Line properties",
+    "Propiedades de las líneas"
+  ],
+  "Ces champs apparaissent seulement dans le détail des lignes portant ce tag, y compris leurs enfants.": [
+    "These fields only appear in the details of lines with this tag, including their children.",
+    "Estos campos solo aparecen en el detalle de las líneas con esta etiqueta, incluidos sus hijos."
+  ],
+  "Nom de la propriété": [
+    "Property name",
+    "Nombre de la propiedad"
+  ],
+  "Type de propriété": [
+    "Property type",
+    "Tipo de propiedad"
+  ],
+  "Texte": [
+    "Text",
+    "Texto"
+  ],
+  "Nombre": [
+    "Number",
+    "Número"
+  ],
+  "Relation vers une note ou une ligne": [
+    "Relation to a note or line",
+    "Relación con una nota o línea"
+  ],
+  "Case à cocher": [
+    "Checkbox",
+    "Casilla"
+  ],
+  "Valeur par défaut": [
+    "Default value",
+    "Valor predeterminado"
+  ],
+  "Hériter les valeurs des lignes parentes": [
+    "Inherit values from parent lines",
+    "Heredar los valores de las líneas padre"
+  ],
+  "Compléter depuis les mentions repérées": [
+    "Fill from detected mentions",
+    "Completar desde las menciones detectadas"
+  ],
+  "Remplissage manuel": [
+    "Manual entry",
+    "Entrada manual"
+  ],
+  "Tous les types": [
+    "All types",
+    "Todos los tipos"
+  ],
+  "Retirer cette propriété": [
+    "Remove this property",
+    "Eliminar esta propiedad"
+  ],
+  "Ajouter une propriété": [
+    "Add a property",
+    "Añadir una propiedad"
+  ],
+  "Détail du passage": [
+    "Passage details",
+    "Detalle del pasaje"
+  ],
+  "Glisser pour déplacer · cliquer pour les propriétés": [
+    "Drag to move · click for properties",
+    "Arrastrar para mover · hacer clic para ver las propiedades"
+  ],
+  "Saisi": [
+    "Entered",
+    "Introducido"
+  ],
+  "Hérité": [
+    "Inherited",
+    "Heredado"
+  ],
+  "Repéré dans le texte": [
+    "Detected in the text",
+    "Detectado en el texto"
+  ],
+  "Valeur du tag": [
+    "Tag value",
+    "Valor de la etiqueta"
+  ],
+  "Propriété de tag invalide.": [
+    "Invalid tag property.",
+    "Propiedad de etiqueta no válida."
+  ],
+  "Valeur de propriété incompatible avec son type.": [
+    "Property value does not match its type.",
+    "El valor de la propiedad no corresponde a su tipo."
+  ],
+  "Trop de propriétés dans ce tag.": [
+    "Too many properties in this tag.",
+    "Demasiadas propiedades en esta etiqueta."
+  ],
+  "Trop de propriétés dans ce passage.": [
+    "Too many properties in this passage.",
+    "Demasiadas propiedades en este pasaje."
+  ],
+  "Propriété de passage invalide.": [
+    "Invalid passage property.",
+    "Propiedad de pasaje no válida."
+  ],
+  "Trop de valeurs en conflit.": [
+    "Too many conflicting values.",
+    "Demasiados valores en conflicto."
+  ],
+  "Valeur de propriété invalide.": [
+    "Invalid property value.",
+    "Valor de propiedad no válido."
+  ],
+  "Afficher les passages en tableau": [
+    "Show passages as a table",
+    "Mostrar los pasajes en tabla"
+  ],
+  "Afficher les passages en texte": [
+    "Show passages as text",
+    "Mostrar los pasajes como texto"
+  ],
+  "Vue tableau": [
+    "Table view",
+    "Vista de tabla"
+  ],
+  "Vue texte": [
+    "Text view",
+    "Vista de texto"
+  ],
+  "Tableau des passages et propriétés": [
+    "Table of passages and properties",
+    "Tabla de pasajes y propiedades"
+  ],
+  "Valeurs conservées": [
+    "Retained values",
+    "Valores conservados"
+  ],
+  "Oui": [
+    "Yes",
+    "Sí"
+  ],
+  "Non": [
+    "No",
+    "No"
+  ],
+  "Page": [
+    "Page",
+    "Página"
+  ],
+  "Dictée": [
+    "Dictation",
+    "Dictado"
+  ],
+  "Retirer le tag {0} de {1}": [
+    "Remove tag {0} from {1}",
+    "Retirar la etiqueta {0} de {1}"
+  ],
+  "Ces champs sont disponibles dans le détail des lignes et la vue tableau, y compris pour les enfants héritant du tag.": [
+    "These fields are available in line details and table view, including children inheriting the tag.",
+    "Estos campos están disponibles en el detalle de las líneas y la vista de tabla, incluidos los hijos que heredan la etiqueta."
+  ],
+  "La ligne liée n’est plus disponible.": [
+    "The linked line is no longer available.",
+    "La línea enlazada ya no está disponible."
+  ],
+  "Déplier l’historique": [
+    "Expand history",
+    "Desplegar el historial"
+  ],
+  "Replier l’historique": [
+    "Collapse history",
+    "Plegar el historial"
+  ],
+  "Fermer l’historique": [
+    "Close history",
+    "Cerrar el historial"
+  ],
+  "HISTORIQUE": [
+    "HISTORY",
+    "HISTORIAL"
   ]
 }

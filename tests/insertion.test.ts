@@ -18,3 +18,14 @@ it('insère les fragments de dictée à la suite sans remplacer les précédents
   expect(view.state.doc.toString()).toBe('Édition : Avant Bonjour le monde. après');
   view.destroy();
 });
+
+it('keeps the original unchanged when its editor is read-only behind a tag view', () => {
+  const view = new EditorView({
+    state: EditorState.create({ doc: 'Original', extensions: EditorState.readOnly.of(true) }),
+    parent: document.body,
+  });
+  const insert = prepareTextInsertion(view, () => view);
+  expect(insert('Transcription')).toBe(false);
+  expect(view.state.doc.toString()).toBe('Original');
+  view.destroy();
+});

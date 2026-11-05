@@ -3,6 +3,7 @@ import { createEditorHandle } from './runtime/commands';
 import { paintRevision } from './runtime/revision';
 import type { EditorHandle, EditorProps as Props } from './types';
 import { setNoteLinkData } from './noteLinks';
+import { refreshSmartTags } from './smartTags';
 import { entityMarks, setEntityMarks } from './entities';
 import type { SelectedEntity } from '../enrichment/entityTypes';
 import { t, useLocale } from '../i18n';
@@ -63,6 +64,9 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       }),
     [props.projectPath, props.generation, props.sections.map((s) => s.id).join(':')],
   );
+  useEffect(() => {
+    view.current?.dispatch({ effects: refreshSmartTags.of() });
+  }, [props.smartTags, props.tagSections, props.immersiveFocus, props.generation]);
   useEffect(() => {
     view.current?.dispatch({
       effects: setNoteLinkData.of({

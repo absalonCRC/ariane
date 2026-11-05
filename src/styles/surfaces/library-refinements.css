@@ -114,6 +114,9 @@
   justify-content: center;
   align-items: center;
 }
+.binder-footer[data-sidebar-open='false'] .binder-footer-theme {
+  flex-basis:38px;
+}
 .binder-footer-project {
   display: flex;
   flex: 1 1 auto;

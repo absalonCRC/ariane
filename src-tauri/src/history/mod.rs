@@ -13,6 +13,8 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 #[derive(Serialize, Deserialize, Default, Clone)]
 pub(super) struct Snapshot {
+    #[serde(default)]
+    pub smart_tags: Vec<SmartTag>,
     pub sections: Vec<Section>,
     #[serde(default)]
     pub settings: serde_json::Value,
@@ -55,7 +57,7 @@ pub fn capture(root: &Path, name: &str, scope: Option<String>) -> Result<Version
 pub(super) fn snapshot(c: &Connection, scope: &Option<String>) -> Result<Snapshot> {
     let sections = if let Some(id) = &scope {
         project::validate_id(id)?;
-        let mut q = c.prepare("WITH RECURSIVE chosen(id) AS (SELECT id FROM sections WHERE id=? UNION SELECT s.id FROM sections s JOIN chosen ON s.parent=chosen.id) SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included FROM sections WHERE id IN chosen ORDER BY position,id").app()?;
+        let mut q = c.prepare("WITH RECURSIVE chosen(id) AS (SELECT id FROM sections WHERE id=? UNION SELECT s.id FROM sections s JOIN chosen ON s.parent=chosen.id) SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids FROM sections WHERE id IN chosen ORDER BY position,id").app()?;
         let rows = q.query_map([id], project::row_section).app()?;
         rows.collect::<std::result::Result<Vec<_>,_>>().app()?
     } else { project::all_sections(c)? };
@@ -95,7 +97,7 @@ pub(super) fn snapshot(c: &Connection, scope: &Option<String>) -> Result<Snapsho
         let values=q.query_map(params![scope,ids],|r|Ok((r.get(0)?,r.get(1)?))).app()?.collect::<std::result::Result<Vec<_>,_>>().app()?;
         Some(values)
     } else {Some(vec![])};
-    Ok(Snapshot { sections, annotations, settings: serde_json::from_str(&settings).app()?, citations, links, pins })
+    Ok(Snapshot { smart_tags: project::tags::definitions(c)?, sections, annotations, settings: serde_json::from_str(&settings).app()?, citations, links, pins })
 }
 fn has_pins(c: &Connection) -> Result<bool> {
     c.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='margin_pins')", [], |r| r.get(0)).app()
@@ -195,6 +197,7 @@ pub fn restore(root: &Path, id: &str) -> Result<Project> {
     if let Some(scope)=&v.scope {
         let affected:std::collections::HashSet<_>=descendants(&current.sections,scope).iter().map(|s|s.id.clone()).chain(restored.sections.iter().map(|s|s.id.clone())).collect();
         next=current.clone();
+        for tag in &restored.smart_tags { if !next.smart_tags.iter().any(|t|t.id==tag.id) {next.smart_tags.push(tag.clone());} }
         next.sections.retain(|s|!affected.contains(&s.id));next.sections.extend(restored.sections);
         next.links.retain(|(section,_,_)|!affected.contains(section));next.links.extend(restored.links);
         next.pins.retain(|(section,_)|!affected.contains(section));next.pins.extend(restored.pins);
@@ -224,8 +227,8 @@ mod tests {
             id: id.clone(), revision: 0, text: "A\nB".into(), outline: None,
         }]).unwrap();
         let first = Outline { version: 1, nodes: vec![
-            OutlineNode { id: "a".into(), parent: None, start: 0 },
-            OutlineNode { id: "b".into(), parent: Some("a".into()), start: 2 },
+            OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![], id: "a".into(), parent: None, start: 0 },
+            OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![], id: "b".into(), parent: Some("a".into()), start: 2 },
         ] };
         project::save(d.path(), vec![TextPatch {
             id: id.clone(), revision: 1, text: "A\nB".into(), outline: Some(first.clone()),
@@ -235,8 +238,8 @@ mod tests {
         let saved = capture(d.path(), "Structured", Some(id.clone())).unwrap();
         project::save(d.path(), vec![TextPatch {
             id, revision: 2, text: "A\nB".into(), outline: Some(Outline { version: 1, nodes: vec![
-                OutlineNode { id: "a".into(), parent: None, start: 0 },
-                OutlineNode { id: "b".into(), parent: None, start: 2 },
+                OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![], id: "a".into(), parent: None, start: 0 },
+                OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![], id: "b".into(), parent: None, start: 2 },
             ] }),
         }]).unwrap();
         let restored = restore(d.path(), &saved.id).unwrap();

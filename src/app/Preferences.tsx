@@ -29,6 +29,8 @@ export function Preferences({
   sources,
   onExport,
   onHistory,
+  onTags,
+  onError,
 }: {
   value: Values;
   onChange: (value: Partial<Values>) => void;
@@ -40,6 +42,8 @@ export function Preferences({
   sources: ReactNode;
   onExport: () => void;
   onHistory: () => void;
+  onTags?: () => void;
+  onError: (error: unknown) => void;
 }) {
   useLocale();
   const [page, setPage] = useState<(typeof pages)[number][0]>('appearance');
@@ -48,7 +52,9 @@ export function Preferences({
       title={t('Paramètres')}
       subtitle={project.name}
       onClose={onClose}
+      onError={onError}
       className="preferences-screen"
+      capsuleTrail={[t(pages.find(([id]) => id === page)![1])]}
     >
       <div className="settings-workspace">
         <nav aria-label={t('Catégories de paramètres')}>
@@ -274,6 +280,7 @@ export function Preferences({
               </p>
               <div className="settings-actions">
                 <button onClick={onHistory}>{t('Ouvrir les versions')}</button>
+                {onTags && <button onClick={onTags}>{t('Gérer les smart-tags')}</button>}
                 <button onClick={onExport}>{t('Exporter le manuscrit')}</button>
               </div>
               <h3>{t('Confidentialité')}</h3>

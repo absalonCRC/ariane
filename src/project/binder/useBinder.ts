@@ -35,6 +35,13 @@ export function useBinder(p: BinderProps) {
       : 'texts',
   );
   const role: DocumentRole = 'manuscript';
+  useEffect(() => {
+    const next = p.project.settings.libraryView;
+    if (next === 'texts' || next === 'sources' || next === 'trash') {
+      setView(next);
+      setPicked([]);
+    }
+  }, [p.project.settings.libraryView]);
   const trash = view === 'trash';
   const sections = useMemo(() => {
     const values = trash ? p.project.trash || [] : p.project.sections;
@@ -193,6 +200,7 @@ export function useBinder(p: BinderProps) {
     });
     setPicked([]);
     setView('texts');
+    if (p.project.settings.libraryView !== 'texts') p.onConfigure?.({ libraryView: 'texts' });
     setRevealId(p.active);
     p.onRevealed?.();
   }, [p.active, p.reveal]);
@@ -226,6 +234,7 @@ export function useBinder(p: BinderProps) {
   useEffect(() => {
     if (!p.creation) return;
     setView('texts');
+    if (p.project.settings.libraryView !== 'texts') p.onConfigure?.({ libraryView: 'texts' });
     const parent = p.project.sections.find((s) => s.id === p.creation?.parent);
     const ancestors = sectionPath(p.project.sections, parent);
     setCollapsed((old) => {

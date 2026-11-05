@@ -14,7 +14,12 @@ import { EditorView } from '@codemirror/view';
 import type { Outline, Section } from '../../contracts/project';
 import { touchedSpans, type Span } from '../composite';
 import { initialOutline } from './model';
+import { mergeNodeProperties } from './properties';
+import type { LineProperties, PropertyValue } from '../../contracts/lineProperties';
 export interface OutlineEntry {
+  properties?: LineProperties;
+  propertyConflicts?: Record<string, PropertyValue[]>;
+  tagIds?: string[];
   id: string;
   parent: string | null;
   section: string;
@@ -56,12 +61,23 @@ export function outlineEditor(
       parent: node.parent,
       section: span.id,
       from: span.from + node.start,
+      ...(node.tagIds?.length ? { tagIds: node.tagIds } : {}),
+      ...(node.properties ? { properties: node.properties } : {}),
+      ...(node.propertyConflicts ? { propertyConflicts: node.propertyConflicts } : {}),
     }));
   });
   const replace = StateEffect.define<OutlineEntry[]>({
     map: (nodes, changes) => nodes.map((n) => ({ ...n, from: changes.mapPos(n.from, -1) })),
   });
   const fold = StateEffect.define<{ id: string; folded: boolean }>();
+  const branchSelection = StateEffect.define<string>();
+  const selectionAnchor = StateField.define<string | null>({
+    create: () => null,
+    update(value, tr) {
+      const selected = tr.effects.find((e) => e.is(branchSelection));
+      return selected ? selected.value : tr.docChanged || tr.selection ? null : value;
+    },
+  });
   const field = StateField.define<OutlineSession>({
     create: () => ({ nodes: initial, folded: new Set(), changedSections: new Set() }),
     update(value, tr) {
@@ -88,6 +104,10 @@ export function outlineEditor(
             !old ||
             old.parent !== node.parent ||
             old.section !== node.section ||
+            JSON.stringify(old.tagIds ?? []) !== JSON.stringify(node.tagIds ?? []) ||
+            JSON.stringify(old.properties ?? {}) !== JSON.stringify(node.properties ?? {}) ||
+            JSON.stringify(old.propertyConflicts ?? {}) !==
+              JSON.stringify(node.propertyConflicts ?? {}) ||
             old.from - oldSpans.get(old.section)!.from !==
               node.from - newSpans.get(node.section)!.from
           )
@@ -233,6 +253,9 @@ export function outlineEditor(
           const hasChildren = origin && indexNodes(previous).parents.has(origin.id);
           nodes.push({
             id: crypto.randomUUID(),
+            ...(origin?.tagIds?.length ? { tagIds: origin.tagIds } : {}),
+            ...(origin?.properties ? { properties: origin.properties } : {}),
+            ...(origin?.propertyConflicts ? { propertyConflicts: origin.propertyConflicts } : {}),
             section: section.id,
             from,
             parent:
@@ -245,6 +268,12 @@ export function outlineEditor(
         }
       });
     const byId = new Map(previous.map((n) => [n.id, n]));
+    for (const [removedId, ownerId] of merged) {
+      const owner = nodes.find((n) => n.id === ownerId);
+      const tags = byId.get(removedId)?.tagIds;
+      if (owner) Object.assign(owner, mergeNodeProperties(owner, byId.get(removedId) ?? {}));
+      if (owner && tags?.length) owner.tagIds = [...new Set([...(owner.tagIds ?? []), ...tags])];
+    }
     const bySection = new Map<string, OutlineEntry[]>();
     for (const node of nodes) {
       const own = bySection.get(node.section);
@@ -285,6 +314,11 @@ export function outlineEditor(
         id: n.id,
         parent: n.parent,
         start: n.from - span.from,
+        ...(n.tagIds?.length ? { tagIds: n.tagIds } : {}),
+        ...(n.properties && Object.keys(n.properties).length ? { properties: n.properties } : {}),
+        ...(n.propertyConflicts && Object.keys(n.propertyConflicts).length
+          ? { propertyConflicts: n.propertyConflicts }
+          : {}),
       })),
     };
   }
@@ -499,7 +533,7 @@ export function outlineEditor(
       : [],
   );
   const protectHidden = EditorState.transactionFilter.of((tr) => {
-    if (tr.effects.some((e) => e.is(replace) || e.is(fold))) return tr;
+    if (tr.effects.some((e) => e.is(replace) || e.is(fold) || e.is(branchSelection))) return tr;
     const { nodes, folded } = tr.startState.field(field);
     if (!folded.size) return tr;
     let destructive = false;
@@ -543,8 +577,83 @@ export function outlineEditor(
     }
     return tr;
   });
-  const extensions: Extension = [field, inversion, protectHidden];
+  const extensions: Extension = [field, selectionAnchor, inversion, protectHidden];
   return {
+    setProperty(
+      target: Parameters<StateCommand>[0],
+      id: string,
+      propertyId: string,
+      value: PropertyValue | undefined,
+    ) {
+      if (target.state.readOnly) return false;
+      const nodes = target.state.field(field).nodes;
+      const owner = nodes.find((n) => n.id === id);
+      if (!owner) return false;
+      const properties = { ...owner.properties },
+        propertyConflicts = { ...owner.propertyConflicts };
+      if (value === undefined) delete properties[propertyId];
+      else properties[propertyId] = value;
+      delete propertyConflicts[propertyId];
+      target.dispatch(
+        target.state.update({
+          effects: replace.of(
+            nodes.map((n) => (n.id === id ? { ...n, properties, propertyConflicts } : n)),
+          ),
+          annotations: [isolateHistory.of('full'), Transaction.userEvent.of('input.property')],
+        }),
+      );
+      return true;
+    },
+    selectBranch(target: Parameters<StateCommand>[0], id: string) {
+      const { state, dispatch } = target;
+      const nodes = state.field(field).nodes;
+      const anchor = state.field(selectionAnchor) ?? id;
+      const first = nodes.findIndex((n) => n.id === anchor);
+      const last = nodes.findIndex((n) => n.id === id);
+      if (first < 0 || last < 0) return false;
+      const start = Math.min(first, last);
+      const ends = nodes
+        .slice(start, Math.max(first, last) + 1)
+        .map((n) => subtree(nodes, n.id).at(-1)!);
+      const end = Math.max(...ends.map((n) => nodes.indexOf(n)));
+      const final = nodes[end];
+      const span = state.field(sectionField).find((s) => s.id === final.section)!;
+      dispatch(
+        state.update({
+          selection: {
+            anchor: nodes[start].from,
+            head: nodes[end + 1]?.section === final.section ? nodes[end + 1].from - 1 : span.to,
+          },
+          effects: branchSelection.of(anchor),
+          annotations: Transaction.addToHistory.of(false),
+        }),
+      );
+      return true;
+    },
+    setTags(
+      target: Parameters<StateCommand>[0],
+      id: string,
+      tagIds: string[],
+      changes?: { from: number; to: number; insert: string },
+      preserveSelection = false,
+    ) {
+      const nodes = target.state.field(field).nodes;
+      if (target.state.readOnly || !nodes.some((n) => n.id === id)) return false;
+      const unique = [...new Set(tagIds)];
+      const next = nodes.map((n) => (n.id === id ? { ...n, tagIds: unique } : n));
+      const changeSet = target.state.changes(changes ?? []);
+      target.dispatch(
+        target.state.update({
+          changes: changeSet,
+          effects: replace.of(next.map((n) => ({ ...n, from: changeSet.mapPos(n.from, -1) }))),
+          ...(changes && !preserveSelection
+            ? { selection: { anchor: changes.from + changes.insert.length } }
+            : {}),
+          annotations: [isolateHistory.of('full'), Transaction.userEvent.of('input.smartTag')],
+        }),
+      );
+      return true;
+    },
     reveal(target: EditorView, id: string, focus = true) {
       const node = index(target.state).byId.get(id);
       if (!node) return false;

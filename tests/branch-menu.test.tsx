@@ -26,6 +26,33 @@ afterEach(async () => {
   request.mockReset();
 });
 
+it('shows the branch label only when the project has a variant', async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  host = document.createElement('div');
+  document.body.append(host);
+  root = createRoot(host);
+  const render = (hasVariants: boolean) => (
+    <PathMenu
+      project={project}
+      selected={undefined}
+      continuous
+      onSelect={() => {}}
+      onAdd={() => {}}
+      branchName="Texte principal"
+      hasVariants={hasVariants}
+    />
+  );
+  await act(async () => root!.render(render(false)));
+  expect(host.querySelector('.path-branch-current')).toBeNull();
+  expect(host.querySelector('.path-trigger')?.getAttribute('aria-label')).not.toContain(
+    'Texte principal',
+  );
+  await act(async () => root!.render(render(true)));
+  expect(host.querySelector('.path-branch-current')?.textContent).toBe('Texte principal');
+  await act(async () => root!.render(render(false)));
+  expect(host.querySelector('.path-branch-current')).toBeNull();
+});
+
 it('shows the active variant in the closed capsule and switches it after saving', async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   let state: HistoryState = {
@@ -86,6 +113,7 @@ it('shows the active variant in the closed capsule and switches it after saving'
         onSelect={() => {}}
         onAdd={() => {}}
         branchName={active?.name}
+        hasVariants={branches.state?.branches.some((branch) => !branch.isMain)}
         branchMenu={
           branches.state
             ? (close) => (

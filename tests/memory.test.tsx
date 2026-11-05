@@ -6,6 +6,7 @@ import { useMemory, type MemoryController } from '../src/enrichment/useMemory';
 import type { Workspace } from '../src/app/useWorkspace';
 import type { Section } from '../src/contracts/project';
 import { MemoryReader } from '../src/enrichment/MemoryReader';
+import { HistoryEdge } from '../src/app/chrome/HistoryEdge';
 const { request } = vi.hoisted(() => ({ request: vi.fn() }));
 vi.mock('../src/platform/client', () => ({ native: true, request }));
 let host: HTMLDivElement;
@@ -88,6 +89,51 @@ afterEach(async () => {
   await act(async () => root.unmount());
   host.remove();
   vi.useRealTimers();
+});
+it('keeps history folded by default, toggles it from the edge, and restores focus after Escape', async () => {
+  const w = workspace();
+  function HistoryHarness() {
+    memory = useMemory(w);
+    return (
+      <>
+        <HistoryEdge
+          open={memory.view?.kind === 'resume'}
+          onToggle={() =>
+            memory.view?.kind === 'resume' ? memory.close() : memory.open({ kind: 'resume' })
+          }
+        />
+        <MemoryReader memory={memory} workspace={w} />
+      </>
+    );
+  }
+  await act(async () => root.render(<HistoryHarness />));
+  const edge = host.querySelector<HTMLButtonElement>('.history-edge-trigger')!;
+  expect(host.querySelector('#project-activity-history')).toBeNull();
+  await act(async () => {
+    edge.focus();
+    edge.click();
+  });
+  expect(edge.getAttribute('aria-expanded')).toBe('true');
+  expect(host.querySelector('#project-activity-history')?.getAttribute('aria-label')).toBe(
+    'Historique',
+  );
+  await act(async () => edge.click());
+  await act(async () => vi.advanceTimersByTimeAsync(200));
+  expect(host.querySelector('#project-activity-history')).toBeNull();
+  await act(async () => {
+    edge.focus();
+    edge.click();
+  });
+  const panel = host.querySelector('#project-activity-history')!;
+  await act(async () =>
+    panel.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    ),
+  );
+  await act(async () => vi.advanceTimersByTimeAsync(200));
+  expect(edge.getAttribute('aria-expanded')).toBe('false');
+  expect(host.querySelector('#project-activity-history')).toBeNull();
+  expect(document.activeElement).toBe(edge);
 });
 it('only runs inference after a saved idle window, and suspends on typing', async () => {
   let w = workspace();

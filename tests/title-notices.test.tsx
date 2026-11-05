@@ -107,6 +107,8 @@ function Harness() {
       <MenuFailure />
       <PathMenu
         project={project}
+        branchName="Texte principal"
+        hasVariants
         selected={undefined}
         continuous
         onSelect={() => {}}
@@ -166,6 +168,22 @@ it('shows a colored library notice for five seconds and restores the breadcrumb'
   );
   expect(host.querySelector('.path-heading')).toBe(originalCapsule);
   expect(host.querySelector('.title-notice')).toBeNull();
+});
+
+it('hides the branch name and icon for notifications and restores them on dismissal or expiry', async () => {
+  expect(host.querySelector('.path-branch-current')?.textContent).toBe('Texte principal');
+  await act(async () => controls.setLibraryNotice({ message: 'Section déplacée.', undo: true }));
+  expect(host.querySelector('.path-branch-current')).toBeNull();
+  expect(host.querySelector('.path-trigger')?.getAttribute('aria-label')).not.toContain(
+    'Texte principal',
+  );
+  await act(async () => host.querySelector<HTMLButtonElement>('.title-notice-close')!.click());
+  expect(host.querySelector('.path-branch-current svg')).not.toBeNull();
+  expect(host.querySelector('.path-branch-current')?.textContent).toBe('Texte principal');
+  await act(async () => controls.setLibraryNotice({ message: 'Page renommée.', undo: true }));
+  expect(host.querySelector('.path-branch-current')).toBeNull();
+  await act(async () => vi.advanceTimersByTime(5000));
+  expect(host.querySelector('.path-branch-current')?.textContent).toBe('Texte principal');
 });
 
 it('keeps a failed automatic version in the top capsule until retry succeeds', async () => {

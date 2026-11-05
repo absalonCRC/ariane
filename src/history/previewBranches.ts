@@ -1,4 +1,5 @@
 import type { MergePreview, MergeResolution, Version, WritingBranch } from '../contracts/history';
+import type { SmartTag } from '../contracts/smartTags';
 import type { Project, Section } from '../contracts/project';
 import { descendants } from '../project/tree';
 import { validOutline } from '../editor/outline/model';
@@ -6,6 +7,7 @@ import { mergeSections, validateMergedSections } from './merge';
 import { previewCheckpoint, versionKey } from './previewAutomatic';
 
 type Snapshot = {
+  tags: Record<string, SmartTag>;
   sections: Section[];
   settings: Project['settings'];
   references: Record<string, string>;
@@ -13,6 +15,7 @@ type Snapshot = {
 type Branch = WritingBranch & { draft: Snapshot; base: Snapshot };
 type State = { activeBranch: string; branches: Branch[] };
 type SavedVersion = Version & {
+  tags?: Record<string, SmartTag>;
   settings?: Project['settings'];
   references?: Record<string, string>;
 };
@@ -28,7 +31,12 @@ function snapshot(p: Project): Snapshot {
     )
       references[key] = localStorage.getItem(key)!;
   }
-  return clone({ sections: [...p.sections, ...(p.trash ?? [])], settings: p.settings, references });
+  return clone({
+    tags: Object.fromEntries((p.smartTags ?? []).map((t) => [t.id, t])),
+    sections: [...p.sections, ...(p.trash ?? [])],
+    settings: p.settings,
+    references,
+  });
 }
 function read(p: Project): State {
   const stored = localStorage.getItem(stateKey(p.path));
@@ -80,6 +88,7 @@ function persist(p: Project, state: State, all: SavedVersion[], next?: Snapshot)
       ...p,
       sections: next.sections.filter((s) => !s.trashed),
       trash: next.sections.filter((s) => s.trashed),
+      smartTags: Object.values(next.tags ?? {}),
       settings: next.settings,
       canUndoStructure: false,
     };
@@ -111,6 +120,7 @@ function capture(
     created: new Date().toISOString(),
     scope,
     sections: clone(scope ? descendants(snap.sections, scope) : snap.sections),
+    tags: clone(snap.tags ?? {}),
     settings: clone(snap.settings),
     references: clone(snap.references),
     branchId: branch.id,
@@ -138,14 +148,15 @@ function plan(
   const entries = mergeSections(base.sections, current.sections, incoming.sections);
   const result: Snapshot = {
     sections: entries.flatMap((e) => (e.result ? [clone(e.result)] : [])),
+    tags: { ...current.tags },
     settings: { ...current.settings },
     references: { ...current.references },
   };
   const auxiliaryConflicts: MergePreview['auxiliaryConflicts'] = [];
-  for (const category of ['settings', 'references'] as const) {
-    const b = base[category] as Record<string, unknown>,
-      a = current[category] as Record<string, unknown>,
-      z = incoming[category] as Record<string, unknown>;
+  for (const category of ['settings', 'references', 'tags'] as const) {
+    const b = (base[category] ?? {}) as Record<string, unknown>,
+      a = (current[category] ?? {}) as Record<string, unknown>,
+      z = (incoming[category] ?? {}) as Record<string, unknown>;
     for (const key of new Set([...Object.keys(b), ...Object.keys(a), ...Object.keys(z)])) {
       if (
         JSON.stringify(a[key]) === JSON.stringify(z[key]) ||
@@ -158,7 +169,12 @@ function plan(
       } else
         auxiliaryConflicts.push({
           id: category + ':' + key,
-          label: category === 'settings' ? 'Réglage du projet' : 'Référence du texte',
+          label:
+            category === 'settings'
+              ? 'Réglage du projet'
+              : category === 'tags'
+                ? 'Smart-tag'
+                : 'Référence du texte',
           current: JSON.stringify(a[key] ?? null),
           incoming: JSON.stringify(z[key] ?? null),
         });
@@ -256,6 +272,7 @@ export function previewHistory(
         throw new Error('Choisissez une version de tout le projet pour créer une variante.');
       snap = {
         sections: v.sections,
+        tags: v.tags ?? Object.fromEntries((p.smartTags ?? []).map((t) => [t.id, t])),
         settings: v.settings ?? p.settings,
         references: v.references ?? snap.references,
       };
@@ -325,6 +342,7 @@ export function previewHistory(
     }
     const next: Snapshot = {
       sections: [...previous.sections.filter((s) => !affected.has(s.id)), ...clone(v.sections)],
+      tags: v.scope ? { ...v.tags, ...previous.tags } : (v.tags ?? previous.tags),
       settings: v.scope ? previous.settings : (v.settings ?? previous.settings),
       references,
     };
@@ -378,7 +396,11 @@ export function previewHistory(
     const r = resolutions.find((r) => r.id === conflict.id);
     if (!r || r.choice === 'custom')
       throw new Error('Choisissez une résolution pour chaque référence en divergence.');
-    const category = conflict.id.startsWith('settings:') ? 'settings' : 'references',
+    const category = conflict.id.startsWith('settings:')
+        ? 'settings'
+        : conflict.id.startsWith('tags:')
+          ? 'tags'
+          : 'references',
       key = conflict.id.slice(category.length + 1);
     const value = JSON.parse(r.choice === 'current' ? conflict.current : conflict.incoming);
     if (value === null) delete (result[category] as Record<string, unknown>)[key];

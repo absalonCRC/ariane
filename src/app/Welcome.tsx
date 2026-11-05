@@ -8,6 +8,7 @@ import { choosePath } from './choosePath';
 import { native, request } from '../platform/client';
 import type { Project } from '../contracts/project';
 import { ArianeWordmark } from '../components/ArianeWordmark';
+import { ViewTitleCapsule } from '../components/ViewTitleCapsule';
 
 export function Welcome({
   onOpen,
@@ -90,7 +91,7 @@ export function Welcome({
     <div className="welcome">
       <ArianeWordmark compact />
       <LanguageSwitcher />
-      <div className="window-title" data-tauri-drag-region aria-hidden="true" />
+      <ViewTitleCapsule view={{ title: t('Accueil'), home: true }} />
       <h1>{t('Un espace pour écrire.')}</h1>
       <div>
         <button onClick={() => setScreen('create')}>{t('Créer un projet')}</button>

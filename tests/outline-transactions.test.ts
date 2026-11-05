@@ -54,6 +54,84 @@ function setup(text = '', saved?: Outline, other?: string) {
 }
 
 describe('passages structurés dans le vrai état CodeMirror', () => {
+  it('undoes property edits and keeps both values when lines are joined', () => {
+    const s = setup('A\nB', {
+      version: 1,
+      nodes: [
+        { id: 'a', parent: null, start: 0, properties: { field: 'Premier' } },
+        { id: 'b', parent: null, start: 2, properties: { field: 'Second', number: 42 } },
+      ],
+    });
+    s.outline.setProperty(s.target, 'a', 'field', 'Modifié');
+    expect(s.saved().nodes[0].properties?.field).toBe('Modifié');
+    undo(s.target);
+    expect(s.saved().nodes[0].properties?.field).toBe('Premier');
+    redo(s.target);
+    s.select(1, 2);
+    s.type('');
+    expect(s.saved().nodes[0].properties).toEqual({ field: 'Modifié', number: 42 });
+    expect(s.saved().nodes[0].propertyConflicts?.field).toEqual(['Modifié', 'Second']);
+    s.outline.setProperty(s.target, 'a', 'field', 'Second');
+    expect(s.saved().nodes[0].propertyConflicts?.field).toBeUndefined();
+    undo(s.target);
+    expect(s.saved().nodes[0].propertyConflicts?.field).toEqual(['Modifié', 'Second']);
+    undo(s.target);
+    expect(s.saved().nodes).toHaveLength(2);
+  });
+  it('stores tags outside text and restores them through split, join, move and undo/redo', () => {
+    const s = setup('é🙂 suite\nAutre', {
+      version: 1,
+      nodes: [
+        { id: 'a', parent: null, start: 0 },
+        { id: 'b', parent: null, start: 10, tagIds: ['other'] },
+      ],
+    });
+    s.outline.setTags(s.target, 'a', ['place', 'place']);
+    expect(s.saved().nodes[0].tagIds).toEqual(['place']);
+    expect(s.target.state.doc.toString()).toBe('é🙂 suite\nAutre');
+    expect(undo(s.target)).toBe(true);
+    expect(s.saved().nodes[0].tagIds).toBeUndefined();
+    redo(s.target);
+    s.select(4);
+    s.outline.enter(s.target);
+    expect(
+      s
+        .saved()
+        .nodes.slice(0, 2)
+        .map((n) => n.tagIds),
+    ).toEqual([['place'], ['place']]);
+    undo(s.target);
+    s.select(9, 10);
+    s.type('');
+    expect(s.saved().nodes).toHaveLength(1);
+    expect(s.saved().nodes[0].tagIds).toEqual(['place', 'other']);
+    undo(s.target);
+    expect(s.saved().nodes).toHaveLength(2);
+  });
+  it('selects exact contiguous complete branches including folded descendants without toggling folds', () => {
+    const s = setup('Parent\nCaché\nFin\nSuite', {
+      version: 1,
+      nodes: [
+        { id: 'a', parent: null, start: 0 },
+        { id: 'b', parent: 'a', start: 7 },
+        { id: 'c', parent: null, start: 13 },
+        { id: 'd', parent: null, start: 17 },
+      ],
+    });
+    s.outline.toggleFold(s.target, 'a');
+    s.outline.selectBranch(s.target, 'a');
+    const selected = () => {
+      const state = s.target.state;
+      return state.sliceDoc(state.selection.main.from, state.selection.main.to);
+    };
+    expect(selected()).toBe('Parent\nCaché');
+    s.outline.selectBranch(s.target, 'c');
+    expect(selected()).toBe('Parent\nCaché\nFin');
+    expect(s.target.state.field(s.outline.field).folded.has('a')).toBe(true);
+    s.select(17);
+    s.outline.selectBranch(s.target, 'd');
+    expect(selected()).toBe('Suite');
+  });
   it('keeps indexed lookups equivalent to scene ownership at every boundary after edits and undo', () => {
     const s = setup(
       'A\nB',

@@ -26,6 +26,54 @@ const s = (id: string, i: number): Section => ({
   status: '',
   goal: 0,
 });
+it('opens the trash view when its setting changes from the independent project dock', async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = createRoot(host);
+  const project: Project = {
+    path: 'dock-trash',
+    name: 'Livre',
+    settings: { libraryView: 'texts' },
+    sections: [s('Texte', 0)],
+    trash: [s('Supprimé', 0)],
+    recovered: false,
+  };
+  const configure = vi.fn();
+  const render = (p: Project, reveal = 0) => (
+    <Binder
+      project={p}
+      onConfigure={configure}
+      reveal={reveal}
+      active="Texte"
+      onSelect={() => {}}
+      onSurface={() => {}}
+      onClose={() => {}}
+      onAdd={() => {}}
+      onMove={() => {}}
+      onContinuous={() => {}}
+    />
+  );
+  try {
+    await act(async () => root.render(render(project)));
+    expect(host.querySelector('[aria-label="Textes du projet"]')).not.toBeNull();
+    await act(async () => root.render(render({ ...project, settings: { libraryView: 'trash' } })));
+    expect(host.querySelector('[aria-label="Documents supprimés"]')?.textContent).toContain(
+      'Supprimé',
+    );
+    expect(host.querySelector('[aria-label="Corbeille"]')?.getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+    await act(async () =>
+      root.render(render({ ...project, settings: { libraryView: 'trash' } }, 1)),
+    );
+    expect(host.querySelector('[aria-label="Textes du projet"]')).not.toBeNull();
+    expect(configure).toHaveBeenCalledWith({ libraryView: 'texts' });
+  } finally {
+    await act(async () => root.unmount());
+    host.remove();
+  }
+});
 it('selects ranges and moves, trashes and restores a batch through visible controls', async () => {
   (
     globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }

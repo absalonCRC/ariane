@@ -1,5 +1,9 @@
 import type { Settings } from './settings';
+import type { SmartTag } from './smartTags';
 export interface OutlineNode {
+  properties?: import('./lineProperties').LineProperties;
+  propertyConflicts?: Record<string, import('./lineProperties').PropertyValue[]>;
+  tagIds?: string[];
   id: string;
   parent: string | null;
   start: number;
@@ -11,6 +15,7 @@ export interface Outline {
 }
 
 export interface Section {
+  tagIds?: string[];
   id: string;
   parent: string | null;
   title: string;
@@ -28,6 +33,7 @@ export interface Section {
 }
 
 export interface Project {
+  smartTags?: SmartTag[];
   path: string;
   name: string;
   sections: Section[];

@@ -30,6 +30,7 @@ it('allows the typewriter sound to be switched in writing settings and remembers
     return (
       <>
         <Preferences
+          onError={vi.fn()}
           value={workspace.settings}
           onChange={workspace.configure}
           onClose={vi.fn()}

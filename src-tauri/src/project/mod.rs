@@ -35,3 +35,4 @@ pub mod annotations;
 pub mod manuscript;
 
 pub mod activity;
+pub mod tags;

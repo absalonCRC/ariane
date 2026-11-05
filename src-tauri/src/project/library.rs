@@ -203,6 +203,7 @@ fn apply_unlocked(root: &Path, op: Operation) -> Result<Project> {
                         return Err("Type inconnu.".into());
                     }
                     vec![Section {
+                        tag_ids: vec![],
                         id: uuid::Uuid::new_v4().to_string(),
                         parent: parent.clone(),
                         title: op.title.unwrap_or_default(),
@@ -323,7 +324,7 @@ fn apply_unlocked(root: &Path, op: Operation) -> Result<Project> {
             _ => return Err("Opération inconnue.".into()),
         }
         for (i, s) in all.iter().enumerate() {
-            tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET parent=excluded.parent,position=excluded.position,role=excluded.role,trashed=excluded.trashed,included=excluded.included", params![s.id,s.parent,s.title,s.kind,i as i64,s.text,s.revision,s.synopsis,s.status,s.goal,s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included]).app()?;
+            tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET parent=excluded.parent,position=excluded.position,role=excluded.role,trashed=excluded.trashed,included=excluded.included", params![s.id,s.parent,s.title,s.kind,i as i64,s.text,s.revision,s.synopsis,s.status,s.goal,s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included,serde_json::to_string(&s.tag_ids).app()?]).app()?;
         }
         tx.execute("INSERT INTO structure_history(payload) VALUES(?)", [before])
             .app()?;

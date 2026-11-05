@@ -19,6 +19,29 @@ interface RuntimeRefs {
 }
 export function createEditorHandle({ view, outlineRef, spans, latest }: RuntimeRefs): EditorHandle {
   return {
+    removeSmartTag(section, node, tag) {
+      const v = view.current,
+        outline = outlineRef.current;
+      if (!v || !outline || v.state.readOnly) return false;
+      const owner = outline.index(v.state).byId.get(node);
+      if (!owner || owner.section !== section) return false;
+      return outline.setTags(
+        v,
+        node,
+        (owner.tagIds ?? []).filter((id) => id !== tag),
+      );
+    },
+    setLineProperty(section, node, field, value) {
+      const v = view.current,
+        outline = outlineRef.current;
+      if (
+        !v ||
+        !outline ||
+        !v.state.field(outline.field).nodes.some((n) => n.section === section && n.id === node)
+      )
+        return false;
+      return outline.setProperty(v, node, field, value);
+    },
     context() {
       const v = view.current,
         outline = outlineRef.current;
@@ -71,7 +94,7 @@ export function createEditorHandle({ view, outlineRef, spans, latest }: RuntimeR
     },
     insert(text) {
       const v = view.current;
-      if (!v) return;
+      if (!v || v.state.readOnly) return;
       v.dispatch(v.state.replaceSelection(text));
       v.focus();
     },
@@ -88,7 +111,7 @@ export function createEditorHandle({ view, outlineRef, spans, latest }: RuntimeR
     },
     format: (format) => {
       const v = view.current;
-      if (!v || !spans.current.length) return;
+      if (!v || v.state.readOnly || !spans.current.length) return;
       v.dispatch({
         ...formatMarkdown(v.state, format, spans.current),
         annotations: isolateHistory.of('full'),
