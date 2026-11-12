@@ -12,6 +12,8 @@ import { TagPassageTable } from './TagPassageTable';
 import { tagTableProjection } from './table';
 export function TagFilterView({
   project,
+  heading,
+  notice,
   tag,
   onClose,
   onOpen,
@@ -25,6 +27,8 @@ export function TagFilterView({
   onError,
 }: {
   project: Project;
+  heading?: string;
+  notice?: string;
   tag: SmartTag;
   onClose: () => void;
   onOpen: (passage: TagPassage) => void;
@@ -59,7 +63,7 @@ export function TagFilterView({
           ? ({ '--tag-table-width': table.preferredWidth + 'px' } as React.CSSProperties)
           : undefined
       }
-      aria-label={t('Vue filtrée par smart-tag')}
+      aria-label={heading ? t('Recherche structurée') : t('Vue filtrée par smart-tag')}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
           event.preventDefault();
@@ -74,9 +78,11 @@ export function TagFilterView({
           {t('Revenir au texte')}
         </button>
         <h1>
-          <span className="smart-tag" style={{ '--tag-color': tag.color } as React.CSSProperties}>
-            #{tag.name}
-          </span>
+          {heading ?? (
+            <span className="smart-tag" style={{ '--tag-color': tag.color } as React.CSSProperties}>
+              #{tag.name}
+            </span>
+          )}
         </h1>
         <p>
           {t('{0} passage{1} dans {2} texte{3}', {
@@ -91,8 +97,21 @@ export function TagFilterView({
             'Vue temporaire en lecture seule · Cliquez sur un passage pour modifier son original.',
           )}
         </p>
+        {notice && (
+          <p className="hint" role="status">
+            {notice}
+          </p>
+        )}
       </header>
-      {!passages.length && <p className="hint">{t('Aucun passage ne porte ce smart-tag.')}</p>}
+      {!passages.length && (
+        <p className="hint">
+          {t(
+            heading
+              ? 'Aucun passage ne correspond à cette recherche.'
+              : 'Aucun passage ne porte ce smart-tag.',
+          )}
+        </p>
+      )}
       {table ? (
         <TagPassageTable
           project={project}

@@ -100,6 +100,7 @@ pub(super) fn handle(
             description,
         } => {
             let path = vaults::create_entity(&root, &kind, &name, &description)?;
+            vaults::index_created_entity(&root, &index, &path)?;
             Ok(json!({"path":path}))
         }
         Request::VaultScope { id, scope } => json(vaults::set_scope(&root, &id, scope)?),

@@ -1,3 +1,6 @@
+import { emptyCatalog, changeCatalog, catalogContent } from '../../entities/model';
+import type { EntityCatalog, EntityOperation } from '../../contracts/entityIdentity';
+import type { SavedView } from '../../contracts/savedViews';
 import type { NoteEvent, NoteEventInput } from '../../contracts/noteActivity';
 import { previewCheckpoint } from '../../history/previewAutomatic';
 import { previewHistory } from '../../history/previewBranches';
@@ -90,6 +93,8 @@ function remember(p: Project) {
   );
 }
 export function browserRequest(type: string, a: Record<string, unknown>): unknown {
+  if (type === 'entityMentions') return [];
+  if (type === 'appShortcuts' || type === 'appLanguage') return true;
   if (type === 'revisionStatus') return { available: false };
   if (type === 'bootstrap') {
     const p = read()[current || ''];
@@ -132,6 +137,140 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
     return p;
   }
   const p = project();
+  if (
+    [
+      'entityCatalog',
+      'entityOperation',
+      'entityMergePreview',
+      'entityMergeHistory',
+      'savedViews',
+      'saveView',
+      'updateSourceCard',
+    ].includes(type)
+  ) {
+    if (a.projectPath !== p.path) throw Error('Le projet actif a changé.');
+    const key = 'ariane.preview.identities.' + p.path;
+    const envelope = JSON.parse(localStorage.getItem(key + '.transaction') || 'null');
+    const catalog: EntityCatalog =
+      envelope?.catalog ?? JSON.parse(localStorage.getItem(key) || JSON.stringify(emptyCatalog()));
+    if (type === 'entityCatalog') return catalog;
+    const mergeKey = key + '.merges';
+    const branch =
+      JSON.parse(localStorage.getItem('ariane.preview.branches.' + p.path) || 'null')
+        ?.activeBranch ?? 'main';
+    type Merge = {
+      branch: string;
+      id: string;
+      source: string;
+      target: string;
+      undone: boolean;
+      before: EntityCatalog;
+      after: string;
+    };
+    const merges: Merge[] = envelope?.merges ?? JSON.parse(localStorage.getItem(mergeKey) || '[]');
+    if (type === 'entityMergeHistory') return merges.filter((m) => m.branch === branch);
+    if (type === 'entityMergePreview')
+      return {
+        source: catalog.entities.find((e) => e.id === a.source),
+        target: catalog.entities.find((e) => e.id === a.target),
+        token: JSON.stringify(catalog),
+        relations: catalog.relations.filter(
+          (r) => [a.source, a.target].includes(r.from) || [a.source, a.target].includes(r.to),
+        ),
+      };
+    if (type === 'entityOperation') {
+      const op = a.operation as EntityOperation;
+      if (a.revision !== catalog.revision) {
+        if (
+          op.action === 'merge' &&
+          merges.some(
+            (m) =>
+              m.branch === branch &&
+              !m.undone &&
+              m.source === op.source &&
+              m.target === op.target &&
+              JSON.stringify(m.before) === op.token &&
+              m.after === catalogContent(catalog),
+          )
+        )
+          return catalog;
+        if (
+          op.action === 'undoMerge' &&
+          merges.some((m) => m.branch === branch && m.id === op.id && m.undone)
+        )
+          return catalog;
+        throw Error('Le catalogue a changé. Actualisez avant de réessayer.');
+      }
+      let next: EntityCatalog;
+      if (op.action === 'undoMerge') {
+        const merge = merges.find((m) => m.id === op.id);
+        if (!merge || merge.branch !== branch) throw Error('Fusion introuvable.');
+        if (merge.undone) return catalog;
+        if (merge.after !== catalogContent(catalog))
+          throw Error(
+            'Des modifications suivent cette fusion. Elles ont été conservées ; la restauration automatique est refusée.',
+          );
+        next = { ...merge.before, revision: catalog.revision + 1 };
+        merge.undone = true;
+      } else {
+        next = changeCatalog(catalog, op);
+        if (op.action === 'merge')
+          merges.unshift({
+            branch,
+            id: crypto.randomUUID(),
+            source: op.source,
+            target: op.target,
+            undone: false,
+            before: catalog,
+            after: catalogContent(next),
+          });
+      }
+      // One localStorage write owns catalog and merge recovery together.
+      localStorage.setItem(key + '.transaction', JSON.stringify({ catalog: next, merges }));
+      localStorage.setItem(key, JSON.stringify(next));
+      localStorage.setItem(mergeKey, JSON.stringify(merges));
+      return next;
+    }
+    if (type === 'savedViews' || type === 'saveView') {
+      const viewKey = 'ariane.preview.savedViews.' + p.path;
+      let items: SavedView[] = JSON.parse(localStorage.getItem(viewKey) || '[]');
+      if (type === 'saveView') {
+        if (a.token !== JSON.stringify(items))
+          throw Error('Les vues ont changé. Actualisez avant de réessayer.');
+        if (a.view) {
+          const v = a.view as SavedView;
+          if (
+            v.query.version !== 1 ||
+            !v.name.trim() ||
+            !v.query.groups.length ||
+            v.query.groups.some((g) => !g.length)
+          )
+            throw Error('Vue enregistrée invalide ou trop récente.');
+          items = items.filter((x) => x.id !== v.id).concat(v);
+        }
+        if (a.remove) items = items.filter((x) => x.id !== a.remove);
+        localStorage.setItem(viewKey, JSON.stringify(items));
+      }
+      return { items, token: JSON.stringify(items) };
+    }
+    if (type === 'updateSourceCard') {
+      const values = previewSources(p.path),
+        source = values.find((s) => s.id === a.source);
+      if (!source || source.vaultId !== previewVault(p.path)?.id)
+        throw Error('Fiche non modifiable.');
+      if (source.fingerprint !== a.fingerprint)
+        throw Error('La fiche a changé. Rouvrez-la avant de modifier ses alias.');
+      Object.assign(source, {
+        title: a.title,
+        kind: a.kind,
+        aliases: a.aliases,
+        text: a.body,
+        fingerprint: crypto.randomUUID(),
+      });
+      localStorage.setItem(previewSourcesKey(p.path), JSON.stringify(values));
+      return source;
+    }
+  }
   const history = previewHistory(p, type, a);
   if (history) return history.value;
   if (type === 'noteActivity' || type === 'recordNoteActivity') {

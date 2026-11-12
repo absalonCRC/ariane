@@ -2485,11 +2485,11 @@
   ],
   "Déplier le passage": [
     "Expand passage",
-    "Desplegar el pasaje"
+    "Expandir pasaje"
   ],
   "Replier le passage": [
     "Collapse passage",
-    "Contraer el pasaje"
+    "Contraer pasaje"
   ],
   "Déplacer le passage": [
     "Move passage",
@@ -4850,5 +4850,345 @@
   "HISTORIQUE": [
     "HISTORY",
     "HISTORIAL"
+  ],
+  "Entités": [
+    "Entities",
+    "Entidades"
+  ],
+  "Gérer les entités": [
+    "Manage entities",
+    "Gestionar entidades"
+  ],
+  "Configurer les raccourcis": [
+    "Configure shortcuts",
+    "Configurar atajos"
+  ],
+  "Rechercher une entité": [
+    "Find an entity",
+    "Buscar una entidad"
+  ],
+  "Créer une entité": [
+    "Create an entity",
+    "Crear una entidad"
+  ],
+  "Identité confirmée": [
+    "Confirmed identity",
+    "Identidad confirmada"
+  ],
+  "Confirmée": [
+    "Confirmed",
+    "Confirmada"
+  ],
+  "Proposée": [
+    "Proposed",
+    "Propuesta"
+  ],
+  "Détectée": [
+    "Detected",
+    "Detectada"
+  ],
+  "Tous les statuts": [
+    "All statuses",
+    "Todos los estados"
+  ],
+  "Fiches à rattacher": [
+    "Cards to link",
+    "Fichas por vincular"
+  ],
+  "Mentions détectées": [
+    "Detected mentions",
+    "Menciones detectadas"
+  ],
+  "Fiche ariane": [
+    "ariane card",
+    "Ficha ariane"
+  ],
+  "Source externe": [
+    "External source",
+    "Fuente externa"
+  ],
+  "Fiches et sources": [
+    "Cards and sources",
+    "Fichas y fuentes"
+  ],
+  "Modifier la fiche": [
+    "Edit card",
+    "Editar ficha"
+  ],
+  "Créer une fiche ariane": [
+    "Create an ariane card",
+    "Crear una ficha ariane"
+  ],
+  "Enregistrer la fiche": [
+    "Save card",
+    "Guardar ficha"
+  ],
+  "Homonyme à résoudre": [
+    "Ambiguous name to resolve",
+    "Nombre ambiguo por resolver"
+  ],
+  "Associer cette mention": [
+    "Link this mention",
+    "Vincular esta mención"
+  ],
+  "Choisissez une entité ou créez-en une.": [
+    "Select an entity or create one.",
+    "Selecciona una entidad o crea una."
+  ],
+  "Fusion manuelle": [
+    "Manual merge",
+    "Fusión manual"
+  ],
+  "Identité conservée": [
+    "Identity to keep",
+    "Identidad que conservar"
+  ],
+  "Choisir une entité": [
+    "Choose an entity",
+    "Elegir una entidad"
+  ],
+  "Prévisualiser la fusion": [
+    "Preview merge",
+    "Vista previa de la fusión"
+  ],
+  "Confirmer la fusion": [
+    "Confirm merge",
+    "Confirmar fusión"
+  ],
+  "Annuler la fusion": [
+    "Undo merge",
+    "Deshacer fusión"
+  ],
+  "Fusions précédentes": [
+    "Previous merges",
+    "Fusiones anteriores"
+  ],
+  "Les fiches originales sont conservées. Les alias et références seront réunis.": [
+    "Original cards are preserved. Aliases and references will be combined.",
+    "Se conservan las fichas originales. Los alias y las referencias se reunirán."
+  ],
+  "Ajouter une relation": [
+    "Add a relationship",
+    "Añadir una relación"
+  ],
+  "Relation nommée": [
+    "Relationship name",
+    "Nombre de la relación"
+  ],
+  "Provenance documentaire": [
+    "Documentary evidence",
+    "Procedencia documental"
+  ],
+  "Citation ou contexte": [
+    "Quotation or context",
+    "Cita o contexto"
+  ],
+  "Sans source": [
+    "No source",
+    "Sin fuente"
+  ],
+  "Sourcée": [
+    "Sourced",
+    "Documentada"
+  ],
+  "Ouvrir la provenance": [
+    "Open evidence",
+    "Abrir procedencia"
+  ],
+  "Ouvrir le passage": [
+    "Open passage",
+    "Abrir pasaje"
+  ],
+  "Source introuvable": [
+    "Source not found",
+    "Fuente no encontrada"
+  ],
+  "Recherche structurée": [
+    "Structured search",
+    "Búsqueda estructurada"
+  ],
+  "+ : ET · , : OU · ET est évalué en premier": [
+    "+ : AND · , : OR · AND is evaluated first",
+    "+ : Y · , : O · Y se evalúa primero"
+  ],
+  "Afficher les passages": [
+    "Show passages",
+    "Mostrar pasajes"
+  ],
+  "Nom de la vue": [
+    "View name",
+    "Nombre de la vista"
+  ],
+  "Mettre à jour la vue": [
+    "Update view",
+    "Actualizar vista"
+  ],
+  "Enregistrer la vue": [
+    "Save view",
+    "Guardar vista"
+  ],
+  "Vues enregistrées": [
+    "Saved views",
+    "Vistas guardadas"
+  ],
+  "Renommer ou modifier": [
+    "Rename or edit",
+    "Renombrar o editar"
+  ],
+  "Supprimer la vue": [
+    "Delete view",
+    "Eliminar vista"
+  ],
+  "Des mentions homonymes restent à résoudre : {0}": [
+    "Ambiguous mentions still to resolve: {0}",
+    "Quedan menciones ambiguas por resolver: {0}"
+  ],
+  "Un filtre doit commencer par # ou @.": [
+    "A filter must start with # or @.",
+    "Un filtro debe empezar por # o @."
+  ],
+  "Guillemet fermant manquant.": [
+    "Missing closing quote.",
+    "Faltan las comillas de cierre."
+  ],
+  "Opérateur manquant : utilisez + ou , .": [
+    "Missing operator: use + or , .",
+    "Falta un operador: usa + o , ."
+  ],
+  "Expression incomplète.": [
+    "Incomplete expression.",
+    "Expresión incompleta."
+  ],
+  "Plusieurs identités portent ce nom. Choisissez une référence.": [
+    "Several identities have this name. Choose a reference.",
+    "Varias identidades tienen este nombre. Elige una referencia."
+  ],
+  "Référence de recherche introuvable.": [
+    "Search reference not found.",
+    "Referencia de búsqueda no encontrada."
+  ],
+  "Une référence de cette vue est introuvable.": [
+    "A reference in this view could not be found.",
+    "No se encuentra una referencia de esta vista."
+  ],
+  "Vue enregistrée invalide ou trop récente.": [
+    "Invalid saved view or unsupported version.",
+    "Vista guardada inválida o de una versión no compatible."
+  ],
+  "Référence de recherche invalide.": [
+    "Invalid search reference.",
+    "Referencia de búsqueda inválida."
+  ],
+  "Raccourci : {0}": [
+    "Shortcut: {0}",
+    "Atajo: {0}"
+  ],
+  "Non attribué": [
+    "Unassigned",
+    "Sin asignar"
+  ],
+  "Sélectionnez un raccourci puis appuyez sur la combinaison souhaitée.": [
+    "Select a shortcut and press the desired key combination.",
+    "Selecciona un atajo y pulsa la combinación deseada."
+  ],
+  "Rétablir les raccourcis par défaut": [
+    "Restore default shortcuts",
+    "Restablecer los atajos predeterminados"
+  ],
+  "Raccourci invalide.": [
+    "Invalid shortcut.",
+    "Atajo inválido."
+  ],
+  "Cette combinaison est réservée à la saisie ou au système.": [
+    "This combination is reserved for typing or the system.",
+    "Esta combinación está reservada para la escritura o el sistema."
+  ],
+  "Ce raccourci est déjà utilisé : {0}": [
+    "This shortcut is already used: {0}",
+    "Este atajo ya está en uso: {0}"
+  ],
+  "Le catalogue a changé. Actualisez avant de réessayer.": [
+    "The catalog has changed. Refresh before retrying.",
+    "El catálogo ha cambiado. Actualiza antes de reintentar."
+  ],
+  "Identité invalide.": [
+    "Invalid identity.",
+    "Identidad inválida."
+  ],
+  "Identité introuvable.": [
+    "Identity not found.",
+    "Identidad no encontrada."
+  ],
+  "Relation invalide.": [
+    "Invalid relationship.",
+    "Relación inválida."
+  ],
+  "La prévisualisation a changé.": [
+    "The preview has changed.",
+    "La vista previa ha cambiado."
+  ],
+  "Choisissez deux identités distinctes.": [
+    "Choose two different identities.",
+    "Elige dos identidades distintas."
+  ],
+  "Des modifications suivent cette fusion. Elles ont été conservées ; la restauration automatique est refusée.": [
+    "Changes were made after this merge. They have been preserved; automatic restoration was refused.",
+    "Hay cambios posteriores a esta fusión. Se han conservado; se ha rechazado la restauración automática."
+  ],
+  "Les vues ont changé. Actualisez avant de réessayer.": [
+    "Views have changed. Refresh before retrying.",
+    "Las vistas han cambiado. Actualiza antes de reintentar."
+  ],
+  "Catalogue trop volumineux.": [
+    "Catalog too large.",
+    "Catálogo demasiado grande."
+  ],
+  "Trop de vues enregistrées.": [
+    "Too many saved views.",
+    "Demasiadas vistas guardadas."
+  ],
+  "Fiche invalide.": [
+    "Invalid card.",
+    "Ficha inválida."
+  ],
+  "La fiche a changé pendant la récupération ; les deux états ont été conservés.": [
+    "The card changed during recovery; both states have been preserved.",
+    "La ficha cambió durante la recuperación; se conservaron ambos estados."
+  ],
+  "Fiche non modifiable.": [
+    "This card cannot be edited.",
+    "Esta ficha no se puede editar."
+  ],
+  "Mentions en attente d’actualisation": [
+    "Mentions awaiting an update",
+    "Menciones pendientes de actualizar"
+  ],
+  "Actualiser": [
+    "Refresh",
+    "Actualizar"
+  ],
+  "Occurrences": [
+    "Occurrences",
+    "Apariciones"
+  ],
+  "Rattacher une fiche existante": [
+    "Link an existing card",
+    "Vincular una ficha existente"
+  ],
+  "Choisir une fiche": [
+    "Choose a card",
+    "Elegir una ficha"
+  ],
+  "Aucun passage ne correspond à cette recherche.": [
+    "No passage matches this search.",
+    "Ningún pasaje coincide con esta búsqueda."
+  ],
+  "Type conservé": [
+    "Type to keep",
+    "Tipo que conservar"
+  ],
+  "Vues concernées": [
+    "Affected views",
+    "Vistas afectadas"
   ]
 }

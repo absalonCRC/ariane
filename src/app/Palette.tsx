@@ -1,10 +1,10 @@
 import { t, useLocale } from '../i18n';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Search } from 'lucide-react';
 import { useExitPresence } from '../components/useExitPresence';
 export interface Command {
-  id?: string;
+  id: string;
   label: string;
   detail?: string;
   action: () => void;
@@ -22,6 +22,7 @@ export function Palette({
   initialQuery = '',
   panel,
   retainContent = false,
+  extraResults,
 }: {
   commands: Command[];
   open: boolean;
@@ -35,6 +36,7 @@ export function Palette({
   initialQuery?: string;
   panel: HTMLElement | null;
   retainContent?: boolean;
+  extraResults?: ReactNode;
 }) {
   useLocale();
   const [query, setQuery] = useState('');
@@ -55,7 +57,7 @@ export function Palette({
     }, 100);
     return () => window.clearTimeout(timer);
   }, [open, sections, textSearch, searchScope, initialQuery]);
-  const commandSearch = !sections && !textSearch;
+  const commandSearch = !sections && (!textSearch || query.startsWith('/'));
   const searchTerm = (commandSearch ? query.replace(/^\//, '') : query).trim().toLocaleLowerCase();
   const filtered =
     commandSearch || (sections && searchTerm)
@@ -167,6 +169,7 @@ export function Palette({
                 )}
               </div>
             )}
+            {textSearch && !commandSearch && extraResults}
             <span className="sr-only" aria-live="polite">
               {filtered[selected]
                 ? `${selected + 1} sur ${filtered.length} : ${filtered[selected].label}`

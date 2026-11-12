@@ -1,6 +1,6 @@
 # Préparer une release
 
-La version `0.3.3` cible macOS 26+, arm64. Les [notes de développement](release-notes-0.3.3.md) décrivent les nouveautés. Les deux anciennes releases GitHub ont été retirées le 2 novembre 2026 à la demande du mainteneur. Ne pas recréer de release avant signature, notarisation et validation du paquet. Le dépôt et la CI ne publient rien automatiquement.
+La version `0.5.0` cible macOS 26+, arm64. Les [notes de développement](release-notes-0.5.0.md) décrivent les nouveautés. Les deux anciennes releases GitHub ont été retirées le 2 novembre 2026 à la demande du mainteneur. Ne pas recréer de release avant signature, notarisation et validation du paquet. Le dépôt et la CI ne publient rien automatiquement.
 
 ## Paquet local sans compte Apple payant
 
@@ -20,7 +20,7 @@ Le script refuse un nom de sortie déjà présent. Il vérifie la structure, l�
 2. Exécuter `python3 scripts/check-publication.py` ; relire la liste des fichiers sélectionnés par Git, ainsi que les notices. Ce contrôle détecte des motifs courants, pas tous les secrets possibles.
 3. Construire depuis une copie propre avec les seuls fichiers publiables et exécuter `npm run verify`.
 4. Activer le signalement privé de vulnérabilités sur le futur dépôt public.
-5. Après validation, créer le premier commit, le tag et l’archive de sources correspondant exactement à la release. Conserver les lockfiles.
+5. Après validation, identifier le commit, puis créer le tag et l’archive de sources correspondant exactement à la release. Conserver les lockfiles.
 
 ## Application à télécharger
 

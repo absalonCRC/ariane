@@ -36,6 +36,7 @@ fn candidates(sources: &[Source], title: &str) -> Vec<EntityCandidate> {
 }
 #[derive(Serialize)]
 pub struct InlineEntities {
+    analyzed: bool,
     created: bool,
     #[serde(rename = "createdSources")]
     created_sources: Vec<Source>,
@@ -81,6 +82,7 @@ fn collect(
     let mut catalog = None;
     results::reconcile(root, index)?;
     let mut mentions = Vec::new();
+    let mut analyzed=true;
     // Use the same code-fence exclusion and durable passage boundaries as NER.
     for passage in section_passages(&section)? {
         let offset = passage
@@ -90,6 +92,7 @@ fn collect(
             .map_or(0, |n| n.start);
         let key = format!("inline:{}", passage.key);
         let ner: Option<String> = c.query_row("SELECT hash || model FROM memory_ner WHERE passage_key=?",[&passage.key],|r|r.get(0)).optional().app()?;
+        if !passage.text.trim().is_empty() && ner.as_deref()!=Some(&format!("{}{}",passage.hash,super::ner::NER_MODEL)) {analyzed=false;}
         let mentions_hash: Option<String> = c.query_row("SELECT group_concat(id || ':' || kind || ':' || start || ':' || end) FROM (SELECT e.id,e.kind,m.start,m.end FROM memory_mentions m JOIN memory_entities e ON e.id=m.entity_id WHERE m.passage_key=? ORDER BY e.id,m.start)",[&passage.key],|r|r.get(0)).app()?;
         let resolutions: Option<String> = c.query_row("SELECT group_concat(key || value) FROM meta WHERE key LIKE 'entity_resolution:%'",[],|r|r.get(0)).app()?;
         let hash = storage::fingerprint(&format!("{}:{ner:?}:{mentions_hash:?}:{resolutions:?}",passage.hash));
@@ -166,6 +169,7 @@ fn collect(
     if results::catalog(root,index)? != generation { return Err("Les sources ont changé. Relancez la recherche.".into()); }
     mentions.sort_by_key(|m| (m.from, std::cmp::Reverse(m.to)));
     Ok(InlineEntities {
+        analyzed,
         created: false,
         created_sources: vec![],
         text: section.text,

@@ -18,7 +18,7 @@ flowchart TD
 
 Les contrats ne dépendent ni de React, ni de Tauri, ni des contrôleurs. Les fonctions métier ne dépendent pas d’`App` ou du type global `Workspace`. Les interfaces de domaine sont importées directement depuis leur propriétaire ; les anciennes façades `app/types.ts` et `app/client.ts` ont été retirées.
 
-`npm run verify:architecture` vérifie ces frontières et la présence des mêmes 83 noms de commandes dans `Requests`, `Responses` et l’énumération Rust. Ce contrôle ne prouve pas l’équivalence de chaque champ JSON : les tests de comportement, le témoin IPC partagé et la recette native complètent le typage.
+`npm run verify:architecture` vérifie ces frontières et la présence des mêmes 92 noms de commandes dans `Requests`, `Responses` et l’énumération Rust. Ce contrôle ne prouve pas l’équivalence de chaque champ JSON : les tests de comportement, le témoin IPC partagé et la recette native complètent le typage.
 
 ## Frontend : responsabilités et état
 
@@ -126,3 +126,16 @@ Les relations vers des lignes se résolvent d’abord par leur identifiant stabl
 `SidebarDock` possède le déploiement temporaire de la capsule, indépendant de l’état de la sidebar : survol maintenu de 500 ms sur le thème, fermeture après une sortie de 150 ms, maintien pendant le focus clavier, Échap et retour du focus au thème. Les timers sont annulés au démontage, pendant une opération occupée et lors d’un changement d’état de la sidebar. Le bouton de thème garde ses coordonnées lors du déploiement autonome.
 
 Les quatre actions partagées sont rendues par `project/BinderActions`. L’application les conserve dans le dock sans monter `Binder` ; le classeur réutilise le même composant lorsqu’il est utilisé seul. Le clic sur une action referme la capsule temporaire. Corbeille ouvre explicitement le classeur dans cette vue ; les préférences `libraryView` restent synchronisées avec la vue visible lorsque la création ou la révélation ramène aux textes. Le simple survol ne modifie ni la sélection, ni le défilement, ni la visibilité de la sidebar.
+
+
+## Identités, requêtes et commandes — 0.5.0
+
+`contracts/entityIdentity.ts` sépare identité durable, fiche, source et détection. `project/entities.rs` possède le catalogue transactionnel (`meta.entity_catalog`) et le journal `entity_merges` ; le schéma projet 4 ajoute ce journal après sauvegarde cohérente. Les redirections suivent les IDs ; le nom ne sert pas de clé. Confirmation et provenance des relations restent indépendantes. Les snapshots incluent le catalogue ; le remplacement d’espace de travail conserve une révision monotone et les réunions comparent identités et relations comme métadonnées distinctes. Les vues enregistrées (`project/saved_views.rs`) restent des préférences du projet, hors restauration de texte.
+
+`vaults/cards.rs` vérifie appartenance au vault ariane, chemins et empreintes avant l’écriture. Une intention durable dans `card_edits` contient états avant/après ; le remplacement de fichier est atomique, l’index est reconstructible et la récupération refuse d’écraser un changement concurrent. L’édition des alias et celle des fiches partagent le verrou d’opérations du projet. Aucun de ces mécanismes n’autorise une écriture dans un vault externe. Modifier une identité ne réécrit pas les phrases ni les fichiers des fiches ; leur édition est explicite.
+
+`entities/useEntityManager` possède les chargements et mutations du gestionnaire, vérifie le contexte projet et ignore les réponses remplacées. `entities/occurrences` réunit mentions résolues par ID, références explicites et noms non ambigus ; les lots dont le texte ne correspond plus sont ignorés. Le détail des relations utilise ce contrôleur, sans recevoir le Workspace global. La liste de sources est un aperçu : l’édition charge toujours `source` avant de présenter le corps complet.
+
+`search/query.ts` analyse la syntaxe ; `resolveQuery.ts` résout les noms en IDs ; `evaluateQuery.ts` calcule une union d’intersections de passages courants. Ces fonctions ne dépendent pas de React/Tauri. Les vues structurées partagent `TagFilterView` et sa projection texte/tableau, en conservant l’éditeur monté et en lecture seule. Les analyses manquantes et ambiguïtés sont explicites. Les expressions enregistrées portent une version de format indépendante de celle de l’application.
+
+`contracts/commands.ts` et `app/commands/registry.ts` décrivent IDs, portées et combinaisons par défaut. `shortcuts.ts` conserve les préférences locales et synchronise les accélérateurs ; `useWorkspaceCommands` conserve les actions et leurs différences de flush/checkpoint. Le clavier de l’application intercepte ses commandes avant CodeMirror ; les événements de menu correspondants sont dédoublonnés. Les commandes auparavant propres aux menus gardent leur chemin natif. Les champs d’enregistrement suspendent ces accélérateurs et les rétablissent à la sortie. Les keymaps et l’instance CodeMirror ne sont pas recréées pour changer une combinaison. Le format persistant est `ariane.shortcuts.v1` ; aucun raccourci global de capture n’est enregistré ici.

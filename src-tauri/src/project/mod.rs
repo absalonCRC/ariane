@@ -36,3 +36,6 @@ pub mod manuscript;
 
 pub mod activity;
 pub mod tags;
+
+pub mod entities;
+pub mod saved_views;

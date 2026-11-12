@@ -103,10 +103,13 @@ export function createEditorHandle({ view, outlineRef, spans, latest }: RuntimeR
     structure(command) {
       const v = view.current,
         outline = outlineRef.current;
-      if (!v || !outline) return;
+      if (!v || !outline || v.state.readOnly) return;
       if (command === 'up' || command === 'down') outline.move(v, command === 'up' ? -1 : 1);
       else if (command === 'fold') outline.toggleFold(v);
-      else outline[command](v);
+      else if (command === 'fold-left' || command === 'fold-right') {
+        const folded = v.state.field(outline.field).folded.has(outline.entryAt(v.state).id);
+        if (folded === (command === 'fold-right')) outline.toggleFold(v);
+      } else outline[command](v);
       v.focus();
     },
     format: (format) => {

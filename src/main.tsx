@@ -11,6 +11,7 @@ import './styles/motion.css';
 import './styles/workspace.css';
 import './styles/theme.css';
 import './styles/interaction-refinements.css';
+import './styles/entities.css';
 document.documentElement.lang = getLocale();
 createRoot(document.getElementById('root')!).render(
   <ContextMenuProvider>

@@ -1,3 +1,10 @@
+import { nativeBindings } from './commands/shortcuts';
+import { useEntityManager } from '../entities/useEntityManager';
+import { EntityManager } from '../entities/EntityManager';
+import { StructuredSearch } from '../search/StructuredSearch';
+import { evaluateQuery } from '../search/evaluateQuery';
+import { queryLabel } from '../search/resolveQuery';
+import type { StructuredQuery } from '../contracts/structuredQuery';
 import { WindowDragRegion } from '../components/WindowDragRegion';
 import { useNoteObservations } from '../notes/useNoteObservations';
 import { WritingSurface } from './writing/WritingSurface';
@@ -59,6 +66,22 @@ export function App() {
   const locale = useLocale();
   const openMenu = useContextMenu();
   const workspace = useWorkspace();
+  const manager = useEntityManager(
+    workspace.p?.path,
+    workspace.sourceVersion + workspace.doc.generation,
+  );
+  const [queryFilter, setQueryFilter] = useState<{
+    path: string;
+    query: StructuredQuery;
+    name?: string;
+  } | null>(null);
+  const memory = useMemory(workspace);
+  const inlineEntities = useInlineEntities(
+    workspace,
+    memory.result,
+    memory.entityError,
+    memory.entityRevision,
+  );
   const [lineDetail, setLineDetail] = useState<{
     project: string;
     section: string;
@@ -77,14 +100,56 @@ export function App() {
   const [tagFilter, setTagFilter] = useState<{ project: string; id: string } | null>(null);
   const [tagViewMode, setTagViewMode] = useState<'text' | 'table'>('text');
   useEffect(() => setTagViewMode('text'), [workspace.p?.path]);
-  const filteredTag =
+  const singleTag =
     workspace.p?.path === tagFilter?.project
       ? workspace.p?.smartTags?.find((tag) => tag.id === tagFilter?.id)
       : undefined;
-  const filterPassages = useMemo(
-    () => (workspace.p && filteredTag ? taggedPassages(workspace.p, filteredTag.id) : []),
-    [workspace.p, filteredTag],
-  );
+  const structuredFilter = queryFilter?.path === workspace.p?.path ? queryFilter : null;
+  let queryLabelText = '',
+    queryError = '';
+  let projected: import('../tags/passages').TagPassage[] = [];
+  let ambiguous = 0,
+    pendingAnalysis = 0;
+  if (structuredFilter && workspace.p) {
+    try {
+      queryLabelText = queryLabel(
+        structuredFilter.query,
+        workspace.p.smartTags ?? [],
+        manager.catalog,
+      );
+      const evaluated = evaluateQuery(
+        workspace.p,
+        structuredFilter.query,
+        manager.catalog,
+        [
+          ...inlineEntities.batches,
+          ...manager.batches.filter(
+            (b) =>
+              !inlineEntities.batches.some((l) => l.section === b.section && l.text === b.text),
+          ),
+        ],
+        manager.sources,
+      );
+      projected = evaluated.passages;
+      ambiguous = evaluated.ambiguous;
+      pendingAnalysis = evaluated.pending;
+    } catch (e) {
+      queryError = localizeMessage(e);
+    }
+  }
+  const filteredTag = structuredFilter
+    ? {
+        id: 'structured',
+        name: structuredFilter.name ?? queryLabelText ?? t('Recherche structurée'),
+        color: '#74786a',
+        category: '',
+      }
+    : singleTag;
+  const filterPassages = structuredFilter
+    ? projected
+    : workspace.p && singleTag
+      ? taggedPassages(workspace.p, singleTag.id)
+      : [];
   const filterCounts = useMemo(() => {
     const text = filterPassages.map((passage) => passage.text).join('\n');
     return {
@@ -93,17 +158,24 @@ export function App() {
     };
   }, [filterPassages]);
   useEffect(() => {
-    if (tagFilter && !filteredTag) setTagFilter(null);
-  }, [tagFilter, filteredTag]);
+    if (tagFilter && !singleTag) setTagFilter(null);
+  }, [tagFilter, singleTag]);
   const filterSection = useRef(workspace.active);
   useEffect(() => {
-    if (filterSection.current !== workspace.active) setTagFilter(null);
+    if (filterSection.current !== workspace.active) {
+      setTagFilter(null);
+      setQueryFilter(null);
+    }
     filterSection.current = workspace.active;
   }, [workspace.active]);
   useEffect(() => {
-    if (workspace.palette || workspace.historyMode) setTagFilter(null);
+    if (workspace.palette || workspace.historyMode) {
+      setTagFilter(null);
+      setQueryFilter(null);
+    }
   }, [workspace.palette, workspace.historyMode]);
   const openTagFilter = (id: string) => {
+    setQueryFilter(null);
     setLineDetail(null);
     if (!workspace.p) return;
     workspace.setSurface('none');
@@ -117,14 +189,17 @@ export function App() {
   };
   const closeTagFilter = () => {
     setTagFilter(null);
+    setQueryFilter(null);
     requestAnimationFrame(() => workspace.editor.current?.focus());
   };
   useEffect(() => {
     document.documentElement.lang = locale;
-    if (native) void request('appLanguage', { value: locale }).catch(workspace.fail);
+    if (native)
+      void request('appLanguage', { value: locale })
+        .then(() => request('appShortcuts', { bindings: nativeBindings() }))
+        .catch(workspace.fail);
   }, [locale, workspace.fail]);
   const scrollActivity = useScrollActivity();
-  const memory = useMemory(workspace);
   useEffect(() => {
     if (workspace.reader || memory.view || workspace.annotationsOpen || workspace.palette)
       setLineDetail(null);
@@ -148,12 +223,7 @@ export function App() {
   });
   const titleNotices = useTitleNotices(workspace, memory.pending);
   const createNote = useNoteCreation(workspace);
-  const inlineEntities = useInlineEntities(
-    workspace,
-    memory.result,
-    memory.entityError,
-    memory.entityRevision,
-  );
+
   useNoteObservations({
     path: workspace.p?.path,
     activity: workspace.activity,
@@ -455,8 +525,8 @@ export function App() {
   // Full-screen surfaces own their capsule; menus and margins keep this view's title.
   const currentView: TitleView | undefined = filteredTag
     ? {
-        title: t('Vue filtrée par smart-tag'),
-        trail: ['#' + filteredTag.name],
+        title: structuredFilter ? t('Recherche structurée') : t('Vue filtrée par smart-tag'),
+        trail: [structuredFilter ? queryLabelText : '#' + filteredTag.name],
         onBack: closeTagFilter,
       }
     : workspace.historyMode
@@ -758,11 +828,24 @@ export function App() {
               key={p.path + ':' + filteredTag.id}
               project={p}
               tag={filteredTag}
+              heading={
+                structuredFilter
+                  ? (structuredFilter.name ?? queryLabelText ?? t('Recherche structurée'))
+                  : undefined
+              }
+              notice={
+                structuredFilter && (queryError || ambiguous > 0 || pendingAnalysis > 0)
+                  ? queryError ||
+                    (ambiguous
+                      ? t('Des mentions homonymes restent à résoudre : {0}', { 0: ambiguous })
+                      : t('Mentions en attente d’actualisation'))
+                  : undefined
+              }
               mode={tagViewMode}
               passages={filterPassages}
               batches={inlineEntities.batches}
               onTag={openTagFilter}
-              onRemove={removeTagAssignment}
+              onRemove={structuredFilter ? undefined : removeTagAssignment}
               removalLabel={tagRemovalLabel}
               onError={fail}
               onRelation={(relation) => {
@@ -783,7 +866,20 @@ export function App() {
               }}
               onClose={closeTagFilter}
               onOpen={(passage) => {
+                const live = doc.ref.current;
+                const original =
+                  live?.path === p.path
+                    ? live.sections.find((s) => s.id === passage.section && !s.trashed)
+                    : undefined;
+                if (
+                  !original ||
+                  (passage.node && !original.outline?.nodes.some((n) => n.id === passage.node))
+                ) {
+                  fail(t('La ligne liée n’est plus disponible.'));
+                  return;
+                }
                 setTagFilter(null);
+                setQueryFilter(null);
                 requestAnimationFrame(
                   () => void workspace.locatePassage(passage.section, passage.node, passage.text),
                 );
@@ -1061,6 +1157,28 @@ export function App() {
               searchScope={p.path}
               initialQuery={workspace.initialSearch}
               onTextSearch={(query) => workspace.setSearchQuery(query)}
+              extraResults={
+                workspace.palette === 'text' ? (
+                  <StructuredSearch
+                    query={workspace.searchQuery}
+                    project={p}
+                    manager={manager}
+                    onQuery={(query) => {
+                      workspace.setSearch(query);
+                    }}
+                    onOpen={(query, name) => {
+                      workspace.setSearch(null);
+                      setTagFilter(null);
+                      setQueryFilter({ path: p.path, query, name });
+                      workspace.setSurface('none');
+                      workspace.setReader(null);
+                      workspace.setCard(null);
+                      memory.close();
+                      inlineEntities.close();
+                    }}
+                  />
+                ) : undefined
+              }
               onNextMatch={(query, backwards) =>
                 editor.current?.findText(query, backwards ? 'previous' : 'next')
               }
@@ -1079,6 +1197,7 @@ export function App() {
               commands={
                 workspace.palette === 'sections'
                   ? ordered(p.sections).map((section) => ({
+                      id: 'section:' + section.id,
                       label: section.title || t('Sans titre'),
                       detail:
                         section.kind === 'scene'
@@ -1091,17 +1210,19 @@ export function App() {
                   : [
                       ...commands,
                       {
+                        id: 'resume',
                         label: t('Reprendre le fil'),
                         action: () => memory.open({ kind: 'resume' }),
                       },
                       {
+                        id: 'manuscript-entities',
                         label: t('Fiches du manuscrit'),
                         action: () => memory.open({ kind: 'list' }),
                       },
                     ].filter((command) => command.id !== 'sources')
               }
             />
-            {searching && (
+            {searching && !/^[#@]/.test(workspace.searchQuery.trim()) && (
               <FloatingVaultResults
                 query={workspace.searchQuery}
                 sources={workspace.vaultSearch.sources}
@@ -1197,6 +1318,30 @@ export function App() {
             )}
           </div>
         </footer>
+        {surface === 'entities' && (
+          <EntityManager
+            project={p}
+            manager={manager}
+            batches={inlineEntities.batches}
+            onClose={workspace.close}
+            onError={fail}
+            onChanged={() => workspace.setSourceVersion((v) => v + 1)}
+            onPassage={(section, node, quote) => {
+              workspace.close();
+              void workspace.locatePassage(section, node, quote);
+            }}
+            onSource={(id) => {
+              void request('source', { id })
+                .then((source) => {
+                  if (doc.ref.current?.path === p.path) {
+                    workspace.close();
+                    workspace.setReader(source);
+                  }
+                })
+                .catch(fail);
+            }}
+          />
+        )}
         <WorkspaceDialogs
           onTagFilter={openTagFilter}
           onNotice={titleNotices.notify}

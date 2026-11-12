@@ -16,6 +16,7 @@ export interface EntityMention {
 }
 
 export interface EntityBatch {
+  analyzed?: boolean;
   outline?: Outline | null;
   section: string;
   revision: number;

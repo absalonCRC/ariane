@@ -1,3 +1,4 @@
+static NATIVE_SHORTCUTS:std::sync::Mutex<std::collections::BTreeMap<String,Option<String>>>=std::sync::Mutex::new(std::collections::BTreeMap::new());
 use tauri::{
     menu::{Menu, MenuItem, MenuItemKind, Submenu, PredefinedMenuItem},
     AppHandle,
@@ -57,6 +58,8 @@ pub fn menu_for_language(app: &AppHandle, language: &str) -> tauri::Result<Menu<
         ("commands", "Commandes…", Some("CmdOrCtrl+K")),
         ("sections", "Rejoindre une section…", Some("CmdOrCtrl+P")),
         ("sources", "Sources du projet…", None),
+        ("entities", "Gérer les entités", None),
+        ("smart-tags", "Gérer les smart-tags", None),
     ] { view.append(&MenuItem::with_id(app,id,label,true,shortcut)?)?; }
     if let Some(MenuItemKind::Submenu(old_view)) = menu.items()?.get(3) {
         view.append(&PredefinedMenuItem::separator(app)?)?;
@@ -65,6 +68,9 @@ pub fn menu_for_language(app: &AppHandle, language: &str) -> tauri::Result<Menu<
     menu.remove_at(3)?;
     menu.insert(&view,3)?;
     localize_items(menu.items()?, language)?;
+    if let Ok(stored)=NATIVE_SHORTCUTS.lock(){
+        for (id,key) in stored.iter(){if let Some(item)=find_menu_item(menu.items()?,id)?{item.set_accelerator(key.as_deref())?;}}
+    }
     Ok(menu)
 }
 
@@ -102,6 +108,37 @@ fn localize_items(items: Vec<MenuItemKind<tauri::Wry>>, language: &str) -> tauri
         }
     }
     Ok(())
+}
+
+
+fn find_menu_item(items:Vec<MenuItemKind<tauri::Wry>>,id:&str)->tauri::Result<Option<MenuItem<tauri::Wry>>>{
+    for item in items {
+        match item {
+            MenuItemKind::MenuItem(item) if item.id().as_ref()==id => return Ok(Some(item)),
+            MenuItemKind::Submenu(menu)=>if let Some(item)=find_menu_item(menu.items()?,id)?{return Ok(Some(item));},
+            _=>{}
+        }
+    } Ok(None)
+}
+
+pub fn update_shortcuts(app:&AppHandle,bindings:&std::collections::BTreeMap<String,Option<String>>)->crate::error::Result<()> {
+    use crate::error::AppResult;
+    let menu=app.menu().ok_or("Menu indisponible.")?;
+    // Keep the previous map so a rejected accelerator does not leave a partial update.
+    let mut current=NATIVE_SHORTCUTS.lock().map_err(|e|e.to_string())?;
+    if current.is_empty(){
+        *current=[("new-project",Some("CmdOrCtrl+N")),("open-project",Some("CmdOrCtrl+O")),("import",Some("CmdOrCtrl+Shift+I")),("save",Some("CmdOrCtrl+S")),("export",Some("CmdOrCtrl+Shift+E")),("preferences",Some("CmdOrCtrl+,")),("search",Some("CmdOrCtrl+F")),("annotations",Some("CmdOrCtrl+Alt+M")),("focus",Some("CmdOrCtrl+Shift+F")),("binder",Some("CmdOrCtrl+Shift+B")),("commands",Some("CmdOrCtrl+K")),("sections",Some("CmdOrCtrl+P")),("history",None),("sources",None),("entities",None),("smart-tags",None)].into_iter().map(|(id,key)|(id.to_owned(),key.map(str::to_owned))).collect();
+    }
+    let mut changed:Vec<String>=vec![];
+    for (id,key) in bindings {
+        if let Some(item)=find_menu_item(menu.items().app()?,id).app()? {
+            if let Err(error)=item.set_accelerator(key.as_deref()) {
+                for previous in changed {if let Some(item)=find_menu_item(menu.items().app()?,&previous).app()? {item.set_accelerator(current.get(&previous).and_then(|v|v.as_deref())).app()?;}}
+                return Err(error.to_string());
+            }changed.push(id.clone());
+        }
+    }
+    *current=bindings.clone();Ok(())
 }
 
 #[cfg(test)]

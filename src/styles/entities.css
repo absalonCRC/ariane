@@ -1,0 +1,190 @@
+.entity-workspace {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 680px);
+  gap: 48px;
+  max-width: 1040px;
+  margin: 24px auto 100px;
+  padding: 0 32px;
+}
+.entity-workspace aside {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-self: start;
+}
+.entity-workspace aside button {
+  text-align: left;
+  padding: 8px 0;
+}
+.entity-workspace small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+.entity-workspace button[aria-current] {
+  color: var(--accent);
+}
+.entity-detail {
+  min-width: 0;
+}
+.entity-detail h2 {
+  margin: 28px 0 12px;
+  font-size: 15px;
+  font-weight: 500;
+}
+.entity-workspace label,
+.structured-search label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font: 400 12px/1.6 var(--ui);
+}
+.entity-workspace label:has(input[type='checkbox']) {
+  flex-direction: row;
+  align-items: center;
+}
+.entity-workspace input:not([type='checkbox']),
+.entity-workspace select,
+.entity-workspace textarea,
+.structured-search input {
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  padding: 6px 0;
+  width: 100%;
+  font: inherit;
+}
+.entity-workspace textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+.entity-workspace form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.entity-workspace button {
+  background: transparent;
+  color: inherit;
+  border: 0;
+  cursor: pointer;
+  font: 400 12px/1.6 var(--ui);
+}
+.entity-workspace button:hover,
+.structured-search button:hover {
+  color: var(--accent);
+}
+.entity-workspace form button,
+.entity-merge-preview button {
+  align-self: start;
+  padding: 6px 0;
+  color: var(--accent);
+}
+.entity-workspace button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.entity-relation {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.entity-relation blockquote {
+  font-size: 13px;
+  margin: 8px 0;
+}
+.entity-merge-preview {
+  margin: 12px 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.structured-search {
+  max-height: 260px;
+  overflow: auto;
+  font: 400 12px/1.6 var(--ui);
+  padding: 8px 0;
+}
+.structured-search:empty {
+  display: none;
+}
+.structured-search button {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+.structured-search small {
+  display: block;
+  opacity: 0.65;
+}
+.structured-search form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 10px;
+}
+.structured-filter-status {
+  position: relative;
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 8px 24px;
+  color: var(--muted);
+  font: 12px var(--ui);
+}
+.shortcut-settings > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+.shortcut-settings label {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.shortcut-settings input {
+  width: 180px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  padding: 7px;
+  font: 11px var(--ui);
+}
+@media (max-width: 850px) {
+  .entity-workspace {
+    grid-template-columns: minmax(140px, 30%) minmax(0, 1fr);
+    gap: 24px;
+    padding: 0 20px;
+  }
+  .shortcut-settings label {
+    flex-wrap: wrap;
+  }
+}
+/* WorkspaceScreen's general form spacing is too wide for a browsable catalog. */
+.entity-workspace label {
+  margin: 0;
+}
+.entity-workspace aside button {
+  display: block;
+}
+.entity-workspace {
+  min-height: 0;
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  margin: 0 auto;
+  padding-block: 24px 80px;
+}
+.entity-workspace input,
+.entity-workspace textarea,
+.entity-workspace select {
+  box-sizing: border-box;
+  max-width: 100%;
+}

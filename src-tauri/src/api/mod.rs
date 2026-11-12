@@ -45,6 +45,10 @@ pub fn handle(
 ) -> Result<serde_json::Value> {
     let index = state.data.join("sources.sqlite");
     match request {
+        Request::AppShortcuts { bindings } => {
+            crate::platform::update_shortcuts(app, &bindings)?;
+            Ok(json!(true))
+        }
         Request::AppLanguage { value } => {
             if !["fr", "en", "es"].contains(&value.as_str()) {
                 return Err("Unsupported application language".into());
@@ -226,7 +230,15 @@ pub fn handle(
                 )
             };
             match other {
-                request @ (Request::SmartTagOperation { .. }
+                request @ (Request::EntityMentions { .. }
+                | Request::EntityCatalog { .. }
+                | Request::EntityOperation { .. }
+                | Request::EntityMergePreview { .. }
+                | Request::EntityMergeHistory { .. }
+                | Request::SavedViews { .. }
+                | Request::SaveView { .. }
+                | Request::UpdateSourceCard { .. }
+                | Request::SmartTagOperation { .. }
                 | Request::NoteActivity { .. }
                 | Request::RecordNoteActivity { .. }
                 | Request::Annotations { .. }

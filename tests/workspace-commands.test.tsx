@@ -63,3 +63,37 @@ it('garde la navigation native et sa sauvegarde distinctes des actions de palett
   }
   expect(events.stop).toHaveBeenCalledOnce();
 });
+
+it('captures native search before CodeMirror and ignores its duplicate menu event', async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  const search = vi.fn();
+  const context = {
+    p: { path: 'synthetic' },
+    doc: { settings: {}, flush: vi.fn(async () => {}), checkpoint: vi.fn(async () => {}) },
+    toggleFocus: vi.fn(),
+    setSearch: search,
+    setPalette: vi.fn(),
+    libraryLock: { current: false },
+    newProject: false,
+    fail: vi.fn(),
+    editor: { current: { selection: () => '' } },
+  } as unknown as Parameters<typeof useWorkspaceCommands>[0];
+  function Harness() {
+    useWorkspaceCommands(context);
+    return null;
+  }
+  const root = createRoot(document.createElement('div'));
+  await act(async () => root.render(<Harness />));
+  const key = new KeyboardEvent('keydown', {
+    key: 'f',
+    metaKey: true,
+    bubbles: true,
+    cancelable: true,
+  });
+  await act(async () => window.dispatchEvent(key));
+  expect(key.defaultPrevented).toBe(true);
+  expect(search).toHaveBeenCalledTimes(1);
+  await act(async () => events.callback({ payload: 'search' }));
+  expect(search).toHaveBeenCalledTimes(1);
+  await act(async () => root.unmount());
+});

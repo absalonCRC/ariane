@@ -1,3 +1,6 @@
+import type { EntityCatalog, EntityIdentity } from '../contracts/entityIdentity';
+import type { EntityRelation } from '../contracts/entityRelations';
+import { emptyCatalog } from '../entities/model';
 import type { MergePreview, MergeResolution, Version, WritingBranch } from '../contracts/history';
 import type { SmartTag } from '../contracts/smartTags';
 import type { Project, Section } from '../contracts/project';
@@ -7,6 +10,8 @@ import { mergeSections, validateMergedSections } from './merge';
 import { previewCheckpoint, versionKey } from './previewAutomatic';
 
 type Snapshot = {
+  identities: Record<string, EntityIdentity>;
+  entityRelations: Record<string, EntityRelation>;
   tags: Record<string, SmartTag>;
   sections: Section[];
   settings: Project['settings'];
@@ -15,6 +20,8 @@ type Snapshot = {
 type Branch = WritingBranch & { draft: Snapshot; base: Snapshot };
 type State = { activeBranch: string; branches: Branch[] };
 type SavedVersion = Version & {
+  identities?: Record<string, EntityIdentity>;
+  entityRelations?: Record<string, EntityRelation>;
   tags?: Record<string, SmartTag>;
   settings?: Project['settings'];
   references?: Record<string, string>;
@@ -31,7 +38,13 @@ function snapshot(p: Project): Snapshot {
     )
       references[key] = localStorage.getItem(key)!;
   }
+  const envelope = JSON.parse(
+    localStorage.getItem('ariane.preview.identities.' + p.path + '.transaction') || 'null',
+  );
+  const catalog: EntityCatalog = envelope?.catalog ?? emptyCatalog();
   return clone({
+    identities: Object.fromEntries(catalog.entities.map((e) => [e.id, e])),
+    entityRelations: Object.fromEntries(catalog.relations.map((r) => [r.id, r])),
     tags: Object.fromEntries((p.smartTags ?? []).map((t) => [t.id, t])),
     sections: [...p.sections, ...(p.trash ?? [])],
     settings: p.settings,
@@ -100,6 +113,16 @@ function persist(p: Project, state: State, all: SavedVersion[], next?: Snapshot)
     changes['ariane.preview.structure.' + p.path] = null;
     for (const k of Object.keys(snapshot(p).references)) changes[k] = null;
     Object.assign(changes, next.references);
+    const key = 'ariane.preview.identities.' + p.path + '.transaction';
+    const envelope = JSON.parse(localStorage.getItem(key) || 'null');
+    changes[key] = JSON.stringify({
+      catalog: {
+        revision: (envelope?.catalog?.revision ?? 0) + 1,
+        entities: Object.values(next.identities ?? {}),
+        relations: Object.values(next.entityRelations ?? {}),
+      },
+      merges: envelope?.merges ?? [],
+    });
   }
   commit(changes);
   return result;
@@ -120,6 +143,8 @@ function capture(
     created: new Date().toISOString(),
     scope,
     sections: clone(scope ? descendants(snap.sections, scope) : snap.sections),
+    identities: clone(snap.identities ?? {}),
+    entityRelations: clone(snap.entityRelations ?? {}),
     tags: clone(snap.tags ?? {}),
     settings: clone(snap.settings),
     references: clone(snap.references),
@@ -148,12 +173,20 @@ function plan(
   const entries = mergeSections(base.sections, current.sections, incoming.sections);
   const result: Snapshot = {
     sections: entries.flatMap((e) => (e.result ? [clone(e.result)] : [])),
+    identities: { ...current.identities },
+    entityRelations: { ...current.entityRelations },
     tags: { ...current.tags },
     settings: { ...current.settings },
     references: { ...current.references },
   };
   const auxiliaryConflicts: MergePreview['auxiliaryConflicts'] = [];
-  for (const category of ['settings', 'references', 'tags'] as const) {
+  for (const category of [
+    'settings',
+    'references',
+    'tags',
+    'identities',
+    'entityRelations',
+  ] as const) {
     const b = (base[category] ?? {}) as Record<string, unknown>,
       a = (current[category] ?? {}) as Record<string, unknown>,
       z = (incoming[category] ?? {}) as Record<string, unknown>;
@@ -272,6 +305,8 @@ export function previewHistory(
         throw new Error('Choisissez une version de tout le projet pour créer une variante.');
       snap = {
         sections: v.sections,
+        identities: v.identities ?? {},
+        entityRelations: v.entityRelations ?? {},
         tags: v.tags ?? Object.fromEntries((p.smartTags ?? []).map((t) => [t.id, t])),
         settings: v.settings ?? p.settings,
         references: v.references ?? snap.references,
@@ -341,6 +376,12 @@ export function previewHistory(
       Object.assign(references, v.references);
     }
     const next: Snapshot = {
+      identities: v.scope
+        ? { ...v.identities, ...previous.identities }
+        : (v.identities ?? previous.identities),
+      entityRelations: v.scope
+        ? { ...v.entityRelations, ...previous.entityRelations }
+        : (v.entityRelations ?? previous.entityRelations),
       sections: [...previous.sections.filter((s) => !affected.has(s.id)), ...clone(v.sections)],
       tags: v.scope ? { ...v.tags, ...previous.tags } : (v.tags ?? previous.tags),
       settings: v.scope ? previous.settings : (v.settings ?? previous.settings),
@@ -398,9 +439,13 @@ export function previewHistory(
       throw new Error('Choisissez une résolution pour chaque référence en divergence.');
     const category = conflict.id.startsWith('settings:')
         ? 'settings'
-        : conflict.id.startsWith('tags:')
-          ? 'tags'
-          : 'references',
+        : conflict.id.startsWith('identities:')
+          ? 'identities'
+          : conflict.id.startsWith('entityRelations:')
+            ? 'entityRelations'
+            : conflict.id.startsWith('tags:')
+              ? 'tags'
+              : 'references',
       key = conflict.id.slice(category.length + 1);
     const value = JSON.parse(r.choice === 'current' ? conflict.current : conflict.incoming);
     if (value === null) delete (result[category] as Record<string, unknown>)[key];
