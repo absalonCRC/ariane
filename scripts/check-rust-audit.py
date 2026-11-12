@@ -1,4 +1,4 @@
-"""Fail on advisories reachable in Ariane's declared macOS dependency graph."""
+"""Fail on findings reachable in Ariane's declared macOS dependency graph."""
 import json
 from pathlib import Path
 import subprocess
@@ -20,8 +20,11 @@ def main():
         raise RuntimeError("Empty target dependency graph")
     failures = applicable(report, packages)
     for row in failures:
-        print(row["advisory"]["id"], row["package"]["name"], row["package"]["version"])
-    print(f'{len(failures)} applicable advisories; other-platform entries remain in the raw audit report.')
+        # Yanked-package warnings have no advisory, but remain blocking findings.
+        advisory = row.get("advisory") or {}
+        label = advisory.get("id") or row.get("kind") or "unknown finding"
+        print(label, row["package"]["name"], row["package"]["version"])
+    print(f'{len(failures)} applicable findings; other-platform entries remain in the raw audit report.')
     return bool(failures)
 
 
