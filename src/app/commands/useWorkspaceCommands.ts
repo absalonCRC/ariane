@@ -1,3 +1,10 @@
+import { commandRegistry } from './registry';
+import {
+  useShortcuts,
+  effectiveBindings,
+  shortcutFromEvent,
+  requestShortcutSettings,
+} from './shortcuts';
 import type { Dispatch, SetStateAction, RefObject } from 'react';
 import { t } from '../../i18n';
 import { type DocumentRole } from '../../contracts/library';
@@ -58,6 +65,8 @@ export function useWorkspaceCommands({
   setReader,
   setMenu,
 }: CommandContext) {
+  const overrides = useShortcuts();
+  const bindings = effectiveBindings(overrides);
   const commands: Command[] = p
     ? [
         {
@@ -106,6 +115,15 @@ export function useWorkspaceCommands({
             ]
           : []),
         { id: 'sources', label: t('Sources du projet'), action: () => setSurface('sources') },
+        { id: 'entities', label: t('Gérer les entités'), action: () => setSurface('entities') },
+        {
+          id: 'shortcuts',
+          label: t('Configurer les raccourcis'),
+          action: () => {
+            requestShortcutSettings();
+            setSurface('preferences');
+          },
+        },
         { id: 'smart-tags', label: t('Gérer les smart-tags'), action: () => setSurface('tags') },
         { id: 'prepare', label: t('Préparer cette section'), action: () => setSurface('prepare') },
         {
@@ -180,9 +198,19 @@ export function useWorkspaceCommands({
         },
       ]
     : [];
+  commands.push(
+    ...(p ? [{ id: 'commands', label: t('Commandes'), action: () => setPalette('commands') }] : []),
+  );
+  for (const c of commands)
+    if (Object.hasOwn(bindings, c.id)) c.detail = bindings[c.id] ?? undefined;
+  const keyboardCommands = useRef(commands);
+  keyboardCommands.current = commands;
+  const lastGesture = useRef<{ id: string; time: number; origin: 'keyboard' | 'native' } | null>(
+    null,
+  );
   const nativeCommand = useRef<(id: string) => void>(() => {});
   nativeCommand.current = (id) => {
-    if (libraryLock.current || document.querySelector('dialog[open][aria-modal="true"]')) return;
+    if (libraryLock.current || document.querySelector('dialog[open]')) return;
     if (!p || newProject) return;
     if (id === 'focus') {
       toggleFocus();
@@ -207,7 +235,17 @@ export function useWorkspaceCommands({
       openSurface(id as Surface);
       return;
     }
-    const nativeIds = ['open-project', 'annotations', 'manuscript', 'binder', 'sections', 'search'];
+    const nativeIds = [
+      'open-project',
+      'annotations',
+      'manuscript',
+      'binder',
+      'sections',
+      'search',
+      'entities',
+      'smart-tags',
+      'shortcuts',
+    ];
     if (nativeIds.includes(id)) commands.find((command) => command.id === id)?.action();
   };
   useEffect(() => {
@@ -215,7 +253,18 @@ export function useWorkspaceCommands({
     let stop: (() => void) | undefined,
       disposed = false;
     void import('@tauri-apps/api/event')
-      .then(({ listen }) => listen<string>('app-command', (e) => nativeCommand.current(e.payload)))
+      .then(({ listen }) =>
+        listen<string>('app-command', (e) => {
+          const now = performance.now(),
+            last = lastGesture.current;
+          if (last?.id === e.payload && last.origin === 'keyboard' && now - last.time < 250) {
+            lastGesture.current = null;
+            return;
+          }
+          lastGesture.current = { id: e.payload, time: now, origin: 'native' };
+          nativeCommand.current(e.payload);
+        }),
+      )
       .then((unlisten) => {
         if (disposed) unlisten();
         else stop = unlisten;
@@ -228,43 +277,57 @@ export function useWorkspaceCommands({
   }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (document.querySelector('.workspace-screen[open]')) return;
+      if (document.querySelector('dialog[open]')) return;
       if (libraryLock.current) {
         e.preventDefault();
         return;
       }
-      if (!(e.metaKey || e.ctrlKey)) return;
-      const k = e.key.toLowerCase();
-      if (e.shiftKey && k === 'f') {
+      if (e.isComposing || e.key === 'Dead' || e.defaultPrevented) return;
+      const value = shortcutFromEvent(e);
+      if (!value) return;
+      const inEditor = !!(e.target as HTMLElement)?.closest?.('.cm-editor');
+      const match = commandRegistry.find(
+        (c) => bindings[c.id] === value && (c.scope === 'app' || inEditor),
+      );
+      if (match) {
+        // Capture before CodeMirror's default search keymap. A menu event for this
+        // same gesture must not execute the action a second time.
         e.preventDefault();
         e.stopPropagation();
-        toggleFocus();
-        return;
-      }
-      if (k === 'k') {
-        e.preventDefault();
-        setPalette((v) => (v ? null : 'commands'));
-      }
-      if (k === 'p') {
-        e.preventDefault();
-        setPalette('sections');
-      }
-      if (k === 's') {
-        e.preventDefault();
-        void doc.flush().catch(() => {});
-      }
-      if (e.shiftKey && k === 'b') {
-        e.preventDefault();
-        setBinder((v) => !v);
-      }
-      if (k === 'f') {
+        if (native && match.native) {
+          const now = performance.now(),
+            last = lastGesture.current;
+          if (last?.id === match.id && last.origin === 'native' && now - last.time < 250) {
+            lastGesture.current = null;
+            return;
+          }
+          lastGesture.current = { id: match.id, time: now, origin: 'keyboard' };
+          if (
+            !['focus', 'binder', 'commands', 'sections', 'search', 'save', 'export'].includes(
+              match.id,
+            )
+          ) {
+            nativeCommand.current(match.id);
+            return;
+          }
+        }
+        if (match.id === 'fold-left' || match.id === 'fold-right') {
+          editor.current?.structure(match.id);
+          return;
+        }
+        keyboardCommands.current.find((c) => c.id === match.id)?.action();
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
+        // Ariane owns search; remapping it must not expose CodeMirror's separate replace panel.
         e.preventDefault();
         e.stopPropagation();
-        setSearch(editor.current?.selection() || '');
-      }
-      if (e.shiftKey && k === 'e') {
+      } else if (
+        inEditor &&
+        commandRegistry.some(
+          (c) => c.scope === 'editor' && c.shortcut === value && bindings[c.id] !== value,
+        )
+      ) {
         e.preventDefault();
-        setSurface('export');
+        e.stopPropagation();
       }
     };
     const escape = (e: KeyboardEvent) => {
@@ -283,6 +346,6 @@ export function useWorkspaceCommands({
       window.removeEventListener('keydown', onKey, true);
       window.removeEventListener('keydown', escape);
     };
-  }, [doc.flush, toggleFocus]);
+  }, [doc.flush, toggleFocus, overrides, p]);
   return commands;
 }

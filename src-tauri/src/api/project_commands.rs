@@ -7,10 +7,49 @@ pub(super) fn handle(
     _app: &tauri::AppHandle,
     state: &AppState,
     root: PathBuf,
-    _index: PathBuf,
+    index: PathBuf,
     request: Request,
 ) -> Result<serde_json::Value> {
     match request {
+        Request::EntityMentions {project_path} => {
+            if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+            let sections=project::sections(&project::database(&root)?)?;
+            let mut result=vec![];
+            for s in sections.iter().filter(|s|s.kind=="scene"&&!s.trashed) {
+                let mut batch=serde_json::to_value(crate::memory::inline_entities(&root,&index,&s.id,s.revision)?).map_err(|e|e.to_string())?;
+                batch["section"]=serde_json::json!(s.id);batch["revision"]=serde_json::json!(s.revision);result.push(batch);
+            } Ok(serde_json::Value::Array(result))
+        }
+        Request::EntityCatalog { project_path } => {
+            if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+            crate::vaults::recover_card_edits(&root,&index)?;
+            json(project::entities::read(&project::database(&root)?)?)
+        }
+        Request::EntityOperation { project_path, revision, operation } => {
+            if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+            json(project::entities::apply(&root,revision,operation)?)
+        }
+        Request::EntityMergePreview {project_path,source,target} => {
+            if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+            project::entities::preview(&root,&source,&target)
+        }
+        Request::EntityMergeHistory {project_path} => {
+            if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+            project::entities::history(&root)
+        }
+        Request::SavedViews {project_path} => {
+            if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+            project::saved_views::response(&project::database(&root)?)
+        }
+        Request::SaveView {project_path,token,view,remove} => {
+            if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+            project::saved_views::apply(&root,&token,view,remove)?;
+            project::saved_views::response(&project::database(&root)?)
+        }
+        Request::UpdateSourceCard {project_path,source,fingerprint,title,kind,aliases,body} => {
+            if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
+            json(crate::vaults::update_card(&root,&index,&source,&fingerprint,&title,&kind,&aliases,&body)?)
+        }
         Request::SmartTagOperation { project_path, operation } => {
             if Path::new(&project_path) != root {
                 return Err("Le projet actif a changé.".into());

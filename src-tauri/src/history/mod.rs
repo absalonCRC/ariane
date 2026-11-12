@@ -2,6 +2,7 @@ mod automatic;
 mod branches;
 pub use branches::{history_state, create_branch, switch_branch, promote_version, merge_preview, merge_branch, MergeResolution};
 pub use automatic::checkpoint;
+pub(crate) use branches::active as active_id;
 pub(crate) use automatic::checkpoint_with;
 use crate::{
     error::{AppResult, Result},
@@ -13,6 +14,8 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 #[derive(Serialize, Deserialize, Default, Clone)]
 pub(super) struct Snapshot {
+    #[serde(default)]
+    pub entity_catalog: Option<project::entities::Catalog>,
     #[serde(default)]
     pub smart_tags: Vec<SmartTag>,
     pub sections: Vec<Section>,
@@ -97,7 +100,7 @@ pub(super) fn snapshot(c: &Connection, scope: &Option<String>) -> Result<Snapsho
         let values=q.query_map(params![scope,ids],|r|Ok((r.get(0)?,r.get(1)?))).app()?.collect::<std::result::Result<Vec<_>,_>>().app()?;
         Some(values)
     } else {Some(vec![])};
-    Ok(Snapshot { smart_tags: project::tags::definitions(c)?, sections, annotations, settings: serde_json::from_str(&settings).app()?, citations, links, pins })
+    Ok(Snapshot { entity_catalog: Some(project::entities::read(c)?), smart_tags: project::tags::definitions(c)?, sections, annotations, settings: serde_json::from_str(&settings).app()?, citations, links, pins })
 }
 fn has_pins(c: &Connection) -> Result<bool> {
     c.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='margin_pins')", [], |r| r.get(0)).app()
@@ -197,6 +200,11 @@ pub fn restore(root: &Path, id: &str) -> Result<Project> {
     if let Some(scope)=&v.scope {
         let affected:std::collections::HashSet<_>=descendants(&current.sections,scope).iter().map(|s|s.id.clone()).chain(restored.sections.iter().map(|s|s.id.clone())).collect();
         next=current.clone();
+        if let Some(entities)=&restored.entity_catalog {
+            let current=next.entity_catalog.get_or_insert_with(Default::default);
+            for e in &entities.entities {if !current.entities.iter().any(|v|v.id==e.id){current.entities.push(e.clone());}}
+            for r in &entities.relations {if !current.relations.iter().any(|v|v.id==r.id){current.relations.push(r.clone());}}
+        }
         for tag in &restored.smart_tags { if !next.smart_tags.iter().any(|t|t.id==tag.id) {next.smart_tags.push(tag.clone());} }
         next.sections.retain(|s|!affected.contains(&s.id));next.sections.extend(restored.sections);
         next.links.retain(|(section,_,_)|!affected.contains(section));next.links.extend(restored.links);

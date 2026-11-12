@@ -1,5 +1,16 @@
 # Journal des changements
 
+## 0.5.0 — 2026-11-12, version de développement
+
+- Gestionnaire d’entités : identités durables, homonymes distincts, confirmations, alias, occurrences et édition protégée des fiches ariane.
+- Relations nommées et éventuellement sourcées ; statut proposé/confirmé indépendant de la provenance.
+- Fusion manuelle prévisualisée et réversible, réessais idempotents et conservation des fiches originales.
+- Recherche combinée `#`/`@`, ET/OU, diagnostics, originaux en consultation et vues enregistrées par projet.
+- Commandes à identifiants stables et raccourcis personnalisables, avec conflits, réinitialisation et menus macOS synchronisés.
+- Migration projet vers le schéma 4 avec récupération préalable ; identités et relations incluses dans les versions et variantes.
+
+Voir les [notes 0.5.0](docs/release-notes-0.5.0.md) et le [bilan de qualification](docs/validation-0.5.0.md).
+
 ## 0.4.0 — 2026-11-05, version de développement
 
 - Smart-tags multiples et propres au projet : identité stable, nom, catégorie et couleur distincte à la création.

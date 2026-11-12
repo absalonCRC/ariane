@@ -1,3 +1,5 @@
+mod cards;
+pub use cards::{update_card,recover_card_edits};
 mod aliases;
 pub use aliases::update_aliases;
 mod classification;

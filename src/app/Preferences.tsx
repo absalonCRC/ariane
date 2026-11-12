@@ -1,3 +1,5 @@
+import { ShortcutSettings } from './commands/ShortcutSettings';
+import { consumeShortcutSettings } from './commands/shortcuts';
 import { EntityColorToggle } from '../components/EntityColorToggle';
 import { EntityPreferences } from '../enrichment/EntityPreferences';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
@@ -46,7 +48,9 @@ export function Preferences({
   onError: (error: unknown) => void;
 }) {
   useLocale();
-  const [page, setPage] = useState<(typeof pages)[number][0]>('appearance');
+  const [page, setPage] = useState<(typeof pages)[number][0]>(() =>
+    consumeShortcutSettings() ? 'shortcuts' : 'appearance',
+  );
   return (
     <WorkspaceScreen
       title={t('Paramètres')}
@@ -291,34 +295,7 @@ export function Preferences({
               </p>
             </>
           )}
-          {page === 'shortcuts' && (
-            <>
-              <h2>{t('Raccourcis')}</h2>
-              <dl className="shortcut-list">
-                {[
-                  [t('Rechercher textes et sources'), '⌘ ⇧ F'],
-                  [t('Rejoindre une section'), '⌘ P'],
-                  [t('Commandes'), '⌘ K'],
-                  [t('Ouvrir ou replier la sidebar'), '⌘ ⇧ B'],
-                  [t('Enregistrer'), '⌘ S'],
-                  [t('Exporter'), '⌘ ⇧ E'],
-                  [t('Dicter'), '⌘ ⇧ M'],
-                  [t('Parcourir la bibliothèque'), '↑ ↓'],
-                  [t('Replier / déplier une branche'), '← →'],
-                  [t('Renommer dans la bibliothèque'), 'F2'],
-                  [t('Sélectionner plusieurs textes'), '⌘ clic / ⇧ clic'],
-                  [t('Annuler un rangement, dans la bibliothèque'), '⌘ Z'],
-                ].map(([label, key]) => (
-                  <div key={t(label)}>
-                    <dt>{t(label)}</dt>
-                    <dd>
-                      <kbd>{key}</kbd>
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </>
-          )}
+          {page === 'shortcuts' && <ShortcutSettings onError={onError} />}
         </div>
       </div>
     </WorkspaceScreen>

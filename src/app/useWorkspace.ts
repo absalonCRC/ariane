@@ -182,7 +182,11 @@ export function useWorkspace() {
     fail,
   );
   const p = doc.project;
-  const vaultSearch = useVaultSearch(p, searching ? searchQuery : '', sourceVersion);
+  const vaultSearch = useVaultSearch(
+    p,
+    searching && !/^[#@/]/.test(searchQuery.trim()) ? searchQuery : '',
+    sourceVersion,
+  );
   const active = p?.sections.some((s) => s.id === doc.settings.active)
     ? doc.settings.active
     : p?.sections.find((s) => s.kind === 'scene')?.id || null;

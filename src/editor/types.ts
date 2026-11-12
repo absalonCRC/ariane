@@ -47,7 +47,9 @@ export interface EditorHandle {
   revealMatch: (section: string, from: number | null, query: string) => boolean;
   format: (format: MarkdownFormat) => void;
   reviewTarget: () => ReviewTarget | null;
-  structure: (command: 'indent' | 'outdent' | 'up' | 'down' | 'fold') => void;
+  structure: (
+    command: 'indent' | 'outdent' | 'up' | 'down' | 'fold' | 'fold-left' | 'fold-right',
+  ) => void;
 }
 export interface EditorProps {
   onOutlineDetails?: (section: string, node: string, outline: Outline) => void;

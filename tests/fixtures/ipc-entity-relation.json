@@ -1,0 +1,1 @@
+{"type":"entityOperation","projectPath":"/synthetique","revision":7,"operation":{"action":"relation","relation":{"id":"lien","from":"origine","to":"destination","name":"étudie","status":"proposed","provenance":{"source":"source","section":"scene","node":"ligne","quote":"Été 🌿"}}}}

@@ -19,8 +19,8 @@ describe('navigation des résultats de la palette', () => {
       root.render(
         <Palette
           commands={[
-            { label: 'Alpha', action: first },
-            { label: 'Beta', action: second },
+            { id: 'alpha', label: 'Alpha', action: first },
+            { id: 'beta', label: 'Beta', action: second },
           ]}
           open
           onOpen={() => {}}

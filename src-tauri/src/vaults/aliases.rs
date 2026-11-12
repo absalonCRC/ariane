@@ -10,6 +10,7 @@ pub fn update_aliases(
     fingerprint: &str,
     aliases: &[String],
 ) -> Result<Source> {
+    project::with_lock(root,|| {
     let available = list(root, index)?;
     let source = source(index, id, &available)?;
     let vault = available
@@ -81,6 +82,7 @@ pub fn update_aliases(
     }
     temporary.persist(&path).map_err(|e| e.to_string())?;
     index_created_entity(root, index, &path)
+    })
 }
 
 #[cfg(test)]

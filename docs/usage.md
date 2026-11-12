@@ -109,3 +109,14 @@ ariane est disponible en français, anglais et espagnol. Choisissez la langue su
 Une entité détectée reste colorée lorsque vous poursuivez sa phrase ou que son contexte est réanalysé. Modifier le nom lui-même retire la marque jusqu’à sa prochaine reconnaissance. Après sauvegarde et analyse, une entité nouvelle crée sa fiche dans le vault du projet. Si un nom correspond à plusieurs fiches ou ressemble de très près à un nom existant, cliquez sur la mention pour choisir la fiche correspondante ou confirmer une fiche distincte.
 
 Dans une fiche du vault du projet, la section **Alias** accepte un nom par ligne. Renseignez sur une seule fiche les anciens noms, surnoms, pseudonymes ou noms historiques à reconnaître. Après **Enregistrer les alias**, ces formes renvoient à cette fiche. Cela fonctionne pour les personnes, les lieux et tous les types de fiches Markdown. Les alias de vaults externes sont lus depuis leurs fichiers et se modifient dans leur application d’origine.
+
+
+## Entités, vues et raccourcis (0.5.0)
+
+Dans la recherche, `/Gérer les entités` ouvre les identités du projet : occurrences, alias, confirmation, fiches et relations. Les sources externes restent consultables ; seules les fiches du vault ariane sont modifiables. Une fusion manuelle présente ses conséquences et peut être annulée depuis « Fusions précédentes » tant qu’une édition ultérieure n’empêche pas sa restauration sûre.
+
+Saisir `#enquête + #à revoir` pour une intersection, `#enquête, #à revoir` pour une union ou `@"Marie Curie" + #enquête` pour combiner identité et tag. ET a priorité sur OU. Utiliser les propositions pour choisir un homonyme. « Afficher les passages » ouvre une vue en consultation ; cliquer sur un passage rejoint son original. Une analyse en attente ne signifie pas qu’aucune mention n’existe.
+
+Donner un nom à une requête puis « Enregistrer la vue » la rend accessible depuis la même barre de recherche. Les IDs conservés permettent de retrouver tags et entités après renommage ; une référence manquante est signalée. La vue peut être renommée, modifiée ou supprimée.
+
+`/Configurer les raccourcis` ouvre leur page dans les paramètres. Sélectionner un champ et presser la combinaison souhaitée ; un conflit explique quelle action l’utilise. Les actions Retirer et Rétablir les raccourcis par défaut permettent de revenir au réglage voulu. Le raccourci global de capture arrive avec le jalon 0.6.0.

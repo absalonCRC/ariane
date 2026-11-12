@@ -1,3 +1,10 @@
+import type {
+  EntityCatalog,
+  EntityOperation,
+  EntityMergePreview,
+  EntityMergeRecord,
+} from './entityIdentity';
+import type { SavedView } from './savedViews';
 import type { NoteEventInput, NoteEvent, NoteEventPage } from './noteActivity';
 import type { TagOperation } from './smartTags';
 import type { Project, Section, TextPatch, ProjectEntry } from './project';
@@ -46,6 +53,23 @@ export interface IndexReport {
   semantic: boolean;
 }
 export interface Requests {
+  entityMentions: { projectPath: string };
+  entityCatalog: { projectPath: string };
+  entityOperation: { projectPath: string; revision: number; operation: EntityOperation };
+  entityMergePreview: { projectPath: string; source: string; target: string };
+  entityMergeHistory: { projectPath: string };
+  savedViews: { projectPath: string };
+  saveView: { projectPath: string; token: string; view?: SavedView | null; remove?: string | null };
+  updateSourceCard: {
+    projectPath: string;
+    source: string;
+    fingerprint: string;
+    title: string;
+    kind: string;
+    aliases: string[];
+    body: string;
+  };
+  appShortcuts: { bindings: Record<string, string | null> };
   smartTagOperation: { projectPath: string; operation: TagOperation };
   noteActivity: { projectPath: string; before?: number | null };
   recordNoteActivity: { projectPath: string; value: NoteEventInput };
@@ -195,6 +219,15 @@ export interface Requests {
 }
 
 export interface Responses {
+  entityMentions: EntityBatch[];
+  entityCatalog: EntityCatalog;
+  entityOperation: EntityCatalog;
+  entityMergePreview: EntityMergePreview;
+  entityMergeHistory: EntityMergeRecord[];
+  savedViews: { token: string; items: SavedView[] };
+  saveView: { token: string; items: SavedView[] };
+  updateSourceCard: Source;
+  appShortcuts: boolean;
   smartTagOperation: Project;
   noteActivity: NoteEventPage;
   recordNoteActivity: { inserted: boolean; event: NoteEvent };

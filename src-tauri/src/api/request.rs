@@ -10,6 +10,15 @@ fn all_revision_stages() -> String {
     rename_all_fields = "camelCase"
 )]
 pub enum Request {
+    EntityMentions { project_path: String },
+    EntityCatalog { project_path: String },
+    EntityOperation { project_path: String, revision: u64, operation: project::entities::Operation },
+    EntityMergePreview { project_path: String, source: String, target: String },
+    EntityMergeHistory { project_path: String },
+    SavedViews { project_path: String },
+    SaveView { project_path: String, token: String, view: Option<project::saved_views::View>, remove: Option<String> },
+    UpdateSourceCard { project_path:String, source:String, fingerprint:String, title:String, kind:String, aliases:Vec<String>, body:String },
+    AppShortcuts { bindings: std::collections::BTreeMap<String, Option<String>> },
     SmartTagOperation {
         project_path: String,
         operation: project::tags::Operation,
@@ -353,6 +362,12 @@ pub enum Request {
 mod tests {
     use super::Request;
 
+    #[test]
+    fn frontend_relation_fixture_keeps_identity_status_and_provenance_distinct(){
+        let request:Request=serde_json::from_str(include_str!("../../../tests/fixtures/ipc-entity-relation.json")).unwrap();
+        let Request::EntityOperation{project_path,revision,operation:crate::project::entities::Operation::Relation{relation}}=request else {panic!("relation expected")};
+        assert_eq!(project_path,"/synthetique");assert_eq!(revision,7);assert_eq!(relation.name,"étudie");assert_eq!(relation.status,"proposed");let p=relation.provenance.unwrap();assert_eq!(p.source.as_deref(),Some("source"));assert_eq!(p.node.as_deref(),Some("ligne"));assert_eq!(p.quote,"Été 🌿");
+    }
     #[test]
     fn frontend_save_fixture_preserves_revisions_and_utf16_offsets() {
         let request: Request =

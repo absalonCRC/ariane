@@ -64,7 +64,7 @@ pub struct MergeResolution {
     pub text: Option<String>,
 }
 
-pub(super) fn active(c: &Connection) -> Result<String> {
+pub(crate) fn active(c: &Connection) -> Result<String> {
     c.query_row(
         "SELECT value FROM meta WHERE key='active_branch'",
         [],
@@ -164,6 +164,7 @@ pub(super) fn validate(state: &Snapshot) -> Result<()> {
     if ids.len() != state.sections.len() {
         return Err("Identifiants de sections en double.".into());
     }
+    if let Some(catalog)=&state.entity_catalog {project::entities::validate(catalog)?;}
     for tag in &state.smart_tags { project::tags::validate_tag(tag, &state.smart_tags)?; }
     for s in &state.sections {
         project::tags::validate_ids(&s.tag_ids, &state.smart_tags)?;
@@ -195,6 +196,7 @@ pub(super) fn validate(state: &Snapshot) -> Result<()> {
 // load() finishes/retries the Markdown mirrors after commit, using their actual old contents.
 pub(super) fn replace(c: &Connection, root: &Path, state: &Snapshot) -> Result<()> {
     validate(state)?;
+    if let Some(catalog)=&state.entity_catalog { project::entities::write(c,catalog)?; }
     let old = project::all_sections(c)?;
     let previous_epoch:i64=c.query_row("SELECT COALESCE((SELECT CAST(value AS INTEGER) FROM meta WHERE key='workspace_revision'),0)",[],|r|r.get(0)).app()?;
     let revision_floor = old
@@ -519,6 +521,10 @@ fn entry(
 }
 fn auxiliary(s: &Snapshot) -> BTreeMap<String, Value> {
     let mut map = BTreeMap::new();
+    if let Some(catalog)=&s.entity_catalog {
+        for e in &catalog.entities {map.insert(format!("identity:{}",e.id),serde_json::to_value(e).expect("identity"));}
+        for r in &catalog.relations {map.insert(format!("entityRelation:{}",r.id),serde_json::to_value(r).expect("relation"));}
+    }
     for tag in &s.smart_tags {map.insert(format!("smartTag:{}", tag.id), serde_json::to_value(tag).expect("serializable tag"));}
     if let Some(settings) = s.settings.as_object() {
         for (k, v) in settings {
@@ -542,6 +548,7 @@ fn auxiliary(s: &Snapshot) -> BTreeMap<String, Value> {
     map
 }
 fn apply_aux(state: &mut Snapshot, map: BTreeMap<String, Value>) -> Result<()> {
+    state.entity_catalog=Some(Default::default());
     state.smart_tags.clear();
     state.settings = json!({});
     state.citations.clear();
@@ -549,7 +556,11 @@ fn apply_aux(state: &mut Snapshot, map: BTreeMap<String, Value>) -> Result<()> {
     state.pins.clear();
     state.annotations = Some(vec![]);
     for (key, value) in map {
-        if key.starts_with("smartTag:") {
+        if key.starts_with("identity:") {
+            state.entity_catalog.as_mut().expect("catalog").entities.push(serde_json::from_value(value).app()?);
+        } else if key.starts_with("entityRelation:") {
+            state.entity_catalog.as_mut().expect("catalog").relations.push(serde_json::from_value(value).app()?);
+        } else if key.starts_with("smartTag:") {
             state.smart_tags.push(serde_json::from_value(value).app()?);
         } else if let Some(k) = key.strip_prefix("settings:") {
             state.settings[k] = value;

@@ -2,7 +2,7 @@
 
 Date de cadrage : **4 novembre 2026**. Échéance impérative demandée : **version stable prête à être distribuée avant le 1er janvier 2027**. Cible de livraison : **30 décembre 2026**, avec le 31 décembre comme dernier jour de réserve.
 
-Statut : **roadmap issue des 20 réponses ; jalons de développement 0.3.0 et 0.4.0 implémentés les 4–5 novembre 2026**. Les jalons 0.5.0 et suivants restent planifiés ; voir les notes de version pour les preuves et limites de qualification. La recette de dictée au microphone en application native et l’endurance restent à compléter ; aucune release publique du paquet final n’est publiée.
+Statut : **roadmap issue des 20 réponses ; jalons de développement 0.3.0, 0.4.0 et 0.5.0 implémentés les 4–12 novembre 2026**. Les jalons 0.6.0 et suivants restent planifiés ; voir les notes de version pour les preuves et limites de qualification. La recette de dictée au microphone en application native et l’endurance restent à compléter ; aucune release publique du paquet final n’est publiée.
 
 > Exécution future : réaliser les lots dans l’ordre de leurs dépendances, avec une démonstration et une recette à chaque version. Les jalons décrivent des résultats utilisables. Les changements de périmètre nécessitent une nouvelle décision du propriétaire du projet ; aucun élément convenu n’est reporté automatiquement après la 1.0.0.
 
@@ -64,7 +64,7 @@ Inspection statique du commit **af2747dd644a9b09db329094ccc3628a6d704264**, bran
 | Confort | Sons, animations de défilement, compteur, Pomodoro, préférences et contexte de reprise partiel. | Raffinement sensoriel, objectifs, paramètres cohérents et reprise de tous les nouveaux états. |
 | Distribution | Scripts de vérification/paquet local, CI et procédure de release. | Preuve d’installation du paquet final signé/notarié sur environnement vierge, installation des modules et validation des nouveaux formats de données. |
 
-Principaux points d’entrée du dépôt : [types](https://github.com/absalonCRC/ariane/blob/main/src/app/types.ts), [mémoire visible](https://github.com/absalonCRC/ariane/blob/main/src/enrichment/useMemory.ts), [entités inline](https://github.com/absalonCRC/ariane/blob/main/src/enrichment/useInlineEntities.ts), [cache](https://github.com/absalonCRC/ariane/blob/main/src-tauri/src/memory/encoding_cache.rs), [palette](https://github.com/absalonCRC/ariane/blob/main/src/app/Palette.tsx), [lecteur](https://github.com/absalonCRC/ariane/blob/main/src/sources/Reader.tsx), [distribution](https://github.com/absalonCRC/ariane/blob/main/docs/releasing.md).
+Principaux points d’entrée du dépôt : [types](https://github.com/absalonCRC/ariane/blob/main/src/contracts/project.ts), [mémoire visible](https://github.com/absalonCRC/ariane/blob/main/src/enrichment/useMemory.ts), [entités inline](https://github.com/absalonCRC/ariane/blob/main/src/enrichment/useInlineEntities.ts), [cache](https://github.com/absalonCRC/ariane/blob/main/src-tauri/src/memory/encoding_cache.rs), [palette](https://github.com/absalonCRC/ariane/blob/main/src/app/Palette.tsx), [lecteur](https://github.com/absalonCRC/ariane/blob/main/src/sources/Reader.tsx), [distribution](https://github.com/absalonCRC/ariane/blob/main/docs/releasing.md).
 
 ## 4. Règles de version
 
@@ -145,20 +145,22 @@ La vue d’un tag couvre toutes les pages et les héritages. Elle conserve le ch
 
 Ce lot comporte deux livrables successifs : **gestion des identités**, puis **requêtes et actions**. Prévoir des démonstrations intermédiaires sans attendre le 25 novembre.
 
-- [ ] Livrer le gestionnaire d’entités : recherche, filtres par type, occurrences, création et édition des fiches appartenant à Ariane, alias et correction de type.
-- [ ] Distinguer les mentions détectées, les identités confirmées et les homonymes. Une fusion est manuelle, prévisualisée et réversible ; elle réconcilie occurrences, liens et alias sans fusion automatique de deux personnes de même nom.
-- [ ] Ajouter les relations entre entités : source, relation nommée, destination, éventuelle provenance documentaire. Présentation dans les fiches ; pas de graphe permanent imposé. Les relations manuelles, sourcées et proposées restent distinguables.
-- [ ] Étendre la recherche existante : `#tag`, `@entité`, `+` pour ET, `,` pour OU. Les filtres par tags incluent les affectations directes et héritées ; une entité ou un sujet est identifié par son ID, pas seulement par sa chaîne de caractères.
-- [ ] Afficher dans l’espace de l’éditeur uniquement les lignes correspondantes, avec un contexte d’origine discret. Vue en consultation ; cliquer ouvre le document original, révèle les parents repliés et place le curseur au bon endroit.
-- [ ] Enregistrer une requête sous un nom et la retrouver depuis la recherche. Recalculer sa vue à l’ouverture et après modification pertinente. Les renommages de tags/entités actualisent son libellé sans casser ses références.
-- [ ] Réutiliser le préfixe de commandes `/` déjà présent. Ajouter les commandes des nouvelles fonctions et l’affectation des raccourcis depuis cette même barre. Les paramètres présentent aussi la liste, les conflits et la réinitialisation.
-- [ ] Établir un registre commun pour les raccourcis de l’éditeur et de l’application, puis le raccourci global du compact. Une combinaison conflictuelle est expliquée ; les raccourcis de saisie, IME, indentation et navigation restent utilisables.
+- [x] Livrer le gestionnaire d’entités : recherche, filtres par type, occurrences, création et édition des fiches appartenant à Ariane, alias et correction de type.
+- [x] Distinguer les mentions détectées, les identités confirmées et les homonymes. Une fusion est manuelle, prévisualisée et réversible ; elle réconcilie occurrences, liens et alias sans fusion automatique de deux personnes de même nom.
+- [x] Ajouter les relations entre entités : source, relation nommée, destination, éventuelle provenance documentaire. Présentation dans les fiches ; pas de graphe permanent imposé. Les relations manuelles, sourcées et proposées restent distinguables.
+- [x] Étendre la recherche existante : `#tag`, `@entité`, `+` pour ET, `,` pour OU. Les filtres par tags incluent les affectations directes et héritées ; une entité ou un sujet est identifié par son ID, pas seulement par sa chaîne de caractères.
+- [x] Afficher dans l’espace de l’éditeur uniquement les lignes correspondantes, avec un contexte d’origine discret. Vue en consultation ; cliquer ouvre le document original, révèle les parents repliés et place le curseur au bon endroit.
+- [x] Enregistrer une requête sous un nom et la retrouver depuis la recherche. Recalculer sa vue à l’ouverture et après modification pertinente. Les renommages de tags/entités actualisent son libellé sans casser ses références.
+- [x] Réutiliser le préfixe de commandes `/` déjà présent. Ajouter les commandes des nouvelles fonctions et l’affectation des raccourcis depuis cette même barre. Les paramètres présentent aussi la liste, les conflits et la réinitialisation.
+- [x] Établir un registre commun pour les raccourcis de l’éditeur et de l’application, puis le raccourci global du compact. Une combinaison conflictuelle est expliquée ; les raccourcis de saisie, IME, indentation et navigation restent utilisables.
 
 **Grammaire 1.0.0.** `#enquête + #à revoir` correspond à l’intersection ; `#enquête, #à revoir` à l’union ; `@christianisme + #à revoir` combine entité et tag. Les noms à espaces restent utilisables, avec autocomplétion et guillemets possibles. Proposition de priorité : `+` est évalué avant `,` ; l’interface explicite une expression mixte. Une expression incomplète ne déclenche pas une recherche trompeuse. Les « formules » de cette version sont ces combinaisons de recherche, pas du code exécutable.
 
 **Recette de sortie.** Tester intersections, unions, mélange `#`/`@`, accents, espaces, homonymes et renommages sur un projet contenant lignes isolées et branches héritées. Tous les résultats respectent la requête ; la vue ne modifie jamais le manuscrit. Un raccourci reconfiguré fonctionne après redémarrage et une commande n’est jamais exécutée par une simple recherche textuelle.
 
 **Dépendances.** Tags et nœuds de 0.4.0, liens et invalidation de 0.3.0. Réutiliser `src/app/Palette.tsx`, `src/app/useUnifiedSearch.ts`, `src/app/projectSearch.ts`, `src/app/manuscriptSearch.worker.ts`, `src/sources/SourceOccurrences.tsx`, `src/enrichment/MemoryReader.tsx` et `src-tauri/src/memory/entities.rs`.
+
+**Suivi du 12 novembre.** Jalons identités/relations et requêtes/actions implémentés, versions alignées sur 0.5.0. Les vues texte/tableau déjà présentes en 0.4.0 sont réutilisées. La confirmation des identités est distincte de l’autocréation d’une fiche. Les relations et identités sont incluses dans les snapshots ; les vues et raccourcis conservent leur portée de préférences. Voir [les notes 0.5.0](release-notes-0.5.0.md) et [la qualification](validation-0.5.0.md) pour les preuves et limites, distinctes des fonctions implémentées. Le raccourci global du compact demeure au jalon 0.6.0.
 
 ### 0.6.0 — Capturer une idée depuis une autre application
 
@@ -279,7 +281,7 @@ Les chemins ci-dessous sont des points d’entrée **existants vérifiés**. Les
 
 | Responsabilité | Points d’entrée existants | Extension attendue |
 | --- | --- | --- |
-| États et composition | `src/app/App.tsx`, `src/app/useWorkspace.ts`, `src/app/types.ts` | État focus, projection de recherche, lecteur partagé, reprise ; conserver la logique métier hors d’App. |
+| États et composition | `src/app/App.tsx`, `src/app/useWorkspace.ts`, `src/contracts/project.ts` | État focus, projection de recherche, lecteur partagé, reprise ; conserver la logique métier hors d’App. |
 | Identités de blocs | `src/editor/outline/model.ts`, `state.ts`, `view.ts` ; `src-tauri/src/project/outline.rs` | Métadonnées par ID, remappage, sélection Shift et gestes compatibles. |
 | Données durables | `src-tauri/src/project/storage.rs`, `io.rs`, `guard.rs`, `src-tauri/src/history/mod.rs` | Migrations incrémentales, snapshots incluant les nouvelles métadonnées, sauvegarde cohérente et restauration. |
 | Résultats documentaires | `src/enrichment/useMemory.ts`, `useInlineEntities.ts`, `useEnrichment.ts` ; `src-tauri/src/memory/queue.rs`, `storage.rs`, `inline.rs` | Résultats persistants, invalidation par dépendance, réponses versionnées et rendu stable. |
@@ -382,7 +384,7 @@ Le socle de données, d’installation et de distribution de la section 7 s’aj
 
 ## 13. Ce qui ne fait pas partie de ce périmètre
 
-Windows, Linux, Intel et anciens macOS ; synchronisation distante et collaboration ; champs structurés et règles automatiques de smart-tags ; édition directe des vues filtrées ; modèles de projet ; génération de paragraphes ; contraintes empêchant de corriger en mode machine à écrire ; OCR complet ; graphe relationnel permanent ; modification des vaults externes. Ces éléments n’ont pas été retenus pour cette 1.0.0. Ils ne remplacent aucun engagement des sections précédentes.
+Windows, Linux, Intel et anciens macOS ; synchronisation distante et collaboration ; règles automatiques supplémentaires de smart-tags au-delà des propriétés et mentions configurées livrées en 0.4.0 ; édition directe des vues filtrées ; modèles de projet ; génération de paragraphes ; contraintes empêchant de corriger en mode machine à écrire ; OCR complet ; graphe relationnel permanent ; modification des vaults externes. Ces éléments n’ont pas été retenus pour cette 1.0.0. Ils ne remplacent aucun engagement des sections précédentes.
 
 ## 14. Suivi et démarrage
 
