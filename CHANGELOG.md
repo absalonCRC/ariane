@@ -1,5 +1,11 @@
 # Journal des changements
 
+## Non publié
+
+- Répartition des accès Profil et Paramètres au-dessus de la capsule de la sidebar, séparés du contenu ; leur affichage reste réservé à la sidebar ouverte.
+- Boutons, champs de saisie et sélecteurs harmonisés en formes rondes ou en capsules, avec des contenus recentrés et des repères d’activité arrondis.
+- Adaptation des commandes de thème, de Versions et du catalogue Smart-tags à ces formes et à l’espace disponible.
+
 ## 0.6.1 — sources, 17 novembre 2026
 
 - Intégration du candidat 0.6.0 décrit ci-dessous : capture rapide, boîte de réception globale, rangement récupérable et sauvegarde des captures.

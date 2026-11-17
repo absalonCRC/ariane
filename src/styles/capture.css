@@ -94,8 +94,8 @@
   display: block;
   text-align: left;
   width: 100%;
-  padding: 13px;
-  border-bottom: 1px solid var(--line);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-2xs);
 }
 .inbox-list button[aria-current='true'] {
   color: var(--ink);

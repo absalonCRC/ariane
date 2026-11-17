@@ -13,7 +13,7 @@
 
 .history-editor .history-controls select {
   font: 16px/1.3 var(--literary);
-  padding: 4px 20px 7px 0;
+  padding: 6px 28px 6px 12px;
 }
 
 .history-editor .history-diff-summary {
@@ -52,15 +52,15 @@
 }
 
 .history-editor .history-view-switch button {
-  padding: 4px 6px;
+  padding: 5px 9px;
   color: var(--workspace-muted);
   font: 10px var(--ui);
-  border-radius: 0;
 }
 
 .history-editor .history-view-switch button[aria-pressed='true'] {
   color: var(--ink);
-  box-shadow: inset 0 -1px var(--ink);
+  background: var(--workspace-hover);
+  box-shadow: none;
 }
 
 .history-editor .history-inline-navigation {
@@ -163,9 +163,9 @@
   width: auto;
   max-width: 220px;
   margin-left: auto;
-  padding: 5px 22px 5px 0;
-  border: 0;
-  background: none;
+  padding: 6px 28px 6px 12px;
+  border: 1px solid var(--line);
+  background-color: transparent;
   font: 14px var(--ui);
 }
 .history-editor .history-create-toggle {
@@ -174,19 +174,21 @@
 }
 .history-tabs {
   display: flex;
-  gap: 24px;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
   flex-shrink: 0;
   border-bottom: 1px solid var(--line);
   margin: 0 4px 14px;
+  padding-bottom: var(--space-xs);
 }
 .history-tabs button {
-  border-radius: 0;
-  padding: 10px 0;
+  padding: var(--space-xs) var(--space-sm);
   font: 13px var(--ui);
 }
 .history-tabs button[aria-current='page'] {
   color: var(--ink);
-  box-shadow: inset 0 -1px var(--ink);
+  background: var(--workspace-hover);
+  box-shadow: none;
 }
 .history-help {
   font: 13px/1.65 var(--ui);
@@ -203,12 +205,11 @@
 .history-text-list button {
   display: flex;
   width: 100%;
-  align-items: flex-start;
+  align-items: center;
   flex-direction: column;
-  text-align: left;
+  text-align: center;
   gap: 5px;
-  padding: 10px 5px;
-  border-radius: 0;
+  padding: 10px 12px;
 }
 .history-text-list button span {
   font: 17px/1.3 var(--literary);
@@ -219,8 +220,8 @@
   color: var(--workspace-muted);
 }
 .history-text-list button[aria-current='page'] {
-  box-shadow: inset 2px 0 var(--library-active);
-  padding-left: 12px;
+  background: var(--workspace-hover);
+  box-shadow: none;
   color: var(--ink);
 }
 .version-timeline {
@@ -443,6 +444,7 @@
   display: block;
   min-height: 180px;
   margin-top: 12px;
+  padding: var(--space-lg) var(--space-gutter) !important;
   font: 21px/1.7 var(--literary);
 }
 .merge-footer {

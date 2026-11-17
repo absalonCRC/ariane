@@ -283,10 +283,14 @@
 .tag-filter-original {
   font: var(--writing-size)/1.5 var(--manuscript-font, var(--literary));
   cursor: pointer;
-  border-radius: 3px;
+  padding: var(--space-xs) var(--space-md);
+  margin: calc(-1 * var(--space-xs)) calc(-1 * var(--space-md));
 }
 .tag-filter-original p {
   margin: 0 0 0.35em;
+}
+.tag-filter-original > :last-child {
+  margin-bottom: 0;
 }
 .tag-filter-original:hover {
   background: color-mix(in srgb, var(--ink) 3%, transparent);

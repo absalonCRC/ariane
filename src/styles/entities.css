@@ -47,13 +47,15 @@
 .entity-workspace select,
 .entity-workspace textarea,
 .structured-search input {
-  border: 0;
-  border-bottom: 1px solid var(--border);
-  background: transparent;
+  border: 1px solid var(--border);
+  background-color: transparent;
   color: var(--text);
-  padding: 6px 0;
+  padding: 8px 12px;
   width: 100%;
   font: inherit;
+}
+.entity-workspace select {
+  padding-right: 32px;
 }
 .entity-workspace textarea {
   min-height: 120px;
