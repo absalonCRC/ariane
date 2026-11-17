@@ -26,6 +26,8 @@ Les pages utilisent l’espace selon leur fonction : comparaison côte à côte 
 
 Les états actifs, le focus et les outils de chaque mode restent explicites. Le manuscrit et les traitements en arrière-plan restent montés ; seule leur présentation est masquée. Les opérations occupées verrouillent la navigation du cadre jusqu’à leur fin.
 
+Les boutons utilisent un contour circulaire ou en capsule, également au survol et lorsqu’ils sont actifs. Les champs de texte et les sélecteurs adoptent le même arrondi, avec des marges adaptées à la saisie sur plusieurs lignes. Les icônes et libellés des commandes sont centrés dans leur surface ; les lignes de navigation conservent leur hiérarchie de lecture.
+
 ## Mouvement et vérification
 
 Le changement de page utilise au plus une apparition de 150 ms en opacité, supprimée en mouvement réduit. Les contrôles gardent les états et la capsule de notifications existants. Vérifier le rendu clair et sombre, les fenêtres larges/étroites, le clavier et la restauration du contexte d’écriture.

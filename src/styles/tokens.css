@@ -15,6 +15,7 @@
   --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --writing-size: 23px;
   --sidebar-width: 285px;
+  --control-radius: 999px;
   /* Shared 4-point rhythm for the workspace pages. */
   --space-2xs: 4px;
   --space-xs: 8px;
@@ -47,11 +48,33 @@ select {
   font: inherit;
   color: inherit;
 }
+/* Keep one control silhouette across the independently loaded surfaces. */
+button,
+[role='button'],
+input[type='button'],
+input[type='submit'],
+input[type='reset'] {
+  border-radius: var(--control-radius) !important;
+}
+input:not([type]),
+input[type='text'],
+input[type='search'],
+input[type='email'],
+input[type='password'],
+input[type='tel'],
+input[type='url'],
+input[type='number'],
+input[type='date'],
+input[type='datetime-local'],
+input[type='time'],
+textarea,
+select {
+  border-radius: var(--control-radius) !important;
+}
 button {
   cursor: pointer;
   border: 0;
   background: none;
-  border-radius: 5px;
   padding: 8px 11px;
   transition: background 0.16s;
   color: var(--theme-secondary, #555);
@@ -80,15 +103,32 @@ select {
   border: 1px solid var(--theme-line, #e0e0e0);
   border-radius: 5px;
   background: var(--theme-paper, white);
-  padding: 11px 12px;
+  padding: 11px 16px;
   font-size: 13px;
   outline: none;
   width: 100%;
+}
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-inline: 16px 36px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 20px) calc(50% - 2px), calc(100% - 16px) calc(50% - 2px);
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
 }
 input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--theme-quiet, #aaa);
+}
+textarea {
+  padding: var(--space-md) var(--space-xl) !important;
 }
 label {
   display: block;

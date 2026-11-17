@@ -122,26 +122,28 @@
 }
 .theme-options {
   display: flex;
-  gap: 18px;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
 }
 .theme-options button {
-  padding: 10px;
+  padding: 6px 10px;
   display: flex;
-  flex-direction: column;
-  gap: 9px;
+  flex-direction: row;
+  justify-content: center;
+  gap: var(--space-xs);
   border: 1px solid var(--line);
-  border-radius: 6px;
 }
 .theme-options button[aria-pressed='true'] {
   border-color: var(--workspace-accent);
 }
 .theme-sample {
-  width: 105px;
-  height: 65px;
+  width: 26px;
+  height: 26px;
+  flex: none;
   display: grid;
   place-items: center;
-  font: 26px var(--literary);
-  border-radius: 3px;
+  font: 14px var(--literary);
+  border-radius: 50%;
 }
 .theme-sample-light {
   color: #252525;
@@ -287,12 +289,13 @@
 .history-capture select {
   min-width: 180px;
   font-size: 12px;
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
-  padding: 9px 0;
+  background-color: transparent;
+  border: 1px solid var(--line);
+  padding: 9px 12px;
   margin: 0;
+}
+.history-capture select {
+  padding-right: 32px;
 }
 .history-capture button {
   font-size: 11px;
@@ -348,12 +351,10 @@
   width: 100%;
   font: 21px var(--literary);
   color: var(--ink);
-  background: none;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
+  background-color: transparent;
+  border: 1px solid var(--line);
   margin: 0;
-  padding: 8px 0;
+  padding: 8px 30px 8px 12px;
 }
 .history-controls > button {
   grid-column: 1 / -1;
@@ -537,10 +538,6 @@
   .settings-page {
     padding: 28px 22px;
   }
-  .theme-sample {
-    width: 65px;
-  }
-
   .history-controls {
     padding: 24px;
     column-gap: 24px;

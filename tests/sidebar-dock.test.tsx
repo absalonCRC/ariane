@@ -182,8 +182,8 @@ it('keeps the same theme control available as the sidebar opens and closes', asy
       'Smart-tags',
       'Versions',
       'Corbeille',
-      'Paramètres',
       'Profil',
+      'Paramètres',
     ]);
     await act(async () =>
       dock.querySelector<HTMLButtonElement>('[aria-label="Corbeille"]')!.click(),

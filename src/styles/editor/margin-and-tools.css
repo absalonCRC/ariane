@@ -338,7 +338,7 @@ input[type='range'] {
 .settings-control .settings select {
   height: 30px;
   margin: 0;
-  padding: 0 8px;
+  padding: 0 28px 0 10px;
   border: 0;
   border-radius: 11px;
   font-size: 10px;
