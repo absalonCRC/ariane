@@ -23,6 +23,13 @@ export function useTheme() {
     return () => media.removeEventListener('change', change);
   }, []);
   useLayoutEffect(() => {
+    const sync = (event: StorageEvent) => {
+      if (event.key === key) setTheme(savedTheme());
+    };
+    window.addEventListener('storage', sync);
+    return () => window.removeEventListener('storage', sync);
+  }, []);
+  useLayoutEffect(() => {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   }, [dark]);
   function change(value: Theme) {

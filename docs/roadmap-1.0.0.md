@@ -2,7 +2,7 @@
 
 Date de cadrage : **4 novembre 2026**. Échéance impérative demandée : **version stable prête à être distribuée avant le 1er janvier 2027**. Cible de livraison : **30 décembre 2026**, avec le 31 décembre comme dernier jour de réserve.
 
-Statut : **roadmap issue des 20 réponses ; jalons de développement 0.3.0, 0.4.0 et 0.5.0 implémentés les 4–12 novembre 2026**. Les jalons 0.6.0 et suivants restent planifiés ; voir les notes de version pour les preuves et limites de qualification. La recette de dictée au microphone en application native et l’endurance restent à compléter ; aucune release publique du paquet final n’est publiée.
+Statut : **roadmap issue des 20 réponses ; jalons de développement 0.3.0, 0.4.0 et 0.5.0 implémentés les 4–12 novembre 2026**. Le jalon 0.6.0, implémenté localement le 13 novembre, est intégré aux sources 0.6.1 ; sa qualification native et ses limites sont décrites dans [le rapport 0.6.0](validation-0.6.0.md). Les jalons 0.7.0 et suivants restent planifiés. La [0.5.0 est publiée](https://github.com/absalonCRC/ariane/releases/tag/v0.5.0) depuis le 12 novembre, avec un paquet expérimental signé ad hoc et non notarié. La recette de dictée au microphone en application native, l’endurance et l’installation sur un autre Mac restent à compléter ; la distribution stable 1.0.0 n’est pas qualifiée.
 
 > Exécution future : réaliser les lots dans l’ordre de leurs dépendances, avec une démonstration et une recette à chaque version. Les jalons décrivent des résultats utilisables. Les changements de périmètre nécessitent une nouvelle décision du propriétaire du projet ; aucun élément convenu n’est reporté automatiquement après la 1.0.0.
 
@@ -164,15 +164,17 @@ Ce lot comporte deux livrables successifs : **gestion des identités**, puis **r
 
 ### 0.6.0 — Capturer une idée depuis une autre application
 
+**Plan préparé le 13 novembre :** [passage à la 0.6.0](plan-0.6.0.md), fondé sur `main` à `099a27f`. Il détaille le prototype natif, le stockage global, la fermeture coordonnée des fenêtres, le rangement récupérable, la machine à écrire et la sauvegarde des captures. L’implémentation a ensuite été explicitement autorisée et réalisée sur `codex/0.6.0`. Les cases décrivent les fonctions présentes ; elles ne certifient pas les essais physiques encore non qualifiés. Voir [les notes](release-notes-0.6.0.md) et [les preuves](validation-0.6.0.md).
+
 **Résultat.** Un raccourci global fait apparaître une petite fenêtre au-dessus de l’application courante, depuis le bas de l’écran. Elle utilise un éditeur ultra minimaliste et le défilement machine à écrire. Le contenu rejoint une boîte de réception globale indépendante du projet actif.
 
-- [ ] Ajouter le raccourci global configurable et la fenêtre compacte. Positionnement sur l’écran utilisé, restauration correcte du focus à la fermeture, essais avec plusieurs écrans et Spaces.
-- [ ] Sauvegarder progressivement chaque capture dans un stockage durable global. Échapper/masquer conserve le brouillon ; une action explicite termine la note et prépare la suivante.
-- [ ] Ouvrir la boîte de réception depuis la bibliothèque et la recherche, sans panneau permanent supplémentaire. Ranger une capture dans un projet, y compris en créer un depuis le parcours habituel si nécessaire.
-- [ ] Rendre le rangement récupérable et idempotent : en cas d’arrêt entre l’écriture dans le projet et le marquage de la capture comme rangée, reprendre sans doublon ni perte. Le texte de la capture ne doit pas être effacé avant la confirmation de destination.
-- [ ] Empêcher la fenêtre compacte de modifier implicitement le projet actif du backend. Tester les sauvegardes simultanées des deux fenêtres.
-- [ ] Affiner le mode machine à écrire commun aux deux éditeurs : sons cohérents de touche/espace/retour, volume réglable, mouvement discret du texte, continuité du curseur et retour de chariot subtil. Respecter les animations réduites et permettre le silence.
-- [ ] Préserver correction, sélection, annulation et déplacement libre. Aucun blocage volontaire des retours en arrière. Aucun dessin décoratif de machine ou commande permanente ajoutée.
+- [x] Ajouter le raccourci global configurable et la fenêtre compacte. Positionnement sur l’écran utilisé, restauration correcte du focus à la fermeture, essais avec plusieurs écrans et Spaces.
+- [x] Sauvegarder progressivement chaque capture dans un stockage durable global. Échapper/masquer conserve le brouillon ; une action explicite termine la note et prépare la suivante.
+- [x] Ouvrir la boîte de réception depuis la bibliothèque et la recherche, sans panneau permanent supplémentaire. Ranger une capture dans un projet, y compris en créer un depuis le parcours habituel si nécessaire.
+- [x] Rendre le rangement récupérable et idempotent : en cas d’arrêt entre l’écriture dans le projet et le marquage de la capture comme rangée, reprendre sans doublon ni perte. Le texte de la capture ne doit pas être effacé avant la confirmation de destination.
+- [x] Empêcher la fenêtre compacte de modifier implicitement le projet actif du backend. Tester les sauvegardes simultanées des deux fenêtres.
+- [x] Affiner le mode machine à écrire commun aux deux éditeurs : sons cohérents de touche/espace/retour, volume réglable, mouvement discret du texte, continuité du curseur et retour de chariot subtil. Respecter les animations réduites et permettre le silence.
+- [x] Préserver correction, sélection, annulation et déplacement libre. Aucun blocage volontaire des retours en arrière. Aucun dessin décoratif de machine ou commande permanente ajoutée.
 
 **Recette de sortie.** Depuis une autre application, ouvrir, écrire, masquer, rouvrir, terminer et ranger trois captures. Répéter sans projet ouvert, avec la fenêtre principale fermée mais l’application active, puis après redémarrage. Interrompre le rangement et récupérer une seule note complète. Vérifier la restitution du focus et le mode à animations réduites. Comparer la sensation de frappe dans la fenêtre principale et la compacte.
 

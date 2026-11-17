@@ -1,3 +1,4 @@
+import { registerWindowFlusher } from '../platform/windowFlush';
 import { encodeAudio } from './encodeAudio';
 import captureWorklet from './capture.worklet.js?url&no-inline';
 import { t, useLocale } from '../i18n';
@@ -75,6 +76,7 @@ export function useVoiceSession({
   const session = useRef<Session | null>(null);
   const press = useRef<{ id: string | number; at: number; stopped: boolean } | null>(null);
   const finishing = useRef(false);
+  const stopping = useRef<Promise<void> | null>(null);
   const alive = useRef(true);
   const available = useRef<boolean | null>(null);
   const availability = useRef<Promise<boolean> | null>(null);
@@ -321,7 +323,18 @@ export function useVoiceSession({
       }
     }
   }
-  async function stop(cancel = false) {
+  function stop(cancel = false): Promise<void> {
+    if (stopping.current) return stopping.current;
+    const task = stopSession(cancel);
+    stopping.current = task;
+    void task
+      .finally(() => {
+        if (stopping.current === task) stopping.current = null;
+      })
+      .catch(() => {});
+    return task;
+  }
+  async function stopSession(cancel = false) {
     const current = session.current;
     if (!current) return;
     current.cancelled = cancel;
@@ -410,10 +423,13 @@ export function useVoiceSession({
   }
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
+      if ((event.target as HTMLElement)?.closest?.('.shortcut-settings input')) return;
+      if (document.querySelector('.workspace-page') && !session.current) return;
       if (event.key.toLowerCase() !== 'm' || !(event.metaKey || event.ctrlKey) || !event.shiftKey)
         return;
       event.preventDefault();
       event.stopPropagation();
+      if (document.documentElement.dataset.flushing) return;
       if (!event.repeat) startPress('shortcut');
     };
     const up = (event: KeyboardEvent) => {
@@ -463,6 +479,9 @@ export function useVoiceSession({
       window.removeEventListener('keydown', escape, true);
     };
   });
+  const stopForClose = useRef(stop);
+  stopForClose.current = stop;
+  useEffect(() => registerWindowFlusher(() => stopForClose.current()), []);
   return {
     phase,
     message,

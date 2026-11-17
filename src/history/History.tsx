@@ -1,3 +1,4 @@
+import { WorkspacePageHeading } from '../components/WorkspacePageHeading';
 import { localizeMessage, t, localeTag } from '../i18n';
 import { createPortal } from 'react-dom';
 import { request } from '../platform/client';
@@ -5,7 +6,7 @@ import type { Version } from '../contracts/history';
 import type { HistoryProps } from './types';
 import { useHistory } from './useHistory';
 import { HistoryTools } from './HistoryTools';
-import { Plus, ArrowDown, ArrowUp, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Plus, ArrowDown, ArrowUp, ArrowRight } from 'lucide-react';
 import { VersionTimeline } from './VersionTimeline';
 import { Variants } from './Variants';
 import { ReadingDiff } from './ReadingDiff';
@@ -97,23 +98,24 @@ export function History(p: HistoryProps) {
           />,
           p.toolsHost,
         )}
-      <header className="history-modebar">
-        <button onClick={p.onClose}>
-          <ArrowLeft size={13} /> {t('Revenir au texte')}
-        </button>
-        <span>{t('Versions du texte')}</span>
-        <button
-          className="history-create-toggle"
-          disabled={busy}
-          onClick={() => {
-            setPromoting(null);
-            setCreating(true);
-          }}
-        >
-          <Plus size={13} />
-          {t('Nommer une version')}
-        </button>
-      </header>
+      <WorkspacePageHeading
+        title={t('Versions')}
+        subtitle={p.project.name}
+        onClose={p.onClose}
+        actions={
+          <button
+            className="history-create-toggle"
+            disabled={busy}
+            onClick={() => {
+              setPromoting(null);
+              setCreating(true);
+            }}
+          >
+            <Plus size={13} aria-hidden="true" />
+            {t('Nommer une version')}
+          </button>
+        }
+      />
       <nav className="history-tabs" aria-label={t('Parcourir les versions')}>
         {(['changes', 'history', 'variants'] as const).map((value) => (
           <button

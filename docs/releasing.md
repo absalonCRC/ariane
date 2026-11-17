@@ -1,6 +1,8 @@
 # Préparer une release
 
-La version `0.5.0` cible macOS 26+, arm64. Les [notes de développement](release-notes-0.5.0.md) décrivent les nouveautés. Les deux anciennes releases GitHub ont été retirées le 2 novembre 2026 à la demande du mainteneur. Ne pas recréer de release avant signature, notarisation et validation du paquet. Le dépôt et la CI ne publient rien automatiquement.
+Les sources `0.6.1` ciblent macOS 26+, arm64 et intègrent le candidat 0.6.0. Voir les [notes historiques du candidat](release-notes-0.6.0.md), sa [qualification](validation-0.6.0.md) et le journal des changements. La mise à disposition des sources ne constitue pas la publication d’un paquet ou d’une release GitHub. Conserver les limitations de recette et distinguer signature ad hoc, Developer ID et notarisation. L’historique 0.5.0 reste décrit dans sa documentation de livraison.
+
+Avant la distribution d’un paquet 0.6.1, aligner les cinq manifestes/lockfiles, exécuter `RUST_TEST_THREADS=1 npm run verify`, puis construire et vérifier le bundle exact. Isoler la recette avec un identifiant de bundle distinct et des données synthétiques, en gardant le nom visible **ariane**. Le bundle destiné à l’utilisateur doit reprendre l’identifiant `fr.ariane.writer`, jamais celui de recette. Vérifier les scénarios natifs de capture et les chemins de sauvegarde/restauration ; les tests DOM ne qualifient pas le raccourci système, Spaces, les écrans ou le microphone réel.
 
 ## Paquet local sans compte Apple payant
 

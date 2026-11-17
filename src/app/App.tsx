@@ -1,3 +1,6 @@
+import type { InboxChange } from '../contracts/inbox';
+import { Inbox } from '../capture/Inbox';
+import { loadGlobalShortcut } from './commands/shortcuts';
 import { nativeBindings } from './commands/shortcuts';
 import { useEntityManager } from '../entities/useEntityManager';
 import { EntityManager } from '../entities/EntityManager';
@@ -51,6 +54,7 @@ import { ViewTitleCapsuleProvider, type TitleView } from '../components/ViewTitl
 import { WorkspaceNotices } from './WorkspaceNotices';
 import { useTitleNotices } from './useTitleNotices';
 import { WorkspaceDialogs } from './WorkspaceDialogs';
+import { WorkspaceScreenHost } from '../components/WorkspaceScreen';
 import type { Settings as WritingSettings } from '../contracts/settings';
 import type { Source } from '../contracts/sources';
 import { countVaultNotes } from '../sources/countNotes';
@@ -64,8 +68,104 @@ import { useChromeObstructions } from '../components/useChromeObstructions';
 const History = lazy(() => import('../history/History').then((m) => ({ default: m.History })));
 export function App() {
   const locale = useLocale();
+  const [inboxOpen, setInboxOpen] = useState(false);
+  const [inboxSelection, setInboxSelection] = useState<string | null>(null);
+  const resumeInbox = useRef(false);
   const openMenu = useContextMenu();
   const workspace = useWorkspace();
+  const pageSurface =
+    workspace.surface === 'profile' ||
+    workspace.surface === 'preferences' ||
+    workspace.surface === 'tags' ||
+    workspace.surface === 'entities'
+      ? workspace.surface
+      : null;
+  const pageActive = !!workspace.p && !workspace.newProject && (!!pageSurface || inboxOpen);
+  const [pageHost, setPageHost] = useState<HTMLElement | null>(null);
+  const pageReturnFocus = useRef<HTMLElement | null>(null);
+  const [pageBusy, setPageBusy] = useState(false);
+  const pageBusyRef = useRef(false);
+  pageBusyRef.current = pageBusy;
+  const pageHostContext = useMemo(
+    () => ({ target: pageHost, returnFocus: pageReturnFocus, onBusy: setPageBusy }),
+    [pageHost],
+  );
+  const closePage = () => {
+    if (pageBusy) return;
+    setInboxOpen(false);
+    if (pageSurface) workspace.close();
+  };
+  const selectFromChrome = (id: string) => {
+    if (pageBusy) return;
+    closePage();
+    void workspace.select(id);
+  };
+  useLayoutEffect(() => {
+    if (pageActive || !pageReturnFocus.current) return;
+    const previous = pageReturnFocus.current;
+    pageReturnFocus.current = null;
+    const current = document.activeElement;
+    if (
+      current !== document.body &&
+      current instanceof HTMLElement &&
+      !current.closest('.workspace-page')
+    )
+      return;
+    const destination =
+      previous !== document.body && previous.isConnected && !previous.closest('[hidden], [inert]')
+        ? previous
+        : workspace.editor.current;
+    if (destination instanceof HTMLElement) destination.focus({ preventScroll: true });
+    else destination?.focus();
+  }, [pageActive]);
+  useEffect(() => {
+    if (workspace.surface !== 'none') setInboxOpen(false);
+  }, [workspace.surface]);
+  useEffect(() => {
+    if (workspace.historyMode) setInboxOpen(false);
+  }, [workspace.historyMode]);
+  useEffect(() => {
+    const open = () => {
+      if (pageBusyRef.current) return;
+      workspace.setSurface('none');
+      setInboxOpen(true);
+    };
+    window.addEventListener('ariane-inbox-open', open);
+    let active = true;
+    const cleanups: (() => void)[] = [];
+    const add = (fn: () => void) => {
+      if (active) cleanups.push(fn);
+      else fn();
+    };
+    if (native)
+      void import('@tauri-apps/api/event')
+        .then(async ({ listen }) => {
+          add(
+            await listen<string>('app-command', (e) => {
+              if (e.payload === 'inbox-open') open();
+            }),
+          );
+          add(
+            await listen<InboxChange>('inbox-changed', (e) => {
+              if (e.payload.kind === 'preferences' || e.payload.kind === 'restore')
+                void loadGlobalShortcut().catch(workspace.fail);
+            }),
+          );
+        })
+        .catch(workspace.fail);
+    if (native) void loadGlobalShortcut().catch(workspace.fail);
+    return () => {
+      active = false;
+      cleanups.forEach((fn) => fn());
+      window.removeEventListener('ariane-inbox-open', open);
+    };
+  }, []);
+  useEffect(() => {
+    if (resumeInbox.current && !workspace.newProject && workspace.p) {
+      resumeInbox.current = false;
+      setInboxOpen(true);
+    }
+  }, [workspace.newProject, workspace.p?.path]);
   const manager = useEntityManager(
     workspace.p?.path,
     workspace.sourceVersion + workspace.doc.generation,
@@ -482,10 +582,11 @@ export function App() {
       view={view}
       selected={selected}
       continuous={doc.settings.continuous}
-      onSelect={(id) => void select(id)}
-      onAdd={(parent) =>
-        void createPage(parent, doc.settings.continuous ? 'manuscript' : selected?.role)
-      }
+      onSelect={selectFromChrome}
+      onAdd={(parent) => {
+        if (!pageBusy)
+          void createPage(parent, doc.settings.continuous ? 'manuscript' : selected?.role);
+      }}
       notifications={pathNotices}
       hasPending={titleNotices.hasPending}
       hasError={titleNotices.hasError}
@@ -522,30 +623,98 @@ export function App() {
       }
     />
   );
-  // Full-screen surfaces own their capsule; menus and margins keep this view's title.
-  const currentView: TitleView | undefined = filteredTag
-    ? {
-        title: structuredFilter ? t('Recherche structurée') : t('Vue filtrée par smart-tag'),
-        trail: [structuredFilter ? queryLabelText : '#' + filteredTag.name],
-        onBack: closeTagFilter,
-      }
-    : workspace.historyMode
+  // Project pages share the app's title capsule and chrome.
+  const pageTitle = inboxOpen
+    ? t('Boîte de réception')
+    : pageSurface
       ? {
-          title: t('Versions'),
-          keepBranch: true,
-          onBack: () => {
-            workspace.setHistoryMode(false);
-            setSurface('none');
-          },
-        }
+          profile: t('Profil'),
+          preferences: t('Paramètres'),
+          tags: t('Smart-tags'),
+          entities: t('Entités'),
+        }[pageSurface]
       : undefined;
+  const currentView: TitleView | undefined = pageActive
+    ? { title: pageTitle!, onBack: closePage }
+    : filteredTag
+      ? {
+          title: structuredFilter ? t('Recherche structurée') : t('Vue filtrée par smart-tag'),
+          trail: [structuredFilter ? queryLabelText : '#' + filteredTag.name],
+          onBack: closeTagFilter,
+        }
+      : workspace.historyMode
+        ? {
+            title: t('Versions'),
+            keepBranch: true,
+            onBack: () => {
+              workspace.setHistoryMode(false);
+              setSurface('none');
+            },
+          }
+        : undefined;
+  const inbox = inboxOpen ? (
+    <Inbox
+      project={p}
+      branches={branches.state}
+      onBranch={branches.switchBranch}
+      branchName={branches.state?.branches.find((b) => b.id === branches.state?.activeBranch)?.name}
+      selectedId={inboxSelection}
+      onSelection={setInboxSelection}
+      onClose={() => setInboxOpen(false)}
+      onError={fail}
+      onNotice={(message) => workspace.setLibraryNotice({ message, undo: false })}
+      onBeforeTransfer={async () => {
+        await doc.checkpoint();
+        await workspace.activity.flush();
+      }}
+      onOpenProject={async (path) => {
+        await workspace.openProject(path);
+      }}
+      onCreate={() => {
+        void doc
+          .checkpoint()
+          .then(() => {
+            resumeInbox.current = true;
+            setInboxOpen(false);
+            workspace.setNewProject(true);
+          })
+          .catch(fail);
+      }}
+      onTransferred={async () => {
+        if (!doc.ref.current) return;
+        const path = doc.ref.current.path;
+        await doc.flush();
+        const fresh = await request('open', { path });
+        if (doc.ref.current?.path !== path) throw Error('Le projet actif a changé.');
+        doc.replaceSections(fresh.sections, false, fresh.canUndoStructure);
+      }}
+      onImported={async (section) => {
+        if (!doc.ref.current) return;
+        await doc.flush();
+        const fresh = await request('open', { path: doc.ref.current.path });
+        if (!fresh.sections.some((s) => s.id === section))
+          throw Error(
+            'Le texte rangé est absent de cette variante ou a été retiré. La capture est conservée.',
+          );
+        fresh.settings = {
+          ...fresh.settings,
+          active: section,
+          continuous: false,
+          libraryView: 'texts',
+        };
+        activate(fresh);
+        setInboxOpen(false);
+      }}
+    />
+  ) : null;
   if (!ready) return <div className="boot" aria-label={t('Ouverture du projet')} />;
   if (!p || newProject)
     return (
       <ViewTitleCapsuleProvider value={renderCapsule}>
         <WindowDragRegion onError={workspace.fail} />
         <Welcome beforeOpen={workspace.activity.flush} onOpen={activate} onError={fail} />
-        {newProject && (
+        {inbox}
+        {newProject && p && (
           <button className="return-project" onClick={() => setNewProject(false)}>
             {t('Revenir au projet')}
           </button>
@@ -559,8 +728,10 @@ export function App() {
         style={
           { '--column-width': (doc.settings.columnWidth ?? 750) + 'px' } as React.CSSProperties
         }
+        data-page={pageActive || undefined}
+        data-page-busy={(pageActive && pageBusy) || undefined}
         data-scrolling={scrollActivity.scrolling}
-        data-focus={focusActive}
+        data-focus={focusActive && !pageActive}
         data-writing-font={
           (workspace.surface === 'settings' && !workspace.historyMode ? fontPreview : null) ??
           doc.settings.font
@@ -593,7 +764,7 @@ export function App() {
             <ChevronRight size={17} strokeWidth={1.5} aria-hidden="true" />
           </button>
         )}
-        {!workspace.historyMode && !focusActive && (
+        {!workspace.historyMode && !focusActive && !pageActive && (
           <HistoryEdge
             open={memory.view?.kind === 'resume'}
             disabled={workspace.libraryBusy || historyBusy || branches.busy}
@@ -605,9 +776,10 @@ export function App() {
           />
         )}
         <WorkspaceHeader
-          libraryBusy={workspace.libraryBusy || historyBusy || branches.busy}
+          libraryBusy={workspace.libraryBusy || historyBusy || branches.busy || pageBusy}
           binder={binder}
           historyMode={workspace.historyMode}
+          pageMode={pageActive}
           immersiveFocus={doc.settings.immersiveFocus}
           onToggleFocus={workspace.toggleFocus}
           menu={menu}
@@ -621,16 +793,18 @@ export function App() {
           onToggleTheme={() =>
             workspace.appearance.change(workspace.appearance.dark ? 'light' : 'dark')
           }
-          busy={workspace.libraryBusy || historyBusy || branches.busy}
+          busy={workspace.libraryBusy || historyBusy || branches.busy || pageBusy}
         >
           <BinderActions
+            currentSurface={inboxOpen ? 'inbox' : pageSurface}
             historyMode={workspace.historyMode}
             trash={doc.settings.libraryView === 'trash'}
             onSurface={(surface) => {
+              setInboxOpen(false);
               setSurface(surface);
-              if (surface !== 'history' && surface !== 'preferences') setBinder(false);
             }}
             onTrash={() => {
+              closePage();
               doc.configure({ libraryView: 'trash' });
               setBinder(true);
             }}
@@ -644,19 +818,24 @@ export function App() {
               footerTarget={null}
               onOperation={workspace.operate}
               onConfigure={doc.configure}
-              onReadSource={read}
+              onReadSource={(source) => {
+                closePage();
+                void read(source);
+              }}
               onOpenProject={workspace.openProject}
               onError={fail}
               sourceVersion={workspace.sourceVersion}
-              busy={workspace.libraryBusy || historyBusy || branches.busy}
+              busy={workspace.libraryBusy || historyBusy || branches.busy || pageBusy}
               project={p}
               active={active}
               reveal={workspace.revealInBinder}
               onRevealed={() => workspace.setRevealInBinder(0)}
-              onSelect={(id) => void select(id)}
+              onSelect={selectFromChrome}
               onSurface={(s) => {
+                setInboxOpen(false);
                 setSurface(s);
-                if (s !== 'history' && s !== 'preferences') setBinder(false);
+                if (!['history', 'preferences', 'profile', 'tags', 'entities'].includes(s))
+                  setBinder(false);
               }}
               onClose={() => setBinder(false)}
               onAdd={workspace.startCreation}
@@ -685,12 +864,16 @@ export function App() {
                   setBinder(false);
                 }
               }}
-              onContinuous={() => void select(active || '', true)}
+              onContinuous={() => {
+                closePage();
+                void select(active || '', true);
+              }}
             />
           )}
         </Presence>
         <main
-          inert={workspace.libraryBusy || branches.busy}
+          hidden={pageActive}
+          inert={pageActive || workspace.libraryBusy || branches.busy}
           aria-busy={workspace.libraryBusy || historyBusy || branches.busy}
           className={
             'writing-layout' +
@@ -765,7 +948,7 @@ export function App() {
               },
               sections: scenes,
               generation: doc.generation,
-              readOnly: workspace.libraryBusy || branches.busy || !!filteredTag,
+              readOnly: pageActive || workspace.libraryBusy || branches.busy || !!filteredTag,
               settings: doc.settings,
               immersiveFocus: focusActive,
               projectPath: p.path,
@@ -796,6 +979,7 @@ export function App() {
                 surface === 'settings' && !workspace.historyMode ? scrollPreview : null,
               onSelection: setTextSelection,
               onSearchSources: (text) => setSearch(text),
+              onWritingEdit: workspace.writingActivity.record,
               onChange: doc.edit,
               onDraftChange: doc.editDraft,
               onVisible: onVisible,
@@ -916,439 +1100,455 @@ export function App() {
             </Suspense>
           )}
         </main>
-        <SelectionToolbar
-          anchor={searching || workspace.historyMode || !!filteredTag ? null : textSelection}
-          onFormat={(format) => editor.current?.format(format)}
-          onAnnotate={native ? workspace.openAnnotations : undefined}
+        <main
+          ref={setPageHost}
+          className={'workspace-page-layout' + (binder ? ' sidebar-open' : '')}
+          hidden={!pageActive}
+          inert={workspace.libraryBusy || historyBusy || branches.busy}
+          aria-busy={workspace.libraryBusy || historyBusy || branches.busy}
         />
-        {lineDetailVisible && lineDetail && !filteredTag && (
-          <OutlineDetails
-            project={p}
-            section={lineDetail.section}
-            node={lineDetail.node}
-            batches={inlineEntities.batches}
-            onChange={(field, value) => {
-              if (
-                editor.current?.setLineProperty(lineDetail.section, lineDetail.node, field, value)
-              )
-                setLineDetail((current) => (current ? { ...current } : current));
-            }}
-            onClose={() => {
-              setLineDetail(null);
-              editor.current?.focus();
-            }}
-            onManage={() => setSurface('tags')}
-            onRemove={removeTagAssignment}
-            removalLabel={tagRemovalLabel}
-            onError={fail}
-            onFilter={openTagFilter}
-            onOpen={(relation) => {
-              setLineDetail(null);
-              if (relation.kind === 'line') {
-                const section = lineReferenceSection(p, relation.section, relation.node);
-                if (section) void workspace.locatePassage(section, relation.node, relation.title);
-                else fail(t('La ligne liée n’est plus disponible.'));
-              } else
-                void request('source', { id: relation.id })
-                  .then((source) => {
-                    if (doc.ref.current?.path === p.path) workspace.setReader(source);
-                  })
-                  .catch(fail);
-            }}
+        <div className="writing-tools" hidden={pageActive} inert={pageActive}>
+          <SelectionToolbar
+            anchor={searching || workspace.historyMode || !!filteredTag ? null : textSelection}
+            onFormat={(format) => editor.current?.format(format)}
+            onAnnotate={native ? workspace.openAnnotations : undefined}
           />
-        )}
-        {workspace.annotationsOpen &&
-          !workspace.historyMode &&
-          !filteredTag &&
-          !lineDetailVisible && (
-            <Annotations
-              key={p.path}
-              workspace={workspace}
-              left={railVisible ? railLeft : Math.max(12, innerWidth - 290)}
-              width={railVisible ? railWidth : 270}
-            />
-          )}
-        {!workspace.annotationsOpen &&
-          !workspace.historyMode &&
-          !filteredTag &&
-          !lineDetailVisible &&
-          (words > 0 || marginPins.sources.length > 0) &&
-          railVisible &&
-          !(reader || (memory.view && !memory.origin)) && (
-            <DocumentaryMargin
-              setRailScroll={setRailScroll}
-              sourcePresence={sourcePresence}
-              workspaceMarginBounds={workspace.marginBounds}
-              railLeft={railLeft}
-              railWidth={railWidth}
-              railGroups={railGroups}
-              groupOpen={groupOpen}
-              colors={doc.settings.entityColors}
-              cardPresence={cardPresence}
-              expandedHeight={expandedHeight}
-              openMenu={openMenu}
-              read={read}
-              cite={cite}
-              card={card}
-              setSurface={setSurface}
-              setCard={setCard}
-              associated={associated}
-              marginPins={marginPins}
-              setGroupOpen={setGroupOpen}
-              hasSuggestion={!!memory.suggestion}
-              contextTop={contextTop}
-              railScroll={railScroll}
-              suggestionExcerpt={suggestionExcerpt}
-            />
-          )}
-        <Presence kind="anchored">
-          {!workspace.historyMode &&
-            !filteredTag &&
-            !lineDetailVisible &&
-            memory.suggestion &&
-            contextVisible &&
-            doc.settings.focus === 'none' &&
-            !memory.view &&
-            !reader && (
-              <MemorySuggestion
-                contextTop={contextTop}
-                railLeft={railLeft}
-                railWidth={railWidth}
-                memory={memory}
-                openMenu={openMenu}
-                setSurface={setSurface}
-                suggestionExcerpt={suggestionExcerpt}
-                colors={doc.settings.entityColors}
-                suggestionTitle={suggestionTitle}
-                fail={fail}
-                editor={editor}
-              />
-            )}
-        </Presence>
-        <MemoryReader
-          memory={memory}
-          workspace={workspace}
-          projectMenuOpen={menu}
-          writingMenuOpen={surface === 'settings'}
-        />
-        <Presence kind="anchored">
-          {card && (
-            <SourceCard
-              key={card.source.id}
-              origin={card.origin}
-              source={card.source}
-              marginPin={marginPinFor(card.source)}
-              sections={p.sections}
-              contentVersion={`${doc.status}:${doc.generation}`}
-              onOccurrence={(hit) => void workspace.locateSourceMatch(hit, hit.matched)}
-              citationStyle={doc.settings.citationStyle}
-              colors={doc.settings.entityColors}
-              onRegister={(s, t) => workspace.registerCitation(s, t).catch(fail)}
-              top={card.top}
-              onClose={() => setCard(null)}
-              onRead={() => void read(card.source)}
-              onAssociate={() =>
-                void request('associate', {
-                  section: active!,
-                  id: card.source.id,
-                  payload: card.source,
-                })
-                  .then(() => {
-                    void workspace.activity.record({
-                      kind: 'associated',
-                      title: card.source.title,
-                      sourceId: card.source.id,
-                      section: active,
-                    });
-                    setCard(null);
-                    setAssociationVersion((version) => version + 1);
-                    setSurface('prepare');
-                  })
-                  .catch(fail)
-              }
-              onCite={(s, t) => void cite(s, t)}
-            />
-          )}
-        </Presence>
-        <Presence>
-          {reader && (
-            <Reader
-              source={reader}
-              marginPin={marginPinFor(reader)}
-              sections={p.sections}
-              contentVersion={`${doc.status}:${doc.generation}`}
-              onOccurrence={(hit) => void workspace.locateSourceMatch(hit, hit.matched)}
-              onCite={(quote) => cite(reader, quote)}
-              onClose={() => setReader(null)}
-              projectPath={p.path}
-              onChange={(source) => {
-                if (doc.ref.current?.path === p.path) {
-                  void workspace.activity.record({
-                    kind: 'updated',
-                    title: source.title,
-                    sourceId: source.id,
-                    section: active,
-                  });
-                  setReader((current) => (current?.id === source.id ? source : current));
-                  workspace.refreshEnrichment();
-                  workspace.setSourceVersion((v) => v + 1);
-                }
-              }}
-              onRead={(id) =>
-                void request('source', { id })
-                  .then((source) => {
-                    if (doc.ref.current?.path === p.path) setReader(source);
-                  })
-                  .catch(fail)
-              }
-              onLocate={(section, node, quote) =>
-                void workspace.locatePassage(section, node, quote)
-              }
-            />
-          )}
-        </Presence>{' '}
-        <footer className="statusbar">
-          <div className="chrome-blur chrome-blur-bottom" aria-hidden="true">
-            <span />
-            <span />
-          </div>
-          <div
-            className="bottom-controls"
-            inert={historyBusy || branches.busy}
-            data-panel={panelMode}
-            data-anchor={panelMode === 'none' ? lastPanel.current : panelMode}
-            data-morph={morphPanel}
-          >
-            <div className="bottom-connector" aria-hidden="true" />
-            <VoiceButton
-              projectPath={p?.path}
-              language={doc.settings.language}
-              onActivity={memory.setRecording}
-              prepareInsertion={() => editor.current?.prepareInsertion() ?? (() => false)}
-              panel={panelNode}
-              retainContent={panelMode === 'none'}
-              open={voiceOpen && !workspace.palette}
-              onOpen={() => {
-                setTagFilter(null);
-                setPalette(null);
-                workspace.setHistoryMode(false);
-                if (surface === 'settings') setSurface('none');
-                setVoiceOpen(true);
-              }}
-              onClose={() => setVoiceOpen(false)}
-            />
-            <WritingCounter
-              words={filteredTag ? filterCounts.words : words}
-              characters={filteredTag ? filterCounts.characters : characters}
-              lines={filteredTag ? filterCounts.lines : lines}
-              notes={countVaultNotes([...workspace.sources, ...marginPins.sources])}
-              notesStatus={workspace.sourceStatus}
-              hideNotes={focusActive}
-              mode={focusActive ? 'words' : doc.settings.countMode}
-              onChange={(countMode) => {
-                doc.configure({ countMode });
-                if (!filteredTag) editor.current?.focus();
-              }}
-            />
-            <Palette
-              open={!!workspace.palette}
-              sections={workspace.palette === 'sections'}
-              textSearch={workspace.palette === 'text'}
-              searchScope={p.path}
-              initialQuery={workspace.initialSearch}
-              onTextSearch={(query) => workspace.setSearchQuery(query)}
-              extraResults={
-                workspace.palette === 'text' ? (
-                  <StructuredSearch
-                    query={workspace.searchQuery}
-                    project={p}
-                    manager={manager}
-                    onQuery={(query) => {
-                      workspace.setSearch(query);
-                    }}
-                    onOpen={(query, name) => {
-                      workspace.setSearch(null);
-                      setTagFilter(null);
-                      setQueryFilter({ path: p.path, query, name });
-                      workspace.setSurface('none');
-                      workspace.setReader(null);
-                      workspace.setCard(null);
-                      memory.close();
-                      inlineEntities.close();
-                    }}
-                  />
-                ) : undefined
-              }
-              onNextMatch={(query, backwards) =>
-                editor.current?.findText(query, backwards ? 'previous' : 'next')
-              }
-              panel={panelNode}
-              retainContent={panelMode === 'none'}
-              onOpen={() => {
-                setVoiceOpen(false);
-                if (surface === 'settings') setSurface('none');
-                setSearch('');
+          {lineDetailVisible && lineDetail && !filteredTag && (
+            <OutlineDetails
+              project={p}
+              section={lineDetail.section}
+              node={lineDetail.node}
+              batches={inlineEntities.batches}
+              onChange={(field, value) => {
+                if (
+                  editor.current?.setLineProperty(lineDetail.section, lineDetail.node, field, value)
+                )
+                  setLineDetail((current) => (current ? { ...current } : current));
               }}
               onClose={() => {
-                setSearch(null);
-                setCard(null);
+                setLineDetail(null);
                 editor.current?.focus();
               }}
-              commands={
-                workspace.palette === 'sections'
-                  ? ordered(p.sections).map((section) => ({
-                      id: 'section:' + section.id,
-                      label: section.title || t('Sans titre'),
-                      detail:
-                        section.kind === 'scene'
-                          ? t('Scène')
-                          : section.kind === 'chapter'
-                            ? t('Chapitre')
-                            : t('Section'),
-                      action: () => void select(section.id),
-                    }))
-                  : [
-                      ...commands,
-                      {
-                        id: 'resume',
-                        label: t('Reprendre le fil'),
-                        action: () => memory.open({ kind: 'resume' }),
-                      },
-                      {
-                        id: 'manuscript-entities',
-                        label: t('Fiches du manuscrit'),
-                        action: () => memory.open({ kind: 'list' }),
-                      },
-                    ].filter((command) => command.id !== 'sources')
-              }
+              onManage={() => setSurface('tags')}
+              onRemove={removeTagAssignment}
+              removalLabel={tagRemovalLabel}
+              onError={fail}
+              onFilter={openTagFilter}
+              onOpen={(relation) => {
+                setLineDetail(null);
+                if (relation.kind === 'line') {
+                  const section = lineReferenceSection(p, relation.section, relation.node);
+                  if (section) void workspace.locatePassage(section, relation.node, relation.title);
+                  else fail(t('La ligne liée n’est plus disponible.'));
+                } else
+                  void request('source', { id: relation.id })
+                    .then((source) => {
+                      if (doc.ref.current?.path === p.path) workspace.setReader(source);
+                    })
+                    .catch(fail);
+              }}
             />
-            {searching && !/^[#@]/.test(workspace.searchQuery.trim()) && (
-              <FloatingVaultResults
-                query={workspace.searchQuery}
-                sources={workspace.vaultSearch.sources}
-                busy={workspace.vaultSearch.busy}
-                error={workspace.vaultSearch.error || marginPins.error}
-                colors={doc.settings.entityColors}
-                pinned={pinIds}
-                pinning={marginPins.busy}
-                canPin={!!pinSection}
-                onOpen={(source) => void read(source)}
-                onPin={pinSource}
+          )}
+          {workspace.annotationsOpen &&
+            !workspace.historyMode &&
+            !filteredTag &&
+            !lineDetailVisible && (
+              <Annotations
+                key={p.path}
+                workspace={workspace}
+                left={railVisible ? railLeft : Math.max(12, innerWidth - 290)}
+                width={railVisible ? railWidth : 270}
               />
             )}
-            <div
-              ref={setPanelNode}
-              id="bottom-writing-panel"
-              className="bottom-panel"
-              data-open={!!workspace.palette || voiceOpen}
-              aria-hidden={!workspace.palette && !voiceOpen}
-              inert={!workspace.palette && !voiceOpen}
-            />
-          </div>
-          {!filteredTag && !!selected?.goal && (
-            <div className="goal-status">
-              <span className="goal-track">
-                <i style={{ width: Math.min(100, (words / selected.goal) * 100) + '%' }} />
-              </span>
-              <span>{selected.goal.toLocaleString(localeTag())}</span>
-            </div>
-          )}
-          <DepthControl
-            disabled={!!filteredTag}
-            value={doc.settings.depth}
-            onChange={(depth) => doc.configure({ depth })}
-          />
-          <div className="settings-control" data-open={surface === 'settings'}>
-            {filteredTag ? (
-              <button
-                className="settings-trigger tag-view-switch"
-                aria-label={
-                  tagViewMode === 'text'
-                    ? t('Afficher les passages en tableau')
-                    : t('Afficher les passages en texte')
-                }
-                data-tooltip={tagViewMode === 'text' ? t('Vue tableau') : t('Vue texte')}
-                aria-pressed={tagViewMode === 'table'}
-                onClick={() => setTagViewMode((mode) => (mode === 'text' ? 'table' : 'text'))}
-              >
-                {tagViewMode === 'text' ? <Table2 size={16} /> : <AlignLeft size={16} />}
-              </button>
-            ) : (
-              <>
-                <button
-                  ref={settingsTrigger}
-                  className="settings-trigger"
-                  aria-label={
-                    workspace.historyMode ? t('Outils des versions') : t('Réglages d’écriture')
-                  }
-                  data-tooltip={
-                    workspace.historyMode ? t('Outils des versions') : t('Écriture et lecture')
-                  }
-                  aria-expanded={surface === 'settings'}
-                  aria-controls={workspace.historyMode ? 'version-settings' : 'writing-settings'}
-                  onClick={() => {
-                    setPalette(null);
-                    setVoiceOpen(false);
-                    setCard(null);
-                    if (memory.origin) memory.close();
-                    setSurface(surface === 'settings' ? 'none' : 'settings');
-                  }}
-                >
-                  {workspace.historyMode ? <GitCompareArrows size={16} aria-hidden="true" /> : 'Aa'}
-                </button>
-                {workspace.historyMode ? (
-                  <div ref={setVersionToolsHost} />
-                ) : (
-                  <Settings
-                    open={surface === 'settings'}
-                    value={doc.settings}
-                    onChange={doc.configure}
-                    onFocusPreview={setFocusPreview}
-                    onFontPreview={setFontPreview}
-                    onScrollPreview={setScrollPreview}
-                    canFormat={scenes.length > 0}
-                    onFormat={(format) => editor.current?.format(format)}
-                    onClose={() => {
-                      setSurface('none');
-                      settingsTrigger.current?.focus();
-                    }}
-                  />
-                )}
-              </>
+          {!workspace.annotationsOpen &&
+            !workspace.historyMode &&
+            !filteredTag &&
+            !lineDetailVisible &&
+            (words > 0 || marginPins.sources.length > 0) &&
+            railVisible &&
+            !(reader || (memory.view && !memory.origin)) && (
+              <DocumentaryMargin
+                setRailScroll={setRailScroll}
+                sourcePresence={sourcePresence}
+                workspaceMarginBounds={workspace.marginBounds}
+                railLeft={railLeft}
+                railWidth={railWidth}
+                railGroups={railGroups}
+                groupOpen={groupOpen}
+                colors={doc.settings.entityColors}
+                cardPresence={cardPresence}
+                expandedHeight={expandedHeight}
+                openMenu={openMenu}
+                read={read}
+                cite={cite}
+                card={card}
+                setSurface={setSurface}
+                setCard={setCard}
+                associated={associated}
+                marginPins={marginPins}
+                setGroupOpen={setGroupOpen}
+                hasSuggestion={!!memory.suggestion}
+                contextTop={contextTop}
+                railScroll={railScroll}
+                suggestionExcerpt={suggestionExcerpt}
+              />
             )}
-          </div>
-        </footer>
-        {surface === 'entities' && (
-          <EntityManager
-            project={p}
-            manager={manager}
-            batches={inlineEntities.batches}
-            onClose={workspace.close}
-            onError={fail}
-            onChanged={() => workspace.setSourceVersion((v) => v + 1)}
-            onPassage={(section, node, quote) => {
-              workspace.close();
-              void workspace.locatePassage(section, node, quote);
-            }}
-            onSource={(id) => {
-              void request('source', { id })
-                .then((source) => {
-                  if (doc.ref.current?.path === p.path) {
-                    workspace.close();
-                    workspace.setReader(source);
-                  }
-                })
-                .catch(fail);
-            }}
+          <Presence kind="anchored">
+            {!workspace.historyMode &&
+              !filteredTag &&
+              !lineDetailVisible &&
+              memory.suggestion &&
+              contextVisible &&
+              doc.settings.focus === 'none' &&
+              !memory.view &&
+              !reader && (
+                <MemorySuggestion
+                  contextTop={contextTop}
+                  railLeft={railLeft}
+                  railWidth={railWidth}
+                  memory={memory}
+                  openMenu={openMenu}
+                  setSurface={setSurface}
+                  suggestionExcerpt={suggestionExcerpt}
+                  colors={doc.settings.entityColors}
+                  suggestionTitle={suggestionTitle}
+                  fail={fail}
+                  editor={editor}
+                />
+              )}
+          </Presence>
+          <MemoryReader
+            memory={memory}
+            workspace={workspace}
+            projectMenuOpen={menu}
+            writingMenuOpen={surface === 'settings'}
           />
-        )}
-        <WorkspaceDialogs
-          onTagFilter={openTagFilter}
-          onNotice={titleNotices.notify}
-          onLoading={titleNotices.setDialogLoading}
-          workspace={workspace}
-          onMemory={() => memory.open({ kind: 'list' })}
-        />
+          <Presence kind="anchored">
+            {card && (
+              <SourceCard
+                key={card.source.id}
+                origin={card.origin}
+                source={card.source}
+                marginPin={marginPinFor(card.source)}
+                sections={p.sections}
+                contentVersion={`${doc.status}:${doc.generation}`}
+                onOccurrence={(hit) => void workspace.locateSourceMatch(hit, hit.matched)}
+                citationStyle={doc.settings.citationStyle}
+                colors={doc.settings.entityColors}
+                onRegister={(s, t) => workspace.registerCitation(s, t).catch(fail)}
+                top={card.top}
+                onClose={() => setCard(null)}
+                onRead={() => void read(card.source)}
+                onAssociate={() =>
+                  void request('associate', {
+                    section: active!,
+                    id: card.source.id,
+                    payload: card.source,
+                  })
+                    .then(() => {
+                      void workspace.activity.record({
+                        kind: 'associated',
+                        title: card.source.title,
+                        sourceId: card.source.id,
+                        section: active,
+                      });
+                      setCard(null);
+                      setAssociationVersion((version) => version + 1);
+                      setSurface('prepare');
+                    })
+                    .catch(fail)
+                }
+                onCite={(s, t) => void cite(s, t)}
+              />
+            )}
+          </Presence>
+          <Presence>
+            {reader && (
+              <Reader
+                source={reader}
+                marginPin={marginPinFor(reader)}
+                sections={p.sections}
+                contentVersion={`${doc.status}:${doc.generation}`}
+                onOccurrence={(hit) => void workspace.locateSourceMatch(hit, hit.matched)}
+                onCite={(quote) => cite(reader, quote)}
+                onClose={() => setReader(null)}
+                projectPath={p.path}
+                onChange={(source) => {
+                  if (doc.ref.current?.path === p.path) {
+                    void workspace.activity.record({
+                      kind: 'updated',
+                      title: source.title,
+                      sourceId: source.id,
+                      section: active,
+                    });
+                    setReader((current) => (current?.id === source.id ? source : current));
+                    workspace.refreshEnrichment();
+                    workspace.setSourceVersion((v) => v + 1);
+                  }
+                }}
+                onRead={(id) =>
+                  void request('source', { id })
+                    .then((source) => {
+                      if (doc.ref.current?.path === p.path) setReader(source);
+                    })
+                    .catch(fail)
+                }
+                onLocate={(section, node, quote) =>
+                  void workspace.locatePassage(section, node, quote)
+                }
+              />
+            )}
+          </Presence>{' '}
+          <footer className="statusbar">
+            <div className="chrome-blur chrome-blur-bottom" aria-hidden="true">
+              <span />
+              <span />
+            </div>
+            <div
+              className="bottom-controls"
+              inert={historyBusy || branches.busy}
+              data-panel={panelMode}
+              data-anchor={panelMode === 'none' ? lastPanel.current : panelMode}
+              data-morph={morphPanel}
+            >
+              <div className="bottom-connector" aria-hidden="true" />
+              <VoiceButton
+                projectPath={p?.path}
+                language={doc.settings.language}
+                onActivity={memory.setRecording}
+                prepareInsertion={() => editor.current?.prepareInsertion() ?? (() => false)}
+                panel={panelNode}
+                retainContent={panelMode === 'none'}
+                open={voiceOpen && !workspace.palette}
+                onOpen={() => {
+                  setTagFilter(null);
+                  setPalette(null);
+                  workspace.setHistoryMode(false);
+                  if (surface === 'settings') setSurface('none');
+                  setVoiceOpen(true);
+                }}
+                onClose={() => setVoiceOpen(false)}
+              />
+              <WritingCounter
+                words={filteredTag ? filterCounts.words : words}
+                characters={filteredTag ? filterCounts.characters : characters}
+                lines={filteredTag ? filterCounts.lines : lines}
+                notes={countVaultNotes([...workspace.sources, ...marginPins.sources])}
+                notesStatus={workspace.sourceStatus}
+                hideNotes={focusActive}
+                mode={focusActive ? 'words' : doc.settings.countMode}
+                onChange={(countMode) => {
+                  doc.configure({ countMode });
+                  if (!filteredTag) editor.current?.focus();
+                }}
+              />
+              <Palette
+                open={!!workspace.palette}
+                sections={workspace.palette === 'sections'}
+                textSearch={workspace.palette === 'text'}
+                searchScope={p.path}
+                initialQuery={workspace.initialSearch}
+                onTextSearch={(query) => workspace.setSearchQuery(query)}
+                extraResults={
+                  workspace.palette === 'text' ? (
+                    <StructuredSearch
+                      query={workspace.searchQuery}
+                      project={p}
+                      manager={manager}
+                      onQuery={(query) => {
+                        workspace.setSearch(query);
+                      }}
+                      onOpen={(query, name) => {
+                        workspace.setSearch(null);
+                        setTagFilter(null);
+                        setQueryFilter({ path: p.path, query, name });
+                        workspace.setSurface('none');
+                        workspace.setReader(null);
+                        workspace.setCard(null);
+                        memory.close();
+                        inlineEntities.close();
+                      }}
+                    />
+                  ) : undefined
+                }
+                onNextMatch={(query, backwards) =>
+                  editor.current?.findText(query, backwards ? 'previous' : 'next')
+                }
+                panel={panelNode}
+                retainContent={panelMode === 'none'}
+                onOpen={() => {
+                  setVoiceOpen(false);
+                  if (surface === 'settings') setSurface('none');
+                  setSearch('');
+                }}
+                onClose={() => {
+                  setSearch(null);
+                  setCard(null);
+                  editor.current?.focus();
+                }}
+                commands={
+                  workspace.palette === 'sections'
+                    ? ordered(p.sections).map((section) => ({
+                        id: 'section:' + section.id,
+                        label: section.title || t('Sans titre'),
+                        detail:
+                          section.kind === 'scene'
+                            ? t('Scène')
+                            : section.kind === 'chapter'
+                              ? t('Chapitre')
+                              : t('Section'),
+                        action: () => void select(section.id),
+                      }))
+                    : [
+                        ...commands,
+                        {
+                          id: 'resume',
+                          label: t('Reprendre le fil'),
+                          action: () => memory.open({ kind: 'resume' }),
+                        },
+                        {
+                          id: 'manuscript-entities',
+                          label: t('Fiches du manuscrit'),
+                          action: () => memory.open({ kind: 'list' }),
+                        },
+                      ].filter((command) => command.id !== 'sources')
+                }
+              />
+              {searching && !/^[#@]/.test(workspace.searchQuery.trim()) && (
+                <FloatingVaultResults
+                  query={workspace.searchQuery}
+                  sources={workspace.vaultSearch.sources}
+                  busy={workspace.vaultSearch.busy}
+                  error={workspace.vaultSearch.error || marginPins.error}
+                  colors={doc.settings.entityColors}
+                  pinned={pinIds}
+                  pinning={marginPins.busy}
+                  canPin={!!pinSection}
+                  onOpen={(source) => void read(source)}
+                  onPin={pinSource}
+                />
+              )}
+              <div
+                ref={setPanelNode}
+                id="bottom-writing-panel"
+                className="bottom-panel"
+                data-open={!!workspace.palette || voiceOpen}
+                aria-hidden={!workspace.palette && !voiceOpen}
+                inert={!workspace.palette && !voiceOpen}
+              />
+            </div>
+            {!filteredTag && !!selected?.goal && (
+              <div className="goal-status">
+                <span className="goal-track">
+                  <i style={{ width: Math.min(100, (words / selected.goal) * 100) + '%' }} />
+                </span>
+                <span>{selected.goal.toLocaleString(localeTag())}</span>
+              </div>
+            )}
+            <DepthControl
+              disabled={!!filteredTag}
+              value={doc.settings.depth}
+              onChange={(depth) => doc.configure({ depth })}
+            />
+            <div className="settings-control" data-open={surface === 'settings'}>
+              {filteredTag ? (
+                <button
+                  className="settings-trigger tag-view-switch"
+                  aria-label={
+                    tagViewMode === 'text'
+                      ? t('Afficher les passages en tableau')
+                      : t('Afficher les passages en texte')
+                  }
+                  data-tooltip={tagViewMode === 'text' ? t('Vue tableau') : t('Vue texte')}
+                  aria-pressed={tagViewMode === 'table'}
+                  onClick={() => setTagViewMode((mode) => (mode === 'text' ? 'table' : 'text'))}
+                >
+                  {tagViewMode === 'text' ? <Table2 size={16} /> : <AlignLeft size={16} />}
+                </button>
+              ) : (
+                <>
+                  <button
+                    ref={settingsTrigger}
+                    className="settings-trigger"
+                    aria-label={
+                      workspace.historyMode ? t('Outils des versions') : t('Réglages d’écriture')
+                    }
+                    data-tooltip={
+                      workspace.historyMode ? t('Outils des versions') : t('Écriture et lecture')
+                    }
+                    aria-expanded={surface === 'settings'}
+                    aria-controls={workspace.historyMode ? 'version-settings' : 'writing-settings'}
+                    onClick={() => {
+                      setPalette(null);
+                      setVoiceOpen(false);
+                      setCard(null);
+                      if (memory.origin) memory.close();
+                      setSurface(surface === 'settings' ? 'none' : 'settings');
+                    }}
+                  >
+                    {workspace.historyMode ? (
+                      <GitCompareArrows size={16} aria-hidden="true" />
+                    ) : (
+                      'Aa'
+                    )}
+                  </button>
+                  {workspace.historyMode ? (
+                    <div ref={setVersionToolsHost} />
+                  ) : (
+                    <Settings
+                      open={surface === 'settings'}
+                      value={doc.settings}
+                      onChange={doc.configure}
+                      onFocusPreview={setFocusPreview}
+                      onFontPreview={setFontPreview}
+                      onScrollPreview={setScrollPreview}
+                      canFormat={scenes.length > 0}
+                      onFormat={(format) => editor.current?.format(format)}
+                      onClose={() => {
+                        setSurface('none');
+                        settingsTrigger.current?.focus();
+                      }}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          </footer>
+        </div>
+        <WorkspaceScreenHost value={pageHostContext}>
+          {inbox}
+          {surface === 'entities' && (
+            <EntityManager
+              project={p}
+              manager={manager}
+              batches={inlineEntities.batches}
+              onClose={workspace.close}
+              onError={fail}
+              onChanged={() => workspace.setSourceVersion((v) => v + 1)}
+              onPassage={(section, node, quote) => {
+                workspace.close();
+                void workspace.locatePassage(section, node, quote);
+              }}
+              onSource={(id) => {
+                void request('source', { id })
+                  .then((source) => {
+                    if (doc.ref.current?.path === p.path) {
+                      workspace.close();
+                      workspace.setReader(source);
+                    }
+                  })
+                  .catch(fail);
+              }}
+            />
+          )}
+          <WorkspaceDialogs
+            onTagFilter={openTagFilter}
+            onNotice={titleNotices.notify}
+            onLoading={titleNotices.setDialogLoading}
+            workspace={workspace}
+            onMemory={() => memory.open({ kind: 'list' })}
+          />
+        </WorkspaceScreenHost>
       </div>
     </ViewTitleCapsuleProvider>
   );

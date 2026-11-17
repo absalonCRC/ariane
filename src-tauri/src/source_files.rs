@@ -178,17 +178,71 @@ mod tests {
     use super::*;
     #[test]
     fn tokens_are_scoped_to_the_active_project_and_current_vault_scope() {
-        let temp=tempfile::tempdir().unwrap();let root=temp.path().join("project");crate::project::create(&root,"A").unwrap();
-        let vault=temp.path().join("vault");std::fs::create_dir(&vault).unwrap();std::fs::write(vault.join("picture.png"),b"0123456789").unwrap();
-        vaults::connect(&root,&vault).unwrap();let index=temp.path().join("sources.sqlite");
-        let id=vaults::list(&root,&index).unwrap()[0].id.clone();let mut source=vaults::parse::parse(&id,"picture.png","");source.kind="Image".into();
-        vaults::index_db(&index).unwrap().execute("INSERT INTO sources VALUES(?,?,?,?,?)",rusqlite::params![source.id,id,source.path,"hash",serde_json::to_string(&source).unwrap()]).unwrap();
-        let state=AppState {data:temp.path().to_owned(),resources:temp.path().to_owned(),current:Mutex::new(Some(root.clone())),source_files:Default::default(),grants:Default::default(),project_guard:Default::default(),engine:Default::default(),revision:Default::default(),voice:Default::default(),enriching:Default::default(),memory_activity:Default::default(),memory_job:Default::default(),entity_engine:Default::default(),indexing:false.into(),cancel:false.into(),paused:false.into(),export_cancel:false.into(),exporting:false.into(),exit_approved:false.into()};
-        let grant=state.source_files.grant(&state,&root,&source.id).unwrap();let url=grant["url"].as_str().unwrap();
-        let request=||Request::builder().uri(url).header("range","bytes=1-3").body(vec![]).unwrap();
-        let response=state.source_files.respond(&state,request());assert_eq!(response.status(),206);assert_eq!(response.body(),b"123");
-        vaults::set_scope(&root,&id,vec!["private".into()]).unwrap();assert_eq!(state.source_files.respond(&state,request()).status(),403);
-        vaults::set_scope(&root,&id,vec![]).unwrap();*state.current.lock().unwrap()=None;assert_eq!(state.source_files.respond(&state,request()).status(),403);
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("project");
+        crate::project::create(&root, "A").unwrap();
+        let vault = temp.path().join("vault");
+        std::fs::create_dir(&vault).unwrap();
+        std::fs::write(vault.join("picture.png"), b"0123456789").unwrap();
+        vaults::connect(&root, &vault).unwrap();
+        let index = temp.path().join("sources.sqlite");
+        let id = vaults::list(&root, &index).unwrap()[0].id.clone();
+        let mut source = vaults::parse::parse(&id, "picture.png", "");
+        source.kind = "Image".into();
+        vaults::index_db(&index)
+            .unwrap()
+            .execute(
+                "INSERT INTO sources VALUES(?,?,?,?,?)",
+                rusqlite::params![
+                    source.id,
+                    id,
+                    source.path,
+                    "hash",
+                    serde_json::to_string(&source).unwrap()
+                ],
+            )
+            .unwrap();
+        let state = AppState {
+            inbox: crate::inbox::Service::new(temp.path()).unwrap(),
+            capture_window: Default::default(),
+            lifecycle: Default::default(),
+            data: temp.path().to_owned(),
+            resources: temp.path().to_owned(),
+            current: Mutex::new(Some(root.clone())),
+            source_files: Default::default(),
+            grants: Default::default(),
+            project_guard: Default::default(),
+            engine: Default::default(),
+            revision: Default::default(),
+            voice: Default::default(),
+            enriching: Default::default(),
+            memory_activity: Default::default(),
+            memory_job: Default::default(),
+            entity_engine: Default::default(),
+            indexing: false.into(),
+            cancel: false.into(),
+            paused: false.into(),
+            export_cancel: false.into(),
+            exporting: false.into(),
+            exit_approved: false.into(),
+        };
+        let grant = state.source_files.grant(&state, &root, &source.id).unwrap();
+        let url = grant["url"].as_str().unwrap();
+        let request = || {
+            Request::builder()
+                .uri(url)
+                .header("range", "bytes=1-3")
+                .body(vec![])
+                .unwrap()
+        };
+        let response = state.source_files.respond(&state, request());
+        assert_eq!(response.status(), 206);
+        assert_eq!(response.body(), b"123");
+        vaults::set_scope(&root, &id, vec!["private".into()]).unwrap();
+        assert_eq!(state.source_files.respond(&state, request()).status(), 403);
+        vaults::set_scope(&root, &id, vec![]).unwrap();
+        *state.current.lock().unwrap() = None;
+        assert_eq!(state.source_files.respond(&state, request()).status(), 403);
     }
     #[test]
     fn range_validation_and_bounded_reads() {

@@ -1,3 +1,8 @@
+import {
+  getCapturePreferences,
+  loadCapturePreferences,
+  updateCapturePreferences,
+} from '../../capture/preferences';
 import { t } from '../../i18n';
 import { useSyncExternalStore } from 'react';
 import { request, native } from '../../platform/client';
@@ -23,7 +28,11 @@ export function effectiveBindings(overrides = bindings): ShortcutBindings {
   return Object.fromEntries(
     commandRegistry.map((c) => [
       c.id,
-      Object.hasOwn(overrides, c.id) ? overrides[c.id] : c.shortcut,
+      c.scope === 'global'
+        ? getCapturePreferences().shortcut
+        : Object.hasOwn(overrides, c.id)
+          ? overrides[c.id]
+          : c.shortcut,
     ]),
   );
 }
@@ -36,7 +45,7 @@ export function shortcutFromEvent(
     ...(e.metaKey || e.ctrlKey ? ['Mod'] : []),
     ...(e.altKey ? ['Alt'] : []),
     ...(e.shiftKey ? ['Shift'] : []),
-    e.key.length === 1 ? e.key.toUpperCase() : e.key,
+    e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key,
   ].join('+');
 }
 const reserved = new Set([
@@ -70,13 +79,13 @@ export function shortcutConflict(
 ): string | null {
   if (value === null) return null;
   if (
-    !/^(?:(?:Mod|Alt|Shift)\+)*(?:[A-Z0-9,.;/\[\]\\=\-]|Tab|Arrow(?:Up|Down|Left|Right)|F(?:[1-9]|1[0-2]))$/.test(
+    !/^(?:(?:Mod|Alt|Shift)\+)*(?:[A-Z0-9,.;/\[\]\\=\-]|Space|Tab|Arrow(?:Up|Down|Left|Right)|F(?:[1-9]|1[0-2]))$/.test(
       value,
     )
   )
     return 'Raccourci invalide.';
   if (
-    (commandRegistry.find((c) => c.id === id)?.scope === 'app' &&
+    (['app', 'global'].includes(commandRegistry.find((c) => c.id === id)?.scope ?? '') &&
       !value.includes('Mod+') &&
       !/^F\d+$/.test(value)) ||
     reserved.has(value) ||
@@ -112,6 +121,12 @@ export function nativeBindings(overrides = bindings) {
 export async function setShortcut(id: string, value: string | null) {
   const error = shortcutConflict(id, value);
   if (error) throw Error(error);
+  if (id === 'capture-open') {
+    await updateCapturePreferences({ shortcut: value });
+    bindings = { ...bindings };
+    for (const fn of listeners) fn();
+    return;
+  }
   const next = { ...bindings, [id]: value };
   if (native) {
     await syncNative(nativeBindings(next));
@@ -127,6 +142,7 @@ export async function setShortcut(id: string, value: string | null) {
   for (const fn of listeners) fn();
 }
 export async function resetShortcuts() {
+  if (native) await updateCapturePreferences({ shortcut: 'Mod+Shift+Space' });
   if (native) await syncNative(recording ? disabledNative() : nativeBindings({}));
   try {
     localStorage.removeItem(storageName);
@@ -170,9 +186,22 @@ const disabledNative = () =>
   Object.fromEntries(commandRegistry.filter((c) => c.native).map((c) => [c.id, null]));
 export async function beginShortcutRecording() {
   recording = true;
-  if (native) await syncNative(disabledNative());
+  if (native) {
+    await syncNative(disabledNative());
+    await request('globalShortcutRecording', { active: true });
+  }
 }
 export async function endShortcutRecording() {
   recording = false;
-  if (native) await syncNative(nativeBindings());
+  if (native) {
+    await syncNative(nativeBindings());
+    await request('globalShortcutRecording', { active: false });
+    await loadGlobalShortcut();
+  }
+}
+
+export async function loadGlobalShortcut() {
+  await loadCapturePreferences();
+  bindings = { ...bindings };
+  for (const fn of listeners) fn();
 }

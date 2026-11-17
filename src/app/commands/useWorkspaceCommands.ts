@@ -10,7 +10,7 @@ import { t } from '../../i18n';
 import { type DocumentRole } from '../../contracts/library';
 import type { PanelOrigin } from '../../components/useSharedPanel';
 import { useEffect, useRef } from 'react';
-import { native } from '../../platform/client';
+import { native, request } from '../../platform/client';
 import type { Project, Section } from '../../contracts/project';
 import type { Source } from '../../contracts/sources';
 import type { Surface } from '../workspace/types';
@@ -199,6 +199,22 @@ export function useWorkspaceCommands({
       ]
     : [];
   commands.push(
+    {
+      id: 'inbox-open',
+      label: t('Boîte de réception'),
+      action: () => window.dispatchEvent(new Event('ariane-inbox-open')),
+    },
+    ...(native
+      ? [
+          {
+            id: 'capture-open',
+            label: t('Capture rapide'),
+            action: () => {
+              void request('captureWindow', { action: 'toggle' }).catch(fail);
+            },
+          },
+        ]
+      : []),
     ...(p ? [{ id: 'commands', label: t('Commandes'), action: () => setPalette('commands') }] : []),
   );
   for (const c of commands)
@@ -210,7 +226,8 @@ export function useWorkspaceCommands({
   );
   const nativeCommand = useRef<(id: string) => void>(() => {});
   nativeCommand.current = (id) => {
-    if (libraryLock.current || document.querySelector('dialog[open]')) return;
+    if (libraryLock.current || document.querySelector('dialog[open], .app[data-page-busy="true"]'))
+      return;
     if (!p || newProject) return;
     if (id === 'focus') {
       toggleFocus();
@@ -246,7 +263,8 @@ export function useWorkspaceCommands({
       'smart-tags',
       'shortcuts',
     ];
-    if (nativeIds.includes(id)) commands.find((command) => command.id === id)?.action();
+    if (!document.documentElement.dataset.flushing && nativeIds.includes(id))
+      commands.find((command) => command.id === id)?.action();
   };
   useEffect(() => {
     if (!native) return;
@@ -277,17 +295,22 @@ export function useWorkspaceCommands({
   }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (document.querySelector('dialog[open]')) return;
+      if (
+        document.documentElement.dataset.flushing ||
+        document.querySelector('dialog[open], .app[data-page-busy="true"]')
+      )
+        return;
       if (libraryLock.current) {
         e.preventDefault();
         return;
       }
+      if ((e.target as HTMLElement)?.closest?.('.shortcut-settings input')) return;
       if (e.isComposing || e.key === 'Dead' || e.defaultPrevented) return;
       const value = shortcutFromEvent(e);
       if (!value) return;
       const inEditor = !!(e.target as HTMLElement)?.closest?.('.cm-editor');
       const match = commandRegistry.find(
-        (c) => bindings[c.id] === value && (c.scope === 'app' || inEditor),
+        (c) => c.scope !== 'global' && bindings[c.id] === value && (c.scope === 'app' || inEditor),
       );
       if (match) {
         // Capture before CodeMirror's default search keymap. A menu event for this
@@ -332,6 +355,10 @@ export function useWorkspaceCommands({
     };
     const escape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !e.defaultPrevented) {
+        if (document.querySelector('.app[data-page-busy="true"]')) {
+          e.preventDefault();
+          return;
+        }
         setCard(null);
         setReader(null);
         setSearch(null);

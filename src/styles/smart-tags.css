@@ -58,6 +58,9 @@
   line-height: 1.4;
   padding-inline: 4px;
 }
+.app[data-focus='true'] .document-title-tags {
+  display: none;
+}
 @media (max-width: 800px) {
   .document-title-measure {
     font-size: 31px;
@@ -68,9 +71,6 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-left: 6px;
-}
-.app[data-focus='true'] .document-title-row {
-  display: none;
 }
 .smart-tag:hover {
   background: color-mix(in srgb, var(--tag-color) 12%, transparent);

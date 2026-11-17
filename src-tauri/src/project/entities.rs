@@ -565,7 +565,7 @@ mod tests {
         assert_eq!(
             c.pragma_query_value::<u32, _>(None, "user_version", |r| r.get(0))
                 .unwrap(),
-            4
+            5
         );
         assert!(std::fs::read_dir(d.path().join("recuperation"))
             .unwrap()

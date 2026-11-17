@@ -71,6 +71,7 @@ export function TagManager({
   };
   return (
     <WorkspaceScreen
+      busy={busy}
       title={t('Smart-tags')}
       onError={onError}
       subtitle={project.name}

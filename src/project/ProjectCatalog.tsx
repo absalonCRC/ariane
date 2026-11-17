@@ -1,6 +1,6 @@
 import { t, useLocale, localeTag } from '../i18n';
 import { Fragment, useEffect, useState } from 'react';
-import { Archive, Pin } from 'lucide-react';
+import { Archive, Pin, Inbox } from 'lucide-react';
 import { request } from '../platform/client';
 import type { ProjectEntry } from '../contracts/project';
 export function ProjectCatalog({
@@ -141,6 +141,10 @@ export function ProjectCatalog({
           </Fragment>
         ))
       )}
+      <button onClick={() => window.dispatchEvent(new Event('ariane-inbox-open'))}>
+        <Inbox size={15} />
+        {t('Boîte de réception')}
+      </button>
       {archived && <p className="hint">{t('Les projets archivés restent sur ce Mac.')}</p>}
     </div>
   );

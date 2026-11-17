@@ -1,0 +1,412 @@
+.profile-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.writer-dashboard {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 48px 40px 64px;
+}
+.writer-identity {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 38px;
+  border-bottom: 1px solid var(--line);
+}
+.writer-avatar {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--workspace-accent);
+  font: 28px var(--literary);
+}
+.writer-introduction {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.writer-introduction h2 {
+  font-size: 34px;
+  margin: 0 0 8px;
+}
+.writer-introduction p {
+  font: 14px/1.7 var(--ui);
+  margin: 0 0 12px;
+  max-width: 55ch;
+}
+.writer-local {
+  font: 11px var(--ui);
+  color: var(--workspace-muted);
+}
+.profile-edit {
+  border: 1px solid var(--line);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.profile-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 64px;
+  padding-top: 38px;
+}
+.profile-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--workspace-muted);
+}
+.profile-section-title h2,
+.profile-shortcuts h2 {
+  font: 14px var(--ui);
+  margin: 0;
+  color: var(--ink);
+}
+.profile-manuscript .profile-project-name {
+  font: 32px/1.2 var(--literary);
+  margin: 26px 0 10px;
+  overflow-wrap: anywhere;
+}
+.profile-description {
+  font: 13px/1.7 var(--ui);
+  color: var(--workspace-muted);
+  margin: 0;
+}
+.profile-statistics {
+  display: flex;
+  gap: 32px;
+  margin: 30px 0 34px;
+  flex-wrap: wrap;
+}
+.profile-statistics div {
+  flex: 1;
+  min-width: 100px;
+}
+.profile-statistics dt {
+  font: 12px var(--ui);
+  color: var(--workspace-muted);
+}
+.profile-statistics dd {
+  margin: 10px 0 0;
+  font: 28px var(--ui);
+  font-variant-numeric: tabular-nums;
+}
+.profile-goal {
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+}
+.profile-goal > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+.profile-goal h3 {
+  font: 14px var(--ui);
+  margin: 0 0 18px;
+}
+.profile-goal span,
+.profile-goal p,
+.profile-goal small {
+  font: 12px/1.7 var(--ui);
+  color: var(--workspace-muted);
+}
+.profile-goal p {
+  margin: 10px 0 4px;
+}
+.profile-goal progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--workspace-accent);
+  display: block;
+  border: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.profile-goal progress::-webkit-progress-bar {
+  background: var(--surface);
+}
+.profile-goal progress::-webkit-progress-value {
+  background: var(--workspace-accent);
+}
+.profile-resume {
+  margin-top: 36px;
+  padding: 24px;
+  background: var(--surface);
+  border-radius: 8px;
+}
+.profile-resume > span {
+  font: 12px var(--ui);
+  color: var(--workspace-muted);
+}
+.profile-resume h3 {
+  font: 25px/1.3 var(--literary);
+  margin: 12px 0 18px;
+  overflow-wrap: anywhere;
+}
+.profile-resume button {
+  padding: 0;
+  font: 12px var(--ui);
+  gap: 12px;
+}
+.profile-shortcuts > button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+}
+.profile-shortcuts > button:first-of-type {
+  margin-top: 12px;
+}
+.profile-shortcuts > button > span {
+  flex: 1;
+  min-width: 0;
+}
+.profile-shortcuts strong {
+  display: block;
+  font: 13px var(--ui);
+}
+.profile-shortcuts small {
+  display: block;
+  font: 12px/1.6 var(--ui);
+  color: var(--workspace-muted);
+  margin-top: 7px;
+}
+.profile-shortcuts > p {
+  font: 12px/1.8 var(--ui);
+  color: var(--workspace-muted);
+  margin-top: 26px;
+}
+.writer-form {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 18px;
+}
+.writer-form label {
+  display: grid;
+  gap: 8px;
+  font: 13px var(--ui);
+}
+.writer-form input,
+.writer-form textarea {
+  width: 100%;
+  max-width: 560px;
+  margin: 0;
+  font: 14px/1.6 var(--ui);
+}
+.writer-form textarea {
+  resize: vertical;
+}
+.writer-form > div {
+  display: flex;
+  gap: 12px;
+}
+@media (max-width: 850px) {
+  .writer-dashboard {
+    padding: 30px 24px 48px;
+  }
+  .profile-columns {
+    gap: 32px;
+    grid-template-columns: minmax(0, 1fr) 220px;
+  }
+  .writer-identity {
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .profile-edit {
+    margin-left: 94px;
+  }
+}
+@media (max-width: 620px) {
+  .profile-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .writer-avatar {
+    width: 56px;
+    height: 56px;
+  }
+  .writer-introduction h2 {
+    font-size: 28px;
+  }
+  .writer-introduction {
+    flex-basis: calc(100% - 74px);
+  }
+  .profile-edit {
+    margin-left: 74px;
+  }
+  .profile-statistics {
+    gap: 20px;
+  }
+  .profile-statistics div {
+    min-width: 80px;
+  }
+  .profile-screen .workspace-screen-header {
+    align-items: flex-start;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+}
+
+.writing-calendar {
+  padding: 32px 0;
+  border-bottom: 1px solid var(--line);
+}
+.writing-calendar > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.writing-calendar h2 {
+  margin: 0 0 8px;
+  font: 24px var(--literary);
+}
+.writing-calendar header p {
+  font: 13px/1.6 var(--ui);
+  margin: 0;
+  color: var(--workspace-muted);
+}
+.writing-calendar label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font: 12px var(--ui);
+}
+.writing-calendar select {
+  width: auto;
+  margin: 0;
+  font: 12px var(--ui);
+}
+.calendar-overflow {
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+}
+.calendar-chart {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  grid-template-rows: 20px auto;
+  gap: 5px 8px;
+  min-width: calc(36px + var(--calendar-weeks) * 16px);
+}
+.calendar-months {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--calendar-weeks), minmax(0, 1fr));
+  font: 10px var(--ui);
+  color: var(--workspace-muted);
+}
+.calendar-months span {
+  overflow: visible;
+  white-space: nowrap;
+}
+.calendar-weekdays {
+  display: grid;
+  grid-template-rows: repeat(7, 12px);
+  gap: 4px;
+  font: 10px/12px var(--ui);
+  color: var(--workspace-muted);
+}
+.calendar-cells {
+  display: grid;
+  grid-template-rows: repeat(7, 12px);
+  grid-template-columns: repeat(var(--calendar-weeks), minmax(0, 1fr));
+  grid-auto-flow: column;
+  gap: 4px;
+}
+.calendar-cells button,
+.calendar-legend i {
+  display: block;
+  width: 100%;
+  height: 12px;
+  padding: 0;
+  min-width: 0;
+  border-radius: 2px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.calendar-cells [data-level='1'],
+.calendar-legend [data-level='1'] {
+  background: color-mix(in srgb, var(--workspace-accent) 25%, var(--workspace-paper));
+}
+.calendar-cells [data-level='2'],
+.calendar-legend [data-level='2'] {
+  background: color-mix(in srgb, var(--workspace-accent) 50%, var(--workspace-paper));
+}
+.calendar-cells [data-level='3'],
+.calendar-legend [data-level='3'] {
+  background: color-mix(in srgb, var(--workspace-accent) 75%, var(--workspace-paper));
+}
+.calendar-cells [data-level='4'],
+.calendar-legend [data-level='4'] {
+  background: var(--workspace-accent);
+}
+.calendar-cells [data-untracked='true'] {
+  background: transparent;
+  border-style: dotted;
+}
+.calendar-cells [aria-pressed='true'] {
+  outline: 1px solid var(--ink);
+  outline-offset: 1px;
+}
+.calendar-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin: 14px 0;
+}
+.calendar-caption p {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 0;
+  font: 12px/1.6 var(--ui);
+}
+.calendar-caption strong {
+  font-weight: 500;
+}
+.calendar-caption p span {
+  color: var(--workspace-muted);
+}
+.calendar-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font: 10px var(--ui);
+  color: var(--workspace-muted);
+}
+.calendar-legend i {
+  width: 12px;
+}
+.calendar-legend span {
+  margin-inline: 4px;
+}
+.calendar-explanation {
+  max-width: 95ch;
+  font: 11px/1.7 var(--ui);
+  color: var(--workspace-muted);
+  margin: 6px 0 0;
+}
+@media (max-width: 620px) {
+  .writing-calendar > header {
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .calendar-year-label {
+    display: none;
+  }
+}

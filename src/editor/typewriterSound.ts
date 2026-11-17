@@ -8,10 +8,11 @@ export type TypewriterStroke = 'key' | 'space' | 'delete' | 'return';
 export interface TypewriterSound {
   play: (stroke: TypewriterStroke) => void;
   destroy: () => void;
+  setVolume?: (volume: number) => void;
 }
 
 // Decode once per enabled session so fast keystrokes can overlap without restarting a sound.
-export function createTypewriterSound(): TypewriterSound {
+export function createTypewriterSound(initialVolume = 1): TypewriterSound {
   const silent: TypewriterSound = { play: () => {}, destroy: () => {} };
   let context: AudioContext;
   try {
@@ -19,6 +20,8 @@ export function createTypewriterSound(): TypewriterSound {
   } catch {
     return silent;
   }
+  let volume = initialVolume;
+  const gains = new Map<AudioBufferSourceNode, { gain: GainNode; base: number }>();
   let disposed = false;
   let lastKey = -1;
   let pending: { stroke: TypewriterStroke; time: number } | null = null;
@@ -38,7 +41,7 @@ export function createTypewriterSound(): TypewriterSound {
     }),
   );
   const play = (stroke: TypewriterStroke) => {
-    if (disposed) return;
+    if (disposed || volume === 0) return;
     if (context.state === 'suspended') void context.resume().catch(() => {});
     let index: number;
     if (stroke === 'return') index = 4;
@@ -61,12 +64,15 @@ export function createTypewriterSound(): TypewriterSound {
       source.buffer = buffer;
       source.playbackRate.value = stroke === 'key' ? 0.99 + Math.random() * 0.02 : 1;
       // The carriage is intentionally more prominent than ordinary keystrokes.
-      gain.gain.value = stroke === 'return' ? 0.8 : stroke === 'space' ? 0.18 : 0.4;
+      const base = stroke === 'return' ? 0.8 : stroke === 'space' ? 0.18 : 0.4;
+      gain.gain.value = base * volume;
+      gains.set(source, { gain, base });
       source.connect(gain);
       gain.connect(context.destination);
       sources.add(source);
       source.onended = () => {
         sources.delete(source);
+        gains.delete(source);
         source.disconnect();
         gain.disconnect();
       };
@@ -82,6 +88,25 @@ export function createTypewriterSound(): TypewriterSound {
   });
   return {
     play,
+    setVolume: (next) => {
+      volume = Math.max(0, Math.min(1, next));
+      if (volume === 0) pending = null;
+      for (const [source, { gain, base }] of gains) {
+        gain.gain.value = base * volume;
+        if (volume === 0) {
+          try {
+            source.stop();
+          } catch {
+            /* Already stopped. */
+          }
+          sources.delete(source);
+          gains.delete(source);
+          source.disconnect();
+          gain.disconnect();
+          source.onended = null;
+        }
+      }
+    },
     destroy: () => {
       disposed = true;
       pending = null;
@@ -93,6 +118,7 @@ export function createTypewriterSound(): TypewriterSound {
         }
       }
       sources.clear();
+      gains.clear();
       void context.close().catch(() => {});
     },
   };

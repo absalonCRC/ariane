@@ -85,6 +85,7 @@ export interface EditorProps {
   onLines?: (lines: number) => void;
   onCursor: (cursor: number) => void;
   onTyping: () => void;
+  onWritingEdit?: (netWords: number) => void;
   onSearchSources?: (text: string) => void;
   onSelection?: (anchor: SelectionAnchor | null) => void;
 }

@@ -7,6 +7,7 @@ interface Props {
   libraryBusy: boolean;
   binder: boolean;
   historyMode: boolean;
+  pageMode?: boolean;
   immersiveFocus: boolean | undefined;
   onToggleFocus: () => void;
   menu: boolean;
@@ -17,6 +18,7 @@ export function WorkspaceHeader({
   libraryBusy,
   binder,
   historyMode,
+  pageMode,
   immersiveFocus,
   onToggleFocus,
   menu,
@@ -27,7 +29,7 @@ export function WorkspaceHeader({
     <header className="app-header" inert={libraryBusy}>
       <ArianeWordmark compact={!binder} />
       <div className="header-right">
-        {!historyMode && (
+        {!historyMode && !pageMode && (
           <button
             className="focus-mode-trigger"
             aria-label={immersiveFocus ? t('Quitter le mode focus') : t('Activer le mode focus')}

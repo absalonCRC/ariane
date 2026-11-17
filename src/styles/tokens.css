@@ -15,6 +15,17 @@
   --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --writing-size: 23px;
   --sidebar-width: 285px;
+  /* Shared 4-point rhythm for the workspace pages. */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-gutter: 40px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
   --motion-fast: 120ms;
   --motion-standard: 200ms;
   --motion-exit: 160ms;

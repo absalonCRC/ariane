@@ -34,9 +34,10 @@ impl Drop for Waiting {
 }
 pub async fn admit(kind: &str) -> Result<tokio::sync::OwnedSemaphorePermit> {
     let (lane, latest) = match kind {
-        "save" | "resolveExternal" => (&*SAVE, None),
+        "save" | "resolveExternal" | "inboxSave" | "inboxFinish" => (&*SAVE, None),
         "memoryActivity" | "cancelIndex" | "cancelExport" | "quit" | "voiceStatus"
-        | "engineStatus" | "memoryStatus" => (&*CONTROL, None),
+        | "engineStatus" | "memoryStatus" | "appReady" | "appClose" | "appFlushed"
+        | "captureWindow" => (&*CONTROL, None),
         "search" => (&*HEAVY, Some(&SEARCH)),
         "suggest" => (&*HEAVY, Some(&SUGGEST)),
         "revisionCheck" => (&*HEAVY, Some(&REVISION)),
@@ -67,6 +68,7 @@ pub async fn admit(kind: &str) -> Result<tokio::sync::OwnedSemaphorePermit> {
 pub fn validate(request: &Value) -> Result<()> {
     let kind = request["type"].as_str().ok_or("Commande invalide")?;
     let max = match kind {
+        "inboxSave" => 4 * 1024 * 1024,
         "save" | "mergeBranch" => 128 * 1024 * 1024,
         "voiceTranscribe" => 28 * 1024 * 1024,
         "update" | "resolveExternal" => 64 * 1024 * 1024,

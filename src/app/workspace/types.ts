@@ -4,6 +4,7 @@ export type Surface =
   | 'none'
   | 'settings'
   | 'preferences'
+  | 'profile'
   | 'sources'
   | 'history'
   | 'prepare'

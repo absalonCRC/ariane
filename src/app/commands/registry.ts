@@ -1,5 +1,7 @@
 import type { CommandDefinition } from '../../contracts/commands';
 export const commandRegistry: readonly CommandDefinition[] = [
+  { id: 'capture-open', label: 'Capture rapide', scope: 'global', shortcut: 'Mod+Shift+Space' },
+  { id: 'inbox-open', label: 'Boîte de réception', scope: 'app', shortcut: null },
   { id: 'prepare', label: 'Préparer cette section', scope: 'app', shortcut: null },
   { id: 'settings', label: 'Réglages d’écriture', scope: 'app', shortcut: null },
   { id: 'continuous', label: 'Lire le manuscrit entier', scope: 'app', shortcut: null },
