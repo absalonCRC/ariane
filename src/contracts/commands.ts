@@ -1,7 +1,7 @@
 export interface CommandDefinition {
   id: string;
   label: string;
-  scope: 'app' | 'editor';
+  scope: 'app' | 'editor' | 'global';
   shortcut: string | null;
   native?: boolean;
 }

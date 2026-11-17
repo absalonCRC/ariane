@@ -1,0 +1,8 @@
+{
+  "type": "inboxSave",
+  "id": "capture-test",
+  "expectedRevision": 7,
+  "operationId": "save-test",
+  "text": "Été 🌿\nDeuxième ligne",
+  "selection": { "anchor": 0, "head": 7 }
+}

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { expect, it, vi } from 'vitest';
 import fixture from './fixtures/ipc-save.json';
+import captureFixture from './fixtures/ipc-capture-save.json';
 import { request } from '../src/platform/client';
 import type { Requests } from '../src/contracts/requests';
 
@@ -30,4 +31,12 @@ it('transmet les paramètres absents et propage les erreurs sans acquittement fi
   const failure = new Error('Le texte a changé depuis cette sauvegarde.');
   invoke.mockRejectedValueOnce(failure);
   await expect(request('save', { patches })).rejects.toBe(failure);
+});
+
+it('preserves capture identities, revisions and UTF-16 selection through the same transport', async () => {
+  const { type: _type, ...payload } = captureFixture;
+  invoke.mockResolvedValueOnce({ revision: 8 });
+  await request('inboxSave', payload);
+  expect(invoke).toHaveBeenLastCalledWith('dispatch', { request: captureFixture });
+  expect(captureFixture.text.slice(0, captureFixture.selection.head)).toBe('Été 🌿\n');
 });

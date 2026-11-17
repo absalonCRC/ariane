@@ -1,3 +1,4 @@
+import { useWritingActivity } from '../profile/useWritingActivity';
 import { useNoteActivity } from '../notes/useNoteActivity';
 import { useWorkspaceCommands } from './commands/useWorkspaceCommands';
 import { createSourceActions } from '../sources/actions';
@@ -30,6 +31,7 @@ export function useWorkspace() {
   const [error, setError] = useState('');
   const fail = useCallback((e: unknown) => setError(String(e)), []);
   const doc = useProject(fail);
+  const writingActivity = useWritingActivity(fail);
   const activity = useNoteActivity(doc.project?.path);
   const [annotationsOpen, setAnnotationsOpen] = useState(false);
   const [annotationTarget, setAnnotationTarget] = useState<AnnotationTarget | null>(null);
@@ -488,6 +490,7 @@ export function useWorkspace() {
     });
   }, [passageSources, viewport, groupOpen]);
   return {
+    writingActivity,
     activity,
     appearance,
     exportJob,

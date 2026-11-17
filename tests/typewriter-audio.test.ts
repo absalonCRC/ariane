@@ -62,6 +62,13 @@ it('decodes local sounds once, overlaps keystrokes, emphasizes the return and st
   expect(nodes.every((node) => node.start.mock.calls.length === 1)).toBe(true);
   expect(gains[2].gain.value).toBeGreaterThan(gains[0].gain.value);
   expect(context.resume).toHaveBeenCalled();
+  const baseline = gains[0].gain.value;
+  sound.setVolume?.(0.25);
+  expect(gains[0].gain.value).toBeCloseTo(baseline * 0.25);
+  sound.setVolume?.(0);
+  expect(nodes.every((node) => node.stop.mock.calls.length === 1)).toBe(true);
+  sound.play('key');
+  expect(nodes).toHaveLength(3);
   sound.destroy();
   expect(nodes.every((node) => node.stop.mock.calls.length === 1)).toBe(true);
   expect(context.close).toHaveBeenCalledOnce();

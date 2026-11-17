@@ -45,6 +45,35 @@ pub fn handle(
 ) -> Result<serde_json::Value> {
     let index = state.data.join("sources.sqlite");
     match request {
+        Request::CaptureWindow { action } => {
+            crate::capture_window::command(app, &action)?;
+            Ok(json!(true))
+        }
+        Request::AppClose { action } => json(crate::app_lifecycle::begin(app, &action, None)?),
+        Request::InboxRestore { path } => {
+            state.grants.require("inbox-restore", Path::new(&path))?;
+            json(crate::app_lifecycle::begin(
+                app,
+                "restore",
+                Some(path.into()),
+            )?)
+        }
+        Request::AppReady | Request::AppFlushed { .. } => {
+            Err("Acquittement sans fenêtre d’origine.".into())
+        }
+        Request::GlobalShortcutRecording { active } => {
+            let _guard = state.inbox.gate.lock().map_err(|e| e.to_string())?;
+            crate::capture_window::recording(app, active)?;
+            Ok(json!(true))
+        }
+        other @ (Request::InboxDraft
+        | Request::InboxList { .. }
+        | Request::InboxSave { .. }
+        | Request::InboxFinish { .. }
+        | Request::InboxPreferences { .. }
+        | Request::InboxTarget { .. }
+        | Request::InboxTransfer { .. }
+        | Request::InboxBackup { .. }) => crate::inbox::commands::handle(app, state, other),
         Request::AppShortcuts { bindings } => {
             crate::platform::update_shortcuts(app, &bindings)?;
             Ok(json!(true))
@@ -204,11 +233,7 @@ pub fn handle(
             state.export_cancel.store(true, Ordering::Relaxed);
             Ok(json!(true))
         }
-        Request::Quit => {
-            state.exit_approved.store(true, Ordering::SeqCst);
-            app.exit(0);
-            Ok(json!(true))
-        }
+        Request::Quit => json(crate::app_lifecycle::begin(app, "quit", None)?),
         Request::CancelIndex => {
             state.cancel.store(true, Ordering::Relaxed);
             state.paused.store(true, Ordering::Relaxed);
@@ -365,6 +390,9 @@ mod tests {
         let data = temp.path().join("data");
         std::fs::create_dir_all(data.join("session.json")).unwrap();
         let state = AppState {
+            inbox: crate::inbox::Service::new(&data).unwrap(),
+            capture_window: Default::default(),
+            lifecycle: Default::default(),
             data,
             resources: temp.path().join("resources"),
             current: Mutex::new(Some(old.clone())),

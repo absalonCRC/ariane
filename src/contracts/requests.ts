@@ -1,4 +1,11 @@
 import type {
+  InboxCapture,
+  InboxPage,
+  CapturePreferences,
+  CaptureSelection,
+  CaptureTransfer,
+} from './inbox';
+import type {
   EntityCatalog,
   EntityOperation,
   EntityMergePreview,
@@ -53,6 +60,26 @@ export interface IndexReport {
   semantic: boolean;
 }
 export interface Requests {
+  inboxDraft: {};
+  inboxList: { query: string; filed: boolean; offset: number };
+  inboxSave: {
+    id: string;
+    expectedRevision: number;
+    operationId: string;
+    text: string;
+    selection: CaptureSelection;
+  };
+  inboxFinish: { id: string; expectedRevision: number; operationId: string };
+  inboxPreferences: { value?: CapturePreferences | null };
+  inboxTarget: { projectPath: string };
+  inboxTransfer: { operation: CaptureTransfer };
+  inboxBackup: { path: string };
+  inboxRestore: { path: string };
+  captureWindow: { action: 'toggle' | 'main' | 'inbox' };
+  appClose: { action: 'quit' | 'hide-main' | 'hide-capture' };
+  appReady: {};
+  appFlushed: { id: string; error?: string | null };
+  globalShortcutRecording: { active: boolean };
   entityMentions: { projectPath: string };
   entityCatalog: { projectPath: string };
   entityOperation: { projectPath: string; revision: number; operation: EntityOperation };
@@ -219,6 +246,24 @@ export interface Requests {
 }
 
 export interface Responses {
+  inboxDraft: InboxCapture;
+  inboxList: InboxPage;
+  inboxSave: InboxCapture;
+  inboxFinish: InboxCapture;
+  inboxPreferences: {
+    value: CapturePreferences;
+    shortcutError: string | null;
+    activeShortcut: string | null;
+  };
+  inboxTarget: { projectId: string; branchId: string };
+  inboxTransfer: InboxCapture;
+  inboxBackup: boolean;
+  inboxRestore: string;
+  captureWindow: boolean;
+  appClose: string;
+  appReady: boolean;
+  appFlushed: boolean;
+  globalShortcutRecording: boolean;
   entityMentions: EntityBatch[];
   entityCatalog: EntityCatalog;
   entityOperation: EntityCatalog;

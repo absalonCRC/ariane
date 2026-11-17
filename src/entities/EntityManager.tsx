@@ -83,6 +83,7 @@ export function EntityManager({
     });
   return (
     <WorkspaceScreen
+      busy={manager.busy}
       title={t('Entités')}
       subtitle={project.name}
       onClose={() => {

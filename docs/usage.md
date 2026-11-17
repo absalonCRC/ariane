@@ -1,5 +1,21 @@
 # Utiliser ariane
 
+## Capture rapide et boîte de réception
+
+Tant qu’ariane est lancée, **⌘ ⇧ Espace** ouvre la capture rapide, même depuis une autre application. Le menu **Fichier → Capture rapide** fait la même chose. Le raccourci se change ou se désactive dans les réglages de la réception ou les raccourcis de l’application ; une combinaison réservée est refusée. Quitter ariane désactive ce raccourci jusqu’au prochain lancement.
+
+Écrivez dans la petite fenêtre. La capsule indique l’enregistrement après confirmation ; si une erreur survient, le texte reste dans l’éditeur et **Réessayer** relance l’opération. **Échap**, le bouton de fermeture ou un second appel du raccourci masquent la fenêtre après sauvegarde. La perte de focus sauvegarde aussi. **Terminer** ou **⌘ Entrée** range l’idée dans la réception et prépare un nouveau brouillon. Masquer conserve l’annulation ; une relance retrouve texte et sélection, sans restaurer toute la pile d’annulation. Une fermeture forcée ne garantit que les écritures déjà acquittées.
+
+Ouvrez **Fichier → Boîte de réception**, son accès dans la bibliothèque, la capsule des accès du projet ou la commande correspondante. La réception recherche le texte, sépare **À ranger** et **Rangées**, et conserve l’original. Le brouillon actif se poursuit uniquement dans la compacte. Sans projet, l’accueil conserve ses deux actions habituelles ; la réception reste accessible depuis la bibliothèque et le menu.
+
+Sélectionnez une capture, vérifiez son titre, le projet et la variante de destination, puis **Ranger dans ce projet**. Le texte est ajouté comme texte de travail **hors manuscrit** ; les outils habituels permettent ensuite de l’inclure. **Rejoindre le texte** ouvre l’original rangé. Créer un projet utilise le parcours habituel et retrouve ensuite la capture choisie. Fermer la réception retrouve la vue d’écriture précédente. Une intention interrompue affiche sa destination ; ouvrez explicitement ce projet et sa variante pour reprendre. Un texte ensuite retiré ou restauré n’est jamais recréé automatiquement par un réessai.
+
+Le volume de machine à écrire est commun aux deux fenêtres. Les interrupteurs de son et de défilement de la compacte sont indépendants des réglages du manuscrit. Le volume zéro et le masquage arrêtent les sources sonores actives. Les animations respectent le réglage de réduction des mouvements.
+
+**Sauvegarder les captures** crée un fichier SQLite contenant brouillons, notes, états de rangement, journaux et réglages globaux. Ce fichier ne sauvegarde pas les projets destinataires ni les vaults externes : sauvegardez leurs dossiers séparément. **Restaurer les captures** attend les sauvegardes des deux fenêtres et crée d’abord une copie de retour dans les données d’ariane. Une sauvegarde ancienne n’efface pas un brouillon récent ; une divergence devient une note supplémentaire. Restaurer deux fois ne duplique pas cette note. Une destination absente reste à vérifier, sans réimport automatique.
+
+Fermer la principale sauvegarde et masque sa fenêtre : le Dock la réaffiche et la capture reste disponible. **Quitter ariane** attend les deux fenêtres et arrête réellement l’application. Une erreur de sauvegarde empêche la sortie.
+
 ## Bibliothèque et rangement
 
 Ouvrez le classeur avec ⌘ ⇧ B. Au survol du bord gauche, le chevron d’ouverture suit la hauteur du curseur ; le chevron de repli fait de même sur la bordure de la sidebar. Le chevron du titre déroule le catalogue sous le nom du projet et décale les onglets vers le bas : projets récemment ouverts, épinglés et archivés. Archiver un projet le retire des récents sans déplacer ni supprimer son dossier. Les projets antérieurs apparaissent dès leur prochaine ouverture.
@@ -65,6 +81,12 @@ Pendant un déplacement, la ligne indique une insertion avant/après et le conto
 
 Les fiches et les notes complètes proposent « Citée dans ce projet ». La liste rassemble les occurrences littérales du nom, des alias et des références de citation dans les textes actuels, y compris les textes de travail ; la corbeille est exclue. Les noms ambigus restent des occurrences textuelles, pas des identifications confirmées. Cliquer sur un passage ouvre et souligne l’occurrence dans le texte, en conservant la source consultable dans la marge.
 
+
+### Profil et activité d’écriture
+
+Le bouton Profil, au-dessus de la capsule de la bibliothèque, ouvre un aperçu du manuscrit courant et de ses objectifs. Le nom de plume et la présentation sont facultatifs et restent sur cet appareil.
+
+Le calendrier suit les jours d’écriture dans les projets ouverts sur cet appareil à partir du début du suivi. Sélectionnez un jour pour voir les mots ajoutés nets : les suppressions et annulations corrigent le total du jour, tandis qu’une réécriture peut laisser un jour actif sans ajout net. Les dates précédant le suivi ne sont pas reconstituées. Les captures rapides ne sont pas comptées. Le journal du profil est local et ne fait pas partie des archives de captures ou des sauvegardes de projet.
 
 ### Apparence et versions
 

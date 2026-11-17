@@ -1,5 +1,24 @@
 # Journal des changements
 
+## 0.6.1 — sources, 17 novembre 2026
+
+- Intégration du candidat 0.6.0 décrit ci-dessous : capture rapide, boîte de réception globale, rangement récupérable et sauvegarde des captures.
+- Profil d’écriture local avec aperçu du projet courant et calendrier des jours d’écriture et des mots ajoutés nets. Le suivi commence avec cette version et n’inclut pas les captures rapides.
+- Profil, paramètres, réception, smart-tags et Versions intégrés au cadre de travail, avec des espacements adaptés à l’espace disponible.
+- Accès Profil et Paramètres placés au-dessus de la capsule de la sidebar ; répartition régulière des actions restantes.
+- En mode focus, le titre reste visible et aligné avec le manuscrit ; ses smart-tags sont masqués jusqu’au retour au mode normal.
+- Les limites de qualification native du candidat 0.6.0 restent documentées dans `docs/validation-0.6.0.md` ; elles ne constituent pas une qualification d’un paquet 0.6.1.
+
+## 0.6.0 — candidat local, 13 novembre 2026
+
+- Capture rapide globale dans une fenêtre macOS dédiée, brouillon autonome sauvegardé progressivement, masquage et reprise, finalisation répétable.
+- Boîte de réception consultable et recherchable sans projet ; classement explicite dans un projet existant ou nouveau et une variante, texte de travail exclu du manuscrit.
+- Migration projet 4→5 avec identité durable et reçu transactionnel : reprise d’un rangement sans doublon ni écrasement d’une modification ultérieure.
+- Sauvegarde/restauration cohérente des captures et réglages globaux, copie de retour et conservation des divergences récentes.
+- Raccourci configurable persistant, cycle de vie coordonné des deux fenêtres, filtrage IPC de la compacte et arrêt des ressources audio avant fermeture.
+- Volume commun et comportement de frappe partagé ; nettoyage audio et respect des mouvements réduits. Traductions FR/EN/ES.
+- Vérifications et limites de recette dans `docs/validation-0.6.0.md`. À cette date, ce candidat n’avait ni publication ni notarisation.
+
 ## 0.5.0 — 2026-11-12, version de développement
 
 - Gestionnaire d’entités : identités durables, homonymes distincts, confirmations, alias, occurrences et édition protégée des fiches ariane.

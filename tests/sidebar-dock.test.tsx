@@ -176,7 +176,15 @@ it('keeps the same theme control available as the sidebar opens and closes', asy
     const toggle = host.querySelector<HTMLButtonElement>('button')!;
     expect(
       [...dock.querySelectorAll('button')].map((button) => button.getAttribute('aria-label')),
-    ).toEqual(['Thème sombre', 'Smart-tags', 'Versions', 'Corbeille', 'Paramètres']);
+    ).toEqual([
+      'Thème sombre',
+      'Boîte de réception',
+      'Smart-tags',
+      'Versions',
+      'Corbeille',
+      'Paramètres',
+      'Profil',
+    ]);
     await act(async () =>
       dock.querySelector<HTMLButtonElement>('[aria-label="Corbeille"]')!.click(),
     );
@@ -202,7 +210,7 @@ it('keeps the same theme control available as the sidebar opens and closes', asy
     expect(dock.querySelector('[role="switch"]')).toBe(theme);
     expect(theme.getAttribute('aria-checked')).toBe('true');
     expect(actions.hasAttribute('inert')).toBe(false);
-    expect(dock.querySelectorAll('button')).toHaveLength(5);
+    expect(dock.querySelectorAll('button')).toHaveLength(7);
     await act(async () => theme.click());
     expect(theme.getAttribute('aria-checked')).toBe('false');
   } finally {

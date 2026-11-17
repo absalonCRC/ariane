@@ -1,7 +1,7 @@
 use crate::error::{AppResult, Result};
 use rusqlite::{Connection, TransactionBehavior};
 use std::path::Path;
-const SCHEMA_VERSION: i64 = 4;
+const SCHEMA_VERSION: i64 = 5;
 /// SQLite itself refuses symlink filenames. Files used by the mirror protocol are
 /// opened relative to a verified directory descriptor in `io`.
 pub fn database(root: &Path) -> Result<Connection> {
@@ -35,7 +35,19 @@ pub fn database(root: &Path) -> Result<Connection> {
     }
     if schema < SCHEMA_VERSION {
         if schema > 0 {
-            backup_before_migration(root, &c, if schema < 2 { "versions" } else if schema < 3 { "smart-tags" } else { "identites" })?;
+            backup_before_migration(
+                root,
+                &c,
+                if schema < 2 {
+                    "versions"
+                } else if schema < 3 {
+                    "smart-tags"
+                } else if schema < 4 {
+                    "identites"
+                } else {
+                    "captures"
+                },
+            )?;
         }
         // Recheck under SQLite's write lock: another process might have migrated
         // between the first check and this transaction.
@@ -110,12 +122,33 @@ pub fn database(root: &Path) -> Result<Connection> {
  CREATE INDEX IF NOT EXISTS versions_branch_created ON versions(branch_id,created DESC,id DESC);").app()?;
         }
         if current < 3 {
-            let has_tags = tx.prepare("PRAGMA table_info(sections)").app()?.query_map([], |r|r.get::<_,String>(1)).app()?.collect::<std::result::Result<Vec<_>,_>>().app()?.iter().any(|name|name == "tag_ids");
-            if !has_tags { tx.execute_batch("ALTER TABLE sections ADD COLUMN tag_ids TEXT NOT NULL DEFAULT '[]';").app()?; }
+            let has_tags = tx
+                .prepare("PRAGMA table_info(sections)")
+                .app()?
+                .query_map([], |r| r.get::<_, String>(1))
+                .app()?
+                .collect::<std::result::Result<Vec<_>, _>>()
+                .app()?
+                .iter()
+                .any(|name| name == "tag_ids");
+            if !has_tags {
+                tx.execute_batch(
+                    "ALTER TABLE sections ADD COLUMN tag_ids TEXT NOT NULL DEFAULT '[]';",
+                )
+                .app()?;
+            }
             tx.execute_batch("INSERT INTO meta(key,value) VALUES('smart_tags','[]') ON CONFLICT(key) DO NOTHING;").app()?;
         }
         if current < 4 {
             tx.execute_batch("CREATE TABLE IF NOT EXISTS entity_merges(id TEXT PRIMARY KEY,branch TEXT NOT NULL,source TEXT NOT NULL,target TEXT NOT NULL,before_payload TEXT NOT NULL,after_hash TEXT NOT NULL,undone INTEGER NOT NULL DEFAULT 0);").app()?;
+        }
+        if current < 5 {
+            tx.execute_batch("CREATE TABLE IF NOT EXISTS capture_receipts(operation_id TEXT PRIMARY KEY,capture_id TEXT NOT NULL UNIQUE,payload TEXT NOT NULL);") .app()?;
+            tx.execute(
+                "INSERT INTO meta(key,value) VALUES('project_id',?) ON CONFLICT(key) DO NOTHING",
+                [uuid::Uuid::new_v4().to_string()],
+            )
+            .app()?;
         }
         tx.pragma_update(None, "user_version", SCHEMA_VERSION)
             .app()?;

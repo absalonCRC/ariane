@@ -128,6 +128,42 @@ describe('voice gestures and live transcription', () => {
     return request.mock.calls.filter(([type]) => type === 'voiceTranscribe');
   }
 
+  it('keeps the microphone closed on integrated pages and while recording a shortcut', async () => {
+    const page = document.createElement('section');
+    page.className = 'workspace-page';
+    document.body.append(page);
+    try {
+      await act(async () => shortcut('keydown'));
+      expect(getUserMedia).not.toHaveBeenCalled();
+    } finally {
+      page.remove();
+    }
+    const settings = document.createElement('section');
+    settings.className = 'shortcut-settings';
+    const input = document.createElement('input');
+    settings.append(input);
+    document.body.append(settings);
+    try {
+      input.focus();
+      await act(async () =>
+        input.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            bubbles: true,
+            key: 'm',
+            code: 'KeyM',
+            metaKey: true,
+            shiftKey: true,
+          }),
+        ),
+      );
+      expect(getUserMedia).not.toHaveBeenCalled();
+    } finally {
+      settings.remove();
+    }
+    await act(async () => shortcut('keydown'));
+    expect(getUserMedia).toHaveBeenCalledOnce();
+    await act(async () => shortcut('keyup'));
+  });
   it('does not open the microphone when native authorization is refused', async () => {
     request.mockImplementation(async (type: string) => {
       if (type === 'voiceStatus') return { available: true };

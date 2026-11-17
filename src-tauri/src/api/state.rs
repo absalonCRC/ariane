@@ -11,6 +11,9 @@ use std::{
 };
 pub struct AppState {
     pub data: PathBuf,
+    pub inbox: crate::inbox::Service,
+    pub capture_window: crate::capture_window::CaptureWindow,
+    pub lifecycle: crate::app_lifecycle::Coordinator,
     pub resources: PathBuf,
     pub current: Mutex<Option<PathBuf>>,
     pub source_files: crate::source_files::Files,

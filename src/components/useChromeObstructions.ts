@@ -21,9 +21,14 @@ const scopes = [
   },
   { root: '.source-margin', content: '.source-label, .more-sources' },
   {
+    root: '.workspace-page',
+    content:
+      '.workspace-page-heading, h2, h3, p, label, .tag-admin-list button, .inbox-list button',
+  },
+  {
     root: '.history-editor',
     content:
-      '.history-modebar, .history-controls, .history-diff-summary, .history-diff-row, .history-metadata, .history-first-version',
+      '.history-modebar, .workspace-page-heading, .history-controls, .history-diff-summary, .history-diff-row, .history-metadata, .history-first-version',
   },
 ];
 

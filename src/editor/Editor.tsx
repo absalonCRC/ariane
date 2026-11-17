@@ -1,3 +1,5 @@
+import { useCapturePreferences } from '../capture/preferences';
+import { typewriterStroke } from './typewriterInput';
 import { mountEditor } from './runtime/mount';
 import { createEditorHandle } from './runtime/commands';
 import { paintRevision } from './runtime/revision';
@@ -22,6 +24,7 @@ export type { VisibleText, EditorHandle } from './types';
 
 export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref) {
   const locale = useLocale();
+  const { volume } = useCapturePreferences();
   const openMenu = useContextMenu();
   const menuRef = useRef(openMenu);
   menuRef.current = openMenu;
@@ -40,13 +43,16 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
   const typingSound = useRef<TypewriterSound | null>(null);
   useEffect(() => {
     if (!props.settings.typewriter || !props.settings.typewriterSound) return;
-    const sound = createTypewriterSound();
+    const sound = createTypewriterSound(volume);
     typingSound.current = sound;
     return () => {
       typingSound.current = null;
       sound.destroy();
     };
   }, [props.settings.typewriter, props.settings.typewriterSound]);
+  useEffect(() => {
+    typingSound.current?.setVolume?.(volume);
+  }, [volume]);
   useImperativeHandle(ref, () => createEditorHandle({ view, outlineRef, spans, latest }));
   useEffect(
     () =>
@@ -234,35 +240,10 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
         ((props.focusPreview ?? props.settings.focus) !== 'none' ? 'concentrating' : '')
       }
       onKeyDownCapture={(event) => {
-        const target = event.target;
-        const v = view.current;
-        if (
-          !props.settings.typewriter ||
-          !props.settings.typewriterSound ||
-          props.readOnly ||
-          !v ||
-          !(target instanceof HTMLElement) ||
-          !v.contentDOM.contains(target) ||
-          event.metaKey ||
-          (event.ctrlKey && !event.getModifierState('AltGraph')) ||
-          event.nativeEvent.isComposing
-        )
-          return;
-        const table = target.closest('.markdown-table-preview');
-        const tableInput = table && target instanceof HTMLInputElement && !target.readOnly;
-        if (
-          table
-            ? !tableInput
-            : !!target.closest('button, input, textarea, select, [contenteditable="false"]')
-        )
-          return;
-        const key = event.key;
-        if (key === 'Enter') {
-          // Enter in a table moves between cells; it does not insert a line break.
-          if (!tableInput) typingSound.current?.play('return');
-        } else if (key === 'Backspace' || key === 'Delete') typingSound.current?.play('delete');
-        else if (key === ' ') typingSound.current?.play('space');
-        else if (Array.from(key).length === 1) typingSound.current?.play('key');
+        const viewInstance = view.current;
+        if (!props.settings.typewriter || !props.settings.typewriterSound || !viewInstance) return;
+        const stroke = typewriterStroke(event.nativeEvent, viewInstance, props.readOnly);
+        if (stroke) typingSound.current?.play(stroke);
       }}
       style={
         {

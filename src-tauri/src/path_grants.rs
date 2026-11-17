@@ -91,6 +91,16 @@ pub async fn choose_path(
                         .blocking_pick_file()
                 }
             }
+            "inbox-restore" => dialog
+                .add_filter("Captures ariane", &["sqlite"])
+                .blocking_pick_file(),
+            "inbox-backup" => dialog
+                .set_file_name(format!(
+                    "captures-{}.sqlite",
+                    chrono::Local::now().format("%Y-%m-%d-%H%M%S")
+                ))
+                .add_filter("Captures ariane", &["sqlite"])
+                .blocking_save_file(),
             "export" => {
                 let format = format
                     .as_deref()

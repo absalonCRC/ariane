@@ -9,6 +9,7 @@ import { native } from '../platform/client';
 import { ProjectCatalog } from '../project/ProjectCatalog';
 import { Preparation } from '../project/Preparation';
 import { Preferences } from './Preferences';
+import { WriterProfile } from '../profile/WriterProfile';
 import { Dialog } from '../components/Dialog';
 import { TagManager } from '../tags/TagManager';
 const Library = lazy(() => import('../sources/Library').then((m) => ({ default: m.Library })));
@@ -53,6 +54,16 @@ export function WorkspaceDialogs({
   if (!p) return null;
   return (
     <Suspense fallback={<LoadingNotice onLoading={onLoading} />}>
+      {surface === 'profile' && (
+        <WriterProfile
+          activity={workspace.writingActivity}
+          project={p}
+          selected={selected}
+          onClose={close}
+          onError={fail}
+          onNavigate={workspace.setSurface}
+        />
+      )}
       {surface === 'tags' && (
         <TagManager
           project={p}
@@ -82,39 +93,37 @@ export function WorkspaceDialogs({
       {surface === 'manuscript' && workspace.manuscriptSelection && (
         <ManuscriptDialog workspace={workspace} />
       )}
-      <Presence>
-        {surface === 'preferences' && (
-          <Preferences
-            project={p}
-            onError={fail}
-            theme={workspace.appearance.theme}
-            onTheme={workspace.appearance.change}
-            onExport={() => workspace.setSurface('export')}
-            onHistory={() => workspace.setSurface('history')}
-            onTags={() => workspace.setSurface('tags')}
-            sources={
-              <>
-                <Library
-                  onNotice={onNotice}
-                  onNoteActivity={workspace.activity.record}
-                  embedded
-                  onClose={close}
-                  onError={fail}
-                  onRefresh={() => setSourceVersion((v) => v + 1)}
-                  onIndexProgress={setProgress}
-                  onBusy={(v) => {
-                    if (!v) setProgress(null);
-                  }}
-                />
-              </>
-            }
-            value={doc.settings}
-            onChange={doc.configure}
-            onClose={close}
-            enrichmentError={workspace.enrichmentError}
-          />
-        )}
-      </Presence>
+      {surface === 'preferences' && (
+        <Preferences
+          project={p}
+          onError={fail}
+          theme={workspace.appearance.theme}
+          onTheme={workspace.appearance.change}
+          onExport={() => workspace.setSurface('export')}
+          onHistory={() => workspace.setSurface('history')}
+          onTags={() => workspace.setSurface('tags')}
+          sources={
+            <>
+              <Library
+                onNotice={onNotice}
+                onNoteActivity={workspace.activity.record}
+                embedded
+                onClose={close}
+                onError={fail}
+                onRefresh={() => setSourceVersion((v) => v + 1)}
+                onIndexProgress={setProgress}
+                onBusy={(v) => {
+                  if (!v) setProgress(null);
+                }}
+              />
+            </>
+          }
+          value={doc.settings}
+          onChange={doc.configure}
+          onClose={close}
+          enrichmentError={workspace.enrichmentError}
+        />
+      )}
       <Presence>
         {surface === 'sources' && (
           <Library

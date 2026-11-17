@@ -5,7 +5,7 @@
   background: var(--theme-paper, #fcfcfc);
   border-right-color: var(--theme-hover, #f0f0f0);
   padding-inline: 24px;
-  padding-bottom: 62px;
+  padding-bottom: 104px;
 }
 .binder .panel-top {
   margin: 15px 0 26px;
@@ -92,7 +92,7 @@
   align-items: center;
   width: calc(var(--sidebar-width) - 48px);
   height: 38px;
-  overflow: hidden;
+  overflow: visible;
   border-radius: 19px;
   background: var(--theme-surface, #f1f1f1);
   transition:
@@ -110,21 +110,21 @@
 }
 .binder-footer-theme {
   display: flex;
-  flex: 0 0 max(38px, 25%);
+  flex: 1 1 20%;
   justify-content: center;
   align-items: center;
 }
 .binder-footer[data-sidebar-open='false'] .binder-footer-theme {
-  flex-basis:38px;
+  flex: 0 0 38px;
 }
 .binder-footer-project {
-  display: flex;
-  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  flex: 4 1 80%;
   align-items: center;
-  justify-content: space-around;
+  justify-items: center;
   min-width: 0;
   height: 100%;
-  overflow: hidden;
   transition: opacity 140ms ease-out;
 }
 .binder-footer[data-expanded='false'] .binder-footer-project {
@@ -140,6 +140,14 @@
   padding: 0;
   border-radius: 50%;
   color: var(--theme-secondary, #666);
+}
+.binder-footer-actions :is(.binder-preferences, .binder-profile) {
+  position: absolute;
+  right: 0;
+  bottom: 44px;
+}
+.binder-footer-actions .binder-profile {
+  right: 42px;
 }
 .binder-footer-actions button svg {
   color: var(--theme-muted, #888);

@@ -2,11 +2,14 @@
 mod ai_benchmark;
 mod ai_policy;
 mod api;
+mod app_lifecycle;
+mod capture_window;
 mod enrichment;
 mod error;
 mod export;
 mod history;
 mod import;
+mod inbox;
 mod inference;
 mod ipc;
 mod local_http;
@@ -32,17 +35,39 @@ pub fn run() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .register_asynchronous_uri_scheme_protocol("source-file", |context, request, responder| {
-            static READS: std::sync::LazyLock<std::sync::Arc<tokio::sync::Semaphore>> = std::sync::LazyLock::new(|| std::sync::Arc::new(tokio::sync::Semaphore::new(2)));
-            let Ok(permit)=READS.clone().try_acquire_owned() else {responder.respond(tauri::http::Response::builder().status(503).body(Vec::<u8>::new()).unwrap(),
-                );return;};
-            let app=context.app_handle().clone();
-            tauri::async_runtime::spawn_blocking(move || {let _permit=permit;let state=app.state::<api::AppState>();responder.respond(state.source_files.respond(&state,request));});
+            static READS: std::sync::LazyLock<std::sync::Arc<tokio::sync::Semaphore>> =
+                std::sync::LazyLock::new(|| std::sync::Arc::new(tokio::sync::Semaphore::new(2)));
+            let Ok(permit) = READS.clone().try_acquire_owned() else {
+                responder.respond(
+                    tauri::http::Response::builder()
+                        .status(503)
+                        .body(Vec::<u8>::new())
+                        .unwrap(),
+                );
+                return;
+            };
+            let app = context.app_handle().clone();
+            tauri::async_runtime::spawn_blocking(move || {
+                let _permit = permit;
+                let state = app.state::<api::AppState>();
+                responder.respond(state.source_files.respond(&state, request));
+            });
         })
         .menu(platform::menu)
         .on_menu_event(|app, event| {
+            if app_lifecycle::busy(app) {
+                return;
+            }
             if event.id().as_ref() == "quit-after-save" {
-                let _ = app.emit("app-close-requested", ());
-            } else { let _ = app.emit("app-command", event.id().as_ref()); }
+                let _ = app_lifecycle::begin(app, "quit", None);
+            } else if event.id().as_ref() == "capture-open" {
+                let _ = capture_window::toggle(app);
+            } else if platform::is_application_action(app, event.id().as_ref()) {
+                // Standard AppKit editing actions belong to the focused webview.
+                // Only explicit application commands reveal the main workspace.
+                let _ = capture_window::show_main(app);
+                let _ = app.emit_to("main", "app-command", event.id().as_ref());
+            }
         })
         .setup(|app| {
             #[cfg(not(feature = "performance-harness"))]
@@ -57,6 +82,9 @@ pub fn run() {
                 app.path().resource_dir()?.join("resources")
             };
             app.manage(api::AppState {
+                inbox: inbox::Service::new(&data).map_err(std::io::Error::other)?,
+                capture_window: Default::default(),
+                lifecycle: Default::default(),
                 data,
                 resources,
                 current: std::sync::Mutex::new(None),
@@ -77,18 +105,29 @@ pub fn run() {
                 exporting: false.into(),
                 exit_approved: false.into(),
             });
+            capture_window::setup(app.handle()).map_err(std::io::Error::other)?;
             let handle = app.handle().clone();
             std::thread::spawn(move || loop {
                 std::thread::sleep(std::time::Duration::from_secs(60));
                 let state = handle.state::<api::AppState>();
-                if state.exit_approved.load(std::sync::atomic::Ordering::Relaxed) { break; }
+                if state
+                    .exit_approved
+                    .load(std::sync::atomic::Ordering::Relaxed)
+                {
+                    break;
+                }
                 let _ = api::handle(&handle, &state, api::Request::Scan);
             });
             let handle = app.handle().clone();
             std::thread::spawn(move || loop {
                 std::thread::sleep(std::time::Duration::from_secs(15));
                 let state = handle.state::<api::AppState>();
-                if state.exit_approved.load(std::sync::atomic::Ordering::Relaxed) { break; }
+                if state
+                    .exit_approved
+                    .load(std::sync::atomic::Ordering::Relaxed)
+                {
+                    break;
+                }
                 let _ = api::resume_classification(&handle, &state);
                 retrieval::release_if_idle();
                 if let Ok(mut engine) = state.engine.try_lock() {
@@ -107,9 +146,16 @@ pub fn run() {
             Ok(())
         });
     #[cfg(feature = "performance-harness")]
-    let builder = builder.invoke_handler(tauri::generate_handler![api::dispatch, path_grants::choose_path, performance::performance]);
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        api::dispatch,
+        path_grants::choose_path,
+        performance::performance
+    ]);
     #[cfg(not(feature = "performance-harness"))]
-    let builder = builder.invoke_handler(tauri::generate_handler![api::dispatch, path_grants::choose_path]);
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        api::dispatch,
+        path_grants::choose_path
+    ]);
     let application = builder
         .build(tauri::generate_context!())
         .expect("Impossible de démarrer ariane");
@@ -122,8 +168,12 @@ pub fn run() {
                 .load(std::sync::atomic::Ordering::SeqCst)
             {
                 api.prevent_exit();
-                let _ = app.emit("app-close-requested", ());
+                let _ = app_lifecycle::begin(app, "quit", None);
             }
+        }
+        #[cfg(target_os = "macos")]
+        if let tauri::RunEvent::Reopen { .. } = &event {
+            let _ = capture_window::show_main(app);
         }
         if let tauri::RunEvent::Exit = event {
             let state = app.state::<api::AppState>();
@@ -143,7 +193,6 @@ pub fn run() {
             if let Ok(mut voice) = state.voice.lock() {
                 voice.shutdown();
             };
-
         }
     });
 }

@@ -1,3 +1,4 @@
+import { writingWordDelta } from '../writingDelta';
 import type { OutlineEditor } from '../outline/state';
 import type { RefObject } from 'react';
 import type { OpenMenu } from '../../components/ContextMenu';
@@ -292,6 +293,9 @@ export function mountEditor({
       }),
       options.current.of([]),
       EditorView.updateListener.of((u) => {
+        if (u.docChanged && latest.current.onWritingEdit) {
+          latest.current.onWritingEdit(writingWordDelta(u.startState.doc, u.state.doc, u.changes));
+        }
         const before = u.startState.field(outline.field).nodes;
         const after = u.state.field(outline.field).nodes;
         if (u.docChanged || before !== after) {
