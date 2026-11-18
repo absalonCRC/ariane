@@ -28,13 +28,17 @@ A long text carries more than its paragraphs: a character’s earlier name, the 
 
 You can also use ariane simply to write. Research connections and local AI modules are optional; your manuscript stays on your Mac.
 
+## Capture a thought and find it later
+
+While ariane is running, use **File → Quick capture** or the configurable shortcut to jot down a thought from another app. Close the small capture window and return to your draft later, or send the note to the **Inbox**. From the Inbox you can search your captures and file one in a project or writing variant. The Inbox keeps the original, and filed captures stay outside the manuscript until you choose to include them. See the [capture and Inbox guide](docs/usage.md#capture-rapide-et-boîte-de-réception).
+
 ## A page designed for reading and writing
 
 The writing surface takes its cues from a printed page: a literary title, a measured text column and generous margins. **EB Garamond** gives the manuscript its book-like texture; **Figtree** and **Source Code Pro** offer sans-serif and monospace alternatives. Adjust the type size, column width and line spacing to make the page comfortable for you. Notes and controls emerge around the text, leaving the manuscript as the visual anchor.
 
 The small controls have specific jobs:
 
-- The **binder** holds the structure and can close to give the page more room. Its opening handle follows the pointer along the left edge.
+- The **binder** opens as a rounded panel on the left. Switch between texts and sources, read the manuscript in order, or open the Inbox, Smart-tags and Versions from the capsule beneath it. Profile and Settings sit just above that capsule while the binder is open.
 - **Source notes sit in the margin**, beside the text they relate to. A mention opens a contextual card; the full reader is there when you want to look further.
 - The **word count opens into a counter and Pomodoro timer**. Writing and reading controls gather under **Aa**, including typography, focus and scrolling.
 - A **single status capsule at the top** carries save states, note activity, indexing and errors. Details and available actions open from there.
@@ -75,13 +79,13 @@ Use annotations for your own questions and reminders. They stay attached to a se
 <details>
 <summary>Read the source beside your manuscript</summary>
 
-![The current native source reader, opened on a fictional research note](docs/media/0.3.2/edited/research.png)
+![The native source reader in ariane 0.3.2, opened on a fictional research note](docs/media/0.3.2/edited/research.png)
 
 </details>
 
 ## Pick up the thread of your work
 
-The resume button in the upper-right corner opens your last working passage, the previous passage and the last source consulted when that context is available. A local activity journal records detected, suggested, opened and created notes, along with actions such as classification, association, citation, pinning and editing. Reopen a note directly from its entry.
+Open **History** from the right edge to see the local note journal and your recent writing context. The journal records actions such as opening, creating, citing or pinning a note. Reopen a note directly from its entry.
 
 ![ariane 0.3.2 with the resume panel and its local note-activity journal](docs/media/0.3.2/edited/resume.png)
 
@@ -104,18 +108,22 @@ Inside a page, the **outliner** works at the scale of an idea. Nest a passage be
 
 **Live Markdown** renders headings, emphasis and tables as you write. Table cells remain editable in place. Search within the open text, or find vault notes by wording and meaning, with priority given to exact titles and unambiguous aliases.
 
+Use **Smart-tags** to group related passages across chapters and view them together as text or in a table. Search can combine `#tags` and `@entities` and save the query as a project view. Results take you back to the original passage.
+
 <details>
 <summary>Editable tables and contextual search</summary>
 
 ![An editable Markdown table in ariane 0.3.2](docs/media/0.3.2/edited/tables.png)
 
-![The current native search surface with results from the demonstration project](docs/media/0.3.2/edited/search.png)
+![The search surface in ariane 0.3.2 with results from the demonstration project](docs/media/0.3.2/edited/search.png)
 
 </details>
 
 ## Find a rhythm, then revisit the draft
 
 Keep a **word, sentence or paragraph** in focus while the surrounding text dims. Typewriter scrolling keeps your place on the page; optional mechanical key and carriage-return sounds add an audible rhythm. Check words, characters or lines from the counter, or begin a **25-minute Pomodoro**.
+
+The local **writing profile** shows your current project and a calendar of writing days with net words added. Quick captures are excluded from these totals.
 
 ![Paragraph focus in ariane 0.3.2, with the surrounding prose dimmed](docs/media/0.3.2/edited/focus.png)
 
@@ -165,9 +173,9 @@ _The Human Thread_ is fictional demo material about AI and authorship. The newer
 
 ## Try ariane
 
-**ariane 0.4.0 is experimental and targets Apple Silicon Macs running macOS 26 or later.** A notarized, ready-to-download application is not available yet. This version can be built from source.
+**ariane 0.6.1 is experimental and available as source code for Apple Silicon Macs running macOS 26 or later.** Clone the repository and follow the build guide below.
 
-There are currently **no GitHub releases**. A public application release will follow signing, notarization and installation validation. [Previous source tag](https://github.com/absalonCRC/ariane/tree/v0.2.0-alpha.1) · [Detailed build guide](docs/building.md) · [0.4.0 development notes](docs/release-notes-0.4.0.md) · [Roadmap to 1.0.0](docs/roadmap-1.0.0.md)
+[Detailed build guide](docs/building.md) · [Changelog](CHANGELOG.md) · [Roadmap to 1.0.0](docs/roadmap-1.0.0.md)
 
 <details>
 <summary>Build from source</summary>
