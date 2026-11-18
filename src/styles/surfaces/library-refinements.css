@@ -1,40 +1,45 @@
 /* The library keeps its tools inside the existing, collapsible sidebar. */
 .binder {
+  --binder-hover: color-mix(in srgb, var(--ink) 8%, transparent);
+  --binder-rule: color-mix(in srgb, var(--ink) 14%, transparent);
+  --binder-secondary: color-mix(in srgb, var(--ink) 77%, transparent);
   display: flex;
   flex-direction: column;
-  background: var(--theme-paper, #fcfcfc);
-  border-right-color: var(--theme-hover, #f0f0f0);
-  padding-inline: 24px;
-  padding-bottom: 104px;
 }
 .binder .panel-top {
-  margin: 15px 0 26px;
+  flex-shrink: 0;
+  margin: var(--space-sm) 0 var(--space-md);
   padding: 0;
-  gap: 6px;
 }
 .library-project-title {
   min-width: 0;
   width: 100%;
   padding: 0;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
+  align-items: flex-start;
+  gap: var(--space-xs);
   text-align: left;
-  color: var(--theme-ink, #454545);
+  color: var(--ink);
 }
 .library-project-title > span {
-  font: 23px/1.2 var(--literary);
+  font: 27px/1.12 var(--literary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .library-project-title > svg {
-  color: var(--theme-quiet, #aaa);
+  flex: none;
+  margin-top: var(--space-xs);
+  color: var(--binder-secondary);
 }
 .binder .library-project-title:hover {
   background: transparent;
-  color: var(--theme-ink, #222);
+}
+.binder .library-project-title:hover > svg {
+  color: var(--ink);
 }
 .library-tabs {
   display: flex;
@@ -73,37 +78,56 @@
   color: var(--theme-ink, #333);
   background: var(--theme-hover, #ededed);
 }
+.binder-toolbar {
+  margin-bottom: var(--space-xs);
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid var(--binder-rule);
+}
+.binder-toolbar button {
+  color: var(--binder-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.binder-toolbar > button[aria-pressed='true'],
+.binder-toolbar button:hover,
+.binder-toolbar .library-actions .icon-button:hover {
+  color: var(--ink);
+  background: var(--binder-hover);
+}
+.binder-toolbar .library-actions .icon-button:active {
+  background: var(--binder-rule);
+}
 .binder .tree {
   flex: 1;
   min-height: 80px;
   max-height: none;
 }
 .binder-footer {
+  --binder-footer-inset: 0px;
   position: fixed;
   z-index: 37;
-  left: 24px;
-  bottom: 8px;
+  left: var(--space-lg);
+  bottom: var(--space-xs);
 }
-.binder-footer[data-sidebar-open='true']::before {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: calc(46px + 36px + var(--space-xs));
-  left: 0;
-  border-top: 1px solid var(--theme-line, #e0e0e0);
-  pointer-events: none;
+.binder-footer[data-sidebar-open='true'] {
+  --binder-footer-inset: calc(var(--space-lg) - var(--sidebar-panel-inset));
+  left: var(--sidebar-panel-inset);
 }
 .binder-footer-actions {
   display: flex;
   align-items: center;
-  width: calc(var(--sidebar-width) - 48px);
+  width: calc(var(--sidebar-width) - 2 * var(--space-lg));
   height: 38px;
   overflow: visible;
   border-radius: 19px;
-  background: var(--theme-surface, #f1f1f1);
+  background: var(--theme-surface, #f2f2f2);
   transition:
     width 240ms var(--motion-ease),
     background-color var(--motion-fast) ease-out;
+}
+.binder-footer[data-sidebar-open='true'] .binder-footer-actions {
+  width: var(--sidebar-panel-width);
+  padding-inline: var(--binder-footer-inset);
 }
 .binder-footer[data-expanded='false'] .binder-footer-actions {
   width: 38px;
@@ -147,31 +171,33 @@
   border-radius: 50%;
   color: var(--theme-secondary, #666);
 }
-.binder-footer-actions :is(.binder-preferences, .binder-profile) {
+.binder-footer-utilities {
   position: absolute;
-  bottom: 46px;
-  justify-content: center;
-  width: calc((100% - var(--space-xs)) / 2);
+  inset-inline: var(--binder-footer-inset);
+  bottom: calc(var(--sidebar-panel-bottom) - var(--space-xs));
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-xs);
+  padding-block: var(--space-2xs);
+  border-top: 1px solid var(--theme-line, #e0e0e0);
+}
+.binder-footer-utilities > button {
+  width: 100%;
+  min-width: 0;
   gap: var(--space-xs);
   padding-inline: var(--space-2xs);
-  font: 12px var(--ui);
+  font: 12px/1 var(--ui);
   white-space: nowrap;
 }
-.binder-footer-actions .binder-profile {
-  left: 0;
-}
-.binder-footer-actions .binder-preferences {
-  right: 0;
-}
-.binder-footer-actions :is(.binder-preferences, .binder-profile) svg {
+.binder-footer-utilities svg {
   flex: none;
 }
-.binder-footer-actions :is(.binder-preferences, .binder-profile) span {
+.binder-footer-utilities span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.binder-footer[data-sidebar-open='false'] .binder-footer-actions :is(.binder-preferences, .binder-profile) {
+.binder-footer[data-sidebar-open='false'] .binder-footer-utilities {
   display: none;
 }
 .binder-footer-actions button svg {
@@ -196,20 +222,39 @@
   color: inherit;
 }
 .binder .binder-manuscript {
-  font: 11px var(--ui);
-  color: var(--theme-quiet, #999);
-  padding: 0 0 12px 0;
-  margin: 0;
+  flex: none;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 32px;
+  font: 500 12px var(--ui);
+  color: var(--binder-secondary);
+  gap: var(--space-xs);
+  padding: var(--space-2xs) var(--space-xs);
+  margin: 0 0 var(--space-2xs);
+  white-space: nowrap;
+}
+.binder .binder-manuscript:hover {
+  color: var(--ink);
+  background: var(--binder-hover);
+}
+.binder .binder-manuscript:active {
+  background: var(--binder-rule);
 }
 .binder .tree-row {
-  border-radius: 0;
+  border-radius: var(--control-radius);
+}
+.binder .tree-row:hover:not(.drop-inside) {
+  background: var(--binder-hover);
 }
 .binder .tree-row.selected {
-  background: var(--theme-hover, #ededed);
+  background: var(--binder-rule);
   box-shadow: none;
 }
-.binder .tree-row.selected:hover {
-  background: var(--theme-hover, #efefef);
+.binder .tree-row[data-active='true']:not(.selected, .drop-inside) {
+  background: color-mix(in srgb, var(--library-active) 12%, transparent);
+}
+.binder .tree-row[data-active='true']:hover:not(.selected, .drop-inside) {
+  background: color-mix(in srgb, var(--library-active) 20%, transparent);
 }
 .binder .disclose {
   color: var(--theme-muted, #737373);
@@ -220,12 +265,14 @@
 .binder .tree-title {
   display: block;
   font-size: 18px;
-}
-.binder .tree-title {
+  color: var(--ink);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.binder .tree-title:hover {
+  background: transparent;
 }
 .tree-row.drop-before::after,
 .tree-row.drop-after::after {
@@ -660,7 +707,7 @@
 }
 .binder .tree-row[data-active='true'] :is(.tree-title, .tree-type-icon),
 .binder .tree-row[data-active-within='true'] :is(.tree-title, .tree-type-icon) {
-  color: var(--library-active);
+  color: color-mix(in srgb, var(--library-active) 65%, var(--ink));
 }
 .tree-work-marker {
   flex: 0 0 16px;
@@ -672,8 +719,8 @@
   font-style: italic;
 }
 .binder button:focus-visible {
-  outline: 1px solid var(--theme-muted, #777);
-  outline-offset: -1px;
+  outline: 2px solid var(--workspace-muted);
+  outline-offset: -2px;
 }
 .binder .row-add {
   width: 24px;

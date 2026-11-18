@@ -281,6 +281,13 @@
     clip-path 280ms var(--motion-ease),
     opacity 110ms ease 170ms;
 }
+.app-header .app-wordmark {
+  top: calc(var(--sidebar-panel-inset) + var(--space-md));
+  left: calc(var(--sidebar-panel-inset) + var(--sidebar-panel-width) / 2);
+  width: 84px;
+  height: var(--sidebar-wordmark-height);
+  translate: -50% 0;
+}
 .app-wordmark[data-active='true'] {
   opacity: 1;
   clip-path: inset(0);
@@ -290,7 +297,6 @@
 }
 .app-symbol {
   top: 8px;
-  /* Keep the symbol aligned with the first letter of the centered wordmark. */
   left: calc(var(--wordmark-left) + 2.5px);
   width: 32px;
   height: 20px;
@@ -474,9 +480,9 @@
 }
 .binder-edge-trigger {
   position: absolute;
-  right: 0;
-  top: 36px;
-  bottom: 45px;
+  right: calc(-1 * var(--sidebar-panel-inset));
+  top: calc(36px - var(--sidebar-panel-inset));
+  bottom: 0;
   width: 24px;
   padding: 0;
   border-radius: 0;

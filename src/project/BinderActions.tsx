@@ -49,26 +49,26 @@ export function BinderActions({
       >
         <Trash2 size={17} aria-hidden="true" />
       </button>
-      <button
-        className="binder-profile"
-        aria-current={currentSurface === 'profile' ? 'page' : undefined}
-        aria-label={t('Profil')}
-        data-tooltip={t('Profil')}
-        onClick={() => onSurface('profile')}
-      >
-        <UserRound size={17} aria-hidden="true" />
-        <span>{t('Profil')}</span>
-      </button>
-      <button
-        className="binder-preferences"
-        aria-current={currentSurface === 'preferences' ? 'page' : undefined}
-        aria-label={t('Paramètres')}
-        data-tooltip={t('Paramètres')}
-        onClick={() => onSurface('preferences')}
-      >
-        <Settings2 size={17} aria-hidden="true" />
-        <span>{t('Paramètres')}</span>
-      </button>
+      <div className="binder-footer-utilities">
+        <button
+          aria-current={currentSurface === 'profile' ? 'page' : undefined}
+          aria-label={t('Profil')}
+          data-tooltip={t('Profil')}
+          onClick={() => onSurface('profile')}
+        >
+          <UserRound size={17} aria-hidden="true" />
+          <span>{t('Profil')}</span>
+        </button>
+        <button
+          aria-current={currentSurface === 'preferences' ? 'page' : undefined}
+          aria-label={t('Paramètres')}
+          data-tooltip={t('Paramètres')}
+          onClick={() => onSurface('preferences')}
+        >
+          <Settings2 size={17} aria-hidden="true" />
+          <span>{t('Paramètres')}</span>
+        </button>
+      </div>
     </>
   );
 }

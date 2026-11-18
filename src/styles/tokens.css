@@ -15,6 +15,10 @@
   --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --writing-size: 23px;
   --sidebar-width: 285px;
+  --sidebar-panel-inset: 12px;
+  --sidebar-panel-width: calc(var(--sidebar-width) - 2 * var(--sidebar-panel-inset));
+  --sidebar-panel-bottom: 55px;
+  --sidebar-wordmark-height: 20px;
   --control-radius: 999px;
   /* Shared 4-point rhythm for the workspace pages. */
   --space-2xs: 4px;

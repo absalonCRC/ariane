@@ -27,7 +27,7 @@ export function WorkspaceHeader({
 }: Props) {
   return (
     <header className="app-header" inert={libraryBusy}>
-      <ArianeWordmark compact={!binder} />
+      <ArianeWordmark compact={!binder} hideCompact />
       <div className="header-right">
         {!historyMode && !pageMode && (
           <button

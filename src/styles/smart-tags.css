@@ -419,14 +419,38 @@
   background: none;
 }
 .outline-chevron {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--quiet);
   cursor: pointer;
 }
+.outline-chevron:hover {
+  background: transparent;
+}
+.outline-chevron::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.outline-chevron:hover::after {
+  background: var(--theme-hover, #f1f1f1);
+}
+.outline-chevron:focus-visible {
+  outline: none;
+}
+.outline-chevron:focus-visible::after {
+  outline: 2px solid var(--theme-muted, #8b8b8b);
+  outline-offset: 2px;
+}
 .outline-chevron::before {
   content: '';
+  position: relative;
+  z-index: 1;
   width: 4px;
   height: 4px;
   border-right: 1px solid currentColor;

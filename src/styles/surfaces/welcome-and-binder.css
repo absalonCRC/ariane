@@ -32,15 +32,21 @@
 }
 .binder {
   position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: var(--sidebar-width);
-  background: var(--theme-paper, #fafafa);
-  border-right: 1px solid var(--theme-hover, #e8e8e8);
+  inset: var(--sidebar-panel-inset) auto var(--sidebar-panel-bottom) var(--sidebar-panel-inset);
+  width: var(--sidebar-panel-width);
+  background: var(--theme-surface, #f2f2f2);
+  border-radius: 18px;
   z-index: 36;
-  padding: 60px 18px 20px;
+  padding: calc(var(--space-md) + var(--sidebar-wordmark-height) + var(--space-xs))
+    calc(var(--space-lg) - var(--sidebar-panel-inset)) 49px;
   animation: slide-in 0.18s ease-out;
+}
+/* The native buttons start nine points from the window edges on macOS. */
+:root:has(.app[data-macos-window]) {
+  --sidebar-panel-inset: 4px;
+}
+.app[data-macos-window] .binder {
+  border-top-left-radius: 12px;
 }
 .binder .panel-top {
   padding: 0 8px;
