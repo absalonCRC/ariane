@@ -729,6 +729,7 @@ export function App() {
           { '--column-width': (doc.settings.columnWidth ?? 750) + 'px' } as React.CSSProperties
         }
         data-page={pageActive || undefined}
+        data-macos-window={(native && navigator.platform.startsWith('Mac')) || undefined}
         data-page-busy={(pageActive && pageBusy) || undefined}
         data-scrolling={scrollActivity.scrolling}
         data-focus={focusActive && !pageActive}

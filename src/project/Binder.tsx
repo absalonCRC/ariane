@@ -10,7 +10,16 @@ import { Dialog } from '../components/Dialog';
 import { SourceBrowser } from '../sources/Browser';
 import { ProjectCatalog } from './ProjectCatalog';
 import { descendants, sectionPath, canMoveToParent } from './tree';
-import { ChevronDown, ChevronLeft, Plus, Copy, Trash2, Undo2, MoreHorizontal } from 'lucide-react';
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronLeft,
+  Plus,
+  Copy,
+  Trash2,
+  Undo2,
+  MoreHorizontal,
+} from 'lucide-react';
 
 const draftId = '__ariane_new_section__';
 export function Binder(p: BinderProps) {
@@ -121,7 +130,7 @@ export function Binder(p: BinderProps) {
           </button>
         </div>
       )}
-      <div className="library-tabs" aria-label={t('Contenu du projet')}>
+      <div className="library-tabs binder-toolbar" aria-label={t('Contenu du projet')}>
         <button
           aria-pressed={view === 'texts'}
           onClick={() => changeView('texts')}
@@ -195,6 +204,7 @@ export function Binder(p: BinderProps) {
         <>
           {view === 'texts' && (
             <button className="binder-manuscript" onClick={p.onContinuous}>
+              <BookOpen size={15} strokeWidth={1.5} aria-hidden="true" />
               {t('Lire le manuscrit')}
             </button>
           )}

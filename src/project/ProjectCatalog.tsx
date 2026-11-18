@@ -141,10 +141,12 @@ export function ProjectCatalog({
           </Fragment>
         ))
       )}
-      <button onClick={() => window.dispatchEvent(new Event('ariane-inbox-open'))}>
-        <Inbox size={15} />
-        {t('Boîte de réception')}
-      </button>
+      {searchable && (
+        <button onClick={() => window.dispatchEvent(new Event('ariane-inbox-open'))}>
+          <Inbox size={15} />
+          {t('Boîte de réception')}
+        </button>
+      )}
       {archived && <p className="hint">{t('Les projets archivés restent sur ce Mac.')}</p>}
     </div>
   );
