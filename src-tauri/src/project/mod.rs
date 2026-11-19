@@ -41,3 +41,4 @@ pub mod entities;
 pub mod saved_views;
 
 pub mod capture_import;
+pub mod backup;

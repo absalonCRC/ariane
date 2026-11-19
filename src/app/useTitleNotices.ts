@@ -160,18 +160,9 @@ export function useTitleNotices(workspace: Workspace, memoryPending = false) {
     if (workspace.activity?.error) enqueue('activity-error', workspace.activity?.error, 'error');
     else removeKind('activity-error');
   }, [workspace.activity?.error, enqueue, removeKind]);
-  const previousSave = useRef({ path: projectPath, state: workspace.doc.status });
   useEffect(() => {
-    const previous = previousSave.current;
-    const state = workspace.doc.status;
-    previousSave.current = { path: projectPath, state };
-    if (previous.path !== projectPath) return;
-    if (state === 'saved') {
-      if (previous.state && previous.state !== 'saved')
-        enqueue('save', 'Modifications enregistrées', 'success');
-    } else if (state === 'saving') enqueue('save', 'Enregistrement…', 'info');
-    else if (state === 'editing') enqueue('save', 'Modifications en cours', 'info');
-    else if (state === 'error' && !error)
+    if (workspace.doc.status === 'saving') enqueue('save', 'Enregistrement…', 'info');
+    else if (workspace.doc.status === 'error' && !error)
       enqueue('save', 'Modifications non enregistrées', 'error');
     else removeKind('save');
   }, [projectPath, workspace.doc.status, error, enqueue, removeKind]);
@@ -214,7 +205,8 @@ export function useTitleNotices(workspace: Workspace, memoryPending = false) {
     hasPending:
       !!error ||
       recovery ||
-      workspace.doc.status !== 'saved' ||
+      workspace.doc.status === 'saving' ||
+      workspace.doc.status === 'error' ||
       workspace.doc.versionStatus === 'error' ||
       !!progress ||
       memoryPending ||

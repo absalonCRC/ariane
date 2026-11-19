@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Install and verify the pinned voice runtime before activating it."""
 from pathlib import Path
+import argparse
 import json
 import shutil
 import sys
@@ -14,13 +15,16 @@ MODELS = {
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", type=Path, default=ROOT)
+    args = parser.parse_args()
     if sys.platform != "darwin":
         raise SystemExit("Le runtime de dictée cible macOS.")
     uv = shutil.which("uv")
     if not uv:
         raise SystemExit("L’installation de la dictée nécessite uv (https://docs.astral.sh/uv/).")
     lock = Path(__file__).with_name("voice-requirements.lock")
-    with staged_install(ROOT) as stage:
+    with staged_install(args.root) as stage:
         python = install_python(stage, uv, lock)
         models = download_models(stage, python, MODELS)
         # Preserve the path used by the native cleanup engine.

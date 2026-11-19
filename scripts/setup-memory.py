@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import argparse
 import json
 from pathlib import Path
 import shutil
@@ -24,13 +25,17 @@ MODELS = {
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", type=Path, default=ROOT)
+    parser.add_argument("--worker", type=Path, default=Path(__file__).resolve().parents[1] / "src-tauri/resources/engine/memory.py")
+    args = parser.parse_args()
     if sys.platform != "darwin":
         raise SystemExit("Le runtime mémoire cible macOS.")
     uv = shutil.which("uv")
     if not uv:
         raise SystemExit("uv est requis pour installer le runtime mémoire.")
     lock = Path(__file__).with_name("memory-requirements.lock")
-    with staged_install(ROOT) as stage:
+    with staged_install(args.root) as stage:
         python = install_python(stage, uv, lock)
         models = download_models(stage, python, MODELS)
         manifest = inventory(stage, python, uv, lock) | {"models": models}
@@ -41,10 +46,10 @@ def main() -> None:
                 with (stage / "models" / name / filename).open("rb") as source:
                     value["sha256"] = hashlib.file_digest(source, "sha256").hexdigest()
         (stage / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
-        worker = Path(__file__).resolve().parents[1] / "src-tauri/resources/engine/memory.py"
+        worker = args.worker
         print("Préparation locale des poids quantifiés…", flush=True)
         subprocess.run([str(python), str(worker), "--root", str(stage), "--prepare"], check=True)
-    print(f"Runtime mémoire prêt : {ROOT}", flush=True)
+    print(f"Runtime mémoire prêt : {args.root}", flush=True)
 
 
 if __name__ == "__main__":

@@ -165,6 +165,36 @@
 .source-label small {
   line-height: 14px;
 }
+
+.source-margin .margin-source-item > .source-label,
+.memory-suggestion > .memory-context {
+  --control-radius: 14px;
+}
+
+@supports (clip-path: shape(from 0 0, line to 100% 0, close)) {
+  .source-margin .margin-source-item > .source-label,
+  .memory-suggestion > .memory-context {
+    --control-radius: 0px;
+    --card-corner: 20px;
+    --card-curve: 2px;
+    clip-path: shape(
+      from var(--card-corner) 0,
+      hline to calc(100% - var(--card-corner)),
+      curve to 100% var(--card-corner) with calc(100% - var(--card-curve)) 0 / 100% var(--card-curve),
+      vline to calc(100% - var(--card-corner)),
+      curve to calc(100% - var(--card-corner)) 100% with 100% calc(100% - var(--card-curve)) /
+        calc(100% - var(--card-curve)) 100%,
+      hline to var(--card-corner),
+      curve to 0 calc(100% - var(--card-corner)) with var(--card-curve) 100% /
+        0 calc(100% - var(--card-curve)),
+      vline to var(--card-corner),
+      curve to var(--card-corner) 0 with 0 var(--card-curve) / var(--card-curve) 0,
+      close
+    );
+    outline-offset: -5px;
+  }
+}
+
 .more-sources {
   height: 24px;
 }

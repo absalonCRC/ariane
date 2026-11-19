@@ -23,6 +23,8 @@ static SAVE: LazyLock<Lane> = LazyLock::new(|| Lane::new(2, 16));
 static CONTROL: LazyLock<Lane> = LazyLock::new(|| Lane::new(4, 32));
 static NORMAL: LazyLock<Lane> = LazyLock::new(|| Lane::new(6, 32));
 static HEAVY: LazyLock<Lane> = LazyLock::new(|| Lane::new(2, 12));
+static INSTALL: LazyLock<Lane> = LazyLock::new(|| Lane::new(1, 1));
+static PREDICTION: LazyLock<Lane> = LazyLock::new(|| Lane::new(2, 8));
 static SEARCH: AtomicU64 = AtomicU64::new(0);
 static SUGGEST: AtomicU64 = AtomicU64::new(0);
 static REVISION: AtomicU64 = AtomicU64::new(0);
@@ -37,12 +39,15 @@ pub async fn admit(kind: &str) -> Result<tokio::sync::OwnedSemaphorePermit> {
         "save" | "resolveExternal" | "inboxSave" | "inboxFinish" => (&*SAVE, None),
         "memoryActivity" | "cancelIndex" | "cancelExport" | "quit" | "voiceStatus"
         | "engineStatus" | "memoryStatus" | "appReady" | "appClose" | "appFlushed"
-        | "captureWindow" => (&*CONTROL, None),
+        | "captureWindow" | "runtimeModules" | "cancelRuntimeInstall" => (&*CONTROL, None),
+        "installRuntime" => (&*INSTALL, None),
+        "predictWord" | "predictionFeedback" => (&*PREDICTION, None),
         "search" => (&*HEAVY, Some(&SEARCH)),
         "suggest" => (&*HEAVY, Some(&SUGGEST)),
         "revisionCheck" => (&*HEAVY, Some(&REVISION)),
         "index" | "scan" | "voiceTranscribe" | "enrich" | "memoryQueue" | "memoryEntities"
-        | "export" | "importPreview" | "importIntoProject" => (&*HEAVY, None),
+        | "export" | "importPreview" | "importIntoProject" | "projectBackup"
+        | "projectRestoreCopy" => (&*HEAVY, None),
         _ => (&*NORMAL, None),
     };
     if lane.waiting.fetch_add(1, Ordering::SeqCst) >= lane.capacity {
@@ -113,12 +118,16 @@ pub fn validate(request: &Value) -> Result<()> {
             Ok(())
         }
     };
-    for key in ["path", "source", "projectPath", "vaultPath"] {
+    for key in ["path", "source", "projectPath", "vaultPath", "destination"] {
         string_limit(key, 8192)?;
     }
     string_limit("query", 8192)?;
     string_limit("name", 4096)?;
     string_limit("title", 4096)?;
+    if kind == "predictWord" {
+        string_limit("context", 2048)?;
+        string_limit("language", 32)?;
+    }
     if kind == "suggest" {
         string_limit("text", 128 * 1024)?;
     }

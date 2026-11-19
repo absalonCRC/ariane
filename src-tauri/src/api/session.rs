@@ -35,5 +35,6 @@ pub(super) fn activate(state: &AppState, path: &Path) -> Result<Project> {
     state.memory_activity.cancel_entities();
     *held = Some(guard);
     *current = Some(path.to_owned());
+    state.prediction.activate(&state.data, path);
     Ok(p)
 }

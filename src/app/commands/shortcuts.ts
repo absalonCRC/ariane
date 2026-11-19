@@ -48,6 +48,9 @@ export function shortcutFromEvent(
     e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key,
   ].join('+');
 }
+export function acceptsPredictionShortcut(event: KeyboardEvent): boolean {
+  return shortcutFromEvent(event) === effectiveBindings(load())['prediction-accept'];
+}
 const reserved = new Set([
   'Mod+Q',
   'Mod+W',
@@ -78,6 +81,9 @@ export function shortcutConflict(
   overrides = bindings,
 ): string | null {
   if (value === null) return null;
+  // Enter accepts a visible proposal. When there is no proposal, the editor
+  // keeps its normal Enter binding, including creation of an outline passage.
+  if (id === 'prediction-accept' && value === 'Enter') return null;
   if (
     !/^(?:(?:Mod|Alt|Shift)\+)*(?:[A-Z0-9,.;/\[\]\\=\-]|Space|Tab|Arrow(?:Up|Down|Left|Right)|F(?:[1-9]|1[0-2]))$/.test(
       value,

@@ -56,6 +56,12 @@ export const commandRegistry: readonly CommandDefinition[] = [
   { id: 'smart-tags', label: 'Gérer les smart-tags', scope: 'app', shortcut: null, native: true },
   { id: 'shortcuts', label: 'Configurer les raccourcis', scope: 'app', shortcut: null },
   { id: 'indent', label: 'Indenter le passage', scope: 'editor', shortcut: 'Tab' },
+  {
+    id: 'prediction-accept',
+    label: 'Accepter le mot proposé',
+    scope: 'editor',
+    shortcut: 'Enter',
+  },
   { id: 'outdent', label: 'Désindenter le passage', scope: 'editor', shortcut: 'Shift+Tab' },
   { id: 'up', label: 'Monter la branche', scope: 'editor', shortcut: 'Alt+ArrowUp' },
   { id: 'down', label: 'Descendre la branche', scope: 'editor', shortcut: 'Alt+ArrowDown' },

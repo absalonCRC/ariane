@@ -96,6 +96,7 @@ export function WorkspaceDialogs({
       {surface === 'preferences' && (
         <Preferences
           project={p}
+          flush={doc.flush}
           onError={fail}
           theme={workspace.appearance.theme}
           onTheme={workspace.appearance.change}

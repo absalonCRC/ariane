@@ -313,6 +313,7 @@ export function useWorkspaceCommands({
         (c) => c.scope !== 'global' && bindings[c.id] === value && (c.scope === 'app' || inEditor),
       );
       if (match) {
+        if (match.id === 'prediction-accept') return;
         // Capture before CodeMirror's default search keymap. A menu event for this
         // same gesture must not execute the action a second time.
         e.preventDefault();
@@ -346,7 +347,11 @@ export function useWorkspaceCommands({
       } else if (
         inEditor &&
         commandRegistry.some(
-          (c) => c.scope === 'editor' && c.shortcut === value && bindings[c.id] !== value,
+          (c) =>
+            c.id !== 'prediction-accept' &&
+            c.scope === 'editor' &&
+            c.shortcut === value &&
+            bindings[c.id] !== value,
         )
       ) {
         e.preventDefault();

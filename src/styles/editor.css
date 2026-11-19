@@ -6,3 +6,14 @@
 @import './editor/bottom-panel.css';
 @import './editor/revision-and-refinements.css';
 @import './smart-tags.css';
+
+.cm-predicted-word {
+  color: var(--workspace-muted);
+  font-style: italic;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.cm-predicted-word[data-distinct='true'] {
+  color: color-mix(in srgb, var(--workspace-muted) 45%, var(--ink));
+}

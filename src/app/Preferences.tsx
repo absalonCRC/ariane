@@ -1,3 +1,5 @@
+import { RuntimeModuleSettings } from './RuntimeModuleSettings';
+import { PredictionSettings } from '../prediction/PredictionSettings';
 import { CapturePreferences } from '../capture/CapturePreferences';
 import { ShortcutSettings } from './commands/ShortcutSettings';
 import { consumeShortcutSettings } from './commands/shortcuts';
@@ -11,7 +13,8 @@ import { depthLevel } from '../components/depthLevels';
 import { useState, type ReactNode } from 'react';
 import type { Settings as Values } from '../contracts/settings';
 import type { Project } from '../contracts/project';
-import { native } from '../platform/client';
+import { native, request } from '../platform/client';
+import { choosePath } from './choosePath';
 import type { Theme } from './useTheme';
 import { WorkspaceScreen } from '../components/WorkspaceScreen';
 const pages = [
@@ -34,6 +37,7 @@ export function Preferences({
   onHistory,
   onTags,
   onError,
+  flush,
 }: {
   value: Values;
   onChange: (value: Partial<Values>) => void;
@@ -47,17 +51,48 @@ export function Preferences({
   onHistory: () => void;
   onTags?: () => void;
   onError: (error: unknown) => void;
+  flush?: () => Promise<void>;
 }) {
   useLocale();
   const [page, setPage] = useState<(typeof pages)[number][0]>(() =>
     consumeShortcutSettings() ? 'shortcuts' : 'appearance',
   );
+  const [backupBusy, setBackupBusy] = useState(false);
+  const [backupResult, setBackupResult] = useState('');
+  const backup = async (restore: boolean) => {
+    if (backupBusy) return;
+    setBackupBusy(true);
+    setBackupResult('');
+    try {
+      const path = restore
+        ? await choosePath('project-backup-open', { title: t('Choisir une sauvegarde du projet') })
+        : null;
+      if (restore && !path) return;
+      const destination = await choosePath(
+        restore ? 'project-restore-destination' : 'project-backup-destination',
+        { title: t('Choisir le dossier de destination') },
+      );
+      if (!destination) return;
+      if (!path) await flush?.();
+      const result = path
+        ? await request('projectRestoreCopy', { path, destination })
+        : await request('projectBackup', { projectPath: project.path, destination });
+      setBackupResult(
+        t(path ? 'Copie restaurée dans {0}' : 'Projet sauvegardé dans {0}', { 0: result }),
+      );
+    } catch (error) {
+      onError(error);
+    } finally {
+      setBackupBusy(false);
+    }
+  };
   return (
     <WorkspaceScreen
       title={t('Paramètres')}
       subtitle={project.name}
       onClose={onClose}
       onError={onError}
+      busy={backupBusy}
       className="preferences-screen"
       capsuleTrail={[t(pages.find(([id]) => id === page)![1])]}
     >
@@ -67,6 +102,7 @@ export function Preferences({
             <button
               key={id}
               aria-current={page === id ? 'page' : undefined}
+              disabled={backupBusy}
               onClick={() => setPage(id)}
             >
               {t(label)}
@@ -218,6 +254,7 @@ export function Preferences({
                     </select>
                   </label>
                   {native && <CapturePreferences onError={onError} />}
+                  {native && <PredictionSettings projectPath={project.path} onError={onError} />}
                 </section>
               </div>
             </>
@@ -320,10 +357,25 @@ export function Preferences({
                     <button onClick={onExport}>{t('Exporter le manuscrit')}</button>
                   </div>
                   {native && (
-                    <button onClick={() => window.dispatchEvent(new Event('ariane-inbox-open'))}>
-                      {t('Sauvegarder ou restaurer les captures')}
-                    </button>
+                    <>
+                      <div className="settings-actions">
+                        <button disabled={backupBusy} onClick={() => void backup(false)}>
+                          {t('Sauvegarder le projet')}
+                        </button>
+                        <button disabled={backupBusy} onClick={() => void backup(true)}>
+                          {t('Restaurer une copie du projet')}
+                        </button>
+                        <button
+                          disabled={backupBusy}
+                          onClick={() => window.dispatchEvent(new Event('ariane-inbox-open'))}
+                        >
+                          {t('Sauvegarder ou restaurer les captures')}
+                        </button>
+                      </div>
+                      {backupResult && <p role="status">{backupResult}</p>}
+                    </>
                   )}
+                  {native && <RuntimeModuleSettings onError={onError} />}
                   <h3>{t('Confidentialité')}</h3>
                   <p>
                     {t(

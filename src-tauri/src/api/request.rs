@@ -43,6 +43,39 @@ pub enum Request {
     InboxRestore {
         path: String,
     },
+    ProjectBackup {
+        project_path: String,
+        destination: String,
+    },
+    ProjectRestoreCopy {
+        path: String,
+        destination: String,
+    },
+    RuntimeModules,
+    InstallRuntime {
+        module: crate::runtime_install::Module,
+    },
+    CancelRuntimeInstall,
+    PredictionPreferences {
+        project_path: Option<String>,
+        value: Option<crate::prediction::Preferences>,
+    },
+    PredictWord {
+        project_path: Option<String>,
+        language: String,
+        context: String,
+    },
+    PredictionFeedback {
+        project_path: Option<String>,
+        token: String,
+        epoch: i64,
+        accepted: bool,
+    },
+    ResetPrediction,
+    ForgetPredictionProject {
+        project_path: String,
+        forget: bool,
+    },
     CaptureWindow {
         action: String,
     },

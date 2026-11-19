@@ -7,7 +7,9 @@ import { typewriterScrolling } from '../editor/typewriter';
 import { smoothCaret } from '../editor/smoothCaret';
 import { typewriterStroke } from '../editor/typewriterInput';
 import { createTypewriterSound, type TypewriterSound } from '../editor/typewriterSound';
-import { t } from '../i18n';
+import { t, useLocale } from '../i18n';
+import { nextWord, refreshPrediction, type PredictionConfiguration } from '../editor/nextWord';
+import { usePredictionPreferences } from '../prediction/usePredictionPreferences';
 import type { CapturePreferences, InboxCapture, CaptureSelection } from '../contracts/inbox';
 export function CaptureEditor({
   capture,
@@ -32,6 +34,10 @@ export function CaptureEditor({
     sound = useRef<TypewriterSound | null>(null),
     options = useRef(new Compartment());
   latest.current = { onChange, onFinish, onHide, preferences, readOnly };
+  const language = useLocale();
+  const { enabled, distinct, epoch } = usePredictionPreferences();
+  const prediction = useRef<PredictionConfiguration | null>(null);
+  prediction.current = enabled && visible && !readOnly ? { language, distinct, epoch } : null;
   const configuration = () => [
     EditorState.readOnly.of(latest.current.readOnly),
     EditorView.editable.of(!latest.current.readOnly),
@@ -48,6 +54,7 @@ export function CaptureEditor({
         selection: { anchor: capture.selection.anchor, head: capture.selection.head },
         extensions: [
           history(),
+          nextWord(() => prediction.current),
           markdown(),
           EditorView.lineWrapping,
           smoothCaret,
@@ -102,6 +109,9 @@ export function CaptureEditor({
   useEffect(() => {
     view.current?.dispatch({ effects: options.current.reconfigure(configuration()) });
   }, [readOnly, preferences.typewriter, capture.id]);
+  useEffect(() => {
+    view.current?.dispatch({ effects: refreshPrediction.of() });
+  }, [enabled, distinct, epoch, visible, readOnly, language]);
   useEffect(() => {
     if (!preferences.sound || !visible) return;
     const audio = createTypewriterSound(preferences.volume);

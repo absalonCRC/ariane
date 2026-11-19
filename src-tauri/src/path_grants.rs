@@ -81,7 +81,8 @@ pub async fn choose_path(
         let app = window.app_handle();
         let mut dialog = app.dialog().file().set_title(title);
         let chosen = match purpose.as_str() {
-            "create" | "open" | "vault" => dialog.blocking_pick_folder(),
+            "create" | "open" | "vault" | "project-backup-open"
+            | "project-backup-destination" | "project-restore-destination" => dialog.blocking_pick_folder(),
             "import" => {
                 if directory == Some(true) {
                     dialog.blocking_pick_folder()
