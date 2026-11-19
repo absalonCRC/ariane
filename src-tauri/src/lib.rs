@@ -21,9 +21,11 @@ mod path_grants;
 #[cfg(feature = "performance-harness")]
 mod performance;
 mod platform;
+mod prediction;
 mod project;
 mod retrieval;
 mod revision;
+mod runtime_install;
 mod source_files;
 mod vaults;
 mod vectors;
@@ -75,6 +77,7 @@ pub fn run() {
             #[cfg(feature = "performance-harness")]
             let data = performance::isolated_directory()?;
             std::fs::create_dir_all(&data)?;
+            let prediction = prediction::Service::new(&data);
             let dev = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources");
             let resources = if cfg!(debug_assertions) && !cfg!(feature = "performance-harness") {
                 dev
@@ -94,6 +97,8 @@ pub fn run() {
                 engine: Default::default(),
                 revision: Default::default(),
                 voice: Default::default(),
+                runtime_install: Default::default(),
+                prediction,
                 enriching: Default::default(),
                 memory_activity: Default::default(),
                 memory_job: Default::default(),
@@ -177,6 +182,7 @@ pub fn run() {
         }
         if let tauri::RunEvent::Exit = event {
             let state = app.state::<api::AppState>();
+            state.runtime_install.cancel();
             state
                 .cancel
                 .store(true, std::sync::atomic::Ordering::Relaxed);

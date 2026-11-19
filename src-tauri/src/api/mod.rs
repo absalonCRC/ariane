@@ -37,13 +37,20 @@ fn root(state: &AppState) -> Result<PathBuf> {
         .clone()
         .ok_or("Ouvrez un projet pour continuer.".into())
 }
+fn prediction_root(state: &AppState, path: Option<&str>) -> Result<Option<PathBuf>> {
+    let Some(path) = path else { return Ok(None) };
+    let active = root(state)?;
+    if Path::new(path) != active {
+        return Err("Le projet actif a changé.".into());
+    }
+    Ok(Some(active))
+}
 use serde_json::json;
 pub fn handle(
     app: &tauri::AppHandle,
     state: &AppState,
     request: Request,
 ) -> Result<serde_json::Value> {
-    let index = state.data.join("sources.sqlite");
     match request {
         Request::CaptureWindow { action } => {
             crate::capture_window::command(app, &action)?;
@@ -57,6 +64,53 @@ pub fn handle(
                 "restore",
                 Some(path.into()),
             )?)
+        }
+        Request::ProjectRestoreCopy { path, destination } => {
+            let destination = Path::new(&destination);
+            let path = Path::new(&path);
+            state.grants.require("project-backup-open", path)?;
+            state.grants.require("project-restore-destination", destination)?;
+            json(project::backup::restore(path, destination)?)
+        }
+        Request::PredictionPreferences { project_path, value } => {
+            let project = prediction_root(state, project_path.as_deref())?;
+            if let Some(value) = value {
+                state.prediction.configure(&state.data, value)?;
+                if let Ok(root) = root(state) {
+                    state.prediction.activate(&state.data, &root);
+                }
+                let _ = app.emit("prediction-changed", ());
+            }
+            json(state.prediction.status(&state.data, project.as_deref())?)
+        }
+        Request::PredictWord { project_path, language, context } => {
+            let project = prediction_root(state, project_path.as_deref())?;
+            json(state.prediction.suggestion(&state.data, project.as_deref(), &language, &context)?)
+        }
+        Request::PredictionFeedback { project_path, token, epoch, accepted } => {
+            let project = prediction_root(state, project_path.as_deref())?;
+            state.prediction.feedback(&state.data, project.as_deref(), &token, epoch, accepted)?;
+            Ok(json!(true))
+        }
+        Request::ResetPrediction => {
+            state.prediction.reset(&state.data)?;
+            let _ = app.emit("prediction-changed", ());
+            Ok(json!(true))
+        }
+        Request::ForgetPredictionProject { project_path, forget } => {
+            let project = prediction_root(state, Some(&project_path))?.ok_or("Ouvrez un projet pour continuer.")?;
+            state.prediction.forget(&state.data, &project, forget)?;
+            let _ = app.emit("prediction-changed", ());
+            Ok(json!(true))
+        }
+        Request::RuntimeModules => json(state.runtime_install.status(&state.data, &state.resources)?),
+        Request::InstallRuntime { module } => {
+            state.runtime_install.install(&state.data, &state.resources, module)?;
+            Ok(json!(true))
+        }
+        Request::CancelRuntimeInstall => {
+            state.runtime_install.cancel();
+            Ok(json!(true))
         }
         Request::AppReady | Request::AppFlushed { .. } => {
             Err("Acquittement sans fenêtre d’origine.".into())
@@ -217,7 +271,7 @@ pub fn handle(
             {
                 return Err("Le projet actif a changé.".into());
             }
-            let names = voice::lexicon::snapshot(&root, &state.data.join("sources.sqlite"))?;
+            let names = voice::lexicon::snapshot(&root, &project::backup::source_index(&state.data, &root))?;
             json(engine.transcribe_context(
                 &state.data,
                 &state.resources,
@@ -254,7 +308,22 @@ pub fn handle(
                     held,
                 )
             };
-            match other {
+            let aliases_changed = matches!(&other,
+                Request::Scan | Request::Index | Request::ConnectVault { .. } |
+                Request::RemoveVault { .. } | Request::VaultScope { .. } |
+                Request::UpdateSourceAliases { .. } | Request::UpdateSourceCard { .. } |
+                Request::CreateVaultEntity { .. } | Request::CreateOwnedVault);
+            let prediction_invalidated = matches!(&other,
+                Request::LibraryOperation { .. } | Request::CreateBranch { .. } |
+                Request::SwitchBranch { .. } | Request::PromoteVersion { .. } |
+                Request::MergeBranch { .. } | Request::Restore { .. } |
+                Request::ManuscriptOperation { .. } |
+                Request::ResolveExternal { keep_local: false, .. });
+            let prediction_refresh = prediction_invalidated || aliases_changed || matches!(&other,
+                Request::Save { .. } | Request::ImportIntoProject { .. } |
+                Request::Update { .. }) || matches!(&other, Request::Settings { value } if value.get("language").is_some());
+            let index = project::backup::source_index(&state.data, &root);
+            let result = match other {
                 request @ (Request::EntityMentions { .. }
                 | Request::EntityCatalog { .. }
                 | Request::EntityOperation { .. }
@@ -272,13 +341,14 @@ pub fn handle(
                 | Request::ManuscriptOperation { .. }
                 | Request::ImportIntoProject { .. }
                 | Request::LibraryOperation { .. }
+                | Request::ProjectBackup { .. }
                 | Request::Save { .. }
                 | Request::Add { .. }
                 | Request::Update { .. }
                 | Request::Reorder { .. }
                 | Request::Settings { .. }
                 | Request::ResolveExternal { .. }) => {
-                    project_commands::handle(app, state, root, index, request)
+                    project_commands::handle(app, state, root.clone(), index, request)
                 }
                 request @ (Request::MemoryQueue { .. }
                 | Request::MemoryEntities { .. }
@@ -294,7 +364,7 @@ pub fn handle(
                 | Request::MemorySource { .. }
                 | Request::Enrich { .. }
                 | Request::IgnoreEnrichment { .. }) => {
-                    memory_commands::handle(app, state, root, index, request)
+                    memory_commands::handle(app, state, root.clone(), index, request)
                 }
                 request @ (Request::BrowseSources { .. }
                 | Request::Vaults
@@ -308,7 +378,7 @@ pub fn handle(
                 | Request::VaultScope { .. }
                 | Request::RemoveVault { .. }
                 | Request::Index
-                | Request::Scan) => vault_commands::handle(app, state, root, index, request),
+                | Request::Scan) => vault_commands::handle(app, state, root.clone(), index, request),
                 request @ (Request::Suggest { .. }
                 | Request::Search { .. }
                 | Request::Source { .. }
@@ -319,7 +389,7 @@ pub fn handle(
                 | Request::Associate { .. }
                 | Request::Links { .. }
                 | Request::Cite { .. }) => {
-                    source_commands::handle(app, state, root, index, request)
+                    source_commands::handle(app, state, root.clone(), index, request)
                 }
                 request @ (Request::Versions { .. }
                 | Request::Version { .. }
@@ -333,10 +403,14 @@ pub fn handle(
                 | Request::Capture { .. }
                 | Request::Restore { .. }
                 | Request::Export { .. }) => {
-                    version_commands::handle(app, state, root, index, request)
+                    version_commands::handle(app, state, root.clone(), index, request)
                 }
                 _ => Err("Action invalide".into()),
+            };
+            if prediction_refresh && result.is_ok() {
+                state.prediction.schedule(&state.data, &root, aliases_changed, prediction_invalidated);
             }
+            result
         }
     }
 }
@@ -347,7 +421,7 @@ pub fn resume_classification(app: &tauri::AppHandle, state: &AppState) -> Result
     let Ok(root) = root(state) else {
         return Ok(());
     };
-    let index = state.data.join("sources.sqlite");
+    let index = project::backup::source_index(&state.data, &root);
     if let Some(id) = memory::classification_queue::next(&root)? {
         let Ok(mut worker) = state.entity_engine.try_lock() else {
             return Ok(());
@@ -402,6 +476,8 @@ mod tests {
             engine: Default::default(),
             revision: Default::default(),
             voice: Default::default(),
+            runtime_install: Default::default(),
+            prediction: Default::default(),
             enriching: Default::default(),
             memory_activity: Default::default(),
             memory_job: Default::default(),

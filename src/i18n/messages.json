@@ -135,10 +135,6 @@
     "Unsaved changes",
     "Cambios sin guardar"
   ],
-  "Modifications en cours": [
-    "Editing",
-    "Edición en curso"
-  ],
   "Sans titre": [
     "Untitled",
     "Sin título"
@@ -4063,10 +4059,6 @@
     "Suggestion hidden",
     "Sugerencia oculta"
   ],
-  "Modifications enregistrées": [
-    "Changes saved",
-    "Cambios guardados"
-  ],
   "Certaines sources n’ont pas pu être indexées.": [
     "Some sources could not be indexed.",
     "No se han podido indexar algunas fuentes."
@@ -5630,5 +5622,141 @@
   "Document": [
     "Document",
     "Documento"
+  ],
+  "Choisir une sauvegarde du projet": [
+    "Choose a project backup",
+    "Elegir una copia de seguridad del proyecto"
+  ],
+  "Choisir le dossier de destination": [
+    "Choose the destination folder",
+    "Elegir la carpeta de destino"
+  ],
+  "Copie restaurée dans {0}": [
+    "Copy restored to {0}",
+    "Copia restaurada en {0}"
+  ],
+  "Projet sauvegardé dans {0}": [
+    "Project backed up to {0}",
+    "Proyecto guardado en {0}"
+  ],
+  "Sauvegarder le projet": [
+    "Back up the project",
+    "Hacer una copia de seguridad del proyecto"
+  ],
+  "Restaurer une copie du projet": [
+    "Restore a project copy",
+    "Restaurar una copia del proyecto"
+  ],
+  "Modules locaux": [
+    "Local modules",
+    "Módulos locales"
+  ],
+  "Reconnaissance des entités": [
+    "Entity recognition",
+    "Reconocimiento de entidades"
+  ],
+  "Dictée locale": [
+    "Local dictation",
+    "Dictado local"
+  ],
+  "Préparation de l’installateur…": [
+    "Preparing the installer…",
+    "Preparando el instalador…"
+  ],
+  "Téléchargement et installation du module…": [
+    "Downloading and installing the module…",
+    "Descargando e instalando el módulo…"
+  ],
+  "Vérification du module…": [
+    "Checking the module…",
+    "Verificando el módulo…"
+  ],
+  "Le téléchargement peut prendre plusieurs minutes. Vous pouvez continuer à écrire.": [
+    "The download may take a few minutes. You can keep writing.",
+    "La descarga puede tardar unos minutos. Puedes seguir escribiendo."
+  ],
+  "Installé": [
+    "Installed",
+    "Instalado"
+  ],
+  "Installer": [
+    "Install",
+    "Instalar"
+  ],
+  "Installer {0}": [
+    "Install {0}",
+    "Instalar {0}"
+  ],
+  "Interrompre": [
+    "Stop",
+    "Interrumpir"
+  ],
+  "Prédiction du prochain mot": [
+    "Next-word prediction",
+    "Predicción de la palabra siguiente"
+  ],
+  "Proposer le prochain mot": [
+    "Suggest the next word",
+    "Sugerir la palabra siguiente"
+  ],
+  "Apprend localement des textes enregistrés dans le manuscrit. Ce réglage est partagé avec la capture rapide.": [
+    "Learns locally from saved manuscript text. Quick capture shares this setting.",
+    "Aprende en local de los textos guardados en el manuscrito. La captura rápida comparte este ajuste."
+  ],
+  "Visibilité de la proposition": [
+    "Suggestion visibility",
+    "Visibilidad de la sugerencia"
+  ],
+  "Discrète": [
+    "Subtle",
+    "Discreta"
+  ],
+  "Plus visible": [
+    "More visible",
+    "Más visible"
+  ],
+  "Réinitialiser l’apprentissage": [
+    "Reset learning",
+    "Reiniciar el aprendizaje"
+  ],
+  "Oublier ce projet": [
+    "Forget this project",
+    "Olvidar este proyecto"
+  ],
+  "Réapprendre ce projet": [
+    "Learn this project again",
+    "Volver a aprender de este proyecto"
+  ],
+  "Accepter le mot proposé": [
+    "Accept the suggested word",
+    "Aceptar la palabra sugerida"
+  ],
+  "Installation interrompue.": [
+    "Installation stopped.",
+    "Instalación interrumpida."
+  ],
+  "Un module est déjà en cours d’installation.": [
+    "A module is already installing.",
+    "Ya se está instalando un módulo."
+  ],
+  "Les fichiers vérifiés du module sont incomplets.": [
+    "The verified module files are incomplete.",
+    "Faltan archivos verificados del módulo."
+  ],
+  "Choisissez un emplacement hors du projet.": [
+    "Choose a location outside the project.",
+    "Elige una ubicación fuera del proyecto."
+  ],
+  "Choisissez un emplacement hors de la sauvegarde.": [
+    "Choose a location outside the backup.",
+    "Elige una ubicación fuera de la copia de seguridad."
+  ],
+  "Choisissez un dossier de sauvegarde ariane.": [
+    "Choose an ariane backup folder.",
+    "Elige una carpeta de copia de seguridad de ariane."
+  ],
+  "Le contenu de la sauvegarde ne correspond pas à son inventaire.": [
+    "The backup contents do not match its inventory.",
+    "El contenido de la copia de seguridad no coincide con su inventario."
   ]
 }

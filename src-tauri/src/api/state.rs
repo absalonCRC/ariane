@@ -22,6 +22,8 @@ pub struct AppState {
     pub engine: Mutex<Engine>,
     pub revision: Mutex<RevisionEngine>,
     pub voice: Mutex<voice::VoiceEngine>,
+    pub runtime_install: crate::runtime_install::Installer,
+    pub prediction: crate::prediction::Service,
     pub enriching: Mutex<()>,
     pub memory_activity: Activity,
     pub memory_job: Mutex<()>,

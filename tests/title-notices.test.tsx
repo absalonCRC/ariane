@@ -311,16 +311,18 @@ it('keeps export status available from the path menu after its capsule closes', 
   expect(host.querySelector('.path-notice-dot')).toBeNull();
 });
 
-it('routes pending and completed saves into the same upper capsule', async () => {
+it('keeps the title visible while editing and after a successful save', async () => {
   const capsule = host.querySelector('.path-heading');
   await act(async () => controls.setSave('editing'));
-  expect(capsule?.textContent).toContain('Modifications en cours');
+  expect(capsule?.querySelector('.path-title-text')).not.toBeNull();
+  expect(capsule?.querySelector('.path-notice-dot')).toBeNull();
   await act(async () => controls.setSave('saving'));
   expect(capsule?.textContent).toContain('Enregistrement…');
   await act(async () => controls.setSave('saved'));
-  expect(capsule?.textContent).toContain('Modifications enregistrées');
-  await act(async () => vi.advanceTimersByTime(5000));
-  expect(host.querySelector('.path-menu')?.getAttribute('data-notifying')).toBe('false');
+  expect(capsule?.querySelector('.path-title-text')).not.toBeNull();
+  expect(capsule?.querySelector('.path-notice-dot')).toBeNull();
+  await act(async () => controls.setSave('error'));
+  expect(capsule?.textContent).toContain('Modifications non enregistrées');
 });
 it('routes link updates, indexing and opening status into the upper capsule', async () => {
   await act(async () => controls.setMemoryPending(true));

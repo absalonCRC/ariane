@@ -6,6 +6,16 @@
 - Boutons, champs de saisie et sélecteurs harmonisés en formes rondes ou en capsules, avec des contenus recentrés et des repères d’activité arrondis.
 - Adaptation des commandes de thème, de Versions et du catalogue Smart-tags à ces formes et à l’espace disponible.
 
+## 0.7.0 — candidat de développement, 18 novembre 2026
+
+- Prédiction du prochain mot dans la ligne, après le curseur, dans le manuscrit, le focus et la capture rapide. Entrée accepte le mot affiché. Échap l’écarte. La prédiction s’active dans les paramètres et sa visibilité se règle.
+- Apprentissage local en français, anglais et espagnol. Les textes enregistrés fournissent le vocabulaire du projet et les contextes communs. Le profil peut être réinitialisé et un projet peut être oublié.
+- Sauvegarde des projets et restauration dans un nouveau dossier. La copie comprend SQLite, les miroirs Markdown, les pièces jointes d’ariane et le vault appartenant au projet. La boîte de réception conserve ses propres archives.
+- Installation des modules de reconnaissance d’entités, de dictée et de révision depuis les paramètres macOS, avec état d’avancement et interruption.
+- Coins squircle pour les suggestions et fiches de la marge droite. La capsule supérieure garde le titre à la frappe et après la confirmation d’une sauvegarde automatique.
+
+Voir les [notes 0.7.0](docs/release-notes-0.7.0.md) et le [bilan de recette](docs/validation-0.7.0.md).
+
 ## 0.6.1 — sources, 17 novembre 2026
 
 - Intégration du candidat 0.6.0 décrit ci-dessous : capture rapide, boîte de réception globale, rangement récupérable et sauvegarde des captures.

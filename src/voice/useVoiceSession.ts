@@ -152,16 +152,7 @@ export function useVoiceSession({
     };
     restorePending();
     window.addEventListener('ariane:voice-pending', restorePending);
-    if (native)
-      availability.current = request('voiceStatus')
-        .then((status) => {
-          available.current = status.available;
-          return status.available;
-        })
-        .catch(() => {
-          available.current = false;
-          return false;
-        });
+    if (native) checkAvailability();
     return () => {
       alive.current = false;
       window.removeEventListener('ariane:voice-pending', restorePending);
@@ -172,6 +163,12 @@ export function useVoiceSession({
       }
     };
   }, []);
+  function checkAvailability() {
+    available.current = null;
+    availability.current = request('voiceStatus')
+      .then(({ available: installed }) => (available.current = installed))
+      .catch(() => (available.current = false));
+  }
   async function begin(mode: Mode = 'press') {
     if (session.current || finishing.current || pending) return;
     onOpen();
@@ -185,10 +182,7 @@ export function useVoiceSession({
       setMessage(t('La dictée est disponible dans l’application macOS.'));
       return;
     }
-    if (available.current === false) {
-      setMessage(t('Les modèles de dictée locale ne sont pas disponibles.'));
-      return;
-    }
+    if (available.current === false) checkAvailability();
     const current: Session = {
       mode,
       active: true,

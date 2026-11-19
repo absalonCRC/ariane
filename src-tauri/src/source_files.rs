@@ -26,7 +26,7 @@ struct Grant {
 pub struct Files(Mutex<VecDeque<Grant>>);
 impl Files {
     pub fn grant(&self, state: &AppState, root: &Path, id: &str) -> Result<serde_json::Value> {
-        let index = state.data.join("sources.sqlite");
+        let index = crate::project::backup::source_index(&state.data, root);
         let path = vaults::file(&index, id, &vaults::list(root, &index)?)?;
         let mime = match path
             .extension()
@@ -93,7 +93,7 @@ impl Files {
                 grant.mime,
             )
         };
-        let index = state.data.join("sources.sqlite");
+        let index = crate::project::backup::source_index(&state.data, &root);
         if vaults::file(&index, &id, &vaults::list(&root, &index)?)? != path {
             return Err("Source déplacée".into());
         }
@@ -215,6 +215,8 @@ mod tests {
             engine: Default::default(),
             revision: Default::default(),
             voice: Default::default(),
+            runtime_install: Default::default(),
+            prediction: Default::default(),
             enriching: Default::default(),
             memory_activity: Default::default(),
             memory_job: Default::default(),

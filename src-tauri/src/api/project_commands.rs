@@ -130,6 +130,14 @@ pub(super) fn handle(
             Ok(json!({"project":project::load(&root)?,"report":report}))
         }
         Request::LibraryOperation { operation } => json(project::library::apply(&root, operation)?),
+        Request::ProjectBackup { project_path, destination } => {
+            if Path::new(&project_path) != root {
+                return Err("Le projet actif a changé.".into());
+            }
+            let destination = Path::new(&destination);
+            state.grants.require("project-backup-destination", destination)?;
+            json(project::backup::save(&root, destination)?)
+        }
         Request::Save { patches } => {
             state.memory_activity.writing(true);
             let report = project::save_report(&root, patches)?;

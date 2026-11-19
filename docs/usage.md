@@ -1,5 +1,17 @@
 # Utiliser ariane
 
+## Prédiction du prochain mot
+
+Activez « Proposer le prochain mot » dans **Paramètres → Écriture**. Après la frappe d’une espace, la proposition apparaît dans la ligne, juste après le curseur. **Entrée** insère le mot et **Échap** l’écarte. Sans proposition affichée, Entrée crée le retour habituel. Tab reste disponible pour indenter le passage. « Accepter le mot proposé » figure dans les raccourcis configurables.
+
+La prédiction fonctionne en français, anglais et espagnol. Le manuscrit utilise la langue du document et la capture rapide celle de l’interface. La visibilité de la proposition est réglable. L’apprentissage utilise les textes enregistrés et inclus dans le manuscrit du projet. La capture utilise le vocabulaire commun. « Oublier ce projet » retire ses contributions et suspend son apprentissage. « Réinitialiser l’apprentissage » efface les mots et les retours appris. Les textes connus qui restent identiques sont ignorés après cette remise à zéro.
+
+## Sauvegardes de projet et modules locaux
+
+Dans **Paramètres → Projet et données**, « Sauvegarder le projet » crée un dossier dans la destination de votre choix. Il contient la base du projet, ses versions et variantes, ses fichiers Markdown, ses pièces jointes et le vault appartenant au projet. Conservez le dossier complet avec son inventaire. « Restaurer une copie du projet » vérifie la sauvegarde et crée une copie dans un nouveau dossier. Ouvrez ce dossier avec **Fichier → Ouvrir un projet**. Les chemins des vaults externes restent des références vers leurs emplacements habituels. Utilisez la boîte de réception pour sauvegarder les captures.
+
+La rubrique **Modules locaux** installe à la demande les moteurs de reconnaissance d’entités, de dictée ou de révision. Une connexion est nécessaire pour le téléchargement. « Interrompre » arrête l’installation et le même bouton permet de la relancer. L’écriture, la prédiction et l’export sont disponibles pendant l’installation.
+
 ## Capture rapide et boîte de réception
 
 Tant qu’ariane est lancée, **⌘ ⇧ Espace** ouvre la capture rapide, même depuis une autre application. Le menu **Fichier → Capture rapide** fait la même chose. Le raccourci se change ou se désactive dans les réglages de la réception ou les raccourcis de l’application ; une combinaison réservée est refusée. Quitter ariane désactive ce raccourci jusqu’au prochain lancement.

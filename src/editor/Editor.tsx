@@ -20,6 +20,8 @@ import { useContextMenu } from '../components/ContextMenu';
 import { documentScroller } from './scrolling';
 import { typewriterScrolling } from './typewriter';
 import { createTypewriterSound, type TypewriterSound } from './typewriterSound';
+import { refreshPrediction, type PredictionConfiguration } from './nextWord';
+import { usePredictionPreferences } from '../prediction/usePredictionPreferences';
 export type { VisibleText, EditorHandle } from './types';
 
 export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref) {
@@ -32,6 +34,17 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
   const view = useRef<EditorView | null>(null);
   const latest = useRef(props);
   latest.current = props;
+  const prediction = useRef<PredictionConfiguration | null>(null);
+  const { enabled, distinct, epoch } = usePredictionPreferences(props.projectPath);
+  prediction.current =
+    enabled && !props.readOnly
+      ? {
+          language: props.settings.language,
+          distinct,
+          epoch,
+          projectPath: props.projectPath,
+        }
+      : null;
   const spans = useRef<Span[]>([]);
   const outlineRef = useRef<OutlineEditor | null>(null);
   const options = useRef(new Compartment());
@@ -67,9 +80,13 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
         wordTimer,
         menuRef,
         focusPreviewScroll,
+        prediction,
       }),
     [props.projectPath, props.generation, props.sections.map((s) => s.id).join(':')],
   );
+  useEffect(() => {
+    view.current?.dispatch({ effects: refreshPrediction.of() });
+  }, [enabled, distinct, epoch, props.readOnly, props.projectPath, props.settings.language]);
   useEffect(() => {
     view.current?.dispatch({ effects: refreshSmartTags.of() });
   }, [props.smartTags, props.tagSections, props.immersiveFocus, props.generation]);

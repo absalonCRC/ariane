@@ -66,24 +66,26 @@ def download(path, name):
 
 def main():
     parser = argparse.ArgumentParser(__doc__)
+    parser.add_argument('--root', type=Path, default=ROOT)
     parser.add_argument('--repair-jna', action='store_true', help='Réparer uniquement JNA dans une installation existante, avec sauvegarde')
     args = parser.parse_args()
+    root = args.root
     if sys.platform != 'darwin' or os.uname().machine != 'arm64':
         sys.exit('Cet installateur nécessite un Mac Apple Silicon.')
     if args.repair_jna:
-        if not ROOT.is_dir():
+        if not root.is_dir():
             sys.exit('Installation de révision locale absente.')
-        with tempfile.TemporaryDirectory(prefix='.jna-repair-', dir=ROOT.parent) as temp:
+        with tempfile.TemporaryDirectory(prefix='.jna-repair-', dir=root.parent) as temp:
             source = Path(temp)
             for name in ['jna.jar', 'jna-platform.jar']:
                 download(source/name, name)
-            repair_jna(ROOT, source)
+            repair_jna(root, source)
         print('JNA 5.13.0 vérifié ; bibliothèques précédentes conservées dans .jna-backups.')
         return
-    if ROOT.exists():
-        sys.exit(f'Installation existante conservée : {ROOT}')
-    ROOT.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='.revision-install-', dir=ROOT.parent) as temp:
+    if root.exists():
+        sys.exit(f'Installation existante conservée : {root}')
+    root.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.revision-install-', dir=root.parent) as temp:
         base = Path(temp)
         staging = base / 'revision'
         staging.mkdir()
@@ -106,8 +108,8 @@ def main():
         shutil.move(base / 'jdk-17.0.21+9-jre', staging / 'java')
         repair_jna(staging, base)
         (staging / 'MANIFEST.txt').write_text('LanguageTool 6.6\nJNA 5.13.0\nTemurin 17.0.21+9\nSalamandraTA 2B Q8\n', encoding='utf-8')
-        os.rename(staging, ROOT)
-    print(f'Moteurs de révision installés : {ROOT}')
+        os.rename(staging, root)
+    print(f'Moteurs de révision installés : {root}')
 
 if __name__ == '__main__':
     main()

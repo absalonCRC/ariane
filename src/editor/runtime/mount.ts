@@ -27,6 +27,7 @@ import { sectionDraft, type SectionDraft } from '../../project/draft';
 import { DocumentCounts } from '../counts';
 import { findTextMatch, highlightTextMatch, textSearchHighlight } from '../textSearch';
 import { prepareCitationInsertion } from '../citationInsertion';
+import { nextWord, type PredictionConfiguration } from '../nextWord';
 interface RuntimeRefs {
   host: RefObject<HTMLDivElement | null>;
   latest: RefObject<Props>;
@@ -38,6 +39,7 @@ interface RuntimeRefs {
   wordTimer: RefObject<NodeJS.Timeout | null>;
   menuRef: RefObject<OpenMenu>;
   focusPreviewScroll: RefObject<{ scroller: HTMLElement; top: number; left: number } | null>;
+  prediction: RefObject<PredictionConfiguration | null>;
 }
 export function mountEditor({
   host,
@@ -50,6 +52,7 @@ export function mountEditor({
   wordTimer,
   menuRef,
   focusPreviewScroll,
+  prediction,
 }: RuntimeRefs) {
   if (!host.current) return;
   if (!latest.current.sections.length) {
@@ -194,6 +197,7 @@ export function mountEditor({
     selection: { anchor: Math.min(latest.current.settings.cursor, data.text.length) },
     extensions: [
       history(),
+      nextWord(() => prediction.current),
       EditorState.transactionFilter.of((tr) =>
         tr.docChanged && latest.current.readOnly ? [] : tr,
       ),

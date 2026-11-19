@@ -1,0 +1,38 @@
+[
+  {
+    "language": "fr",
+    "learn": [
+      "Au bout du quai, Maëlys attend la barque. Elle replie le manteau sous l’auvent. Dans le carnet, elle note les marées de septembre. La lampe de cuivre éclaire l’écluse. Le vieux passeur traverse la brume avant l’aube. Derrière la digue, on entend l’eau battre.",
+      "Selon le registre, le chantier emploie des tailleurs de pierre. Les relevés de hauteur figurent dans le dossier. Le plan cadastral indique les limites de la parcelle. Le rapport mentionne un dénivelé de trois mètres. Les observations sur place confirment la présence de calcaire. Pour chaque mesure, le carnet conserve l’heure et le lieu."
+    ],
+    "test": [
+      "Chaque matin, au bout du quai, Maëlys attend la barque sans quitter les roseaux des yeux. La lampe de cuivre éclaire l’écluse malgré la brume. La veille, elle note les marées de septembre dans un second carnet. Derrière la digue, on entend l’eau tout au long de la nuit.",
+      "À la première lecture, le plan cadastral indique les limites de la parcelle nord. Les relevés de hauteur figurent dans le dossier du chantier. Après comparaison, les observations sur place confirment la présence de calcaire au pied du mur. Pour chaque mesure, le carnet conserve l’heure exacte."
+    ],
+    "isolation": ["la lampe de ", "cuivre", "le plan cadastral ", "indique"]
+  },
+  {
+    "language": "en",
+    "learn": [
+      "Behind the station, Nora lifts the lantern above the gate. The river carries the ferry past the mill. At the end of the platform, she waits for the conductor. Inside the old signal box, the brass clock ticks. A gust lifts the curtain in the empty room.",
+      "The station survey lists the span of each bridge. The annual register records the owner and the year of construction. Field notes describe the timber below the platform. According to the inventory, the southern pier requires inspection. The ledger records the gauge next to the date."
+    ],
+    "test": [
+      "Before dawn, behind the station, Nora lifts the lantern so the child can see the path. At the end of the platform, she waits for the conductor in the cold. Inside the old signal box, the brass clock ticks while the river carries the ferry downstream.",
+      "In the latest draft, the station survey lists the span of each bridge and its material. The annual register records the owner of the railway siding. According to the inventory, the southern pier requires inspection this winter. The ledger records the gauge and the temperature."
+    ],
+    "isolation": ["the brass ", "clock", "the annual register ", "records"]
+  },
+  {
+    "language": "es",
+    "learn": [
+      "Al borde del canal, Lucía recoge la cuerda. La barca de madera cruza bajo el puente. El farol de hierro ilumina la orilla. En la casa vacía, la abuela guarda la llave dentro del cajón. El viento empuja las hojas hacia el agua.",
+      "El plano municipal señala la ubicación de los pozos. El registro de obras conserva los permisos del barrio. Las mediciones del cauce figuran en el informe. Según el inventario, el puente oriental requiere una inspección. Cada ficha incluye la fecha y el nombre del técnico."
+    ],
+    "test": [
+      "Antes de amanecer, al borde del canal, Lucía recoge la cuerda para sujetar el bote. La barca de madera cruza bajo el puente de piedra. En la casa vacía, la abuela guarda la llave y cierra la ventana. El farol de hierro ilumina la orilla hasta que sale el sol.",
+      "Para la segunda visita, el plano municipal señala la ubicación de los pozos del norte. Las mediciones del cauce figuran en el informe más reciente. Según el inventario, el puente oriental requiere una inspección antes del otoño. Cada ficha incluye la fecha del levantamiento."
+    ],
+    "isolation": ["el farol de ", "hierro", "el plano municipal ", "señala"]
+  }
+]

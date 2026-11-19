@@ -49,11 +49,16 @@ fn authorize(label: &str, request: &serde_json::Value) -> Result<()> {
                 | "appClose"
                 | "quit"
                 | "inboxPreferences"
+                | "predictionPreferences"
+                | "predictWord"
+                | "predictionFeedback"
         );
     if !allowed
         || (kind == "appClose"
             && !matches!(request["action"].as_str(), Some("hide-capture" | "quit")))
         || (kind == "inboxPreferences" && !request["value"].is_null())
+        || (matches!(kind, "predictionPreferences" | "predictWord" | "predictionFeedback")
+            && (!request["projectPath"].is_null() || !request["value"].is_null()))
     {
         return Err("Cette fenêtre ne peut pas modifier le projet ou ses réglages.".into());
     }
@@ -72,6 +77,11 @@ mod tests {
             "settings",
             "inboxTransfer",
             "inboxBackup",
+            "projectBackup",
+            "projectRestoreCopy",
+            "installRuntime",
+            "resetPrediction",
+            "forgetPredictionProject",
             "globalShortcutRecording",
         ] {
             assert!(authorize("capture", &serde_json::json!({"type":kind})).is_err());
@@ -83,5 +93,14 @@ mod tests {
         )
         .is_err());
         assert!(authorize("other", &serde_json::json!({"type":"inboxSave"})).is_err());
+    }
+
+    #[test]
+    fn compact_only_queries_and_rates_the_common_profile() {
+        for kind in ["predictWord", "predictionFeedback", "predictionPreferences"] {
+            assert!(authorize("capture", &serde_json::json!({"type":kind})).is_ok());
+            assert!(authorize("capture", &serde_json::json!({"type":kind,"projectPath":"/project"})).is_err());
+            assert!(authorize("capture", &serde_json::json!({"type":kind,"value":{"enabled":true}})).is_err());
+        }
     }
 }

@@ -1,3 +1,5 @@
+import type { PredictionPreferences, PredictionStatus, WordSuggestion } from './prediction';
+import type { RuntimeModule, RuntimeModules } from './runtimeModules';
 import type {
   InboxCapture,
   InboxPage,
@@ -75,6 +77,16 @@ export interface Requests {
   inboxTransfer: { operation: CaptureTransfer };
   inboxBackup: { path: string };
   inboxRestore: { path: string };
+  projectBackup: { projectPath: string; destination: string };
+  projectRestoreCopy: { path: string; destination: string };
+  runtimeModules: {};
+  installRuntime: { module: RuntimeModule };
+  cancelRuntimeInstall: {};
+  predictionPreferences: { projectPath?: string; value?: PredictionPreferences };
+  predictWord: { projectPath?: string; language: string; context: string };
+  predictionFeedback: { projectPath?: string; token: string; epoch: number; accepted: boolean };
+  resetPrediction: {};
+  forgetPredictionProject: { projectPath: string; forget: boolean };
   captureWindow: { action: 'toggle' | 'main' | 'inbox' };
   appClose: { action: 'quit' | 'hide-main' | 'hide-capture' };
   appReady: {};
@@ -259,6 +271,16 @@ export interface Responses {
   inboxTransfer: InboxCapture;
   inboxBackup: boolean;
   inboxRestore: string;
+  projectBackup: string;
+  projectRestoreCopy: string;
+  runtimeModules: RuntimeModules;
+  installRuntime: boolean;
+  cancelRuntimeInstall: boolean;
+  predictionPreferences: PredictionStatus;
+  predictWord: WordSuggestion | null;
+  predictionFeedback: boolean;
+  resetPrediction: boolean;
+  forgetPredictionProject: boolean;
   captureWindow: boolean;
   appClose: string;
   appReady: boolean;
