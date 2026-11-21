@@ -224,6 +224,7 @@ pub enum Request {
         id: String,
         keep_local: bool,
         pending: Option<String>,
+        pending_writing_aids: Option<Vec<crate::model::WritingAid>>,
     },
     Vaults,
     ConnectVault {

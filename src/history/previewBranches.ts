@@ -1,3 +1,4 @@
+import { detachWritingAids } from '../project/writingAids';
 import type { EntityCatalog, EntityIdentity } from '../contracts/entityIdentity';
 import type { EntityRelation } from '../contracts/entityRelations';
 import { emptyCatalog } from '../entities/model';
@@ -412,8 +413,10 @@ export function previewHistory(
       chosen &&
       entry.fields.every((f) => f === 'text' || f === 'outline')
     ) {
-      const merged = { ...entry.result };
-      if (entry.fields.includes('text')) merged.text = chosen.text;
+      let merged = { ...entry.result };
+      if (entry.fields.includes('text') && merged.text !== chosen.text) {
+        merged = detachWritingAids({ ...merged, text: chosen.text });
+      }
       if (entry.fields.includes('outline')) merged.outline = chosen.outline;
       if (merged.outline && !validOutline(merged.text, merged.outline))
         throw new Error(
@@ -428,7 +431,7 @@ export function previewHistory(
         typeof r.text !== 'string'
       )
         throw new Error('Choisissez un côté pour les changements de structure.');
-      chosen = { ...entry.result, text: r.text, outline: null };
+      chosen = detachWritingAids({ ...entry.result, text: r.text, outline: null });
     }
     result.sections = result.sections.filter((s) => s.id !== entry.id);
     if (chosen) result.sections.push(clone(chosen));

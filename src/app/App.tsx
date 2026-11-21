@@ -949,7 +949,7 @@ export function App() {
               },
               sections: scenes,
               generation: doc.generation,
-              readOnly: pageActive || workspace.libraryBusy || branches.busy || !!filteredTag,
+              readOnly: pageActive || workspace.historyMode || workspace.libraryBusy || branches.busy || !!filteredTag,
               settings: doc.settings,
               immersiveFocus: focusActive,
               projectPath: p.path,
@@ -1113,6 +1113,7 @@ export function App() {
             anchor={searching || workspace.historyMode || !!filteredTag ? null : textSelection}
             onFormat={(format) => editor.current?.format(format)}
             onAnnotate={native ? workspace.openAnnotations : undefined}
+            onTry={() => editor.current?.writingAid('trial-start')}
           />
           {lineDetailVisible && lineDetail && !filteredTag && (
             <OutlineDetails

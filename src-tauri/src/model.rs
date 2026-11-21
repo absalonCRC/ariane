@@ -5,6 +5,8 @@ pub fn manuscript_role() -> String { "manuscript".into() }
 #[serde(rename_all = "camelCase")]
 pub struct Section {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub writing_aids: Vec<WritingAid>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub tag_ids: Vec<String>,
     pub id: String,
     pub parent: Option<String>,
@@ -45,12 +47,31 @@ pub struct Project {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TextPatch {
+    #[serde(default)]
+    pub writing_aids: Option<Vec<WritingAid>>,
     pub id: String,
     pub revision: i64,
     pub text: String,
     #[serde(default)]
     pub outline: Option<Outline>,
 }
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WritingAid {
+    pub id: String,
+    pub kind: WritingAidKind,
+    pub from: Option<usize>,
+    pub quote: String,
+    pub value: String,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum WritingAidKind {
+    Blank,
+    Trial,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Outline {

@@ -5758,5 +5758,32 @@
   "Le contenu de la sauvegarde ne correspond pas à son inventaire.": [
     "The backup contents do not match its inventory.",
     "El contenido de la copia de seguridad no coincide con su inventario."
-  ]
+  ],
+  "Laisser un blanc": ["Leave a blank", "Dejar un espacio en blanco"],
+  "Blanc suivant": ["Next blank", "Siguiente espacio en blanco"],
+  "Compléter le blanc": ["Fill the blank", "Completar el espacio en blanco"],
+  "Essayer une formulation": ["Try another phrasing", "Probar otra formulación"],
+  "Repères d’écriture": ["Writing aids", "Marcas de escritura"],
+  "Placez le curseur dans le manuscrit.": ["Place the cursor in the manuscript.", "Coloca el cursor en el manuscrito."],
+  "Placez le curseur sur un blanc.": ["Place the cursor on a blank.", "Coloca el cursor sobre un espacio en blanco."],
+  "Sélectionnez une formulation dans un paragraphe.": ["Select a phrase within one paragraph.", "Selecciona una frase dentro de un párrafo."],
+  "Ouvrez un texte pour voir ses repères.": ["Open a text to view its writing aids.", "Abre un texto para ver sus marcas."],
+  "Aucun blanc dans le manuscrit.": ["There are no blanks in the manuscript.", "No hay espacios en blanco en el manuscrito."],
+  "Essai de formulation": ["Phrasing trial", "Prueba de formulación"],
+  "Blanc à compléter": ["Blank to fill", "Espacio en blanco pendiente"],
+  "Passage à rattacher": ["Passage to reattach", "Pasaje por volver a vincular"],
+  "Aucun repère dans le texte ouvert.": ["There are no writing aids in the open text.", "No hay marcas de escritura en el texto abierto."],
+  "Indice privé (facultatif)": ["Private hint (optional)", "Pista privada (opcional)"],
+  "Insérer le blanc": ["Insert blank", "Insertar espacio en blanco"],
+  "Autre formulation": ["Alternative phrasing", "Formulación alternativa"],
+  "Retirer le repère": ["Remove writing aid", "Quitar la marca"],
+  "Ce passage possède déjà un repère de ce type.": ["This passage already has an aid of this kind.", "Este pasaje ya tiene una marca de este tipo."],
+  "Rattacher à la sélection": ["Reattach to selection", "Volver a vincular a la selección"],
+  "Formulation affichée": ["Displayed phrasing", "Formulación visible"],
+  "Original": ["Original", "Original"],
+  "Essai": ["Trial", "Prueba"],
+  "Garder l’original": ["Keep the original", "Conservar el original"],
+  "Adopter l’essai": ["Use the trial phrasing", "Adoptar la formulación de prueba"],
+  "Texte du blanc": ["Replacement text", "Texto de sustitución"],
+  "Remplacer le blanc": ["Replace the blank", "Sustituir el espacio en blanco"]
 }

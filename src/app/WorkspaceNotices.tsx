@@ -88,6 +88,9 @@ export function WorkspaceNotices({ workspace }: { workspace: Workspace; embedded
                       pending:
                         doc.ref.current?.sections.find((s) => s.id === error.split(':')[1])?.text ??
                         null,
+                      pendingWritingAids: doc.ref.current?.sections.find(
+                        (s) => s.id === error.split(':')[1],
+                      )?.writingAids,
                     })
                       .then((p) => {
                         activate(p);
@@ -106,6 +109,9 @@ export function WorkspaceNotices({ workspace }: { workspace: Workspace; embedded
                       pending:
                         doc.ref.current?.sections.find((s) => s.id === error.split(':')[1])?.text ??
                         null,
+                      pendingWritingAids: doc.ref.current?.sections.find(
+                        (s) => s.id === error.split(':')[1],
+                      )?.writingAids,
                     })
                       .then((p) => {
                         activate(p);

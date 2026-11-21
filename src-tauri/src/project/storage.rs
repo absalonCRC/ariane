@@ -141,6 +141,9 @@ fn save_report_with(
                 .map(|json| serde_json::from_str::<Outline>(&json).app())
                 .transpose()?;
             effective_outline(patch, &old, old_outline)?;
+            if let Some(aids) = &patch.writing_aids {
+                super::writing_aids::validate(&patch.text, aids)?;
+            }
             validate_disk(&root_dir, &patch.id, &old, &mir, pending.as_deref())?;
         }
         let tx = c
@@ -160,9 +163,17 @@ fn save_report_with(
                 .map(|json| serde_json::from_str::<Outline>(&json).app())
                 .transpose()?;
             let next_outline = effective_outline(p, &old, old_outline.clone())?;
-            if old != p.text || old_outline != next_outline {
+            let raw_aids: String = tx.query_row(
+                "SELECT writing_aids FROM sections WHERE id=?", [&p.id], |r| r.get(0)
+            ).app()?;
+            let previous_aids = serde_json::from_str::<Vec<WritingAid>>(&raw_aids).app()?;
+            let mut next_aids = p.writing_aids.clone().unwrap_or_else(|| previous_aids.clone());
+            if p.writing_aids.is_none() && old != p.text {
+                super::writing_aids::detach(&mut next_aids);
+            }
+            if old != p.text || old_outline != next_outline || previous_aids != next_aids {
                 // Keep the pre-edit state before a substantial deletion or replacement.
-                if !old.is_empty() {
+                if !old.is_empty() && old != p.text {
                     let prefix = old
                         .chars()
                         .zip(p.text.chars())
@@ -189,19 +200,23 @@ fn save_report_with(
                     .map(|outline| serde_json::to_string(&outline).app())
                     .transpose()?;
                 tx.execute(
-                    "UPDATE sections SET text=?,outline=?,revision=revision+1 WHERE id=?",
-                    params![p.text, encoded, p.id],
+                    "UPDATE sections SET text=?,outline=?,writing_aids=?,revision=revision+1 WHERE id=?",
+                    params![p.text, encoded, serde_json::to_string(&next_aids).app()?, p.id],
                 )
                 .app()?;
                 if !p.text.is_empty() {
                     crate::history::checkpoint_with(&tx, &p.id, false)?;
                 }
             }
+            if old == p.text && pending.is_none() && !base.is_empty() && base == mir
+                && mir == hash(&old) {
+                continue;
+            }
             tx.execute("INSERT INTO mirror_pending(id,base) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET base=excluded.base", params![p.id, base]).app()?;
         }
         let mut saved = Vec::with_capacity(patches.len());
         {
-            let mut query = tx.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids FROM sections WHERE id=?").app()?;
+            let mut query = tx.prepare("SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids,writing_aids FROM sections WHERE id=?").app()?;
             for p in &patches {
                 saved.push(query.query_row([&p.id], row_section).app()?);
             }
@@ -209,6 +224,13 @@ fn save_report_with(
         tx.commit().app()?;
         let mut mirror_errors = Vec::new();
         for section in &saved {
+            if !c.query_row(
+                "SELECT EXISTS(SELECT 1 FROM mirror_pending WHERE id=?)",
+                [&section.id],
+                |r| r.get::<_, bool>(0),
+            ).app()? {
+                continue;
+            }
             if let Err(message) =
                 before_mirror(section).and_then(|_| mirror(&root_dir, &c, section))
             {
@@ -283,6 +305,7 @@ mod tests {
         save(
             &root,
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 revision: 0,
                 text: "Texte".into(),
@@ -297,6 +320,7 @@ mod tests {
         assert!(save(
             &root,
             vec![TextPatch {
+                writing_aids: None,
                 id,
                 revision: 1,
                 text: "Autre".into(),
@@ -339,6 +363,7 @@ mod tests {
         let report = save_report_with(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 revision: 0,
                 text: "Durable".into(),
@@ -360,6 +385,7 @@ mod tests {
         let saved = save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id,
                 revision: 1,
                 text: "Suite".into(),
@@ -384,6 +410,7 @@ mod tests {
                 save(
                     &root,
                     vec![TextPatch {
+                        writing_aids: None,
                         id,
                         revision: 0,
                         text: text.into(),
@@ -423,6 +450,7 @@ mod tests {
         let saved = save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: s.id.clone(),
                 revision: 0,
                 text: "A\nB".into(),
@@ -436,6 +464,7 @@ mod tests {
         let saved = save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: s.id.clone(),
                 revision: 1,
                 text: "A\nB".into(),
@@ -481,6 +510,7 @@ mod tests {
             assert!(save(
                 d.path(),
                 vec![TextPatch {
+                    writing_aids: None,
                     id: s.id.clone(),
                     revision: 0,
                     text: text.into(),
@@ -501,6 +531,7 @@ mod tests {
         save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: first.id.clone(),
                 revision: 0,
                 text: "existing".into(),
@@ -511,6 +542,7 @@ mod tests {
         save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: second.id.clone(),
                 revision: 0,
                 text: "current".into(),
@@ -527,12 +559,14 @@ mod tests {
             d.path(),
             vec![
                 TextPatch {
+                    writing_aids: None,
                     id: first.id.clone(),
                     revision: 1,
                     text: "new".into(),
                     outline: None
                 },
                 TextPatch {
+                    writing_aids: None,
                     id: second.id.clone(),
                     revision: 0,
                     text: "stale".into(),
@@ -582,6 +616,7 @@ mod tests {
         save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 revision: 0,
                 text: "A\nB".into(),
@@ -592,6 +627,7 @@ mod tests {
         let same = save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 revision: 1,
                 text: "A\nB".into(),
@@ -604,6 +640,7 @@ mod tests {
         let changed = save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id,
                 revision: 1,
                 text: "Changed".into(),
@@ -622,6 +659,7 @@ mod tests {
         let saved = save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id,
                 revision: 0,
                 text: "A\n".into(),
@@ -638,6 +676,7 @@ mod tests {
         save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 revision: 0,
                 text: "A\nB".into(),
@@ -646,7 +685,7 @@ mod tests {
         )
         .unwrap();
         fs::write(scene_path(d.path(), &id), "Outside").unwrap();
-        let resolved = resolve_external(d.path(), &id, false, Some("Pending".into())).unwrap();
+        let resolved = resolve_external(d.path(), &id, false, Some("Pending".into()), None).unwrap();
         assert_eq!(resolved.sections[0].text, "Outside");
         assert_eq!(resolved.sections[0].outline, None);
         let copies = fs::read_dir(d.path().join("recuperation"))
@@ -663,6 +702,7 @@ mod tests {
         save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: s.id.clone(),
                 revision: 0,
                 text: "Été à Toulouse".into(),
@@ -674,6 +714,7 @@ mod tests {
         assert!(save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: s.id.clone(),
                 revision: 0,
                 text: "Stale".into(),
@@ -690,6 +731,7 @@ mod tests {
         save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 revision: 0,
                 text: "local".into(),
@@ -708,6 +750,7 @@ mod tests {
         assert!(save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 revision: 1,
                 text: "new local".into(),
@@ -717,7 +760,7 @@ mod tests {
         .unwrap_err()
         .starts_with("EXTERNAL"));
         assert_eq!(
-            resolve_external(d.path(), id, false, Some("unsaved local".into()))
+            resolve_external(d.path(), id, false, Some("unsaved local".into()), None)
                 .unwrap()
                 .sections[0]
                 .text,

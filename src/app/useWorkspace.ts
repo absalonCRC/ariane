@@ -1,3 +1,4 @@
+import { nextBlank } from '../project/writingAids';
 import { useWritingActivity } from '../profile/useWritingActivity';
 import { useNoteActivity } from '../notes/useNoteActivity';
 import { useWorkspaceCommands } from './commands/useWorkspaceCommands';
@@ -14,7 +15,7 @@ import type { Project, Section } from '../contracts/project';
 import type { Source } from '../contracts/sources';
 import type { Surface } from './workspace/types';
 import { useProject } from '../project/useProject';
-import { scenesFor } from '../project/tree';
+import { manuscriptSections, scenesFor } from '../project/tree';
 import type { EditorHandle, VisibleText } from '../editor/Editor';
 import type { IndexProgress } from '../sources/Library';
 import { useNativeClose } from './useNativeClose';
@@ -406,6 +407,31 @@ export function useWorkspace() {
     fail,
     setReader,
   });
+  const [blankTarget, setBlankTarget] = useState<{ project: Project; section: string; from: number } | null>(null);
+  async function locateNextBlank() {
+    const project = doc.ref.current;
+    if (!project || libraryLock.current) return;
+    const passage = editor.current?.passage();
+    const target = nextBlank(manuscriptSections(project.sections), passage?.section ?? active, passage?.to ?? 0);
+    if (!target) {
+      fail(t('Aucun blanc dans le manuscrit.'));
+      return;
+    }
+    setHistoryMode(false);
+    openSurface('none');
+    if (scenes.some((scene) => scene.id === target.section) || await select(target.section)) {
+      if (doc.ref.current === project) setBlankTarget({ ...target, project });
+    }
+  }
+  useEffect(() => {
+    if (!blankTarget) return;
+    const frame = requestAnimationFrame(() => {
+      if (doc.ref.current === blankTarget.project &&
+        editor.current?.revealBlank(blankTarget.section, blankTarget.from)) editor.current.focus();
+      setBlankTarget(null);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [blankTarget]);
   const commands = useWorkspaceCommands({
     p,
     doc,
@@ -414,6 +440,7 @@ export function useWorkspace() {
     setPalette,
     setSearch,
     editor,
+    locateNextBlank,
     openAnnotations,
     setSurface,
     prepareManuscript,

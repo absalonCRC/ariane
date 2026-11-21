@@ -1,7 +1,7 @@
 use crate::error::{AppResult, Result};
 use rusqlite::{Connection, TransactionBehavior};
 use std::path::Path;
-const SCHEMA_VERSION: i64 = 5;
+const SCHEMA_VERSION: i64 = 6;
 /// SQLite itself refuses symlink filenames. Files used by the mirror protocol are
 /// opened relative to a verified directory descriptor in `io`.
 pub fn database(root: &Path) -> Result<Connection> {
@@ -44,8 +44,10 @@ pub fn database(root: &Path) -> Result<Connection> {
                     "smart-tags"
                 } else if schema < 4 {
                     "identites"
-                } else {
+                } else if schema < 5 {
                     "captures"
+                } else {
+                    "reperes-ecriture"
                 },
             )?;
         }
@@ -149,6 +151,15 @@ pub fn database(root: &Path) -> Result<Connection> {
                 [uuid::Uuid::new_v4().to_string()],
             )
             .app()?;
+        }
+        if current < 6 {
+            let exists: bool = tx.query_row(
+                "SELECT EXISTS(SELECT 1 FROM pragma_table_info('sections') WHERE name='writing_aids')",
+                [], |r| r.get(0),
+            ).app()?;
+            if !exists {
+                tx.execute_batch("ALTER TABLE sections ADD COLUMN writing_aids TEXT NOT NULL DEFAULT '[]';").app()?;
+            }
         }
         tx.pragma_update(None, "user_version", SCHEMA_VERSION)
             .app()?;

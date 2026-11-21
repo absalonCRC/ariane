@@ -6,6 +6,15 @@
 - Boutons, champs de saisie et sélecteurs harmonisés en formes rondes ou en capsules, avec des contenus recentrés et des repères d’activité arrondis.
 - Adaptation des commandes de thème, de Versions et du catalogue Smart-tags à ces formes et à l’espace disponible.
 
+## 0.7.1 — candidat de développement, 21 novembre 2026
+
+- Blancs `[…]` avec indice privé, navigation entre les scènes du manuscrit et remplacement annulable.
+- Essais de formulation avec aperçu dans le paragraphe, sauvegarde du brouillon et adoption en une édition annulable.
+- Soulignement des mots répétés dans le paragraphe et ses deux voisins, en thèmes clair et sombre.
+- Schéma SQLite de projet 6, avec copie de récupération avant migration.
+
+Voir [la recette 0.7.1](docs/validation-0.7.1.md).
+
 ## 0.7.0 — candidat de développement, 18 novembre 2026
 
 - Prédiction du prochain mot dans la ligne, après le curseur, dans le manuscrit, le focus et la capture rapide. Entrée accepte le mot affiché. Échap l’écarte. La prédiction s’active dans les paramètres et sa visibilité se règle.

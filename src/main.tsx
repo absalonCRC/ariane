@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { getLocale } from './i18n';
 import { ContextMenuProvider } from './components/ContextMenu';
 import { ControlHints } from './components/ControlHints';
+import { NativeEditingHistory } from './editor/NativeEditingHistory';
 import './styles/tokens.css';
 import './styles/editor.css';
 import './styles/surfaces.css';
@@ -22,6 +23,7 @@ void surface.then((Surface) => {
   createRoot(document.getElementById('root')!).render(
     <ContextMenuProvider>
       <ControlHints />
+      <NativeEditingHistory />
       <Surface />
     </ContextMenuProvider>,
   );

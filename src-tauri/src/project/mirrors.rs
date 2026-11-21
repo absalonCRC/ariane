@@ -57,6 +57,7 @@ pub fn resolve_external(
     id: &str,
     keep_local: bool,
     pending: Option<String>,
+    pending_aids: Option<Vec<crate::model::WritingAid>>,
 ) -> Result<Project> {
     super::with_lock(root, || {
         super::validate_id(id)?;
@@ -64,6 +65,9 @@ pub fn resolve_external(
         let mut c = database(root)?;
         let mut s = section(&c, id)?.ok_or("Section introuvable")?;
         let disk = scene_disk(&root_dir, id)?.ok_or("Miroir introuvable.")?;
+        if let Some(aids) = &pending_aids {
+            super::writing_aids::validate(pending.as_deref().unwrap_or(&s.text), aids)?;
+        }
         // Preserve both versions in a verified recovery directory first.
         let dir = root_dir
             .child("recuperation", true)?
@@ -80,13 +84,19 @@ pub fn resolve_external(
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .app()?;
         if keep_local {
-            if let Some(text) = pending {
+            if let Some(text) = pending.or_else(|| pending_aids.as_ref().map(|_| s.text.clone())) {
                 if text != s.text {
                     s.outline = None;
+                    if pending_aids.is_none() {
+                        super::writing_aids::detach(&mut s.writing_aids);
+                    }
+                }
+                if let Some(aids) = pending_aids {
+                    s.writing_aids = aids;
                 }
                 s.text = text;
                 tx.execute(
-                    "UPDATE sections SET text=?,outline=?,revision=revision+1 WHERE id=?",
+                    "UPDATE sections SET text=?,outline=?,writing_aids=?,revision=revision+1 WHERE id=?",
                     params![
                         s.text,
                         s.outline
@@ -94,6 +104,7 @@ pub fn resolve_external(
                             .map(serde_json::to_string)
                             .transpose()
                             .app()?,
+                        serde_json::to_string(&s.writing_aids).app()?,
                         id
                     ],
                 )
@@ -101,6 +112,17 @@ pub fn resolve_external(
             }
             tx.execute("INSERT INTO mirror_pending(id,base) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET base=excluded.base", params![id, hash(&disk)]).app()?;
         } else {
+            let original = if pending_aids.is_some() {
+                pending.as_deref().unwrap_or(&s.text)
+            } else {
+                &s.text
+            };
+            if let Some(aids) = pending_aids {
+                s.writing_aids = aids;
+            }
+            if disk != original {
+                super::writing_aids::detach(&mut s.writing_aids);
+            }
             let outline = if disk == s.text {
                 s.outline
                     .as_ref()
@@ -111,8 +133,8 @@ pub fn resolve_external(
                 None
             };
             tx.execute(
-                "UPDATE sections SET text=?,outline=?,mirror=?,revision=revision+1 WHERE id=?",
-                params![disk, outline, hash(&disk), id],
+                "UPDATE sections SET text=?,outline=?,writing_aids=?,mirror=?,revision=revision+1 WHERE id=?",
+                params![disk, outline, serde_json::to_string(&s.writing_aids).app()?, hash(&disk), id],
             )
             .app()?;
             tx.execute("DELETE FROM mirror_pending WHERE id=?", [id])

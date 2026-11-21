@@ -1,3 +1,4 @@
+import type { WritingAid } from './writingAids';
 import type { Settings } from './settings';
 import type { SmartTag } from './smartTags';
 export interface OutlineNode {
@@ -15,6 +16,7 @@ export interface Outline {
 }
 
 export interface Section {
+  writingAids?: WritingAid[];
   tagIds?: string[];
   id: string;
   parent: string | null;
@@ -45,6 +47,7 @@ export interface Project {
 }
 
 export interface TextPatch {
+  writingAids?: WritingAid[];
   id: string;
   revision: number;
   text: string;

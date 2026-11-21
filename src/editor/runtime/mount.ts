@@ -1,3 +1,6 @@
+import type { WritingAid } from '../../contracts/writingAids';
+import { editorAids, writingAids } from '../writingAids';
+import { nearbyRepetitions } from '../nearbyRepetitions';
 import { writingWordDelta } from '../writingDelta';
 import type { OutlineEditor } from '../outline/state';
 import type { RefObject } from 'react';
@@ -11,7 +14,7 @@ import { entityMarks, entityInteractions } from '../entities';
 import { EditorState, Compartment } from '@codemirror/state';
 import { EditorView, keymap, drawSelection } from '@codemirror/view';
 import { history, defaultKeymap, historyKeymap } from '@codemirror/commands';
-import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
+import { searchKeymap } from '@codemirror/search';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { liveMarkdown } from '../markdown';
 import { compose, sectionMapping, type Span } from '../composite';
@@ -40,6 +43,7 @@ interface RuntimeRefs {
   menuRef: RefObject<OpenMenu>;
   focusPreviewScroll: RefObject<{ scroller: HTMLElement; top: number; left: number } | null>;
   prediction: RefObject<PredictionConfiguration | null>;
+  onAidUpdate: () => void;
 }
 export function mountEditor({
   host,
@@ -53,6 +57,7 @@ export function mountEditor({
   menuRef,
   focusPreviewScroll,
   prediction,
+  onAidUpdate,
 }: RuntimeRefs) {
   if (!host.current) return;
   if (!latest.current.sections.length) {
@@ -255,7 +260,8 @@ export function mountEditor({
             ),
           ]
         : []),
-      highlightSelectionMatches(),
+      nearbyRepetitions(mapping.field),
+      writingAids(latest.current.sections, mapping.field),
       textSearchHighlight,
       entityMarks,
       entityInteractions((mention) => {
@@ -302,39 +308,72 @@ export function mountEditor({
         }
         const before = u.startState.field(outline.field).nodes;
         const after = u.state.field(outline.field).nodes;
-        if (u.docChanged || before !== after) {
-          const touched = u.state.field(outline.field).changedSections;
+        const aidsBefore = editorAids(u.startState);
+        const aidsAfter = editorAids(u.state);
+        const aidSections = new Set<string>();
+        if (aidsBefore !== aidsAfter) {
+          const oldStarts = new Map(spans.current.map((span) => [span.id, span.from]));
+          const newStarts = new Map(u.state.field(mapping.field).map((span) => [span.id, span.from]));
+          const key = (aid: (typeof aidsBefore)[number]) => aid.section + ':' + aid.id;
+          const previous = new Map(aidsBefore.map((aid) => [key(aid), aid]));
+          for (const aid of aidsAfter) {
+            const old = previous.get(key(aid));
+            previous.delete(key(aid));
+            const shift = (newStarts.get(aid.section) ?? 0) - (oldStarts.get(aid.section) ?? 0);
+            if (!old || aid.kind !== old.kind || aid.value !== old.value || aid.quote !== old.quote ||
+              aid.from !== (old.from === null ? null : old.from + shift)) aidSections.add(aid.section);
+          }
+          for (const aid of previous.values()) aidSections.add(aid.section);
+          onAidUpdate();
+        }
+        if (u.docChanged || before !== after || aidSections.size) {
+          const touched = u.docChanged || before !== after
+            ? u.state.field(outline.field).changedSections
+            : new Set<string>();
           spans.current = u.state.field(mapping.field);
           const snapshot = u.state;
           const drafts = new Map<string, SectionDraft>();
           for (const span of spans.current)
-            if (touched.has(span.id)) {
+            if (touched.has(span.id) || aidSections.has(span.id)) {
+              const keepOutline = !touched.has(span.id)
+                ? latest.current.sections.find((section) => section.id === span.id)?.outline
+                : undefined;
               const draft = sectionDraft(() => {
                 const text = snapshot.sliceDoc(span.from, span.to);
-                const value = outline.serialize(snapshot, span);
+                const value = touched.has(span.id) ? outline.serialize(snapshot, span) : keepOutline;
                 return {
                   text,
-                  outline: { ...value, nodes: value.nodes.filter((n) => n.start <= text.length) },
+                  writingAids: aidsAfter.filter((aid) => aid.section === span.id)
+                    .map(({ section: _, ...aid }) => ({
+                      ...aid, from: aid.from === null ? null : aid.from - span.from,
+                    })),
+                  outline: value && { ...value, nodes: value.nodes.filter((n) => n.start <= text.length) },
                 };
               });
               drafts.set(span.id, draft);
-              pendingCounts.set(span.id, draft);
+              if (u.docChanged && touched.has(span.id)) pendingCounts.set(span.id, draft);
             }
           if (latest.current.onDraftChange) latest.current.onDraftChange(drafts);
           else {
             const changes = new Map<string, string>(),
-              outlines = new Map<string, Outline>();
+              outlines = new Map<string, Outline>(),
+              aids = new Map<string, WritingAid[]>();
             for (const [id, draft] of drafts) {
               const value = draft();
               changes.set(id, value.text);
+              if (value.writingAids) aids.set(id, value.writingAids);
               if (value.outline) outlines.set(id, value.outline);
             }
-            latest.current.onChange(changes, outlines);
+            latest.current.onChange(changes, outlines, aids);
           }
-          sampled = null;
-          latest.current.onTyping();
-          if (wordTimer.current) clearTimeout(wordTimer.current);
-          wordTimer.current = setTimeout(count, 350);
+          if (u.docChanged || before !== after) {
+            sampled = null;
+            latest.current.onTyping();
+          }
+          if (u.docChanged) {
+            if (wordTimer.current) clearTimeout(wordTimer.current);
+            wordTimer.current = setTimeout(count, 350);
+          }
         }
         if (u.docChanged || u.viewportChanged || u.selectionSet) {
           schedule();
@@ -432,7 +471,7 @@ export function mountEditor({
         span.id,
         sectionDraft(() => ({
           text,
-          outline: { ...value, nodes: value.nodes.filter((n) => n.start <= text.length) },
+          outline: value && { ...value, nodes: value.nodes.filter((n) => n.start <= text.length) },
         })),
       );
     }

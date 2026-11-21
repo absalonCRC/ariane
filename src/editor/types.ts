@@ -1,3 +1,5 @@
+import type { WritingAid } from '../contracts/writingAids';
+import type { WritingAidCommand } from './WritingAidDialog';
 import { type NoteRef } from '../contracts/notes';
 import type { EntityBatch } from '../contracts/entities';
 import type { SelectedEntity } from '../enrichment/entityTypes';
@@ -18,6 +20,9 @@ export interface VisibleText {
   bounds?: { top: number; bottom: number; right: number };
 }
 export interface EditorHandle {
+  writingAid: (command: WritingAidCommand) => boolean;
+  revealPassage: (section: string, from: number, quote: string) => boolean;
+  revealBlank: (section: string, from: number) => boolean;
   removeSmartTag: (section: string, node: string, tag: string) => boolean;
   setLineProperty: (
     section: string,
@@ -77,7 +82,7 @@ export interface EditorProps {
   immersiveFocus?: boolean;
   focusPreview?: Settings['focus'] | null;
   scrollPreview?: boolean | null;
-  onChange: (changes: Map<string, string>, outlines?: Map<string, Outline>) => void;
+  onChange: (changes: Map<string, string>, outlines?: Map<string, Outline>, writingAids?: Map<string, WritingAid[]>) => void;
   onDraftChange?: (drafts: Map<string, SectionDraft>) => void;
   onVisible: (value: VisibleText) => void;
   onWords: (words: number) => void;

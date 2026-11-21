@@ -180,7 +180,8 @@ pub(super) fn handle(
             id,
             keep_local,
             pending,
-        } => json(project::resolve_external(&root, &id, keep_local, pending)?),
+            pending_writing_aids,
+        } => json(project::resolve_external(&root, &id, keep_local, pending, pending_writing_aids)?),
         _ => Err("Action invalide".into()),
     }
 }

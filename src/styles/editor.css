@@ -17,3 +17,63 @@
 .cm-predicted-word[data-distinct='true'] {
   color: color-mix(in srgb, var(--workspace-muted) 45%, var(--ink));
 }
+
+.cm-writing-blank {
+  color: var(--workspace-muted);
+  font-weight: 500;
+}
+
+.cm-writing-trial {
+  text-decoration: underline dashed;
+  text-decoration-color: var(--workspace-muted);
+  text-underline-offset: 0.2em;
+}
+
+.cm-nearby-repetition {
+  text-decoration: underline double currentColor;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.writing-aid-field {
+  display: grid;
+  gap: 8px;
+}
+
+.writing-aid-field input {
+  width: 100%;
+}
+
+.writing-aid-quote {
+  overflow-wrap: anywhere;
+  color: var(--workspace-muted);
+}
+
+.writing-trial-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.writing-trial-switch [aria-pressed='true'] {
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.writing-aid-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.writing-aid-list button {
+  display: grid;
+  text-align: left;
+  gap: 4px;
+  width: 100%;
+}
+
+.writing-aid-list span {
+  color: var(--workspace-muted);
+  overflow-wrap: anywhere;
+}

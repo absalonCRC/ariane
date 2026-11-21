@@ -1,3 +1,4 @@
+import { detachWritingAids } from '../project/writingAids';
 import { validOutline } from '../editor/outline/model';
 import type { MergeEntry } from '../contracts/history';
 import type { Section } from '../contracts/project';
@@ -6,6 +7,7 @@ const normalized = (section: Section | null) =>
   section && {
     ...section,
     revision: 0,
+    writingAids: section.writingAids ?? [],
     outline: section.outline ?? null,
     role: section.role ?? 'manuscript',
     included: section.included !== false,
@@ -74,6 +76,10 @@ export function mergeSections(
       }
       if (r.text !== an.text && r.text !== zn.text) r.outline = null;
       result = r as unknown as Section;
+      const sameAsCurrent = equal(result.writingAids, an.writingAids);
+      const sameAsIncoming = equal(result.writingAids, zn.writingAids);
+      if (!(sameAsCurrent && result.text === an.text) && !(sameAsIncoming && result.text === zn.text))
+        result = detachWritingAids(result);
       if (
         result.outline &&
         !validOutline(result.text, result.outline) &&

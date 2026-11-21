@@ -5,7 +5,7 @@ use crate::{
     project,
 };
 use chrono::{DateTime, Utc};
-use rusqlite::{params, Connection, OptionalExtension};
+use rusqlite::{params, Connection, OptionalExtension, TransactionBehavior};
 use std::{
     collections::{HashMap, HashSet},
     path::Path,
@@ -20,7 +20,7 @@ fn prepare(c: &Connection) -> Result<()> {
 pub fn checkpoint(root: &Path, scope: &str) -> Result<Option<Version>> {
     project::with_lock(root, || {
         let mut c = project::database(root)?;
-        let tx = c.transaction().app()?;
+        let tx = c.transaction_with_behavior(TransactionBehavior::Immediate).app()?;
         let version = checkpoint_with(&tx, scope, true)?;
         tx.commit().app()?;
         Ok(version)
@@ -137,6 +137,7 @@ mod tests {
         project::save(
             root,
             vec![TextPatch {
+                writing_aids: None,
                 id: id.into(),
                 revision,
                 text: text.into(),
@@ -234,6 +235,7 @@ mod tests {
         assert!(project::save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id,
                 revision,
                 text: "replacement".into(),

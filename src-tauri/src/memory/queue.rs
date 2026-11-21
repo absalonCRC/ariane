@@ -150,7 +150,7 @@ mod tests {
         let root = d.path();
         let p = project::create(root,"Mémoire").unwrap();
         let id = &p.sections[0].id;
-        project::save(root,vec![crate::model::TextPatch {id:id.clone(),revision:0,
+        project::save(root,vec![crate::model::TextPatch { writing_aids: None,id:id.clone(),revision:0,
             text:"Alpha.\nBeta.\nGamma.".into(),outline:Some(crate::model::Outline {version:1,nodes:vec![
                 crate::model::OutlineNode{ properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],id:"a".into(),parent:None,start:0},
                 crate::model::OutlineNode{ properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],id:"b".into(),parent:None,start:7},
@@ -180,7 +180,7 @@ mod tests {
             crate::model::OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],id:"b".into(),parent:None,start:7},
             crate::model::OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![],id:"c".into(),parent:None,start:7+middle.encode_utf16().count()+1},
         ]};
-        project::save(root,vec![crate::model::TextPatch {id:id.clone(),revision:0,text:"Alpha.\nBeta.\nGamma.".into(),outline:Some(outline("Beta."))}]).unwrap();
+        project::save(root,vec![crate::model::TextPatch { writing_aids: None,id:id.clone(),revision:0,text:"Alpha.\nBeta.\nGamma.".into(),outline:Some(outline("Beta."))}]).unwrap();
         let engine = Mutex::new(Engine::default());
         let activity = Activity::default();
         let index = root.join("sources.sqlite");
@@ -189,7 +189,7 @@ mod tests {
         for node in ["a","b","c"] { queue.run(id,Some(node),1,0,false).unwrap(); }
         let c = storage::database(root).unwrap();
         c.execute_batch("CREATE TABLE writes(key TEXT); CREATE TRIGGER cache_changed AFTER UPDATE ON memory_results BEGIN INSERT INTO writes VALUES(new.key); END;").unwrap();
-        project::save(root,vec![crate::model::TextPatch {id:id.clone(),revision:1,text:"Alpha.\n😀 Delta.\nGamma.".into(),outline:Some(outline("😀 Delta."))}]).unwrap();
+        project::save(root,vec![crate::model::TextPatch { writing_aids: None,id:id.clone(),revision:1,text:"Alpha.\n😀 Delta.\nGamma.".into(),outline:Some(outline("😀 Delta."))}]).unwrap();
         for node in ["a","b","c"] { queue.run(id,Some(node),2,0,false).unwrap(); }
         let changed:Vec<String> = c.prepare("SELECT key FROM writes").unwrap().query_map([],|r|r.get(0)).unwrap().collect::<std::result::Result<_,_>>().unwrap();
         assert_eq!(changed,vec![format!("context:0:{id}:b")]);
