@@ -6,6 +6,14 @@
 - Boutons, champs de saisie et sélecteurs harmonisés en formes rondes ou en capsules, avec des contenus recentrés et des repères d’activité arrondis.
 - Adaptation des commandes de thème, de Versions et du catalogue Smart-tags à ces formes et à l’espace disponible.
 
+## 0.7.2 — candidat de développement, 21 novembre 2026
+
+- **Aligner ici** place une phrase commune à la même hauteur dans la comparaison de Versions.
+- **Scinder la scène** présente les deux extraits dans la palette avant de valider la coupure sur Mac.
+- La roadmap programme la 0.7.5 pour la sécurité, les performances et la simplification avant la 0.8.0.
+
+Voir [la recette 0.7.2](docs/validation-0.7.2.md).
+
 ## 0.7.1 — candidat de développement, 21 novembre 2026
 
 - Blancs `[…]` avec indice privé, navigation entre les scènes du manuscrit et remplacement annulable.

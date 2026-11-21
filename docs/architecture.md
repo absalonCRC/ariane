@@ -222,3 +222,10 @@ Le schéma de projet passe de 5 à 6. La migration crée une copie SQLite sous `
 Les décalages suivent les transactions et les déplacements explicites de blocs, ainsi que les scissions et réunions de scènes. Une modification qui efface ou recouvre le passage conserve son contenu privé sous un repère à rattacher. Lors d’un changement externe ou d’une intégration de variantes, une position dont la provenance ne correspond plus au texte devient également détachée. Le rattachement part d’une sélection de l’auteur. L’ordre des blancs utilise les textes inclus, dans l’ordre du classeur. Un blanc littéral est accessible même sans indice.
 
 `nearbyRepetitions` travaille sur le paragraphe sélectionné et ses deux voisins dans la même scène. Les marques transitoires suivent la sélection selon les règles de normalisation de la recherche. Elles sont retirées par Échap, une édition du texte ou la fermeture de l’éditeur.
+
+
+## Alignement et aperçu de scission — 0.7.2
+
+`history/ComparisonRows` conserve les rangées du diff de paragraphes et les actions de reprise. `usePhraseAlignment` retrouve une sélection exacte et unique dans les deux rendus, y compris à travers les marques Markdown. Il mesure les positions des plages après le rendu et ajoute l’espace nécessaire à la colonne la plus haute. Un passage déplacé peut grouper plusieurs rangées le temps de l’alignement. Sur une fenêtre étroite, la rangée alignée retrouve une disposition côte à côte. Une phrase absente ou répétée ne modifie ni la disposition ni le défilement. L’alignement est recalculé si la largeur change et expire au changement de texte, de version ou de mode Source/Lecture.
+
+Sur Mac, la palette capture la scène, son texte, le contexte d’écriture et le curseur UTF-16 avant de donner le focus à la recherche. L’option **Scinder la scène** affiche les extraits de part et d’autre de cette position. La validation repasse par la file et l’opération native en place, après contrôle du contexte avant et après le point de reprise. La navigation, la prévisualisation et Échap se limitent à l’interface. Le schéma SQLite et le contrat IPC restent identiques.

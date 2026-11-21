@@ -1,3 +1,6 @@
+import { useMemo } from 'react';
+import { usePhraseAlignment } from './usePhraseAlignment';
+import { ComparisonRows } from './ComparisonRows';
 import { WorkspacePageHeading } from '../components/WorkspacePageHeading';
 import { localizeMessage, t, localeTag } from '../i18n';
 import { createPortal } from 'react-dom';
@@ -6,10 +9,9 @@ import type { Version } from '../contracts/history';
 import type { HistoryProps } from './types';
 import { useHistory } from './useHistory';
 import { HistoryTools } from './HistoryTools';
-import { Plus, ArrowDown, ArrowUp, ArrowRight } from 'lucide-react';
+import { Plus, ArrowDown, ArrowUp } from 'lucide-react';
 import { VersionTimeline } from './VersionTimeline';
 import { Variants } from './Variants';
-import { ReadingDiff } from './ReadingDiff';
 import '../styles/history-refinements.css';
 
 function versionLabel(version: Version) {
@@ -82,6 +84,13 @@ export function History(p: HistoryProps) {
     switchBranch,
     nextChange,
   } = useHistory(p);
+  const alignmentContext = useMemo(
+    () => ({}),
+    [p.project.path, leftId, rightId, selected?.id, rows, view, tab],
+  );
+  const canAlign =
+    !!selected?.left && !!selected.right && !loading && !error && !incompatible && !busy;
+  const alignment = usePhraseAlignment(diffRef, alignmentContext, canAlign);
   return (
     <section className="history-editor" aria-label={t('Versions du texte')} data-view={view}>
       {p.toolsHost &&
@@ -382,6 +391,18 @@ export function History(p: HistoryProps) {
                       {t('Lecture')}
                     </button>
                   </div>
+                  <div className="history-align-tool">
+                    <button
+                      type="button"
+                      className="history-align"
+                      disabled={!canAlign}
+                      onPointerDown={(event) => event.preventDefault()}
+                      onClick={alignment.align}
+                    >
+                      {t('Aligner ici')}
+                    </button>
+                    <span className="history-align-feedback" role="status">{alignment.notice}</span>
+                  </div>
                   <div
                     className="history-inline-navigation"
                     role="group"
@@ -465,84 +486,16 @@ export function History(p: HistoryProps) {
                           : t('Aucun texte dans cette sélection.')}
                       </p>
                     )}
-                    {rows.map((row, index) => (
-                      <div
-                        key={index}
-                        data-change={index}
-                        className={
-                          'history-diff-row' +
-                          (row.changed ? ' is-changed' : '') +
-                          (changes[changeIndex] === index ? ' is-current-change' : '')
-                        }
-                      >
-                        <div
-                          className={
-                            'history-diff-cell ' +
-                            (row.changed && row.left.length ? 'diff-removed' : '')
-                          }
-                        >
-                          <span
-                            className="diff-gutter"
-                            aria-label={row.changed ? t('Retrait') : undefined}
-                          >
-                            {row.changed && row.left.length ? '−' : ''}
-                            <small>{row.left.length ? row.leftStart + 1 : ''}</small>
-                          </span>
-                          <div className={'diff-prose' + (view === 'reading' ? ' is-reading' : '')}>
-                            {view === 'reading' ? (
-                              <ReadingDiff words={row.words} side="left" />
-                            ) : (
-                              row.words
-                                .filter((w) => !w.added)
-                                .map((w, i) =>
-                                  w.removed ? (
-                                    <del key={i}>{w.value}</del>
-                                  ) : (
-                                    <span key={i}>{w.value}</span>
-                                  ),
-                                )
-                            )}
-                          </div>
-                        </div>
-                        <div
-                          className={
-                            'history-diff-cell ' +
-                            (row.changed && row.right.length ? 'diff-added' : '')
-                          }
-                        >
-                          <span
-                            className="diff-gutter"
-                            aria-label={row.changed ? t('Ajout') : undefined}
-                          >
-                            {row.changed && row.right.length ? '+' : ''}
-                            <small>{row.right.length ? row.rightStart + 1 : ''}</small>
-                          </span>
-                          <div className={'diff-prose' + (view === 'reading' ? ' is-reading' : '')}>
-                            {view === 'reading' ? (
-                              <ReadingDiff words={row.words} side="right" />
-                            ) : (
-                              row.words
-                                .filter((w) => !w.removed)
-                                .map((w, i) =>
-                                  w.added ? (
-                                    <ins key={i}>{w.value}</ins>
-                                  ) : (
-                                    <span key={i}>{w.value}</span>
-                                  ),
-                                )
-                            )}
-                          </div>
-                        </div>
-                        {row.changed && rightId === 'current' && selected?.right && (
-                          <div className="history-passage-action">
-                            <button disabled={busy} onClick={() => void apply(index)}>
-                              <ArrowRight size={12} />
-                              {t('Reprendre le passage de référence')}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                    <ComparisonRows
+                      rows={rows}
+                      reading={view === 'reading'}
+                      currentChange={changes[changeIndex]}
+                      canApply={rightId === 'current' && !!selected?.right}
+                      busy={busy}
+                      apply={apply}
+                      group={alignment.group}
+                      alignedRow={alignment.alignedRow}
+                    />
                   </div>
                   <footer className="history-legend">
                     {rightId === 'current'

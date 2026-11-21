@@ -1351,6 +1351,7 @@ export function App() {
                 searchScope={p.path}
                 initialQuery={workspace.initialSearch}
                 onTextSearch={(query) => workspace.setSearchQuery(query)}
+                onOpenPanel={() => workspace.captureSplitPreview(!pageActive && !filteredTag)}
                 extraResults={
                   workspace.palette === 'text' ? (
                     <StructuredSearch
@@ -1403,6 +1404,19 @@ export function App() {
                       }))
                     : [
                         ...commands,
+                        ...(workspace.splitPreview &&
+                        !pageActive &&
+                        !workspace.historyMode &&
+                        !filteredTag
+                          ? [
+                              {
+                                id: 'split-scene',
+                                label: t('Scinder la scène'),
+                                preview: workspace.splitPreview,
+                                action: () => workspace.confirmSplitPreview(workspace.splitPreview!),
+                              },
+                            ]
+                          : []),
                         {
                           id: 'resume',
                           label: t('Reprendre le fil'),

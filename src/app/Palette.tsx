@@ -7,12 +7,14 @@ export interface Command {
   id: string;
   label: string;
   detail?: string;
+  preview?: { before: string; after: string };
   action: () => void;
 }
 export function Palette({
   commands,
   open,
   onOpen,
+  onOpenPanel,
   onClose,
   sections = false,
   textSearch = false,
@@ -27,6 +29,7 @@ export function Palette({
   commands: Command[];
   open: boolean;
   onOpen: () => void;
+  onOpenPanel?: () => void;
   onClose: () => void;
   sections?: boolean;
   textSearch?: boolean;
@@ -43,6 +46,9 @@ export function Palette({
   const [selected, setSelected] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const present = useExitPresence(open, retainContent);
+  useLayoutEffect(() => {
+    if (open && !sections) onOpenPanel?.();
+  }, [open, sections, searchScope]);
   useLayoutEffect(() => {
     if (!open) return;
     setSelected(0);
@@ -63,6 +69,7 @@ export function Palette({
     commandSearch || (sections && searchTerm)
       ? commands.filter((c) => c.label.toLocaleLowerCase().includes(searchTerm))
       : [];
+  const preview = open ? filtered[selected]?.preview : undefined;
   const run = (command: Command) => {
     onClose();
     command.action();
@@ -115,6 +122,7 @@ export function Palette({
               role={commandSearch || sections ? 'combobox' : 'searchbox'}
               aria-expanded={commandSearch || sections ? !!filtered.length : undefined}
               aria-controls={commandSearch || sections ? 'palette-results' : undefined}
+              aria-describedby={preview ? 'palette-command-preview' : undefined}
               aria-activedescendant={filtered[selected] ? `palette-result-${selected}` : undefined}
               onKeyDown={(event) => {
                 if (
@@ -153,13 +161,18 @@ export function Palette({
                 {filtered.length ? (
                   filtered.map((command, index) => (
                     <button
-                      key={command.label + index}
+                      key={command.id}
                       id={`palette-result-${index}`}
                       role="option"
                       aria-selected={index === selected}
                       onMouseEnter={() => setSelected(index)}
                       title={command.detail || command.label}
-                      onClick={() => run(command)}
+                      onClick={() => {
+                        if (command.preview && selected !== index) {
+                          setSelected(index);
+                          input.current?.focus();
+                        } else run(command);
+                      }}
                     >
                       {command.label}
                     </button>
@@ -167,6 +180,18 @@ export function Palette({
                 ) : (
                   <span>{t('Aucun résultat')}</span>
                 )}
+              </div>
+            )}
+            {preview && (
+              <div className="palette-command-preview" id="palette-command-preview">
+                <div>
+                  <b>{t('Fin de la première scène')}</b>
+                  <p>{preview.before}</p>
+                </div>
+                <div>
+                  <b>{t('Début de la seconde scène')}</b>
+                  <p>{preview.after}</p>
+                </div>
               </div>
             )}
             {textSearch && !commandSearch && extraResults}

@@ -122,6 +122,8 @@ L’historique automatique garde jusqu’à 40 versions par texte : les huit plu
 
 Versions remplace la zone du manuscrit par une comparaison en deux colonnes, dans le même cadre que l’éditeur : logo, bibliothèque, recherche et dictée restent accessibles. La bibliothèque change le texte comparé ; Revenir au texte retrouve l’édition. Une recherche mène au passage dans l’éditeur, et démarrer la dictée revient à l’écriture. Conservez un état nommé du projet ou de la section actuelle, puis choisissez une référence et une version à comparer. Les textes s’affichent côte à côte, avec retraits barrés et ajouts soulignés. Les flèches parcourent les passages modifiés ; le filtre limite la liste aux textes modifiés. Une reprise de passage crée d’abord une sauvegarde de la scène. Restaurer une version nécessite une confirmation et conserve l’état précédent. Deux versions enregistrées restent en lecture seule.
 
+Sélectionnez une phrase dans l’une des deux versions, puis activez **Aligner ici**. Si elle apparaît une fois dans chaque version, ses deux occurrences se placent à la même hauteur. Le réglage appartient à la comparaison affichée.
+
 En mode Versions, le bouton de réglages en bas à droite prend une icône de comparaison et ouvre les outils Versions : conserver un état, parcourir les changements, filtrer les textes modifiés et restaurer la référence. Le menu Écriture et lecture revient en quittant ce mode.
 
 ## Importer et commencer à écrire
@@ -137,6 +139,8 @@ Au lancement, l’accueil présente seulement Créer un projet et Ouvrir un proj
 La recherche des textes tolère les accents, les apostrophes droites ou typographiques et les ligatures françaises. Le remplacement global avec aperçu et annulation a été retiré.
 
 **Édition → Réorganiser le texte** permet de séparer au curseur, réunir une scène avec la suivante du même emplacement, avec copie directe du texte. Les versions de sécurité automatiques et le transport spécifique des notes et des identités de passages ajoutés à ces opérations ont été retirés. La scène absorbée par une réunion reste dans la corbeille. Ces commandes sont disponibles dans l’application Mac.
+
+Sur Mac, placez le curseur à l’intérieur de la scène et ouvrez les commandes avec **⌘ K**. Choisissez **Scinder la scène** pour voir la fin de la première scène et le début de la seconde, puis validez avec **Entrée**. **Échap** ferme l’aperçu et rend la main à l’éditeur.
 
 La vue d’ensemble des scènes a été retirée. Les versions distinguent aussi les changements de titre, emplacement, ordre, synopsis, statut, objectif, inclusion et plan du texte.
 

@@ -98,9 +98,9 @@ it('uses the same app chrome across pages and preserves the mounted manuscript, 
     expect(column.scrollTop).toBe(180);
     expect(view.state.doc.toString()).toBe('Une phrase conservée.');
     await click('Versions');
-    // The lazy module is allowed to settle without exercising model engines.
+    // Wait for the same lazy module the workspace is rendering.
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await import('../src/history/History');
     });
     expect(host.querySelector('.history-editor h1')?.textContent).toBe('Versions');
     expect(host.querySelector('.cm-editor')).toBe(manuscript);
