@@ -2,7 +2,7 @@
 
 Date de cadrage : **4 novembre 2026**. Échéance impérative demandée : **version stable prête à être distribuée avant le 1er janvier 2027**. Cible de livraison : **30 décembre 2026**, avec le 31 décembre comme dernier jour de réserve.
 
-Statut : **roadmap issue des 20 réponses ; jalons de développement 0.3.0, 0.4.0 et 0.5.0 implémentés les 4–12 novembre 2026**. Le jalon 0.6.0, implémenté localement le 13 novembre, est intégré aux sources 0.6.1 ; sa qualification native et ses limites sont décrites dans [le rapport 0.6.0](validation-0.6.0.md). Le candidat 0.7.0 implémente la prédiction locale, la sauvegarde de projet et l’installation des modules facultatifs. Sa recette et les limites de qualification figurent dans [le bilan 0.7.0](validation-0.7.0.md). Le candidat 0.7.1 implémente les blancs, les essais de formulation et les répétitions proches. Sa [recette](validation-0.7.1.md) décrit les contrôles et leurs limites. Les jalons à partir de 0.7.2 restent planifiés. La [0.5.0 est publiée](https://github.com/absalonCRC/ariane/releases/tag/v0.5.0) depuis le 12 novembre, avec un paquet expérimental signé ad hoc et non notarié. La recette de dictée au microphone en application native, l’endurance et l’installation sur un autre Mac restent à compléter ; la distribution stable 1.0.0 n’est pas qualifiée.
+Statut : **roadmap issue des 20 réponses ; jalons de développement 0.3.0, 0.4.0 et 0.5.0 implémentés les 4–12 novembre 2026**. Le jalon 0.6.0, implémenté localement le 13 novembre, est intégré aux sources 0.6.1 ; sa qualification native et ses limites sont décrites dans [le rapport 0.6.0](validation-0.6.0.md). Le candidat 0.7.0 implémente la prédiction locale, la sauvegarde de projet et l’installation des modules facultatifs. Sa recette et les limites de qualification figurent dans [le bilan 0.7.0](validation-0.7.0.md). Le candidat 0.7.1 implémente les blancs, les essais de formulation et les répétitions proches. Sa [recette](validation-0.7.1.md) décrit les contrôles et leurs limites. Le candidat 0.7.2 ajoute l’alignement dans Versions et l’aperçu de scission. Voir [sa recette](validation-0.7.2.md). Le jalon technique 0.7.5 précède la 0.8.0. La [0.5.0 est publiée](https://github.com/absalonCRC/ariane/releases/tag/v0.5.0) depuis le 12 novembre, avec un paquet expérimental signé ad hoc et non notarié. La recette de dictée au microphone en application native, l’endurance et l’installation sur un autre Mac restent à compléter ; la distribution stable 1.0.0 n’est pas qualifiée.
 
 > Exécution future : réaliser les lots dans l’ordre de leurs dépendances, avec une démonstration et une recette à chaque version. Les jalons décrivent des résultats utilisables. Les changements de périmètre nécessitent une nouvelle décision du propriétaire du projet ; aucun élément convenu n’est reporté automatiquement après la 1.0.0.
 
@@ -70,7 +70,7 @@ Principaux points d’entrée du dépôt : [types](https://github.com/absalonCRC
 
 ## 4. Règles de version
 
-À partir des sources 0.6.1, livrer dans l’ordre **0.7.0 → 0.7.1 → 0.7.2 → 0.8.0 → 0.8.1 → 0.8.2 → 0.9.0 → 0.9.1 → 0.9.2**, puis les préversions de la 1.0.0 et la stable. Dans ces trois séries de développement, le troisième chiffre désigne un lot fonctionnel utilisable avec sa propre recette. Les fenêtres du calendrier portent sur la série entière. Les franchir suppose d’avoir validé chaque lot.
+À partir des sources 0.6.1, livrer dans l’ordre **0.7.0 → 0.7.1 → 0.7.2 → 0.7.5 → 0.8.0 → 0.8.1 → 0.8.2 → 0.9.0 → 0.9.1 → 0.9.2**, puis les préversions de la 1.0.0 et la stable. Chaque jalon a sa propre recette. La 0.7.5 qualifie la base technique avant l’ouverture du chantier du lecteur partagé. Les fenêtres du calendrier portent sur la série entière. Les franchir suppose d’avoir validé chaque lot.
 
 Pour cette application, documenter avant la 1.0.0 le contrat de compatibilité des projets, de leurs métadonnées, des exports et des commandes. La version du schéma SQLite est indépendante du numéro de l’application. Toute migration doit préserver une possibilité de récupération ; un ancien exécutable doit refuser un schéma trop récent avec un message clair.
 
@@ -91,6 +91,7 @@ Les plages incluent implémentation, tests du lot, intégration et recette. Le c
 | **0.5.0** | 18–25 novembre | Gestionnaire d’entités, relations, recherche structurée, vues et commandes configurables. | Très forte : lot le plus dense. |
 | **0.6.0** | 26 novembre–1er décembre | Capture compacte, boîte de réception globale, machine à écrire affinée. | Forte : fenêtres et sauvegarde de captures. |
 | **0.7.0 à 0.7.2** | 2–7 décembre | Prédiction locale (.0), essais de rédaction (.1), comparaison et scission (.2). | Très forte pour la qualité de la prédiction et la conservation des essais. |
+| **0.7.5** | Après la 0.7.2 et avant la 0.8.0, fenêtre à recaler après mesure | Audit et corrections de sécurité, mesure et optimisation des parcours critiques, simplification ciblée des modules. | Dépend des constats de l’audit et de la reproductibilité des mesures. |
 | **0.8.0 à 0.8.2** | 8–13 décembre | Lecteur et références (.0), voix et annotations empilées (.1), floutage et export (.2). | Très forte pour les ancres, le son natif et la fidélité des exports. |
 | **0.9.0 à 0.9.2** | 14–17 décembre | Réglages et objectifs (.0), classeur et recherche (.1), reprise et intégration (.2). | Forte compte tenu des quatre jours cibles et des parcours croisés. |
 | **1.0.0-beta.1** | 18 décembre | Tout le périmètre disponible ; début de recette complète du candidat. | Conditionnée à la fin réelle des fonctions. |
@@ -214,10 +215,21 @@ Le [bilan 0.7.0](validation-0.7.0.md) consigne le gain sur le corpus de contrôl
 
 ### 0.7.2 — Comparer des versions et préparer une scission
 
-- [ ] **F30 · Aligner ici dans Versions.** Sur une phrase commune aux deux versions, aligner ses deux occurrences à la même hauteur. Si la correspondance est absente ou ambiguë, laisser la position de lecture intacte.
-- [ ] **F34 · Prévisualiser une commande de structure.** Pour « Scinder la scène », la palette présente la fin et le début des deux futures scènes de part et d’autre d’un filet. Seule la validation exécute la commande existante.
+- [x] **F30 · Aligner ici dans Versions.** Sur une phrase commune aux deux versions, aligner ses deux occurrences à la même hauteur. Si la correspondance est absente ou ambiguë, laisser la position de lecture intacte.
+- [x] **F34 · Prévisualiser une commande de structure.** Pour « Scinder la scène », la palette présente la fin et le début des deux futures scènes de part et d’autre d’un filet. Seule la validation exécute la commande existante.
 
 **Recette.** Comparer deux versions dont un paragraphe a doublé de longueur, aligner la phrase suivante et vérifier sa hauteur dans chaque colonne. Ouvrir l’aperçu de scission, annuler, puis recommencer et valider. Les deux extraits doivent correspondre à la coupure obtenue.
+
+### 0.7.5 — Sécurité, performance et simplification
+
+**Résultat attendu.** Partir du candidat 0.7.2, réduire les risques confirmés et le coût des opérations critiques, et simplifier le code là où une responsabilité peut être rendue plus claire. Préserver les parcours d’écriture, les interfaces, l’UX et la compatibilité des projets.
+
+- [ ] Cartographier les surfaces de confiance et vérifier en priorité les permissions Tauri, les contrôles IPC et de chemins, les imports et exports, SQLite et ses miroirs, les fichiers externes en lecture seule, ainsi que les installateurs, processus et dépendances des moteurs. Classer les constats par gravité et impact, corriger les risques avérés et ajouter les témoins de non-régression nécessaires.
+- [ ] Établir une référence sur Mac Apple Silicon avec des projets synthétiques courts et longs. Mesurer démarrage, réouverture, frappe, sauvegarde, recherche, comparaison, bascule de projet et indexation pendant l’écriture. Relever latences médianes et de queue, CPU, mémoire et erreurs avec des scénarios, des tailles de corpus et des conditions chaud/froid reproductibles.
+- [ ] Corriger les goulots confirmés par profilage. Clarifier les frontières de modules, la propriété des états et des files, le nettoyage des ressources et la gestion des modules locaux. Supprimer les doublons ou indirections dont le retrait préserve les contrats et les comportements observés.
+- [ ] Vérifier sur les mêmes témoins la conservation des données, des versions et de l’annulation, des raccourcis, du focus, des dispositions et des comportements macOS. Séparer les corrections de sécurité, optimisations et refactorisations pour les vérifier indépendamment.
+
+**Recette de sortie.** Livrer le registre des constats et de leur traitement, les mesures avant/après reproductibles et la recette des parcours critiques en navigateur et sur Mac. Un gain annoncé doit être mesuré. Une vulnérabilité critique ou élevée confirmée appelle une correction vérifiée ou une décision explicite avant de poursuivre. Le calendrier de la suite sera recalé sur les constats de ce lot.
 
 ### 0.8.0 — Lire et référencer les sources
 

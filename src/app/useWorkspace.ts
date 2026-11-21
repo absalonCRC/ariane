@@ -1,3 +1,8 @@
+import {
+  matchesSceneSplit,
+  sceneSplitPreview,
+  type SceneSplitPreview,
+} from '../project/splitPreview';
 import { nextBlank } from '../project/writingAids';
 import { useWritingActivity } from '../profile/useWritingActivity';
 import { useNoteActivity } from '../notes/useNoteActivity';
@@ -36,6 +41,9 @@ export function useWorkspace() {
   const activity = useNoteActivity(doc.project?.path);
   const [annotationsOpen, setAnnotationsOpen] = useState(false);
   const [annotationTarget, setAnnotationTarget] = useState<AnnotationTarget | null>(null);
+  const [splitPreview, setSplitPreview] = useState<
+    (SceneSplitPreview & { active: string | null; continuous: boolean }) | null
+  >(null);
   const [manuscriptSelection, setManuscriptSelection] =
     useState<ReturnType<EditorHandle['passage']>>(null);
   const [surface, setSurface] = useState<Surface>('none');
@@ -51,6 +59,9 @@ export function useWorkspace() {
   const [binder, setBinder] = useState(false);
   const binderBeforeFocus = useRef<boolean | null>(null);
   const [palette, setPalette] = useState<'text' | 'commands' | 'sections' | null>(null);
+  useEffect(() => {
+    if (!palette || palette === 'sections') setSplitPreview(null);
+  }, [palette]);
   const [words, setWords] = useState(0);
   const [sources, setSources] = useState<Source[]>([]);
   const [sourceStatus, setSourceStatus] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -458,6 +469,33 @@ export function useWorkspace() {
     setMenu,
   });
 
+  function captureSplitPreview(enabled: boolean) {
+    const project = doc.ref.current;
+    const passage =
+      enabled && native && !historyMode && !libraryLock.current ? editor.current?.passage() : null;
+    const preview = project && passage ? sceneSplitPreview(project, passage) : null;
+    const { active, continuous } = doc.settingsRef.current;
+    setSplitPreview(preview && { ...preview, active, continuous });
+  }
+  function confirmSplitPreview(preview: NonNullable<typeof splitPreview>) {
+    const current = () => {
+      const { active, continuous } = doc.settingsRef.current;
+      return (
+        active === preview.active &&
+        continuous === preview.continuous &&
+        matchesSceneSplit(doc.ref.current, preview)
+      );
+    };
+    if (!current()) {
+      fail(t('Le texte a changé. Replacez le curseur puis réessayez.'));
+      return;
+    }
+    void manuscriptOperation(
+      { action: 'split', sourceId: preview.section, offset: preview.offset },
+      current,
+    );
+  }
+
   function openAnnotations() {
     const passage = editor.current?.passage();
     const section = doc.ref.current?.sections.find((s) => s.id === passage?.section);
@@ -534,6 +572,15 @@ export function useWorkspace() {
     setAnnotationTarget,
     openAnnotations,
     manuscriptSelection,
+    splitPreview:
+      splitPreview &&
+      splitPreview.active === doc.settings.active &&
+      splitPreview.continuous === doc.settings.continuous &&
+      matchesSceneSplit(p, splitPreview)
+        ? splitPreview
+        : null,
+    captureSplitPreview,
+    confirmSplitPreview,
     manuscriptOperation,
     prepareManuscript,
     openProject,

@@ -6,6 +6,7 @@
 | --- | --- | --- |
 | Dès novembre | Préparation des données, prototypes, distribution | Possibilité de restaurer un projet, décisions sur la prédiction et le PDF, moyens de qualification identifiés |
 | 2–7 décembre | 0.7.0 → 0.7.1 → 0.7.2 | Prédire, essayer, comparer et scinder en conservant le texte |
+| Après 0.7.2 et avant 0.8.0 | 0.7.5 | Qualifier la sécurité, les performances et les frontières des modules |
 | 8–13 décembre | 0.8.0 → 0.8.1 → 0.8.2 | Revenir à une source, annoter, contrôler le contenu réellement exporté |
 | 14–17 décembre | 0.9.0 → 0.9.1 → 0.9.2 | Régler la page, parcourir le classeur, retrouver la séance |
 | 18–30 décembre | beta.1 → beta.2 si nécessaire → rc.1 → rc.2 si nécessaire → 1.0.0 | Qualifier le candidat, corriger les défauts, préparer la distribution stable |
@@ -58,6 +59,13 @@ Les dates s’appliquent à la série entière. Réestimer les fenêtres dès qu
 2. **Aligner dans Versions.** Ajouter « Aligner ici » aux outils contextuels. Mesurer les deux ancres après stabilisation du rendu puis ajuster les colonnes. Tester une phrase dans un paragraphe dont la longueur a doublé, deux phrases identiques et une phrase supprimée. Vérifier focus et défilement au retour au manuscrit.
 3. **Prévisualiser le découpage.** Capturer scène, texte courant et curseur UTF-16 avant l’ouverture de la palette. Montrer les deux bords de la coupure, respecter les refus en début/fin de scène. Échap conserve le document. À la validation, vérifier que le contexte est toujours valide et réutiliser le chemin de sauvegarde et l’opération native `split`.
 4. **Sortie.** Comparer l’aperçu aux deux textes obtenus après une coupure près d’un emoji. Vérifier annotations, outline et smart-tags tels que le code courant les transporte, ainsi que l’absence de nouvelle version de sécurité dédiée. Ce comportement des identités est plus récent que le compte rendu d’annulation du 1er novembre. Témoins : `tests/history-comparison.test.ts`, `tests/versions-workspace.test.tsx` et test Rust `split_and_join_keep_plain_text_without_new_safety_versions`. Mesurer l’alignement dans une vraie fenêtre.
+
+## 0.7.5 · Durcir et simplifier la base technique
+
+1. **Geler le témoin 0.7.2.** Relever le commit, la version macOS, les ressources et les données synthétiques de référence. Distinguer démarrage froid et chaud, puis répéter les scénarios sur les mêmes corpus et le même matériel.
+2. **Auditer les protections.** Passer en revue les capacités Tauri, les frontières des données, fichiers et processus, les admissions IPC, la récupération SQLite, l’intégrité des modules locaux et les dépendances. Prioriser les correctifs selon le risque observé et vérifier les protections par des tests défensifs.
+3. **Profiler et simplifier.** Localiser les coûts dans les parcours interactifs et les travaux de fond. Corriger les goulots et les responsabilités redondantes par lots comparables. Vérifier les temps de réponse, l’empreinte mémoire et les files sous charge, ainsi que la libération des processus et abonnements après annulation.
+4. **Qualifier la sortie.** Exécuter la vérification complète et les recettes clavier, navigateur et macOS sur des projets vierges et existants. Publier les comparaisons avant/après, les risques résiduels et les cas non qualifiés. Préserver les contrats persistés, le comportement, les interfaces et l’UX.
 
 ## 0.8.0 · Lire et référencer les sources
 

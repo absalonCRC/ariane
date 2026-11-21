@@ -94,13 +94,15 @@ export function createProjectOperations({
       setLibraryBusy(false);
     }
   }
-  async function manuscriptOperation(operation: ManuscriptOperation) {
+  async function manuscriptOperation(operation: ManuscriptOperation, isCurrent?: () => boolean) {
     if (libraryLock.current) return;
     libraryLock.current = true;
     setLibraryBusy(true);
     try {
       await doc.checkpoint();
       await metadataQueue.current;
+      if (isCurrent && !isCurrent())
+        throw new Error(t('Le texte a changé. Replacez le curseur puis réessayez.'));
       const next = await request('manuscriptOperation', {
         projectPath: doc.ref.current!.path,
         operation,
