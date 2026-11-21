@@ -2183,6 +2183,42 @@
     "Choose a source folder (Obsidian vault)",
     "Elegir una carpeta de fuentes (vault de Obsidian)"
   ],
+  "Autorisez les dossiers de sources externes de ce projet.": [
+    "Authorize this project's external source folders.",
+    "Autoriza las carpetas de fuentes externas de este proyecto."
+  ],
+  "Autoriser les dossiers": [
+    "Authorize folders",
+    "Autorizar las carpetas"
+  ],
+  "Autoriser {0}…": [
+    "Authorize {0}…",
+    "Autorizar {0}…"
+  ],
+  "Autoriser le dossier de sources {0}": [
+    "Authorize source folder {0}",
+    "Autorizar la carpeta de fuentes {0}"
+  ],
+  "Autorisation requise": [
+    "Authorization required",
+    "Autorización necesaria"
+  ],
+  "Ajoutez un dossier de sources (vault) et autorisez-le dans le dialogue macOS. Le projet reste indépendant de ses sources.": [
+    "Add a source folder (vault) and authorize it in the macOS dialog. The project remains independent of its sources.",
+    "Añade una carpeta de fuentes (vault) y autorízala en el diálogo de macOS. El proyecto sigue siendo independiente de sus fuentes."
+  ],
+  "Le dossier a changé. Sélectionnez-le à nouveau.": [
+    "The folder has changed. Select it again.",
+    "La carpeta ha cambiado. Selecciónala de nuevo."
+  ],
+  "Ce dossier de sources est déjà rattaché au projet.": [
+    "This source folder is already attached to the project.",
+    "Esta carpeta de fuentes ya está vinculada al proyecto."
+  ],
+  "Choisissez un dossier de sources externe au projet.": [
+    "Choose a source folder outside the project.",
+    "Elige una carpeta de fuentes externa al proyecto."
+  ],
   "Fiches issues du manuscrit": [
     "Entries from the manuscript",
     "Fichas del manuscrito"

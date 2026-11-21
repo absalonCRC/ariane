@@ -8,6 +8,7 @@ import { normalizedMatches } from '../editor/normalizedSearch';
 import captureWorklet from '../voice/capture.worklet.js?url&no-inline';
 import type { MemoryController } from '../enrichment/useMemory';
 import type { MemoryEntity, MemoryResult } from '../contracts/memory';
+import { attachReference } from './reference';
 let current: Workspace;
 let memory: MemoryController;
 let partialReport: Record<string, unknown> = {};
@@ -31,6 +32,10 @@ function stats(samples: number[]) {
   };
 }
 export function attach(workspace: Workspace, controller: MemoryController) {
+  if (import.meta.env.VITE_PERFORMANCE_REFERENCE === '1') {
+    attachReference(workspace);
+    return;
+  }
   current = workspace;
   memory = controller;
   if (started || !workspace.ready) return;

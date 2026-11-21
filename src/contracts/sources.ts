@@ -5,6 +5,7 @@ export interface Vault {
   scope: string[];
   count: number;
   available: boolean;
+  needsAuthorization?: boolean;
   owned?: boolean;
 }
 

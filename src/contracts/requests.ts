@@ -153,7 +153,7 @@ export interface Requests {
   settings: { value: Partial<Settings> };
   resolveExternal: { id: string; keepLocal: boolean; pending?: string | null; pendingWritingAids?: WritingAid[] };
   vaults: {};
-  connectVault: { path: string };
+  connectVault: { path: string; projectPath?: string; vaultId?: string };
   createOwnedVault: {};
   noteSuggestions: { projectPath: string; query: string };
   classifyCreatedNote: { projectPath: string; id: string; context?: string };

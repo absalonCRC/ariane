@@ -2,7 +2,7 @@ import type { NoteEventInput } from '../contracts/noteActivity';
 import { localizeMessage, t, useLocale } from '../i18n';
 import { AnimatedDetails } from '../components/AnimatedDetails';
 import { Presence } from '../components/Presence';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Plus, RefreshCw, FolderOpen, Pause, X } from 'lucide-react';
 import { choosePath } from '../app/choosePath';
 import { listen } from '@tauri-apps/api/event';
@@ -35,6 +35,7 @@ function LibraryFrame({
 }
 export function Library({
   embedded,
+  projectPath,
   onClose,
   onError,
   onRefresh,
@@ -45,6 +46,7 @@ export function Library({
   onNotice,
 }: {
   embedded?: boolean;
+  projectPath: string;
   onClose: () => void;
   onError: (e: unknown) => void;
   onRefresh: () => void;
@@ -57,6 +59,10 @@ export function Library({
   useLocale();
   const [vaults, setVaults] = useState<Vault[]>([]);
   const [busy, setBusy] = useState(false);
+  const [choosing, setChoosing] = useState(false);
+  const selection = useRef(false);
+  const active = useRef(false);
+  const vaultRows = useRef(new Map<string, HTMLDivElement>());
   const [report, setReport] = useState<string[]>([]);
   const [available, setAvailable] = useState(false);
   const [scopes, setScopes] = useState<Record<string, string>>({});
@@ -66,9 +72,21 @@ export function Library({
   const [entityDescription, setEntityDescription] = useState('');
   const owned = vaults.find((v) => v.owned);
   useEffect(() => {
-    void request('vaults').then(setVaults).catch(onError);
-    void request('engineStatus').then((v) => setAvailable(v.available));
-  }, [onError]);
+    active.current = true;
+    void request('vaults')
+      .then((v) => {
+        if (active.current) setVaults(v);
+      })
+      .catch(onError);
+    void request('engineStatus')
+      .then((v) => {
+        if (active.current) setAvailable(v.available);
+      })
+      .catch(onError);
+    return () => {
+      active.current = false;
+    };
+  }, [projectPath, onError]);
   async function index() {
     setBusy(true);
     onBusy(true);
@@ -103,19 +121,30 @@ export function Library({
       void promise.then((f) => f());
     };
   }, [onIndexProgress]);
-  async function connect() {
+  async function connect(vault?: Vault) {
+    if (selection.current) return;
+    selection.current = true;
+    setChoosing(true);
     try {
       if (!native)
         throw new Error(t('Connectez vos dossiers de sources depuis l’application macOS.'));
       const path = await choosePath('vault', {
-        title: t('Choisir un dossier de sources (vault Obsidian)'),
+        title: vault
+          ? t('Autoriser le dossier de sources {0}', { 0: vault.name })
+          : t('Choisir un dossier de sources (vault Obsidian)'),
       });
-      if (typeof path === 'string') {
-        setVaults(await request('connectVault', { path }));
-        void index();
-      }
+      if (path === null || !active.current) return;
+      const result = await request('connectVault', { path, projectPath, vaultId: vault?.id });
+      if (!active.current) return;
+      setVaults(result);
+      if (vault) requestAnimationFrame(() => vaultRows.current.get(vault.id)?.focus());
+      onRefresh();
+      await index();
     } catch (e) {
-      onError(e);
+      if (active.current) onError(e);
+    } finally {
+      selection.current = false;
+      if (active.current) setChoosing(false);
     }
   }
   async function createVault() {
@@ -151,18 +180,7 @@ export function Library({
     import('@tauri-apps/api/webview')
       .then(({ getCurrentWebview }) =>
         getCurrentWebview().onDragDropEvent((e) => {
-          if (e.payload.type === 'drop') {
-            const paths = e.payload.paths;
-            void (async () => {
-              for (const path of paths) {
-                await request('connectVault', { path });
-              }
-              if (alive) {
-                setVaults(await request('vaults'));
-                void index();
-              }
-            })().catch(onError);
-          }
+          if (alive && e.payload.type === 'drop' && e.payload.paths.length) void connect();
         }),
       )
       .then((f) => {
@@ -173,7 +191,7 @@ export function Library({
       alive = false;
       dispose?.();
     };
-  }, []);
+  }, [projectPath]);
   return (
     <LibraryFrame embedded={embedded} onClose={onClose}>
       {onMemory && native && (
@@ -182,7 +200,7 @@ export function Library({
         </button>
       )}
       <div className="library-toolbar">
-        <button onClick={connect}>
+        <button disabled={busy || choosing} onClick={() => void connect()}>
           <Plus size={14} />
           {t('Ajouter un dossier de sources')}
         </button>
@@ -196,7 +214,10 @@ export function Library({
             <Plus size={14} /> {t('Nouvelle fiche')}
           </button>
         )}
-        <button disabled={busy || !vaults.length} onClick={() => void index()}>
+        <button
+          disabled={busy || choosing || !vaults.some((vault) => vault.available)}
+          onClick={() => void index()}
+        >
           <RefreshCw size={13} />
           {t('Actualiser l’index')}
         </button>
@@ -255,28 +276,49 @@ export function Library({
       </Presence>
       {vaults.length ? (
         vaults.map((v) => (
-          <div className="vault" key={v.id}>
+          <div
+            className="vault"
+            key={v.id}
+            tabIndex={-1}
+            ref={(row) => {
+              if (row) vaultRows.current.set(v.id, row);
+              else vaultRows.current.delete(v.id);
+            }}
+          >
             <div className="vault-name">
               <FolderOpen size={18} />
               <strong>{v.name}</strong>
               <small>
-                {v.available
-                  ? `${v.count} document${v.count === 1 ? '' : 's'} · ${v.owned ? t('Dossier ariane') : t('Lecture seule')}`
-                  : t('Dossier introuvable')}
+                {v.needsAuthorization
+                  ? t('Autorisation requise')
+                  : v.available
+                    ? `${v.count} document${v.count === 1 ? '' : 's'} · ${v.owned ? t('Dossier ariane') : t('Lecture seule')}`
+                    : t('Dossier introuvable')}
               </small>
               {!v.owned && (
                 <button
                   className="icon-button"
                   aria-label={t('Déconnecter ') + v.name}
-                  disabled={busy}
+                  disabled={busy || choosing}
                   onClick={() =>
-                    void request('removeVault', { id: v.id }).then(setVaults).catch(onError)
+                    void request('removeVault', { id: v.id })
+                      .then((next) => {
+                        if (!active.current) return;
+                        setVaults(next);
+                        onRefresh();
+                      })
+                      .catch(onError)
                   }
                 >
                   <X size={13} />
                 </button>
               )}
             </div>
+            {native && !v.owned && !v.available && (
+              <button disabled={busy || choosing} onClick={() => void connect(v)}>
+                {t('Autoriser {0}…', { 0: v.name })}
+              </button>
+            )}
             <AnimatedDetails
               className="source-details"
               summary={<>{t('Emplacement du dossier')}</>}
@@ -310,7 +352,7 @@ export function Library({
       ) : (
         <Empty>
           {t(
-            'Ajoutez un dossier de sources (vault), ou glissez-le depuis le Finder. Le projet reste indépendant de ses sources.',
+            'Ajoutez un dossier de sources (vault) et autorisez-le dans le dialogue macOS. Le projet reste indépendant de ses sources.',
           )}
         </Empty>
       )}

@@ -185,11 +185,14 @@ pub fn handle(
             initial_title,
         } => {
             state.grants.require("create", Path::new(&path))?;
-            if let Some(vault) = &vault_path {
-                state.grants.require("vault", Path::new(vault))?;
-            }
+            let folder = vault_path.as_deref()
+                .map(|path| state.grants.take_vault(Path::new(path)))
+                .transpose()?;
             let root = Path::new(&path);
-            vaults::create_project(root, &name, vault_path.as_deref().map(Path::new))?;
+            vaults::create_project(root, &name, folder.as_ref().map(|folder| folder.path.as_path()))?;
+            if let Some(folder) = folder {
+                vaults::connect(root, &state.data, folder, None)?;
+            }
             if let Some(title) = initial_title.filter(|title| !title.trim().is_empty()) {
                 if let Some(mut first) = project::load(root)?
                     .sections

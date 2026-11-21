@@ -9,6 +9,9 @@ pub(crate) use classification::{predicted_type_with_policy, EntityType};
 mod notes;
 pub use notes::{create_quick_note, note_references, suggest_notes};
 mod browse;
+mod access;
+use access::Access;
+pub(crate) use access::VaultFolder;
 mod pdf;
 mod scan;
 pub use browse::browse;
@@ -21,7 +24,7 @@ use crate::{
     project,
 };
 pub use owned::{create_entity, create_owned, create_project};
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, OptionalExtension};
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -63,6 +66,12 @@ pub fn index_db(path: &Path) -> Result<Connection> {
 pub fn list(root: &Path, index: &Path) -> Result<Vec<Vault>> {
     let c = project::database(root)?;
     let idx = index_db(index)?;
+    let data = index.parent().ok_or("Index de sources invalide.")?;
+    // An unavailable profile never authorizes a project path from its database.
+    let access = Access::load(data, root).unwrap_or_default();
+    let active_index = access.index_path(data).is_none_or(|expected| expected == index);
+    let shared_index = index.file_name().is_some_and(|name| name == "sources.sqlite");
+    let internal = root.canonicalize().app()?.join("Vault");
     let mut q = c.prepare("SELECT id,path,scope FROM vaults").app()?;
     let rows = q
         .query_map([], |r| {
@@ -76,20 +85,31 @@ pub fn list(root: &Path, index: &Path) -> Result<Vec<Vault>> {
     let mut out = vec![];
     for r in rows {
         let (id, path, scope) = r.app()?;
-        let count = idx
-            .query_row("SELECT count(*) FROM sources WHERE vault=?", [&id], |r| {
-                r.get(0)
-            })
-            .app()?;
+        let folder = Path::new(&path);
+        let owned = folder == internal && owned::is_owned(root, folder);
+        let (available, needs_authorization) = if owned {
+            (active_index && (!shared_index || id == project::hash(&path)), false)
+        } else if active_index {
+            access.status(&id, folder)
+        } else {
+            (false, true)
+        };
+        let count = if available {
+            idx.query_row("SELECT count(*) FROM sources WHERE vault=?", [&id], |r| r.get(0))
+                .app()?
+        } else {
+            0
+        };
         out.push(Vault {
             id,
-            name: Path::new(&path)
+            name: folder
                 .file_name()
                 .unwrap_or_default()
                 .to_string_lossy()
                 .into(),
-            available: Path::new(&path).is_dir(),
-            owned: owned::is_owned(root, Path::new(&path)),
+            available,
+            needs_authorization,
+            owned,
             path,
             scope: serde_json::from_str(&scope).unwrap_or_default(),
             count,
@@ -97,7 +117,7 @@ pub fn list(root: &Path, index: &Path) -> Result<Vec<Vault>> {
     }
     Ok(out)
 }
-pub fn connect(root: &Path, path: &Path) -> Result<()> {
+fn register(root: &Path, path: &Path) -> Result<()> {
     let path = path.canonicalize().app()?;
     if !path.is_dir() {
         return Err("Choisissez un dossier de vault.".into());
@@ -112,6 +132,57 @@ pub fn connect(root: &Path, path: &Path) -> Result<()> {
     )
     .app()?;
     Ok(())
+}
+
+pub(crate) fn private_source_index(data: &Path, root: &Path) -> Option<PathBuf> {
+    Access::load(data, root).ok()?.index_path(data)
+}
+
+pub(crate) fn connect(
+    root: &Path,
+    data: &Path,
+    folder: VaultFolder,
+    reconnect: Option<&str>,
+) -> Result<()> {
+    project::with_lock(root, || {
+        if VaultFolder::selected(&folder.path)? != folder {
+            return Err("Le dossier a changé. Sélectionnez-le à nouveau.".into());
+        }
+        let mut c = project::database(root)?;
+        let mut access = Access::load(data, root)?;
+        let tx = c.transaction().app()?;
+        let path = folder.path.to_str().ok_or("Chemin de vault invalide.")?;
+        let attached: Option<String> = tx.query_row(
+            "SELECT id FROM vaults WHERE path=?",
+            [path],
+            |row| row.get(0),
+        ).optional().app()?;
+        let (id, previous) = if let Some(id) = reconnect {
+            let previous: String = tx.query_row("SELECT path FROM vaults WHERE id=?", [id], |row| row.get(0))
+                .optional().app()?.ok_or("Vault introuvable")?;
+            if owned::is_owned(root, Path::new(&previous))
+                || owned::is_owned(root, &folder.path)
+            {
+                return Err("Choisissez un dossier de sources externe au projet.".into());
+            }
+            if attached.as_deref().is_some_and(|attached| attached != id) {
+                return Err("Ce dossier de sources est déjà rattaché au projet.".into());
+            }
+            tx.execute("UPDATE vaults SET path=? WHERE id=?", params![path, id]).app()?;
+            (id.to_owned(), Some(previous))
+        } else if let Some(id) = attached {
+            (id, None)
+        } else {
+            let id = project::hash(path);
+            tx.execute("INSERT INTO vaults(id,path) VALUES(?,?)", params![id, path]).app()?;
+            (id, None)
+        };
+        // Publish consent before committing the reference. A failed relocation
+        // can leave a pending reference, but the new consent cannot match the old path.
+        access.grant(&id, folder, previous.as_deref());
+        access.save(data, root)?;
+        tx.commit().app()
+    })
 }
 pub fn set_scope(root: &Path, id: &str, scope: Vec<String>) -> Result<()> {
     for s in &scope {
@@ -133,7 +204,8 @@ pub fn set_scope(root: &Path, id: &str, scope: Vec<String>) -> Result<()> {
 }
 pub fn allowed(s: &Source, vaults: &[Vault]) -> bool {
     vaults.iter().any(|v| {
-        v.id == s.vault_id
+        v.available
+            && v.id == s.vault_id
             && (v.scope.is_empty()
                 || v.scope
                     .iter()
@@ -146,6 +218,7 @@ pub(crate) fn scope_json(vaults: &[Vault]) -> Result<String> {
     serde_json::to_string(
         &vaults
             .iter()
+            .filter(|v| v.available)
             .map(|v| serde_json::json!({"id":v.id,"scope":v.scope}))
             .collect::<Vec<_>>(),
     )
@@ -166,9 +239,11 @@ pub fn all(index: &Path, vaults: &[Vault]) -> Result<Vec<Source>> {
 
 pub fn source(index: &Path, id: &str, vaults: &[Vault]) -> Result<Source> {
     let c = index_db(index)?;
-    let payload: String = c
-        .query_row("SELECT payload FROM sources WHERE id=?", [id], |r| r.get(0))
-        .app()?;
+    let payload: String = c.query_row(
+        &format!("SELECT payload FROM sources s WHERE s.id=?2 AND {SCOPE_SQL}"),
+        params![scope_json(vaults)?, id],
+        |r| r.get(0),
+    ).optional().app()?.ok_or("Source hors du périmètre du projet")?;
     let s: Source = serde_json::from_str(&payload).app()?;
     if !allowed(&s, vaults) {
         return Err("Source hors du périmètre du projet".into());
@@ -273,16 +348,97 @@ pub fn index_created_entity(root: &Path, index: &Path, path: &Path) -> Result<So
     Ok(source)
 }
 
-pub fn remove(root: &Path, id: &str) -> Result<()> {
-    project::database(root)?
-        .execute("DELETE FROM vaults WHERE id=?", [id])
-        .app()?;
-    Ok(())
+pub fn remove(root: &Path, data: &Path, id: &str) -> Result<()> {
+    project::with_lock(root, || {
+        let mut access = Access::load(data, root)?;
+        if access.revoke(id) {
+            access.save(data, root)?;
+        }
+        project::database(root)?
+            .execute("DELETE FROM vaults WHERE id=?", [id])
+            .app()?;
+        Ok(())
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn received_project_reconnects_without_sharing_relocated_sources_or_changing_citations() {
+        let temp = tempfile::tempdir().unwrap();
+        let data = temp.path().join("Profile");
+        fs::create_dir(&data).unwrap();
+        let original = temp.path().join("Original");
+        let received = temp.path().join("Copie reçue");
+        let external = temp.path().join("Sources originales");
+        let relocated = temp.path().join("Sources locales");
+        let relative = "Fiches/Carnet.md";
+        for directory in [&external, &relocated] {
+            fs::create_dir_all(directory.join("Fiches")).unwrap();
+        }
+        fs::write(external.join(relative), "Témoin original.").unwrap();
+        fs::write(relocated.join(relative), "Témoin de la copie.").unwrap();
+
+        project::create(&original, "Livre").unwrap();
+        connect(&original, &data, VaultFolder::selected(&external).unwrap(), None).unwrap();
+        let shared = project::backup::source_index(&data, &original);
+        let saved = list(&original, &shared).unwrap().remove(0);
+        assert!(saved.available && !saved.needs_authorization);
+        set_scope(&original, &saved.id, vec!["Fiches".into()]).unwrap();
+        let source_id = project::hash(&format!("{}/{relative}", saved.id));
+        let citation = serde_json::json!({"source": source_id, "quote": "Carnet"});
+        project::links::cite(&original, "reference", citation.clone()).unwrap();
+
+        let scanning = |root: &Path, index: &Path| {
+            let activity = crate::memory_engine::Activity::default();
+            activity.writing(true);
+            index_with_activity(
+                root, index, temp.path(), &Mutex::new(Engine::default()),
+                &AtomicBool::new(false), &activity, |_| {},
+            ).unwrap()
+        };
+        assert_eq!(scanning(&original, &shared)["indexed"], 1);
+        fs::create_dir(&received).unwrap();
+        fs::copy(original.join("ariane.sqlite"), received.join("ariane.sqlite")).unwrap();
+        project::load(&received).unwrap();
+
+        let inherited = list(&received, &shared).unwrap().remove(0);
+        assert_eq!(inherited.id, saved.id);
+        assert!(inherited.needs_authorization && !inherited.available);
+        assert_eq!(inherited.count, 0);
+        assert_eq!(scanning(&received, &shared)["indexed"], 0);
+        assert_eq!(
+            serde_json::to_value(browse(&received, &shared, "", None, None, None, 0).unwrap())
+                .unwrap()["total"],
+            0,
+        );
+        assert!(source(&shared, &source_id, &[inherited]).is_err());
+
+        connect(&received, &data, VaultFolder::selected(&relocated).unwrap(), Some(&saved.id)).unwrap();
+        let private = project::backup::source_index(&data, &received);
+        assert_ne!(shared, private);
+        assert_eq!(scanning(&received, &private)["indexed"], 1);
+        let authorized = list(&received, &private).unwrap();
+        assert_eq!(authorized[0].scope, ["Fiches"]);
+        assert_eq!(source(&private, &source_id, &authorized).unwrap().text, "Témoin de la copie.");
+        assert_eq!(file(&private, &source_id, &authorized).unwrap(), relocated.canonicalize().unwrap().join(relative));
+        assert_eq!(source(&shared, &source_id, &list(&original, &shared).unwrap()).unwrap().text, "Témoin original.");
+        assert!(source(&shared, &source_id, &list(&received, &shared).unwrap()).is_err());
+        assert_eq!(
+            project::database(&received).unwrap().query_row(
+                "SELECT payload FROM citations WHERE id='reference'", [], |row| row.get::<_, String>(0),
+            ).unwrap(),
+            citation.to_string(),
+        );
+        // The consent survives a normal reopen and is tied to this database file.
+        project::load(&received).unwrap();
+        assert!(list(&received, &private).unwrap()[0].available);
+        fs::rename(received.join("ariane.sqlite"), received.join("ancienne-base.sqlite")).unwrap();
+        fs::copy(original.join("ariane.sqlite"), received.join("ariane.sqlite")).unwrap();
+        assert!(list(&received, &shared).unwrap()[0].needs_authorization);
+    }
+
     #[test]
     fn resumes_only_missing_vectors_for_unchanged_source() {
         let temp = tempfile::tempdir().unwrap();
@@ -299,7 +455,7 @@ mod tests {
             ),
         )
         .unwrap();
-        connect(&root, &vault).unwrap();
+        connect(&root, temp.path(), VaultFolder::selected(&vault).unwrap(), None).unwrap();
         let path = temp.path().join("index.sqlite");
         let resources = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources");
         let engine = Mutex::new(Engine::default());
@@ -368,7 +524,7 @@ mod tests {
             "---\ntype: Lieu\n---\n# Ville\nLes souvenirs et les villes.\n",
         )
         .unwrap();
-        connect(&project, &fixture).unwrap();
+        connect(&project, temp.path(), VaultFolder::selected(&fixture).unwrap(), None).unwrap();
         let indexpath = temp.path().join("index.sqlite");
         let resources = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources");
         let engine = Mutex::new(Engine::default());

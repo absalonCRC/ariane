@@ -1,5 +1,6 @@
 use super::*;
 use crate::{enrichment::extract::Catalog, model::Source, vaults};
+use rusqlite::Connection;
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -43,6 +44,23 @@ pub struct InlineEntities {
     text: String,
     mentions: Vec<Mention>,
 }
+
+#[derive(Serialize)]
+pub struct EntityBatch {
+    section: String,
+    revision: i64,
+    #[serde(flatten)]
+    entities: InlineEntities,
+}
+
+struct InlineAnalysis<'a> {
+    root: &'a Path,
+    index: &'a Path,
+    sources: &'a [Source],
+    generation: &'a str,
+    catalog: Option<Catalog<'a>>,
+}
+
 fn sources_generation(root: &Path, index: &Path) -> Result<(Vec<Source>,String)> {
     let snapshot = crate::retrieval::cache::snapshot(root,index,false)?;
     Ok((snapshot.sources.all.iter().filter(|s|s.path.to_lowercase().ends_with(".md")).cloned().collect(),snapshot.sources.token.clone()))
@@ -68,19 +86,19 @@ fn prose_range(text: &str, start: usize, end: usize) -> bool {
         .any(|m| start < m.end() && end > m.start())
 }
 fn collect(
-    root: &Path,
+    c: &Connection,
     section: &str,
     revision: i64,
-    index: &Path,
-    sources: &[Source],
-    generation: &str,
+    analysis: &mut InlineAnalysis<'_>,
 ) -> Result<InlineEntities> {
-    let c = storage::database(root)?;
-    let section = project::section(&c, section)?
+    let InlineAnalysis { root, index, sources, generation, catalog } = analysis;
+    let section = project::section(c, section)?
         .filter(|s| s.revision == revision)
         .ok_or("Le passage a changé. Attendez sa prochaine analyse.")?;
-    let mut catalog = None;
-    results::reconcile(root, index)?;
+    let resolutions: Option<String> = c
+        .query_row("SELECT group_concat(key || value) FROM meta WHERE key LIKE 'entity_resolution:%'", [], |r| r.get(0))
+        .app()?;
+    let mut cache_entries = Vec::new();
     let mut mentions = Vec::new();
     let mut analyzed=true;
     // Use the same code-fence exclusion and durable passage boundaries as NER.
@@ -91,18 +109,19 @@ fn collect(
             .and_then(|id| section.outline.as_ref()?.nodes.iter().find(|n| &n.id == id))
             .map_or(0, |n| n.start);
         let key = format!("inline:{}", passage.key);
-        let ner: Option<String> = c.query_row("SELECT hash || model FROM memory_ner WHERE passage_key=?",[&passage.key],|r|r.get(0)).optional().app()?;
+        let ner: Option<String> = c.prepare_cached("SELECT hash || model FROM memory_ner WHERE passage_key=?").app()?
+            .query_row([&passage.key], |r| r.get(0)).optional().app()?;
         if !passage.text.trim().is_empty() && ner.as_deref()!=Some(&format!("{}{}",passage.hash,super::ner::NER_MODEL)) {analyzed=false;}
-        let mentions_hash: Option<String> = c.query_row("SELECT group_concat(id || ':' || kind || ':' || start || ':' || end) FROM (SELECT e.id,e.kind,m.start,m.end FROM memory_mentions m JOIN memory_entities e ON e.id=m.entity_id WHERE m.passage_key=? ORDER BY e.id,m.start)",[&passage.key],|r|r.get(0)).app()?;
-        let resolutions: Option<String> = c.query_row("SELECT group_concat(key || value) FROM meta WHERE key LIKE 'entity_resolution:%'",[],|r|r.get(0)).app()?;
+        let mentions_hash: Option<String> = c.prepare_cached("SELECT group_concat(id || ':' || kind || ':' || start || ':' || end) FROM (SELECT e.id,e.kind,m.start,m.end FROM memory_mentions m JOIN memory_entities e ON e.id=m.entity_id WHERE m.passage_key=? ORDER BY e.id,m.start)").app()?
+            .query_row([&passage.key], |r| r.get(0)).app()?;
         let hash = storage::fingerprint(&format!("{}:{ner:?}:{mentions_hash:?}:{resolutions:?}",passage.hash));
-        if let Some(value) = results::get(root,&key,&hash)? {
+        if let Some(value) = results::get_in(c, &key, &hash)? {
             let saved: Vec<Mention> = serde_json::from_value(value).app()?;
             mentions.extend(saved.into_iter().map(|mut m| { m.from += offset; m.to += offset; m }));
             continue;
         }
         let first = mentions.len();
-        if catalog.is_none() { catalog = Some(Catalog::new(sources)?); }
+        if catalog.is_none() { *catalog = Some(Catalog::new(sources)?); }
         for (start, end, owner) in catalog.as_ref().unwrap().inline_mentions(&passage.text) {
             if !prose_range(&passage.text, start, end) {
                 continue;
@@ -130,20 +149,22 @@ fn collect(
                 title,kind,source_id,entity_id:None,candidates:choices,
             });
         }
-        let mut q = c.prepare("SELECT e.id,e.title,e.kind,m.start,m.end FROM memory_mentions m JOIN memory_entities e ON e.id=m.entity_id JOIN memory_passages p ON p.key=m.passage_key WHERE m.passage_key=? AND p.hash=?").app()?;
+        let mut q = c.prepare_cached("SELECT e.id,e.title,e.kind,m.start,m.end FROM memory_mentions m JOIN memory_entities e ON e.id=m.entity_id JOIN memory_passages p ON p.key=m.passage_key WHERE m.passage_key=? AND p.hash=?").app()?;
         let rows = q
             .query_map(params![passage.key, passage.hash], |r| {
                 Ok((
                     r.get::<_, String>(0)?,
                     r.get::<_, String>(1)?,
                     r.get::<_, String>(2)?,
-                    r.get::<_, usize>(3)?,
-                    r.get::<_, usize>(4)?,
+                    r.get::<_, i64>(3)?,
+                    r.get::<_, i64>(4)?,
                 ))
             })
             .app()?;
         for row in rows {
             let (id, title, kind, start, end) = row.app()?;
+            let start = usize::try_from(start).app()?;
+            let end = usize::try_from(end).app()?;
             if passage.text.get(start..end) != Some(title.as_str())
                 || !prose_range(&passage.text, start, end)
             {
@@ -164,9 +185,14 @@ fn collect(
             mentions.push(Mention { from, to, title, kind, source_id: resolved, entity_id: Some(id), candidates: choices });
         }
         let relative: Vec<_> = mentions[first..].iter().cloned().map(|mut m| { m.from -= offset; m.to -= offset; m }).collect();
-        results::put_if_current(root,index,&key,&hash,&passage.text,&serde_json::to_value(relative).app()?,generation)?;
+        cache_entries.push(results::Entry {
+            key,
+            hash,
+            text: passage.text,
+            value: serde_json::to_value(relative).app()?,
+        });
     }
-    if results::catalog(root,index)? != generation { return Err("Les sources ont changé. Relancez la recherche.".into()); }
+    results::put_batch_if_current(c, root, index, generation, &cache_entries)?;
     mentions.sort_by_key(|m| (m.from, std::cmp::Reverse(m.to)));
     Ok(InlineEntities {
         analyzed,
@@ -176,15 +202,69 @@ fn collect(
         mentions,
     })
 }
+
+fn collect_current(
+    root: &Path,
+    index: &Path,
+    section: &str,
+    revision: i64,
+    sources: &[Source],
+    generation: &str,
+) -> Result<InlineEntities> {
+    let mut c = storage::database(root)?;
+    if passages::sync_section(&mut c, section, revision)?.is_none() {
+        return Err("Le passage a changé. Attendez sa prochaine analyse.".into());
+    }
+    results::reconcile(root, index)?;
+    let mut analysis = InlineAnalysis { root, index, sources, generation, catalog: None };
+    let result = collect(&c, section, revision, &mut analysis)?;
+    if results::catalog(root, index)? != generation {
+        return Err("Les sources ont changé. Relancez la recherche.".into());
+    }
+    Ok(result)
+}
+
+pub fn project_entity_mentions(
+    root: &Path,
+    index: &Path,
+    is_current: impl Fn() -> bool,
+) -> Result<Vec<EntityBatch>> {
+    let mut c = storage::database(root)?;
+    let scenes = passages::scene_revisions(&c, true)?;
+    passages::prune_missing(&mut c)?;
+    let (sources, generation) = sources_generation(root, index)?;
+    results::reconcile(root, index)?;
+    let mut analysis = InlineAnalysis {
+        root, index, sources: &sources, generation: &generation, catalog: None,
+    };
+    let mut batches = Vec::with_capacity(scenes.len());
+    for (section, revision) in scenes {
+        if !is_current() {
+            return Err("Le projet actif a changé.".into());
+        }
+        if passages::sync_section(&mut c, &section, revision)?.is_none() {
+            return Err("Le passage a changé. Attendez sa prochaine analyse.".into());
+        }
+        let entities = collect(&c, &section, revision, &mut analysis)?;
+        batches.push(EntityBatch { section, revision, entities });
+    }
+    if !is_current() {
+        return Err("Le projet actif a changé.".into());
+    }
+    if results::catalog(root, index)? != generation {
+        return Err("Les sources ont changé. Relancez la recherche.".into());
+    }
+    Ok(batches)
+}
+
 pub fn inline_entities(
     root: &Path,
     index: &Path,
     section: &str,
     revision: i64,
 ) -> Result<InlineEntities> {
-    sync_preferred(root, Some(section))?;
     let (sources,generation) = sources_generation(root,index)?;
-    collect(root, section, revision, index, &sources, &generation)
+    collect_current(root, index, section, revision, &sources, &generation)
 }
 pub fn resolve_inline_entities(root: &Path,index: &Path,section: &str,revision:i64) -> Result<InlineEntities> {
     let result = inline_entities(root,index,section,revision)?;
@@ -227,9 +307,8 @@ pub fn create_detected_entity(
     to: usize,
     kind: &str,
 ) -> Result<Source> {
-    sync_preferred(root, Some(section))?;
     let (sources,generation) = sources_generation(root, index)?;
-    let result = collect(root, section, revision, index, &sources, &generation)?;
+    let result = collect_current(root, index, section, revision, &sources, &generation)?;
     let candidate = result
         .mentions
         .iter()
@@ -505,7 +584,7 @@ mod tests {
         let raw = "---\ntype: lieu\nNom: Toulouse\n---\nVille.";
         let file = external.path().join("Toulouse.md");
         std::fs::write(&file, raw).unwrap();
-        vaults::connect(temp.path(), external.path()).unwrap();
+        vaults::connect(temp.path(), temp.path(), vaults::VaultFolder::selected(external.path()).unwrap(), None).unwrap();
         vaults::index(
             temp.path(),
             &index,

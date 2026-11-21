@@ -277,6 +277,9 @@ pub fn restore(backup: &Path, destination: &Path) -> Result<PathBuf> {
 // Restored copies retain source IDs so existing notes, links and citations work.
 // Each gets an isolated derived index so alternating copies cannot share stale entries.
 pub(crate) fn source_index(data: &Path, root: &Path) -> PathBuf {
+    if let Some(index) = crate::vaults::private_source_index(data, root) {
+        return index;
+    }
     if root.join(RESTORED).is_file() {
         data.join(format!(
             "sources-{}.sqlite",
@@ -321,7 +324,7 @@ mod tests {
         crate::history::create_branch(&root, "Variante", None).unwrap();
         vaults::create_owned(&root).unwrap();
         vaults::create_entity(&root, "personne", "Éloïse", "Personnage fictif").unwrap();
-        vaults::connect(&root, &external).unwrap();
+        vaults::connect(&root, dir.path(), vaults::VaultFolder::selected(&external).unwrap(), None).unwrap();
         fs::create_dir(root.join("assets")).unwrap();
         fs::write(root.join("assets/image.png"), b"synthetic image").unwrap();
 
@@ -381,9 +384,20 @@ mod tests {
         let restored_vault = from_backup.iter().find(|v| v.owned).unwrap();
         assert_eq!(original_vault.id, restored_vault.id);
         assert_eq!(Path::new(&restored_vault.path), restored.canonicalize().unwrap().join("Vault"));
-        assert!(from_backup
-            .iter()
-            .any(|v| !v.owned && Path::new(&v.path) == external.canonicalize().unwrap()));
+        let pending = from_backup.iter().find(|v| !v.owned).unwrap();
+        assert_eq!(Path::new(&pending.path), external.canonicalize().unwrap());
+        assert!(pending.needs_authorization && !pending.available);
+        assert!(restored_vault.available);
+        vaults::connect(
+            &restored,
+            dir.path(),
+            vaults::VaultFolder::selected(&external).unwrap(),
+            Some(&pending.id),
+        ).unwrap();
+        let after = vaults::list(&restored, &source_index(dir.path(), &restored)).unwrap();
+        assert!(after.iter().any(|v| v.id == pending.id && v.available && !v.needs_authorization));
+        let another = vaults::list(&second, &source_index(dir.path(), &second)).unwrap();
+        assert!(another.iter().any(|v| v.id == pending.id && v.needs_authorization));
         assert_eq!(
             fs::read_to_string(external.join("Témoin.md")).unwrap(),
             "Témoin hors projet"
