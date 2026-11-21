@@ -3,12 +3,12 @@ use serde::Serialize;
 #[derive(Serialize)]
 struct EntityType {
     kind: String,
-    count: usize,
+    count: i64,
 }
 #[derive(Serialize)]
 pub struct SourcePage {
     items: Vec<Source>,
-    total: usize,
+    total: i64,
     kinds: Vec<String>,
     types: Vec<EntityType>,
     folders: Vec<String>,
@@ -54,7 +54,7 @@ mod tests {
         let index = d.path().join("sources.sqlite");
         std::fs::create_dir(&vault).unwrap();
         project::create(&root, "Livre").unwrap();
-        connect(&root, &vault).unwrap();
+        connect(&root, d.path(), VaultFolder::selected(&vault).unwrap(), None).unwrap();
         let id = list(&root, &index).unwrap()[0].id.clone();
         set_scope(&root, &id, vec!["allowed".into()]).unwrap();
         let c = index_db(&index).unwrap();
@@ -93,7 +93,7 @@ mod tests {
         }
         let first = browse(&root, &index, "", None, None, None, 0).unwrap();
         assert_eq!(first.total, 55);
-        assert_eq!(first.types.iter().map(|t| t.count).sum::<usize>(), 55);
+        assert_eq!(first.types.iter().map(|t| t.count).sum::<i64>(), 55);
         assert_eq!(
             first
                 .types

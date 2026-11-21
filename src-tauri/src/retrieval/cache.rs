@@ -274,7 +274,7 @@ mod tests {
         project::create(&root, "Cache").unwrap();
         let vault = temp.path().join("vault");
         std::fs::create_dir(&vault).unwrap();
-        vaults::connect(&root, &vault).unwrap();
+        vaults::connect(&root, temp.path(), vaults::VaultFolder::selected(&vault).unwrap(), None).unwrap();
         let index = temp.path().join("index.sqlite");
         let connection = vaults::index_db(&index).unwrap();
         let id = project::hash(&vault.canonicalize().unwrap().to_string_lossy());

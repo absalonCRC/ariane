@@ -29,9 +29,15 @@ pub(super) fn handle(
             offset,
         )?),
         Request::Vaults => json(vaults::list(&root, &index)?),
-        Request::ConnectVault { path } => {
-            state.grants.require("vault", Path::new(&path))?;
-            vaults::connect(&root, Path::new(&path))?;
+        Request::ConnectVault { path, project_path, vault_id } => {
+            if project_path.as_deref().map(Path::new).is_some_and(|path| path != root)
+                || (vault_id.is_some() && project_path.is_none())
+            {
+                return Err("Le projet actif a changé.".into());
+            }
+            let folder = state.grants.take_vault(Path::new(&path))?;
+            vaults::connect(&root, &state.data, folder, vault_id.as_deref())?;
+            let index = crate::project::backup::source_index(&state.data, &root);
             json(vaults::list(&root, &index)?)
         }
         Request::NoteSuggestions {
@@ -105,7 +111,7 @@ pub(super) fn handle(
         }
         Request::VaultScope { id, scope } => json(vaults::set_scope(&root, &id, scope)?),
         Request::RemoveVault { id } => {
-            vaults::remove(&root, &id)?;
+            vaults::remove(&root, &state.data, &id)?;
             json(vaults::list(&root, &index)?)
         }
         operation @ (Request::Index | Request::Scan) => {

@@ -249,6 +249,67 @@ fn unchanged_sync_does_not_rewrite_vectors() {
 }
 
 #[test]
+fn project_mentions_cover_all_scenes_and_keep_the_single_scene_contract() {
+    use crate::vaults;
+
+    let d = fixture();
+    let root = d.path();
+    let index = root.join("sources.sqlite");
+    vaults::create_owned(root).unwrap();
+    let file = vaults::create_entity(root, "lieu", "Toulouse", "").unwrap();
+    let source = vaults::index_created_entity(root, &index, &file).unwrap();
+    for n in 0..18 {
+        scene(root, &format!("s{n:02}"), "😀 À Toulouse, l’atelier ouvre.", &[("n", 0)]);
+    }
+    let batches = json!(project_entity_mentions(root, &index, || true).unwrap());
+    let batches = batches.as_array().unwrap();
+    assert_eq!(batches.len(), 18);
+    for (n, batch) in batches.iter().enumerate() {
+        let section = format!("s{n:02}");
+        let mut standalone = json!(inline_entities(root, &index, &section, 1).unwrap());
+        standalone["section"] = json!(section);
+        standalone["revision"] = json!(1);
+        assert_eq!(*batch, standalone);
+        assert_eq!(batch["mentions"][0]["sourceId"], source.id);
+        assert_eq!(batch["mentions"][0]["from"], 5);
+    }
+
+    scene(root, "s00", "L’atelier déménage à Paris.", &[("n", 0)]);
+    let c = project::database(root).unwrap();
+    c.execute("UPDATE sections SET trashed=1 WHERE id='s17'", []).unwrap();
+    let refreshed = json!(project_entity_mentions(root, &index, || true).unwrap());
+    assert_eq!(refreshed.as_array().unwrap().len(), 17);
+    assert_eq!(refreshed[0]["revision"], 2);
+    let count = |term| {
+        c.query_row("SELECT count(*) FROM memory_fts WHERE memory_fts MATCH ?", [term], |r| r.get::<_, i64>(0)).unwrap()
+    };
+    assert_eq!(count("Toulouse"), 16);
+    assert_eq!(count("Paris"), 1);
+    assert_eq!(c.query_row("SELECT count(*) FROM memory_fts", [], |r| r.get::<_, i64>(0)).unwrap(), 17);
+}
+
+#[test]
+fn project_mentions_cancel_between_scenes_and_resume_cleanly() {
+    let d = fixture();
+    let root = d.path();
+    scene(root, "a", "Le premier texte.", &[("n", 0)]);
+    scene(root, "b", "Le deuxième texte.", &[("n", 0)]);
+    let index = root.join("sources.sqlite");
+    let checks = std::cell::Cell::new(0);
+    let result = project_entity_mentions(root, &index, || {
+        checks.set(checks.get() + 1);
+        checks.get() == 1
+    });
+    assert_eq!(result.err().as_deref(), Some("Le projet actif a changé."));
+    let c = project::database(root).unwrap();
+    assert_eq!(
+        c.query_row("SELECT count(*) FROM memory_sections", [], |r| r.get::<_, i64>(0)).unwrap(),
+        1,
+    );
+    assert_eq!(project_entity_mentions(root, &index, || true).unwrap().len(), 2);
+}
+
+#[test]
 fn code_fences_cross_nodes_without_creating_entities() {
     let d = fixture();
     let text = "```txt\nLouise Morel, relieuse.\n```\nPierre Martin, libraire.\n";
@@ -341,7 +402,8 @@ fn pressure_and_missing_models_do_not_block_fiches_timeline_recall_or_sources() 
     );
     let index = d.path().join("sources.sqlite");
     let vault = d.path().join("Vault");
-    std::fs::create_dir(&vault).unwrap(); vaults::connect(d.path(), &vault).unwrap();
+    std::fs::create_dir(&vault).unwrap();
+    vaults::connect(d.path(), d.path(), vaults::VaultFolder::selected(&vault).unwrap(), None).unwrap();
     let available = vaults::list(d.path(), &index).unwrap();
     let raw = "Louise Morel dirigeait un atelier de reliure à Arles en 1924.";
     std::fs::write(vault.join("archive.md"), raw).unwrap();

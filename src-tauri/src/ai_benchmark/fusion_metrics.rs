@@ -16,7 +16,7 @@ pub fn evaluate() {
     let vault = d.path().join("vault");
     std::fs::create_dir(&vault).unwrap();
     project::create(&root, "Fusion explicite").unwrap();
-    vaults::connect(&root, &vault).unwrap();
+    vaults::connect(&root, d.path(), vaults::VaultFolder::selected(&vault).unwrap(), None).unwrap();
     for doc in corpus["documents"].as_array().unwrap() {
         std::fs::write(
             vault.join(format!("{}.md", doc["id"].as_str().unwrap())),

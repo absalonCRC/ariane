@@ -6,6 +6,14 @@
 - Boutons, champs de saisie et sélecteurs harmonisés en formes rondes ou en capsules, avec des contenus recentrés et des repères d’activité arrondis.
 - Adaptation des commandes de thème, de Versions et du catalogue Smart-tags à ces formes et à l’espace disponible.
 
+## 0.7.5 — candidat de développement, 21 novembre 2026
+
+- Mise à jour de SQLite embarqué vers la version 3.54.1. Les projets et sauvegardes existants gardent leur format.
+- Les vaults externes des projets existants, reçus ou restaurés demandent une autorisation locale dans **Sources du projet**. Ils restent en lecture seule et leurs références sont conservées.
+- La synchronisation des passages réutilise les données du projet et actualise les scènes qui en ont besoin. Sur les corpus synthétiques, la stabilisation passe de 12,945 s à 1,662 s à 100 scènes. À 2 000 scènes, elle aboutit en 39,365 s, alors que le témoin dépasse la limite de 60 s.
+
+Voir [l’audit de sécurité](docs/audit-securite-0.7.5.md), [les mesures de référence](docs/reference-performance-0.7.5.md) et [le comparatif avant/après](docs/optimisation-entites-0.7.5.md).
+
 ## 0.7.2 — candidat de développement, 21 novembre 2026
 
 - **Aligner ici** place une phrase commune à la même hauteur dans la comparaison de Versions.

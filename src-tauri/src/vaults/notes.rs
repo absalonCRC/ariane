@@ -15,9 +15,9 @@ pub struct NoteRef {
 pub(super) fn catalog(root: &Path, index: &Path) -> Result<Vec<NoteRef>> {
     let available = list(root, index)?;
     let c = index_db(index)?;
-    let mut q = c.prepare("SELECT id,vault,path,json_extract(payload,'$.title'),json_extract(payload,'$.kind'),json_extract(payload,'$.aliases') FROM sources WHERE lower(path) LIKE '%.md'").app()?;
+    let mut q = c.prepare(&format!("SELECT id,vault,path,json_extract(payload,'$.title'),json_extract(payload,'$.kind'),json_extract(payload,'$.aliases') FROM sources s WHERE lower(path) LIKE '%.md' AND {SCOPE_SQL}")).app()?;
     let rows = q
-        .query_map([], |r| {
+        .query_map([scope_json(&available)?], |r| {
             Ok(NoteRef {
                 id: r.get(0)?,
                 vault_id: r.get(1)?,
@@ -28,21 +28,7 @@ pub(super) fn catalog(root: &Path, index: &Path) -> Result<Vec<NoteRef>> {
             })
         })
         .app()?;
-    rows.filter_map(|row| match row {
-        Ok(note)
-            if available.iter().any(|v| {
-                v.available
-                    && v.id == note.vault_id
-                    && (v.scope.is_empty()
-                        || v.scope.iter().any(|s| Path::new(&note.path).starts_with(s)))
-            }) =>
-        {
-            Some(Ok(note))
-        }
-        Ok(_) => None,
-        Err(e) => Some(Err(e.to_string())),
-    })
-    .collect()
+    rows.map(|row| row.app()).collect()
 }
 fn folded(value: &str) -> String {
     parse::normalize(value)

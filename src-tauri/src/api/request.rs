@@ -229,6 +229,8 @@ pub enum Request {
     Vaults,
     ConnectVault {
         path: String,
+        project_path: Option<String>,
+        vault_id: Option<String>,
     },
     CreateOwnedVault,
     NoteSuggestions {

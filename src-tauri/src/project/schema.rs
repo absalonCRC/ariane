@@ -2,6 +2,16 @@ use crate::error::{AppResult, Result};
 use rusqlite::{Connection, TransactionBehavior};
 use std::path::Path;
 const SCHEMA_VERSION: i64 = 6;
+
+#[test]
+fn bundled_sqlite_includes_the_wal_security_fix() {
+    assert!(
+        rusqlite::version_number() >= 3_054_000,
+        "SQLite {} predates the WAL fix",
+        rusqlite::version(),
+    );
+}
+
 /// SQLite itself refuses symlink filenames. Files used by the mirror protocol are
 /// opened relative to a verified directory descriptor in `io`.
 pub fn database(root: &Path) -> Result<Connection> {

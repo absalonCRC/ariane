@@ -124,7 +124,7 @@ mod tests {
         crate::memory::sync(&root).unwrap();
         let vault = d.path().join("vault");
         std::fs::create_dir(&vault).unwrap();
-        vaults::connect(&root, &vault).unwrap();
+        vaults::connect(&root, d.path(), vaults::VaultFolder::selected(&vault).unwrap(), None).unwrap();
         let index = d.path().join("sources.sqlite");
         let available = vaults::list(&root, &index).unwrap();
         let id = &available[0].id;

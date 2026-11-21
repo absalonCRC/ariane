@@ -20,15 +20,20 @@ pub fn isolated_directory() -> std::io::Result<PathBuf> {
     }
     Ok(path)
 }
-fn prepare(state: &AppState) -> Result<Value> {
+fn prepare(state: &AppState, reference: bool) -> Result<Value> {
     // Fixtures already contain their source index; periodic rescans would turn
     // a latency measurement into an unrelated full reindex.
     state.paused.store(true, std::sync::atomic::Ordering::Relaxed);
     let memory_test = state.data.join(".memory-benchmark").is_file();
     let speech_test = state.data.join("speech-input.wav").is_file();
     let large = (!memory_test && !speech_test) || state.data.join(".large-manuscript").is_file();
-    let scenes = if large { 2000 } else { 6 };
-    let sources = if large { 2500 } else { 6 };
+    let (scenes, sources) = if !large {
+        (6, 6)
+    } else if reference && !state.data.join(".large-manuscript").is_file() {
+        (100, 500)
+    } else {
+        (2000, 2500)
+    };
     let root = state.data.join("project");
     if root.exists() {
         return Err("Benchmark fixture already exists; use a fresh directory".into());
@@ -40,7 +45,7 @@ fn prepare(state: &AppState) -> Result<Value> {
     let tx = c.transaction().app()?;
     tx.execute("DELETE FROM sections", []).app()?;
     for i in 0..scenes {
-        let text = if memory_test && i < 6 {
+        let text = if !reference && memory_test && i < 6 {
             ["Louise Morel, relieuse, s’installa à Arles en 1924. La maison vide garde le souvenir de ceux qui ont vécu entre ses murs.\n",
              "La demeure abandonnée semblait attendre ses habitants.\n",
              "Louise Morel, relieuse, travaillait à Lyon en 1921.\n",
@@ -50,7 +55,11 @@ fn prepare(state: &AppState) -> Result<Value> {
         } else {
             text.clone()
         };
-        let nodes = if memory_test && i < 6 { 1 } else { 20 };
+        let nodes = if !reference && memory_test && i < 6 {
+            1
+        } else {
+            20
+        };
         let id = format!("scene-{i}");
         let outline = Outline {
             version: 1,
@@ -72,13 +81,13 @@ fn prepare(state: &AppState) -> Result<Value> {
             n.start = j * line.encode_utf16().count();
         }
         tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,outline,mirror) VALUES(?,NULL,?,'scene',?,?,0,?,?)",
-            params![id,format!("Scène {i}"),i,text,serde_json::to_string(&outline).app()?,project::hash(&text)]).app()?;
+            params![id,format!("Scène {i}"),i as i64,text,serde_json::to_string(&outline).app()?,project::hash(&text)]).app()?;
         fs::write(root.join("manuscrit").join(format!("{id}.md")), &text).app()?;
     }
     tx.execute(
         "UPDATE meta SET value=? WHERE key='settings'",
         [
-            json!({"active":"scene-0","continuous":true,"depth":0,"cursor":1,"enrichment":false})
+            json!({"active":"scene-0","continuous":!reference,"depth":0,"cursor":1,"enrichment":false})
                 .to_string(),
         ],
     )
@@ -86,8 +95,9 @@ fn prepare(state: &AppState) -> Result<Value> {
     tx.commit().app()?;
     let vault = state.data.join("vault");
     fs::create_dir_all(&vault).app()?;
-    vaults::connect(&root, &vault)?;
-    let vault_id = project::hash(&vault.to_string_lossy());
+    let folder = vaults::VaultFolder::selected(&vault)?;
+    let vault_id = project::hash(&folder.path.to_string_lossy());
+    vaults::connect(&root, &state.data, folder, None)?;
     let mut idx = vaults::index_db(&state.data.join("sources.sqlite"))?;
     let tx = idx.transaction().app()?;
     for i in 0..sources {
@@ -96,7 +106,7 @@ fn prepare(state: &AppState) -> Result<Value> {
         } else {
             format!("Archive {i}")
         };
-        let raw = if memory_test && i == 0 {
+        let raw = if !reference && memory_test && i == 0 {
             "---\ntitle: Archives d’Arles\ntype: Document\n---\nLouise Morel dirigeait un atelier de reliure à Arles en 1924. Un registre conserve les commandes et les adresses des clients.\n".to_owned()
         } else {
             format!("---\ntitle: {title}\ntype: Concept\naliases: [Lieu {i}]\n---\nLa mémoire des lieux dans la ville. [[Toulouse]]\n{}", "Un témoignage ancien. ".repeat(30))
@@ -131,8 +141,32 @@ fn prepare(state: &AppState) -> Result<Value> {
         .app()?;
     }
     tx.commit().app()?;
-    project::catalog::remember(&state.data,&root,"Mesure native — données synthétiques")?;
-    Ok(json!({"path":root,"scenes":scenes,"sources":sources,"memoryTest":memory_test,"speechTest":speech_test,"microphoneProbe":state.data.join(".microphone-probe").is_file(),"entitiesTest":crate::memory_engine::EntityEngine::available(&state.data,&state.resources)}))
+    project::catalog::remember(&state.data, &root, "Mesure native — données synthétiques")?;
+    let other = if reference {
+        crate::history::capture(&root, "Référence synthétique", None)?;
+        let other = state.data.join("project-b");
+        let name = "Second projet — données synthétiques";
+        let seed = project::create(&other, name)?;
+        let scene = &seed.sections.first().ok_or("Missing secondary scene")?.id;
+        let c = project::database(&other)?;
+        let text = "Ce texte appartient au second projet synthétique.";
+        c.execute(
+            "UPDATE sections SET text=?,mirror=? WHERE id=?",
+            params![text, project::hash(text), scene],
+        )
+        .app()?;
+        c.execute(
+            "UPDATE meta SET value=? WHERE key='settings'",
+            [json!({"active":scene,"continuous":false,"enrichment":false}).to_string()],
+        )
+        .app()?;
+        fs::write(other.join("manuscrit").join(format!("{scene}.md")), text).app()?;
+        project::catalog::remember(&state.data, &other, name)?;
+        Some(other)
+    } else {
+        None
+    };
+    Ok(json!({"path":root,"other":other,"scenes":scenes,"sources":sources,"memoryTest":memory_test,"speechTest":speech_test,"microphoneProbe":state.data.join(".microphone-probe").is_file(),"entitiesTest":crate::memory_engine::EntityEngine::available(&state.data,&state.resources)}))
 }
 #[tauri::command]
 pub async fn performance(
@@ -143,7 +177,27 @@ pub async fn performance(
     tauri::async_runtime::spawn_blocking(move || {
         let state = app.state::<AppState>();
         match action.as_str() {
-            "prepare" => prepare(&state),
+            "prepare" => prepare(&state, false),
+            "prepareReference" => prepare(&state, true),
+            "referenceIdle" => {
+                let guard = state.project_guard.lock().app()?;
+                Ok(json!(guard
+                    .as_ref()
+                    .is_none_or(|g| std::sync::Arc::strong_count(g) == 1)))
+            }
+            "referenceNotes" => {
+                let batch = payload
+                    .and_then(|value| value.as_u64())
+                    .filter(|number| *number < 3)
+                    .ok_or("Invalid synthetic batch")?;
+                for number in 0..128 {
+                    fs::write(
+                        state.data.join("vault").join(format!("bench-{batch}-{number}.md")),
+                        format!("# Herbier synthétique {batch}-{number}\n\nL'herbier répertorie les plantes du jardin.\n"),
+                    ).app()?;
+                }
+                Ok(json!(128))
+            }
             "speechInput" => {
                 let audio = fs::read(state.data.join("speech-input.wav")).app()?;
                 if audio.len() > 20 * 1024 * 1024 { return Err("Speech fixture exceeds the audio limit".into()); }

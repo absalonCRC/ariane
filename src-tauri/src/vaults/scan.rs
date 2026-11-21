@@ -91,6 +91,9 @@ pub(super) fn run(
     let mut deferred = false;
     let mut forwards = 0;
     for vault in vaults {
+        if vault.needs_authorization {
+            continue;
+        }
         if !vault.available {
             errors.push(format!("{} : dossier introuvable", vault.name));
             continue;
@@ -338,7 +341,7 @@ mod tests {
         let vault = d.path().join("vault");
         fs::create_dir(&vault).unwrap();
         project::create(&root, "A").unwrap();
-        super::super::connect(&root, &vault).unwrap();
+        super::super::connect(&root, d.path(), VaultFolder::selected(&vault).unwrap(), None).unwrap();
         fs::write(vault.join("A.md"), "Texte immédiatement disponible").unwrap();
         let index = d.path().join("index.db");
         let activity = crate::memory_engine::Activity::default();

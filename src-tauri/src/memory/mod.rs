@@ -3,12 +3,13 @@ mod passages;
 #[cfg(test)]
 pub use context::vector;
 pub use context::{context, context_idle, dismiss, entity, list, passage, session};
-pub use passages::{pending, pending_at, sync, sync_idle, sync_preferred};
+pub use passages::{pending, pending_at, sync, sync_idle};
 use passages::{row_passage, section_passages, utf16_byte};
 mod entities;
 mod inline;
 pub use inline::{
-    create_detected_entity, inline_entities, resolve_detected_entity, resolve_inline_entities,
+    create_detected_entity, inline_entities, project_entity_mentions, resolve_detected_entity,
+    resolve_inline_entities,
 };
 mod ner;
 pub use ner::{apply_entities, pending_entities_at, prepare_types};

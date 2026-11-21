@@ -319,7 +319,7 @@ mod tests {
         let vault = d.path().join("vault");
         std::fs::create_dir(&vault).unwrap();
         crate::project::create(&root, "Recherche").unwrap();
-        vaults::connect(&root, &vault).unwrap();
+        vaults::connect(&root, d.path(), vaults::VaultFolder::selected(&vault).unwrap(), None).unwrap();
         std::fs::write(
             vault.join("Tour.md"),
             "---\ntitle: Tour\n---\nLa tour domine le quai.",

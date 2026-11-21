@@ -2,12 +2,14 @@ import { t } from '../i18n';
 import { noteEventLabel } from '../notes/useNoteActivity';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useContextMenuNotice } from '../components/ContextMenu';
+import { native, request } from '../platform/client';
 import type { Workspace } from './useWorkspace';
 
 type NoticeKind =
   | 'library'
   | 'error'
   | 'recovery'
+  | 'vault-access'
   | 'export'
   | 'context'
   | 'note'
@@ -38,6 +40,7 @@ export function useTitleNotices(workspace: Workspace, memoryPending = false) {
   const timers = useRef(new Map<number, { timer: number | null; kind: NoticeKind }>());
   const projectPath = workspace.p?.path;
   const previousProjectPath = useRef(projectPath);
+  const previousVaultNotice = useRef<{ path: string; pending: string } | null>(null);
   const { error, recovery, libraryNotice, surface, exportJob, setLibraryNotice, setError } =
     workspace;
 
@@ -73,7 +76,9 @@ export function useTitleNotices(workspace: Workspace, memoryPending = false) {
         }
       }
       const timer =
-        tone === 'error' ? null : window.setTimeout(() => dismiss(notice), NOTICE_DURATION);
+        tone === 'error' || kind === 'vault-access'
+          ? null
+          : window.setTimeout(() => dismiss(notice), NOTICE_DURATION);
       timers.current.set(notice.id, { timer, kind });
       setNotices((previous) => {
         const remaining =
@@ -107,10 +112,43 @@ export function useTitleNotices(workspace: Workspace, memoryPending = false) {
   useEffect(() => {
     if (previousProjectPath.current === projectPath) return;
     previousProjectPath.current = projectPath;
+    previousVaultNotice.current = null;
     for (const { timer } of timers.current.values()) if (timer !== null) window.clearTimeout(timer);
     timers.current.clear();
     setNotices([]);
   }, [projectPath]);
+
+  useEffect(() => {
+    if (!native || !projectPath) return;
+    let active = true;
+    void request('vaults')
+      .then((vaults) => {
+        if (!active) return;
+        const pending = vaults
+          .filter((vault) => vault.needsAuthorization)
+          .map((vault) => vault.id)
+          .sort()
+          .join('\n');
+        if (!pending) {
+          previousVaultNotice.current = null;
+          removeKind('vault-access');
+          return;
+        }
+        if (
+          previousVaultNotice.current?.path === projectPath &&
+          previousVaultNotice.current.pending === pending
+        )
+          return;
+        previousVaultNotice.current = { path: projectPath, pending };
+        enqueue('vault-access', 'Autorisez les dossiers de sources externes de ce projet.', 'info');
+      })
+      .catch((error) => {
+        if (active) workspace.fail(error);
+      });
+    return () => {
+      active = false;
+    };
+  }, [projectPath, workspace.sourceVersion, workspace.fail, enqueue, removeKind]);
 
   useEffect(() => {
     if (libraryNotice) enqueue('library', libraryNotice.message, 'success', libraryNotice);
@@ -205,6 +243,7 @@ export function useTitleNotices(workspace: Workspace, memoryPending = false) {
     hasPending:
       !!error ||
       recovery ||
+      notices.some((notice) => notice.kind === 'vault-access') ||
       workspace.doc.status === 'saving' ||
       workspace.doc.status === 'error' ||
       workspace.doc.versionStatus === 'error' ||
