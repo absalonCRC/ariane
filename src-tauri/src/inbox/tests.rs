@@ -155,6 +155,7 @@ fn interrupted_transfer_uses_the_receipt_and_preserves_later_edits_and_restorati
     project::save(
         &root,
         vec![crate::model::TextPatch {
+            writing_aids: None,
             id: id.clone(),
             revision: imported.revision,
             text: "Édition ultérieure".into(),
@@ -253,14 +254,14 @@ fn migration_from_v4_preserves_identity_and_a_coherent_backup() {
     project::create(d.path(), "Migration").unwrap();
     let identity = project::capture_import::identity(d.path()).unwrap();
     let c = project::database(d.path()).unwrap();
-    c.execute_batch("DROP TABLE capture_receipts;PRAGMA user_version=4;")
+    c.execute_batch("DROP TABLE capture_receipts;ALTER TABLE sections DROP COLUMN writing_aids;PRAGMA user_version=4;")
         .unwrap();
     drop(c);
     let c = project::database(d.path()).unwrap();
     assert_eq!(
         c.pragma_query_value::<i64, _>(None, "user_version", |r| r.get(0))
             .unwrap(),
-        5
+        6
     );
     assert_eq!(
         project::capture_import::identity(d.path()).unwrap(),
@@ -284,7 +285,7 @@ fn migration_from_v4_preserves_identity_and_a_coherent_backup() {
             .unwrap(),
         4
     );
-    c.execute_batch("PRAGMA user_version=6").unwrap();
+    c.execute_batch("PRAGMA user_version=7").unwrap();
     drop(c);
     assert!(project::database(d.path()).is_err());
 }

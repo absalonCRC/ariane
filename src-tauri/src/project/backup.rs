@@ -309,6 +309,7 @@ mod tests {
         project::save(
             &root,
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 text: text.clone(),
                 revision: 0,
@@ -335,6 +336,7 @@ mod tests {
         project::save(
             &root,
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 text: "Travail plus récent".into(),
                 revision: project::section(&db, &id).unwrap().unwrap().revision,
@@ -397,6 +399,7 @@ mod tests {
         project::save(
             &root,
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 text: "Texte SQLite".into(),
                 revision: 0,

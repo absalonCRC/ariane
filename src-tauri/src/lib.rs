@@ -64,6 +64,14 @@ pub fn run() {
                 let _ = app_lifecycle::begin(app, "quit", None);
             } else if event.id().as_ref() == "capture-open" {
                 let _ = capture_window::toggle(app);
+            } else if matches!(event.id().as_ref(), "history-undo" | "history-redo") {
+                if let Some(window) = app
+                    .webview_windows()
+                    .into_values()
+                    .find(|window| window.is_focused().unwrap_or(false))
+                {
+                    let _ = app.emit_to(window.label(), "native-edit-history", event.id().as_ref());
+                }
             } else if platform::is_application_action(app, event.id().as_ref()) {
                 // Standard AppKit editing actions belong to the focused webview.
                 // Only explicit application commands reveal the main workspace.

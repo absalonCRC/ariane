@@ -168,6 +168,7 @@ pub(super) fn validate(state: &Snapshot) -> Result<()> {
     for tag in &state.smart_tags { project::tags::validate_tag(tag, &state.smart_tags)?; }
     for s in &state.sections {
         project::tags::validate_ids(&s.tag_ids, &state.smart_tags)?;
+        project::writing_aids::validate(&s.text, &s.writing_aids)?;
         if let Some(o) = &s.outline { for n in &o.nodes { project::tags::validate_ids(&n.tag_ids, &state.smart_tags)?; } }
         project::validate_id(&s.id)?;
         if !["scene", "chapter", "folder"].contains(&s.kind.as_str()) {
@@ -226,7 +227,7 @@ pub(super) fn replace(c: &Connection, root: &Path, state: &Snapshot) -> Result<(
 CREATE TABLE IF NOT EXISTS margin_pins(section TEXT NOT NULL,source TEXT NOT NULL,PRIMARY KEY(section,source)); DELETE FROM margin_pins;").app()?;
     for s in &state.sections {
         let revision = revision_floor;
-        c.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,mirror,outline,role,trashed,included,tag_ids) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",params![s.id,s.parent,s.title,s.kind,s.position,s.text,revision,s.synopsis,s.status,s.goal,bases[&s.id],s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included,serde_json::to_string(&s.tag_ids).app()?]).app()?;
+        c.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,mirror,outline,role,trashed,included,tag_ids,writing_aids) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",params![s.id,s.parent,s.title,s.kind,s.position,s.text,revision,s.synopsis,s.status,s.goal,bases[&s.id],s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included,serde_json::to_string(&s.tag_ids).app()?,serde_json::to_string(&s.writing_aids).app()?]).app()?;
         if s.kind == "scene" && !s.trashed {
             c.execute(
                 "INSERT INTO mirror_pending(id,base) VALUES(?,?)",
@@ -456,9 +457,14 @@ fn entry(
         fields.push("section".into());
         current.cloned()
     } else if let (Some(b), Some(a), Some(z)) = (base, current, incoming) {
-        let b = normal(b);
-        let a = normal(a);
-        let z = normal(z);
+        let normalized = |section: &Section| {
+            let mut value = normal(section);
+            value["writingAids"] = json!(section.writing_aids);
+            value
+        };
+        let b = normalized(b);
+        let a = normalized(a);
+        let z = normalized(z);
         let mut r = a.clone();
         for key in a.as_object().ok_or("Section invalide.")?.keys() {
             if key == "revision" {
@@ -486,6 +492,13 @@ fn entry(
         // Outline offsets only apply to the text for which they were built.
         if r["text"] != a["text"] && r["text"] != z["text"] {
             r["outline"] = Value::Null;
+        }
+        if ![&a, &z].iter().any(|side| {
+            r["writingAids"] == side["writingAids"] && r["text"] == side["text"]
+        }) {
+            let mut aids: Vec<crate::model::WritingAid> = serde_json::from_value(r["writingAids"].clone()).app()?;
+            project::writing_aids::detach(&mut aids);
+            r["writingAids"] = json!(aids);
         }
         let section: Section = serde_json::from_value(r).app()?;
         if section
@@ -729,6 +742,9 @@ pub fn merge_branch(
                     .ok_or("Texte introuvable.")?;
                     let mut section = e.result.clone().ok_or("Texte introuvable.")?;
                     if e.fields.iter().any(|f| f == "text") {
+                        if section.text != side.text {
+                            project::writing_aids::detach(&mut section.writing_aids);
+                        }
                         section.text.clone_from(&side.text);
                     }
                     if e.fields.iter().any(|f| f == "outline") {
@@ -752,6 +768,7 @@ pub fn merge_branch(
                     let mut section = e.result.clone().ok_or("Texte introuvable.")?;
                     section.text = r.text.clone().ok_or("Saisissez le passage réécrit.")?;
                     section.outline = None;
+                    project::writing_aids::detach(&mut section.writing_aids);
                     Some(section)
                 }
                 _ => return Err("Choix invalide.".into()),
@@ -858,6 +875,7 @@ mod tests {
         project::save(
             root,
             vec![TextPatch {
+                writing_aids: None,
                 id: id.into(),
                 revision: s.revision,
                 text: text.into(),
@@ -1054,6 +1072,7 @@ mod tests {
         project::save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 revision: s.revision,
                 text: "Long\nSuite.".into(),

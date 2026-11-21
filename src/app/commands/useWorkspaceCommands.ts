@@ -1,3 +1,4 @@
+import type { WritingAidCommand } from '../../editor/WritingAidDialog';
 import { commandRegistry } from './registry';
 import {
   useShortcuts,
@@ -25,6 +26,7 @@ interface CommandContext {
   setPalette: Dispatch<SetStateAction<'text' | 'commands' | 'sections' | null>>;
   setSearch: (query: string | null) => void;
   editor: RefObject<EditorHandle | null>;
+  locateNextBlank?: () => void;
   openAnnotations: () => void;
   setSurface: Dispatch<SetStateAction<Surface>>;
   prepareManuscript: () => Promise<void>;
@@ -49,6 +51,7 @@ export function useWorkspaceCommands({
   setPalette,
   setSearch,
   editor,
+  locateNextBlank,
   openAnnotations,
   setSurface,
   prepareManuscript,
@@ -67,6 +70,10 @@ export function useWorkspaceCommands({
 }: CommandContext) {
   const overrides = useShortcuts();
   const bindings = effectiveBindings(overrides);
+  const writingAid = (id: WritingAidCommand, hint: string) => {
+    if (editor.current?.writingAid(id)) return;
+    fail(t(hint));
+  };
   const commands: Command[] = p
     ? [
         {
@@ -104,6 +111,27 @@ export function useWorkspaceCommands({
               },
             ]
           : []),
+        {
+          id: 'blank-insert',
+          label: t('Laisser un blanc'),
+          action: () => writingAid('blank-insert', 'Placez le curseur dans le manuscrit.'),
+        },
+        { id: 'blank-next', label: t('Blanc suivant'), action: () => locateNextBlank?.() },
+        {
+          id: 'blank-fill',
+          label: t('Compléter le blanc'),
+          action: () => writingAid('blank-fill', 'Placez le curseur sur un blanc.'),
+        },
+        {
+          id: 'trial-start',
+          label: t('Essayer une formulation'),
+          action: () => writingAid('trial-start', 'Sélectionnez une formulation dans un paragraphe.'),
+        },
+        {
+          id: 'writing-aids',
+          label: t('Repères d’écriture'),
+          action: () => writingAid('writing-aids', 'Ouvrez un texte pour voir ses repères.'),
+        },
         { id: 'import', label: t('Importer un manuscrit'), action: () => setSurface('import') },
         ...(native
           ? [

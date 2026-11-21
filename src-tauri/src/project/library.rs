@@ -203,6 +203,7 @@ fn apply_unlocked(root: &Path, op: Operation) -> Result<Project> {
                         return Err("Type inconnu.".into());
                     }
                     vec![Section {
+                        writing_aids: vec![],
                         tag_ids: vec![],
                         id: uuid::Uuid::new_v4().to_string(),
                         parent: parent.clone(),
@@ -296,6 +297,9 @@ fn apply_unlocked(root: &Path, op: Operation) -> Result<Project> {
                     if roots.contains(&s.id) {
                         copy.title = format!("{} — copie", s.title);
                     }
+                    for aid in &mut copy.writing_aids {
+                        aid.id = uuid::Uuid::new_v4().to_string();
+                    }
                     if let Some(outline) = &mut copy.outline {
                         let node_ids: HashMap<_, _> = outline
                             .nodes
@@ -324,7 +328,7 @@ fn apply_unlocked(root: &Path, op: Operation) -> Result<Project> {
             _ => return Err("Opération inconnue.".into()),
         }
         for (i, s) in all.iter().enumerate() {
-            tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET parent=excluded.parent,position=excluded.position,role=excluded.role,trashed=excluded.trashed,included=excluded.included", params![s.id,s.parent,s.title,s.kind,i as i64,s.text,s.revision,s.synopsis,s.status,s.goal,s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included,serde_json::to_string(&s.tag_ids).app()?]).app()?;
+            tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids,writing_aids) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET parent=excluded.parent,position=excluded.position,role=excluded.role,trashed=excluded.trashed,included=excluded.included", params![s.id,s.parent,s.title,s.kind,i as i64,s.text,s.revision,s.synopsis,s.status,s.goal,s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included,serde_json::to_string(&s.tag_ids).app()?,serde_json::to_string(&s.writing_aids).app()?]).app()?;
         }
         tx.execute("INSERT INTO structure_history(payload) VALUES(?)", [before])
             .app()?;
@@ -379,7 +383,7 @@ mod tests {
         let changed = apply(d.path(), exclude).unwrap();
         assert!(changed.sections.iter().find(|s| s.id == first).unwrap().included);
         assert!(!project::load(d.path()).unwrap().sections.iter().find(|s| s.id == child).unwrap().included);
-        project::save(d.path(), vec![TextPatch { id: child.clone(), text: "Texte de travail conservé".into(), revision: 0, outline: None }]).unwrap();
+        project::save(d.path(), vec![TextPatch { writing_aids: None, id: child.clone(), text: "Texte de travail conservé".into(), revision: 0, outline: None }]).unwrap();
         let version = crate::history::capture(d.path(), "Travail", None).unwrap();
         let output = d.path().join("manuscrit.md");
         crate::export::export(d.path(), d.path(), &output, "md", None).unwrap();
@@ -527,6 +531,7 @@ mod tests {
         project::save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: first.clone(),
                 revision: 0,
                 text: "Texte après déplacement".into(),
@@ -549,6 +554,7 @@ mod tests {
         project::save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: child.clone(),
                 revision: 0,
                 text: "À conserver".into(),
@@ -615,6 +621,7 @@ mod tests {
         project::save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: copy.id.clone(),
                 revision: 0,
                 text: "Copie retravaillée".into(),
@@ -634,6 +641,7 @@ mod tests {
         project::save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: child,
                 revision: 0,
                 text: "Secret des notes".into(),

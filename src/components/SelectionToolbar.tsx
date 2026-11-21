@@ -2,7 +2,7 @@ import { t, useLocale } from '../i18n';
 import { usePresenceValue } from './Presence';
 import { useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Bold, Italic, Strikethrough, Link2, Quote, MessageSquare } from 'lucide-react';
+import { Bold, Italic, Strikethrough, Link2, Quote, MessageSquare, PenLine } from 'lucide-react';
 import type { MarkdownFormat } from '../editor/formatMarkdown';
 import { useContextMenuOpen } from './ContextMenu';
 
@@ -23,10 +23,12 @@ export function SelectionToolbar({
   anchor,
   onFormat,
   onAnnotate,
+  onTry,
 }: {
   anchor: SelectionAnchor | null;
   onFormat: (format: MarkdownFormat) => void;
   onAnnotate?: () => void;
+  onTry?: () => void;
 }) {
   useLocale();
   const menuOpen = useContextMenuOpen();
@@ -76,6 +78,11 @@ export function SelectionToolbar({
       {onAnnotate && (
         <button type="button" aria-label={t('Annoter la sélection')} onClick={onAnnotate}>
           <MessageSquare size={15} strokeWidth={1.6} />
+        </button>
+      )}
+      {onTry && (
+        <button type="button" aria-label={t('Essayer une formulation')} onClick={onTry}>
+          <PenLine size={15} strokeWidth={1.6} />
         </button>
       )}
       {actions.map(([format, label, Icon]) => (

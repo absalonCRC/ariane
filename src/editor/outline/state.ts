@@ -1,3 +1,4 @@
+import { movedPassages } from '../writingAids';
 import { t } from '../../i18n';
 import {
   Annotation,
@@ -371,7 +372,15 @@ export function outlineEditor(
             : { from: span.from, to: span.to, insert: text },
         effects: replace.of(all),
         selection: { anchor: caret },
-        annotations: [isolateHistory.of('full'), Transaction.userEvent.of('input.outline')],
+        annotations: [
+          isolateHistory.of('full'),
+          Transaction.userEvent.of('input.outline'),
+          movedPassages.of(previous.map((node) => ({
+            from: node.from,
+            to: node.from + body.get(node.id)!.length,
+            destination: nextById.get(node.id)!.from,
+          }))),
+        ],
         scrollIntoView: true,
       }),
     );

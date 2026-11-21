@@ -1,6 +1,8 @@
+import type { WritingAid } from '../contracts/writingAids';
 import type { Outline, Section } from '../contracts/project';
 export interface SectionContent {
   text: string;
+  writingAids?: WritingAid[];
   outline?: Outline | null;
 }
 export type SectionDraft = () => SectionContent;
@@ -21,7 +23,7 @@ export function sectionDraft(read: SectionDraft): SectionDraft {
 /** Existing consumers (export, history, section changes) always read current text.
  * A subsequent assignment replaces the accessor, preserving the Section contract. */
 export function stageDraft(section: Section, draft: SectionDraft) {
-  for (const key of ['text', 'outline'] as const)
+  for (const key of ['text', 'outline', 'writingAids'] as const)
     Object.defineProperty(section, key, {
       configurable: true,
       enumerable: true,

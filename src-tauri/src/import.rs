@@ -286,7 +286,7 @@ mod tests {
         fs::write(source.join("Prologue.md"), "André").unwrap();
         let root = temp.path().join("Nouveau");
         let existing = project::create(&root,"Existant").unwrap();
-        project::save(&root,vec![crate::model::TextPatch{id:existing.sections[0].id.clone(),revision:0,text:"Texte déjà écrit".into(),outline:None}]).unwrap();
+        project::save(&root,vec![crate::model::TextPatch{ writing_aids: None,id:existing.sections[0].id.clone(),revision:0,text:"Texte déjà écrit".into(),outline:None}]).unwrap();
         let report = import_into(&root, temp.path(), &source).unwrap();
         assert_eq!(report.items.len(), 2);
         assert_eq!(project::load(&root).unwrap().sections[0].text,"Texte déjà écrit");
@@ -306,7 +306,7 @@ mod tests {
         let temp = tempfile::tempdir().unwrap();
         let original = temp.path().join("Original");
         let p = project::create(&original, "Texte").unwrap();
-        project::save(&original,vec![crate::model::TextPatch { id:p.sections[0].id.clone(), revision:0,
+        project::save(&original,vec![crate::model::TextPatch { writing_aids: None, id:p.sections[0].id.clone(), revision:0,
             text:"Élise revient[^note].\n\n[^note]: Référence conservée.".into(), outline:None }]).unwrap();
         let resources = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources");
         let docx = temp.path().join("Texte.docx");

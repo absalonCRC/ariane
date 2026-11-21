@@ -1,5 +1,15 @@
 # Utiliser ariane
 
+## Blancs, essais de formulation et répétitions
+
+Dans le manuscrit, ouvrez les **Commandes** avec **⌘ K**. **Laisser un blanc** insère `[…]` au curseur et permet d’ajouter un indice privé. **Blanc suivant** rejoint le prochain repère dans l’ordre du manuscrit, puis revient au premier. Sur un blanc, **Compléter le blanc** affiche son indice et remplace le signe par le texte saisi. **⌘ Z** rétablit le signe et son indice. Un blanc encore ouvert apparaît dans les exports.
+
+Sélectionnez une formulation dans un paragraphe et choisissez **Essayer une formulation** dans les commandes ou dans la barre de sélection. Saisissez l’autre formulation. **Original** et **Essai** changent la version affichée dans le paragraphe. Fermez le panneau pour conserver le travail en cours. **Repères d’écriture** rouvre les blancs et essais du texte affiché. Un passage modifié peut être affiché comme **Passage à rattacher**. Sélectionnez le nouveau passage avant d’ouvrir la liste pour y rattacher le repère.
+
+**Adopter l’essai** remplace la formulation en une édition annulable. **Garder l’original** ferme l’essai en conservant le manuscrit. Jusqu’à l’adoption, l’apprentissage, les compteurs et les exports utilisent l’original.
+
+Sélectionnez un mot entier pour souligner ses autres occurrences dans le paragraphe et ses deux voisins. Le soulignement disparaît avec **Échap** ou à la reprise de la frappe.
+
 ## Prédiction du prochain mot
 
 Activez « Proposer le prochain mot » dans **Paramètres → Écriture**. Après la frappe d’une espace, la proposition apparaît dans la ligne, juste après le curseur. **Entrée** insère le mot et **Échap** l’écarte. Sans proposition affichée, Entrée crée le retour habituel. Tab reste disponible pour indenter le passage. « Accepter le mot proposé » figure dans les raccourcis configurables.

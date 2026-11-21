@@ -1,3 +1,4 @@
+import { blankMarker } from '../../project/writingAids';
 import type { OutlineEditor } from '../outline/state';
 import type { RefObject } from 'react';
 import type { EditorHandle, EditorProps as Props } from '../types';
@@ -16,9 +17,33 @@ interface RuntimeRefs {
   outlineRef: RefObject<OutlineEditor | null>;
   spans: RefObject<Span[]>;
   latest: RefObject<Props>;
+  writingAid: EditorHandle['writingAid'];
 }
-export function createEditorHandle({ view, outlineRef, spans, latest }: RuntimeRefs): EditorHandle {
+export function createEditorHandle({ view, outlineRef, spans, latest, writingAid }: RuntimeRefs): EditorHandle {
+  const revealPassage: EditorHandle['revealPassage'] = (section, from, quote) => {
+    const v = view.current;
+    const outline = outlineRef.current;
+    const span = spans.current.find((span) => span.id === section);
+    if (!v || !span) return false;
+    const start = span.from + from;
+    const end = start + quote.length;
+    if (start < span.from || end > span.to || v.state.sliceDoc(start, end) !== quote) return false;
+    if (outline) {
+      const owner = [...v.state.field(outline.field).nodes].reverse().find(
+        (node) => node.section === section && node.from <= start,
+      );
+      if (owner) outline.reveal(v, owner.id, false);
+    }
+    v.dispatch({
+      selection: { anchor: start, head: end },
+      effects: EditorView.scrollIntoView(start, { y: 'center' }),
+    });
+    return true;
+  };
   return {
+    writingAid,
+    revealPassage,
+    revealBlank: (section, from) => revealPassage(section, from, blankMarker),
     removeSmartTag(section, node, tag) {
       const v = view.current,
         outline = outlineRef.current;

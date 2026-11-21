@@ -1,3 +1,4 @@
+import type { WritingAid } from './writingAids';
 import type { PredictionPreferences, PredictionStatus, WordSuggestion } from './prediction';
 import type { RuntimeModule, RuntimeModules } from './runtimeModules';
 import type {
@@ -150,7 +151,7 @@ export interface Requests {
   update: { section: Section };
   reorder: { ids: string[]; id: string; parent?: string | null };
   settings: { value: Partial<Settings> };
-  resolveExternal: { id: string; keepLocal: boolean; pending?: string | null };
+  resolveExternal: { id: string; keepLocal: boolean; pending?: string | null; pendingWritingAids?: WritingAid[] };
   vaults: {};
   connectVault: { path: string };
   createOwnedVault: {};

@@ -17,6 +17,7 @@ fn replace(root: &Path, id: &str, text: &str) {
     project::save(
         root,
         vec![TextPatch {
+            writing_aids: None,
             id: id.into(),
             revision,
             text: text.into(),

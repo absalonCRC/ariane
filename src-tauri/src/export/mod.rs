@@ -214,8 +214,8 @@ mod tests {
         let first = p.sections[0].id.clone();
         let second = project::add(&root, None, "Deuxième", "scene").unwrap().last().unwrap().id.clone();
         project::save(&root, vec![
-            crate::model::TextPatch { id: first, revision: 0, text: "La première[^1].\n\n[^1]: Note du premier chapitre.".into(), outline: None },
-            crate::model::TextPatch { id: second, revision: 0, text: "La seconde[^1].\n\n[^1]: Note du second chapitre.".into(), outline: None },
+            crate::model::TextPatch { writing_aids: None, id: first, revision: 0, text: "La première[^1].\n\n[^1]: Note du premier chapitre.".into(), outline: None },
+            crate::model::TextPatch { writing_aids: None, id: second, revision: 0, text: "La seconde[^1].\n\n[^1]: Note du second chapitre.".into(), outline: None },
         ]).unwrap();
         let resources = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources");
         let docx = temp.path().join("notes.docx");
@@ -234,6 +234,7 @@ mod tests {
         let id = project::create(&root, "Images").unwrap().sections[0].id.clone();
         let resources = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources");
         project::save(&root, vec![crate::model::TextPatch {
+            writing_aids: None,
             id, revision: 0, outline: None,
             text: "![image][outside]\n\n[outside]: http://127.0.0.1:9/private.png".into(),
         }]).unwrap();
@@ -256,6 +257,7 @@ mod tests {
         let mut revision = 0;
         let mut save = |text: &str| {
             revision = project::save(&root, vec![crate::model::TextPatch {
+                writing_aids: None,
                 id: id.clone(), revision, outline: None, text: text.into(),
             }]).unwrap()[0].revision;
         };
@@ -285,6 +287,7 @@ mod tests {
         project::save(
             &root,
             vec![crate::model::TextPatch {
+                writing_aids: None,
                 id: p.sections[0].id.clone(),
                 revision: 0,
                 text:
@@ -332,6 +335,7 @@ mod tests {
         project::save(
             &root,
             vec![crate::model::TextPatch {
+                writing_aids: None,
                 id: p.sections[0].id.clone(),
                 revision: 0,
                 text: format!("La mémoire des lieux [@{key}, p. 12]."),

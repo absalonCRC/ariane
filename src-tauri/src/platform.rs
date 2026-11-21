@@ -59,6 +59,20 @@ pub fn menu_for_language(app: &AppHandle, language: &str) -> tauri::Result<Menu<
     menu.insert(&file, 1)?;
     if let Some(MenuItemKind::Submenu(edit)) = menu.items()?.get(2) {
         edit.set_text("Édition")?;
+        #[cfg(target_os = "macos")]
+        {
+            // WebKit's native undo manager does not own transactions dispatched by CodeMirror.
+            edit.remove_at(0)?;
+            edit.remove_at(0)?;
+            edit.insert(
+                &MenuItem::with_id(app, "history-undo", "Annuler la dernière action", true, Some("CmdOrCtrl+Z"))?,
+                0,
+            )?;
+            edit.insert(
+                &MenuItem::with_id(app, "history-redo", "Rétablir", true, Some("CmdOrCtrl+Shift+Z"))?,
+                1,
+            )?;
+        }
         edit.append(&PredefinedMenuItem::separator(app)?)?;
         for (id, label, shortcut) in [
             ("search", "Rechercher…", Some("CmdOrCtrl+F")),

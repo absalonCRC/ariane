@@ -35,6 +35,20 @@ pub fn apply(root: &Path, op: Operation) -> Result<Project> {
             let mut second = all[source].clone();
             second.id = uuid::Uuid::new_v4().to_string();
             second.title = op.title.as_deref().map(str::trim).filter(|s| !s.is_empty()).map(str::to_owned).unwrap_or_else(||format!("{} — suite", second.title));
+            let cut = op.offset.unwrap();
+            second.writing_aids.clear();
+            all[source].writing_aids.retain_mut(|aid| {
+                let Some(from) = aid.from else { return true };
+                if from >= cut {
+                    let mut aid = aid.clone();
+                    aid.from = Some(from - cut);
+                    second.writing_aids.push(aid);
+                    false
+                } else {
+                    if from + aid.quote.encode_utf16().count() > cut { aid.from = None; }
+                    true
+                }
+            });
             second.text = all[source].text[byte..].into();
             let (left_outline, right_outline) = super::outline::split(&all[source].outline, op.offset.unwrap(), &super::tags::definitions(&tx)?);
             second.revision = 0; second.outline = right_outline; second.synopsis.clear(); second.goal = 0;
@@ -49,6 +63,12 @@ pub fn apply(root: &Path, op: Operation) -> Result<Project> {
             let separator = if all[source].text.is_empty() || all[target].text.is_empty() { "" } else { "\n\n" };
             let outline = super::outline::join(&all[source], &all[target], separator);
             for tag in all[target].tag_ids.clone() {if !all[source].tag_ids.contains(&tag) {all[source].tag_ids.push(tag);}}
+            let offset = all[source].text.encode_utf16().count() + separator.len();
+            let mut moved = all[target].writing_aids.clone();
+            for aid in &mut moved {
+                aid.from = aid.from.map(|from| from + offset);
+            }
+            all[source].writing_aids.extend(moved);
             all[source].text = format!("{}{}{}", all[source].text, separator, all[target].text);
             all[source].outline = outline; all[source].revision += 1; all[target].trashed = true;
         }
@@ -57,7 +77,7 @@ pub fn apply(root: &Path, op: Operation) -> Result<Project> {
     tx.execute("DELETE FROM structure_history", []).app()?;
     for (position, s) in all.iter_mut().enumerate() {
         s.position = position as i64;
-        tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET position=excluded.position,text=excluded.text,revision=excluded.revision,outline=excluded.outline,trashed=excluded.trashed,tag_ids=excluded.tag_ids", params![s.id,s.parent,s.title,s.kind,s.position,s.text,s.revision,s.synopsis,s.status,s.goal,s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included,serde_json::to_string(&s.tag_ids).app()?]).app()?;
+        tx.execute("INSERT INTO sections(id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids,writing_aids) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET position=excluded.position,text=excluded.text,revision=excluded.revision,outline=excluded.outline,trashed=excluded.trashed,tag_ids=excluded.tag_ids,writing_aids=excluded.writing_aids", params![s.id,s.parent,s.title,s.kind,s.position,s.text,s.revision,s.synopsis,s.status,s.goal,s.outline.as_ref().map(serde_json::to_string).transpose().app()?,s.role,s.trashed,s.included,serde_json::to_string(&s.tag_ids).app()?,serde_json::to_string(&s.writing_aids).app()?]).app()?;
     }
     super::annotations::relocate(&tx,&op,&before,&all)?;
     tx.commit().app()?;
@@ -71,7 +91,7 @@ mod tests {
     fn split_and_join_keep_plain_text_without_new_safety_versions() {
         let dir = tempfile::tempdir().unwrap();
         let p = crate::project::create(dir.path(),"Essai").unwrap();
-        crate::project::save(dir.path(),vec![crate::model::TextPatch{id:p.sections[0].id.clone(),revision:0,text:"Un\n\nDeux".into(),outline:None}]).unwrap();
+        crate::project::save(dir.path(),vec![crate::model::TextPatch{ writing_aids: None,id:p.sections[0].id.clone(),revision:0,text:"Un\n\nDeux".into(),outline:None}]).unwrap();
         let versions_before = crate::history::list(dir.path()).unwrap().into_iter().map(|v|v.id).collect::<Vec<_>>();
         let op = Operation {action:"split".into(),source_id:p.sections[0].id.clone(),offset:Some(4),target_id:None,title:None};
         let split = apply(dir.path(),op.clone()).unwrap();

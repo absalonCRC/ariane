@@ -1,3 +1,4 @@
+import { openWritingAid, WritingAidDialog, type WritingAidCommand } from './WritingAidDialog';
 import { useCapturePreferences } from '../capture/preferences';
 import { typewriterStroke } from './typewriterInput';
 import { mountEditor } from './runtime/mount';
@@ -10,7 +11,7 @@ import { entityMarks, setEntityMarks } from './entities';
 import type { SelectedEntity } from '../enrichment/entityTypes';
 import { t, useLocale } from '../i18n';
 import { editorPhrases } from '../i18n/editor';
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { EditorState, Compartment } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { type Span } from './composite';
@@ -66,7 +67,25 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
   useEffect(() => {
     typingSound.current?.setVolume?.(volume);
   }, [volume]);
-  useImperativeHandle(ref, () => createEditorHandle({ view, outlineRef, spans, latest }));
+  const [aidPanel, setAidPanel] = useState<ReturnType<typeof openWritingAid>>(null);
+  const panelOpen = useRef(false);
+  const [, refreshAids] = useState(0);
+  const closeAid = () => {
+    panelOpen.current = false;
+    setAidPanel(null);
+  };
+  const writingAid = (command: WritingAidCommand) => {
+    const v = view.current;
+    const panel = v && openWritingAid(v, spans.current, command);
+    if (!panel) return false;
+    panelOpen.current = true;
+    setAidPanel(panel);
+    return true;
+  };
+  const handle = createEditorHandle({ view, outlineRef, spans, latest, writingAid });
+  useImperativeHandle(ref, () => handle);
+  const sceneKey = props.sections.map((section) => section.id).join(':');
+  useEffect(closeAid, [props.projectPath, props.generation, sceneKey, props.readOnly]);
   useEffect(
     () =>
       mountEditor({
@@ -81,6 +100,9 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
         menuRef,
         focusPreviewScroll,
         prediction,
+        onAidUpdate: () => {
+          if (panelOpen.current) refreshAids((version) => version + 1);
+        },
       }),
     [props.projectPath, props.generation, props.sections.map((s) => s.id).join(':')],
   );
@@ -251,6 +273,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
     props.sections.map((section) => section.id).join(':'),
   ]);
   return (
+    <>
     <div
       className={
         'editor-host ' +
@@ -271,5 +294,25 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       }
       ref={host}
     />
+    {aidPanel && !props.readOnly && (
+      <WritingAidDialog
+        key={aidPanel.kind === 'aid' ? aidPanel.key.section + ':' + aidPanel.key.id : aidPanel.kind}
+        panel={aidPanel}
+        editor={view}
+        spans={spans.current}
+        onSelect={setAidPanel}
+        onClose={() => {
+          closeAid();
+          requestAnimationFrame(() => view.current?.focus());
+        }}
+        onError={(message) => latest.current.onNoteError?.(message)}
+        reveal={(aid) => {
+          const span = spans.current.find((span) => span.id === aid.section);
+          if (aid.from != null && span)
+            handle.revealPassage(aid.section, aid.from - span.from, aid.quote);
+        }}
+      />
+    )}
+    </>
   );
 });

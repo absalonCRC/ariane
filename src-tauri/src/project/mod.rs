@@ -32,6 +32,7 @@ pub mod links;
 pub mod catalog;
 
 pub mod annotations;
+pub(crate) mod writing_aids;
 pub mod manuscript;
 
 pub mod activity;

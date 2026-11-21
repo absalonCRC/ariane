@@ -5,6 +5,8 @@ import { defaultSettings, type Settings } from '../contracts/settings';
 import { type Project, type Section, type Outline } from '../contracts/project';
 import { type SaveState } from '../app/workspace/types';
 import type { SmartTag, TagOperation } from '../contracts/smartTags';
+import type { WritingAid } from '../contracts/writingAids';
+import { detachWritingAids } from './writingAids';
 import { nextTagColor } from '../tags/model';
 export function useProject(onError: (e: unknown) => void) {
   const [project, setProject] = useState<Project | null>(null);
@@ -151,15 +153,17 @@ export function useProject(onError: (e: unknown) => void) {
     [checkpoint, onError],
   );
   const edit = useCallback(
-    (changes: Map<string, string>, outlines?: Map<string, Outline>) => {
+    (changes: Map<string, string>, outlines?: Map<string, Outline>, aids?: Map<string, WritingAid[]>) => {
       for (const [id, text] of changes) {
         const s = sectionIndex.current.get(id);
         const outline = outlines?.get(id) ?? (s?.text === text ? s.outline : null);
+        const writingAids = aids?.get(id) ?? (s && (s.text === text ? s.writingAids : detachWritingAids(s).writingAids));
         if (s) {
+          s.writingAids = writingAids;
           s.text = text;
           s.outline = outline;
         }
-        dirty.current.set(id, () => ({ text, outline }));
+        dirty.current.set(id, () => ({ text, outline, writingAids }));
       }
       scheduleCheckpoint(changes.keys());
       for (const listener of editListeners.current) listener();
@@ -214,6 +218,7 @@ export function useProject(onError: (e: unknown) => void) {
                   ...s,
                   text: live.text,
                   outline: live.outline,
+                  writingAids: live.writingAids,
                   revision: live.revision,
                   tagIds: live.tagIds,
                 }

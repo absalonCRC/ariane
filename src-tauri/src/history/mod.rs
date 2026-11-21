@@ -60,7 +60,7 @@ pub fn capture(root: &Path, name: &str, scope: Option<String>) -> Result<Version
 pub(super) fn snapshot(c: &Connection, scope: &Option<String>) -> Result<Snapshot> {
     let sections = if let Some(id) = &scope {
         project::validate_id(id)?;
-        let mut q = c.prepare("WITH RECURSIVE chosen(id) AS (SELECT id FROM sections WHERE id=? UNION SELECT s.id FROM sections s JOIN chosen ON s.parent=chosen.id) SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids FROM sections WHERE id IN chosen ORDER BY position,id").app()?;
+        let mut q = c.prepare("WITH RECURSIVE chosen(id) AS (SELECT id FROM sections WHERE id=? UNION SELECT s.id FROM sections s JOIN chosen ON s.parent=chosen.id) SELECT id,parent,title,kind,position,text,revision,synopsis,status,goal,outline,role,trashed,included,tag_ids,writing_aids FROM sections WHERE id IN chosen ORDER BY position,id").app()?;
         let rows = q.query_map([id], project::row_section).app()?;
         rows.collect::<std::result::Result<Vec<_>,_>>().app()?
     } else { project::all_sections(c)? };
@@ -232,6 +232,7 @@ mod tests {
         let d = tempfile::tempdir().unwrap();
         let id = project::create(d.path(), "A").unwrap().sections[0].id.clone();
         project::save(d.path(), vec![TextPatch {
+            writing_aids: None,
             id: id.clone(), revision: 0, text: "A\nB".into(), outline: None,
         }]).unwrap();
         let first = Outline { version: 1, nodes: vec![
@@ -239,12 +240,14 @@ mod tests {
             OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![], id: "b".into(), parent: Some("a".into()), start: 2 },
         ] };
         project::save(d.path(), vec![TextPatch {
+            writing_aids: None,
             id: id.clone(), revision: 1, text: "A\nB".into(), outline: Some(first.clone()),
         }]).unwrap();
         let auto = list(d.path()).unwrap().into_iter().find(|v| v.name == "Sauvegarde automatique").unwrap();
         assert_eq!(get(d.path(), &auto.id).unwrap().sections[0].outline, None);
         let saved = capture(d.path(), "Structured", Some(id.clone())).unwrap();
         project::save(d.path(), vec![TextPatch {
+            writing_aids: None,
             id, revision: 2, text: "A\nB".into(), outline: Some(Outline { version: 1, nodes: vec![
                 OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![], id: "a".into(), parent: None, start: 0 },
                 OutlineNode { properties: Default::default(), property_conflicts: Default::default(), tag_ids: vec![], id: "b".into(), parent: None, start: 2 },
@@ -278,6 +281,7 @@ mod tests {
         project::save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id,
                 revision: 0,
                 text: "modifié".into(),

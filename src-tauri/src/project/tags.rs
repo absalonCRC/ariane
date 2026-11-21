@@ -333,6 +333,7 @@ mod tests {
         project::save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 revision: 0,
                 text: "Parent\nEnfant".into(),
@@ -411,6 +412,7 @@ mod tests {
         project::save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 revision: 0,
                 text: "Parent\nEnfant".into(),
@@ -510,6 +512,7 @@ mod tests {
         project::save(
             d.path(),
             vec![TextPatch {
+                writing_aids: None,
                 id: id.clone(),
                 revision: 0,
                 text: text.into(),

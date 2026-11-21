@@ -1,3 +1,4 @@
+import { detachWritingAids } from '../../project/writingAids';
 import { emptyCatalog, changeCatalog, catalogContent } from '../../entities/model';
 import type { EntityCatalog, EntityOperation } from '../../contracts/entityIdentity';
 import type { SavedView } from '../../contracts/savedViews';
@@ -393,6 +394,9 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
     for (const patch of patches) {
       const s = p.sections.find((s) => s.id === patch.id)!;
       const outline = patch.outline ?? (s.text === patch.text ? s.outline : null);
+      const writingAids = patch.writingAids ?? (s.text === patch.text
+        ? s.writingAids
+        : detachWritingAids(s).writingAids);
       if (s.text && s.text !== patch.text) {
         const old = [...s.text],
           next = [...patch.text];
@@ -411,11 +415,13 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
       }
       if (
         s.text !== patch.text ||
+        JSON.stringify(s.writingAids ?? []) !== JSON.stringify(writingAids ?? []) ||
         JSON.stringify(s.outline ?? null) !== JSON.stringify(outline ?? null)
       )
         s.revision++;
       s.text = patch.text;
       s.outline = outline;
+      s.writingAids = writingAids;
     }
     store(p);
     for (const patch of patches) if (patch.text) previewCheckpoint(p, patch.id, false);

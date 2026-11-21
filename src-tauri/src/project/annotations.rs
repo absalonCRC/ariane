@@ -58,7 +58,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let p = super::super::create(dir.path(),"Livre").unwrap();
         let id = &p.sections[0].id;
-        super::super::save(dir.path(),vec![crate::model::TextPatch { id:id.clone(), revision:0, text:"Élise 😀 revient.".into(),outline:None }]).unwrap();
+        super::super::save(dir.path(),vec![crate::model::TextPatch { writing_aids: None, id:id.clone(), revision:0, text:"Élise 😀 revient.".into(),outline:None }]).unwrap();
         assert!(create(dir.path(),id,0,0,5,"Vérifier la date").is_err());
         assert!(create(dir.path(),id,1,6,7,"Emoji coupé").is_err());
         let a = create(dir.path(),id,1,0,5,"Vérifier la date").unwrap();
@@ -110,7 +110,7 @@ mod relocation_tests {
         let temp = tempfile::tempdir().unwrap();
         let p = project::create(temp.path(),"Essai").unwrap();
         let id = p.sections[0].id.clone();
-        project::save(temp.path(),vec![TextPatch{id:id.clone(),revision:0,text:"Alpha\n\nBeta\n\nGamma.".into(),outline:None}]).unwrap();
+        project::save(temp.path(),vec![TextPatch{ writing_aids: None,id:id.clone(),revision:0,text:"Alpha\n\nBeta\n\nGamma.".into(),outline:None}]).unwrap();
         create(temp.path(),&id,1,7,11,"Relire").unwrap();
         let op = super::super::manuscript::Operation {action:"split".into(),source_id:id.clone(),
             target_id:None,offset:Some(7),title:None};

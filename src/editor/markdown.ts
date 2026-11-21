@@ -10,6 +10,7 @@ import {
 } from '@codemirror/view';
 import { RangeSetBuilder } from '@codemirror/state';
 import { liveTables } from './liveTables';
+import { blankMarker } from '../project/writingAids';
 const delimiters = new Set([
   'HeaderMark',
   'EmphasisMark',
@@ -109,7 +110,10 @@ const inlineMarkdown = ViewPlugin.fromClass(
             const { name, from, to } = node;
             if (notes.some((n) => from >= n.from && to <= n.to)) return false;
             const parent = node.node.parent;
-            if (name === 'Link' && /\]\(ariane:\/\/source\//.test(view.state.sliceDoc(from, to))) return false;
+            if (name === 'Link') {
+              const link = view.state.sliceDoc(from, to);
+              if (link === blankMarker || /\]\(ariane:\/\/source\//.test(link)) return false;
+            }
             if (delimiters.has(name) && to > from) {
               const active = parent && selection.from <= parent.to && selection.to >= parent.from;
               if (!active) entries.push({ from, to, value: Decoration.replace({}) });
