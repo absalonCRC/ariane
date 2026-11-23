@@ -7,6 +7,7 @@ La GPL-3.0-only d’Ariane couvre son code original. Elle ne remplace pas les li
 | llama.cpp | 0.8.0, commit dans `native-dependencies.lock.json` | MIT |
 | ggml | 0.28.0 | MIT |
 | Pandoc | 3.13 | GPL-2.0-or-later |
+| PDF.js | pdfjs-dist 6.5.438, worker et données embarqués | Apache-2.0. Les polices, CMaps et décodeurs ont leurs notices dans les répertoires de ressources correspondants. |
 | Typst | 0.15.1 | Apache-2.0 |
 | libomp | 23.1.4 | Apache-2.0 avec exception LLVM |
 | OpenSSL | 4.1.0 | Apache-2.0 |

@@ -177,11 +177,46 @@ pub async fn performance(
     tauri::async_runtime::spawn_blocking(move || {
         let state = app.state::<AppState>();
         match action.as_str() {
+            "readerCapture" => Ok(json!(state.data.join(".reader-capture").is_file())),
+            "readerAcknowledged" => Ok(json!(
+                fs::read_to_string(state.data.join(".reader-ack")).ok().as_deref()
+                    == payload.as_ref().and_then(Value::as_str)
+            )),
+            "readerRecovery" => {
+                let root=state.data.join("Projet synthétique 080");
+                let external=state.data.join("vault");
+                let pdf=external.join("Texte.pdf");
+                // This action is available only in a marked synthetic profile and on its fixture.
+                if !state.data.join(".reader-recovery").is_file(){ return Ok(Value::Null); }
+                if state.current.lock().app()?.as_ref()!=Some(&root) {
+                    return Err("Reader recovery fixture is not active".into())
+                }
+                let backup=project::backup::save(&root,&state.data)?;
+                let restored=project::backup::restore(&backup,&state.data)?;
+                project::catalog::remember(&state.data,&restored,"Copie synthétique")?;
+                let old=state.data.join("copie-075");
+                if old.is_dir(){project::catalog::remember(&state.data,&old,"Ancien projet synthétique")?;}
+                // Retain both originals; update the fixture at the same path before the next scan.
+                fs::copy(&pdf,external.join("Texte déplacé.pdf")).app()?;
+                fs::copy(external.join("Scan.pdf"),&pdf).app()?;
+                Ok(json!({"restored":restored,"old":old.is_dir().then_some(old)}))
+            }
+            "prepareReader" => {
+                let root=state.data.join("Projet synthétique 080");
+                if root.exists() {return Err("Use a fresh synthetic project".into())}
+                vaults::create_project(&root,"Sources synthétiques 080",None)?;
+                vaults::connect(&root,&state.data,vaults::VaultFolder::selected(&state.data.join("vault"))?,None)?;
+                let index=project::backup::source_index(&state.data,&root);
+                state.memory_activity.writing(true);
+                vaults::index_with_activity(&root,&index,&state.resources,&state.engine,&state.cancel,&state.memory_activity, |_| {})?;
+                project::catalog::remember(&state.data,&root,"Sources synthétiques 080")?;
+                Ok(json!(root))
+            }
             "prepare" => prepare(&state, false),
             "prepareReference" => prepare(&state, true),
             "referenceIdle" => {
                 let guard = state.project_guard.lock().app()?;
-                Ok(json!(guard
+                Ok(json!(guard.active
                     .as_ref()
                     .is_none_or(|g| std::sync::Arc::strong_count(g) == 1)))
             }

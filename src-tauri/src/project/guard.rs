@@ -19,6 +19,29 @@ impl ProjectGuard {
     }
 }
 
+/// Weak entries let a returning scene reuse this session's outstanding lock while a read finishes.
+#[derive(Default)]
+pub(crate) struct SessionGuards {
+    pub active: Option<Arc<ProjectGuard>>,
+    recent: HashMap<PathBuf, Weak<ProjectGuard>>,
+}
+impl SessionGuards {
+    pub fn acquire(&mut self, root: &Path) -> Result<Arc<ProjectGuard>> {
+        use std::os::unix::fs::MetadataExt;
+        self.recent.retain(|_, guard| guard.strong_count() > 0);
+        if let Some(guard) = self.recent.get(root).and_then(Weak::upgrade) {
+            let held = guard._lock.metadata().app()?;
+            let current = std::fs::symlink_metadata(root.join(".ariane.lock")).app()?;
+            if (held.dev(), held.ino()) == (current.dev(), current.ino()) {
+                return Ok(guard);
+            }
+        }
+        let guard = Arc::new(ProjectGuard::acquire(root)?);
+        self.recent.insert(root.to_owned(), Arc::downgrade(&guard));
+        Ok(guard)
+    }
+}
+
 thread_local! { static HELD: std::cell::RefCell<std::collections::HashSet<PathBuf>> = Default::default(); }
 struct Held(PathBuf);
 impl Drop for Held {
@@ -68,6 +91,20 @@ mod tests {
             result.is_ok(),
             std::env::var("ARIANE_TEST_LOCK_ALLOWED").unwrap() == "yes"
         );
+    }
+    #[test]
+    fn returning_session_can_reuse_a_lock_retained_by_background_work() {
+        let a = tempfile::tempdir().unwrap();
+        let b = tempfile::tempdir().unwrap();
+        let mut session = SessionGuards::default();
+        let reading = session.acquire(a.path()).unwrap();
+        session.active = Some(session.acquire(b.path()).unwrap());
+        assert!(ProjectGuard::acquire(a.path()).is_err());
+        let again = session.acquire(a.path()).unwrap();
+        assert!(Arc::ptr_eq(&reading, &again));
+        drop(again);
+        drop(reading);
+        assert!(ProjectGuard::acquire(a.path()).is_ok());
     }
     #[test]
     fn excludes_another_process_until_the_project_is_released() {

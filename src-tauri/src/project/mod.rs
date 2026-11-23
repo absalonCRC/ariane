@@ -3,7 +3,9 @@ pub(crate) mod io;
 mod storage;
 pub(crate) mod tree;
 pub(crate) use guard::with_lock;
+#[cfg(test)]
 pub use guard::ProjectGuard;
+pub(crate) use guard::SessionGuards;
 pub(crate) use io::validate_id;
 pub mod library;
 mod mirrors;
@@ -32,6 +34,7 @@ pub mod links;
 pub mod catalog;
 
 pub mod annotations;
+mod document_anchor;
 pub(crate) mod writing_aids;
 pub mod manuscript;
 

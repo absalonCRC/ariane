@@ -16,6 +16,7 @@ import { EditorView, keymap, drawSelection } from '@codemirror/view';
 import { history, defaultKeymap, historyKeymap } from '@codemirror/commands';
 import { searchKeymap } from '@codemirror/search';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
+import { footnoteScenes } from '../footnoteReading';
 import { liveMarkdown } from '../markdown';
 import { compose, sectionMapping, type Span } from '../composite';
 import type { Outline } from '../../contracts/project';
@@ -211,6 +212,7 @@ export function mountEditor({
       drawSelection(),
       smoothCaret,
       markdown({ base: markdownLanguage }),
+      footnoteScenes.of(state => state.field(mapping.field)),
       liveMarkdown,
       noteLinks(
         (id) => latest.current.onOpenNote?.(id),

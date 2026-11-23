@@ -18,7 +18,7 @@ pub struct AppState {
     pub current: Mutex<Option<PathBuf>>,
     pub source_files: crate::source_files::Files,
     pub grants: crate::path_grants::Grants,
-    pub project_guard: Mutex<Option<std::sync::Arc<project::ProjectGuard>>>,
+    pub project_guard: Mutex<project::SessionGuards>,
     pub engine: Mutex<Engine>,
     pub revision: Mutex<RevisionEngine>,
     pub voice: Mutex<voice::VoiceEngine>,

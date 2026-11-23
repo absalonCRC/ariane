@@ -15,6 +15,7 @@ import { type DocumentRole } from '../contracts/library';
 import type { PanelOrigin } from '../components/useSharedPanel';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { request, native } from '../platform/client';
+import type { Annotation, DocumentAnchor } from '../contracts/annotations';
 import type { AnnotationTarget } from '../project/annotations';
 import type { Project, Section } from '../contracts/project';
 import type { Source } from '../contracts/sources';
@@ -68,7 +69,19 @@ export function useWorkspace() {
   const [card, setCard] = useState<{ source: Source; top: number; origin?: PanelOrigin } | null>(
     null,
   );
-  const [reader, setReader] = useState<Source | null>(null);
+  const [reader, storeReader] = useState<
+    (Source & { reveal?: DocumentAnchor; replacement?: Annotation }) | null
+  >(null);
+  const readerGeneration = useRef(0);
+  const setReader: typeof storeReader = useCallback((value) => {
+    readerGeneration.current++;
+    storeReader(value);
+  }, []);
+  const beginReaderRequest = useCallback(() => {
+    const generation = ++readerGeneration.current;
+    const path = doc.ref.current?.path;
+    return () => readerGeneration.current === generation && doc.ref.current?.path === path;
+  }, [doc.ref]);
   const openSurface = useCallback((value: Surface) => {
     if (value === 'history') {
       setHistoryMode(true);
@@ -234,6 +247,7 @@ export function useWorkspace() {
   useEffect(() => {
     if (!p) return;
     let alive = true;
+    const generation = readerGeneration.current;
     const refresh = async () => {
       try {
         if (card) {
@@ -243,9 +257,10 @@ export function useWorkspace() {
         if (reader) {
           const source = await request('source', { id: reader.id });
           if (alive)
-            setReader((v) =>
+            storeReader((v) =>
               v?.id === source.id
                 ? {
+                    ...v,
                     ...source,
                     page: v.page,
                     selectedExcerpt:
@@ -254,8 +269,17 @@ export function useWorkspace() {
                 : v,
             );
         }
-      } catch {
-        /* A removed source is refreshed on its next opening. */
+      } catch (error) {
+        if (
+          alive &&
+          reader &&
+          (reader.kind === 'PDF' || reader.kind === 'Image') &&
+          readerGeneration.current === generation
+        ) {
+          setReader(null);
+          if (reader.reveal || reader.replacement) setAnnotationsOpen(true);
+          fail(error);
+        }
       }
     };
     void refresh();
@@ -417,6 +441,7 @@ export function useWorkspace() {
     setCard,
     fail,
     setReader,
+    beginReaderRequest,
   });
   const [blankTarget, setBlankTarget] = useState<{ project: Project; section: string; from: number } | null>(null);
   async function locateNextBlank() {
@@ -496,6 +521,33 @@ export function useWorkspace() {
     );
   }
 
+  async function linkDocument(document: DocumentAnchor, branch: string) {
+    const current = beginReaderRequest();
+    const passage = editor.current?.passage();
+    if (!passage?.text) throw new Error(t('Sélectionnez un passage du manuscrit.'));
+    await doc.flush();
+    if (!current()) return;
+    const selected = editor.current?.passage();
+    if (
+      selected?.section !== passage.section ||
+      selected.from !== passage.from ||
+      selected.to !== passage.to
+    )
+      throw new Error(t('Le passage a changé. Sélectionnez-le à nouveau pour l’annoter.'));
+    const section = doc.ref.current?.sections.find((s) => s.id === passage?.section);
+    if (!section || !passage?.text || section.text.slice(passage.from, passage.to) !== passage.text)
+      throw new Error(t('Sélectionnez un passage du manuscrit.'));
+    setAnnotationTarget({
+      ...passage,
+      original: section.text,
+      document,
+      branch,
+      requestId: crypto.randomUUID(),
+    });
+    setReader(null);
+    setAnnotationsOpen(true);
+    setSearch(null);
+  }
   function openAnnotations() {
     const passage = editor.current?.passage();
     const section = doc.ref.current?.sections.find((s) => s.id === passage?.section);
@@ -569,6 +621,7 @@ export function useWorkspace() {
     annotationsOpen,
     setAnnotationsOpen,
     annotationTarget,
+    linkDocument,
     setAnnotationTarget,
     openAnnotations,
     manuscriptSelection,
@@ -608,6 +661,7 @@ export function useWorkspace() {
     card,
     setCard,
     reader,
+    beginReaderRequest,
     setReader,
     searching,
     searchQuery,

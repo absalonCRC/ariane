@@ -150,6 +150,9 @@ pub enum Request {
         project_path: String,
     },
     AddAnnotation {
+        request_id: Option<String>,
+        document: Option<project::annotations::DocumentAnchor>,
+        branch: Option<String>,
         project_path: String,
         section: String,
         revision: i64,
@@ -158,6 +161,8 @@ pub enum Request {
         note: String,
     },
     UpdateAnnotation {
+        document: Option<project::annotations::DocumentAnchor>,
+        branch: Option<String>,
         project_path: String,
         id: String,
         revision: i64,
@@ -282,6 +287,7 @@ pub enum Request {
     },
     SourceFile {
         id: String,
+        fingerprint: Option<String>,
     },
     Versions {
         #[serde(default)]

@@ -6,6 +6,15 @@
 - Boutons, champs de saisie et sélecteurs harmonisés en formes rondes ou en capsules, avec des contenus recentrés et des repères d’activité arrondis.
 - Adaptation des commandes de thème, de Versions et du catalogue Smart-tags à ces formes et à l’espace disponible.
 
+## 0.8.0 — candidat de développement, 23 novembre 2026
+
+- Les suggestions de la marge affichent leur titre en couleur. Le survol et le focus clavier révèlent leur contexte et un court extrait dans un rectangle légèrement arrondi.
+- Lecture côte à côte du manuscrit et d’un PDF ou d’une image. Une annotation peut cibler un extrait sur plusieurs lignes, un cadre dans un scan ou une zone d’image. La note retrouve sa cible après réouverture et permet un rattachement explicite si le fichier a changé.
+- Les appels de note † déplient leur définition sous la ligne et rendent le focus à l’appel au repli. Deux scènes peuvent utiliser le même numéro de note.
+- Le schéma projet passe de 6 à 7 avec copie SQLite préalable. Les anciens projets, instantanés et annotations restent lisibles. Les vaults externes restent en lecture seule et conservent leurs règles de consentement.
+
+[Guide d’utilisation](docs/usage.md) · [Qualification du candidat](docs/validation-0.8.0.md)
+
 ## 0.7.5 — candidat de développement, 21 novembre 2026
 
 - Mise à jour de SQLite embarqué vers la version 3.54.1. Les projets et sauvegardes existants gardent leur format.

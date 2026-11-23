@@ -20,6 +20,7 @@
   --sidebar-panel-bottom: 55px;
   --sidebar-wordmark-height: 20px;
   --control-radius: 999px;
+  --suggestion-card-radius: 18px;
   /* Shared 4-point rhythm for the workspace pages. */
   --space-2xs: 4px;
   --space-xs: 8px;

@@ -261,7 +261,7 @@ fn migration_from_v4_preserves_identity_and_a_coherent_backup() {
     assert_eq!(
         c.pragma_query_value::<i64, _>(None, "user_version", |r| r.get(0))
             .unwrap(),
-        6
+        7
     );
     assert_eq!(
         project::capture_import::identity(d.path()).unwrap(),
@@ -285,7 +285,7 @@ fn migration_from_v4_preserves_identity_and_a_coherent_backup() {
             .unwrap(),
         4
     );
-    c.execute_batch("PRAGMA user_version=7").unwrap();
+    c.execute_batch("PRAGMA user_version=8").unwrap();
     drop(c);
     assert!(project::database(d.path()).is_err());
 }

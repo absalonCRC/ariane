@@ -1,4 +1,6 @@
 import type { Project } from '../contracts/project';
+import { SourceBrowser } from '../sources/Browser';
+import type { Source } from '../contracts/sources';
 import type { AnnotationTarget } from './annotations';
 import type { Dispatch, SetStateAction } from 'react';
 import type { ManuscriptMatch } from '../app/projectSearch';
@@ -12,6 +14,7 @@ import { type Annotation } from '../contracts/annotations';
 import '../styles/annotations.css';
 export interface AnnotationInput {
   p: Project | null;
+  beginReaderRequest: () => () => boolean;
   annotationTarget: AnnotationTarget | null;
   doc: ProjectController;
   setAnnotationTarget: Dispatch<SetStateAction<AnnotationTarget | null>>;
@@ -22,12 +25,17 @@ export function Annotations({
   workspace: w,
   left,
   width,
+  onDocument,
+  onManage,
 }: {
   workspace: AnnotationInput;
   left: number;
   width: number;
+  onDocument: (source: Source, annotation: Annotation, replacing: boolean) => void;
+  onManage: () => void;
 }) {
   useLocale();
+  const [replacement, setReplacement] = useState<string | null>(null);
   const [items, setItems] = useState<Annotation[]>([]),
     [note, setNote] = useState('');
   const [editing, setEditing] = useState<string | null>(null),
@@ -39,6 +47,12 @@ export function Annotations({
     target = w.annotationTarget;
   const current = useRef(path);
   current.current = path;
+  useEffect(
+    () => () => {
+      current.current = '';
+    },
+    [],
+  );
   useEffect(() => {
     let live = true;
     void request('annotations', { projectPath: path })
@@ -80,6 +94,9 @@ export function Annotations({
           from: target.from,
           to: target.to,
           note,
+          requestId: target.requestId,
+          document: target.document,
+          branch: target.branch,
         });
         if (current.current === path) {
           setItems((items) => [...items, added]);
@@ -117,6 +134,12 @@ export function Annotations({
           }}
         >
           <blockquote>{target.text.slice(0, 200)}</blockquote>
+          {target.document && (
+            <p>
+              {target.document.path} · {target.document.page} ·{' '}
+              {target.document.quote || t('Zone sélectionnée')}
+            </p>
+          )}
           <label>
             {t('À vérifier ou à faire')}
             <textarea
@@ -168,6 +191,43 @@ export function Annotations({
                 {a.quote.slice(0, 110)}
               </button>
               {!anchor && <small>{t('Passage modifié ou introuvable')}</small>}
+              {a.document && (
+                <div>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const valid = w.beginReaderRequest();
+                        const source = await request('source', { id: a.document!.sourceId });
+                        if (!valid() || current.current !== path) return;
+                        if (source.fingerprint !== a.document!.fingerprint)
+                          throw new Error(t('Source modifiée. Vérifiez le lien documentaire.'));
+                        onDocument(source, a, false);
+                      } catch (e) {
+                        setError(String(e));
+                        setReplacement(a.id);
+                      }
+                    }}
+                  >
+                    {t('Retrouver la source')} · {a.document.path} · {a.document.page}
+                  </button>
+                  {a.document.quote && <blockquote>{a.document.quote}</blockquote>}
+                  <button
+                    aria-expanded={replacement === a.id}
+                    onClick={() => setReplacement(replacement === a.id ? null : a.id)}
+                  >
+                    {t('Rattacher à une source')}
+                  </button>
+                  {replacement === a.id && (
+                    <SourceBrowser
+                      onManage={onManage}
+                      onRead={(s) => {
+                        if (s.kind === 'PDF' || s.kind === 'Image') onDocument(s, a, true);
+                        else setError(t('Choisissez un PDF ou une image.'));
+                      }}
+                    />
+                  )}
+                </div>
+              )}
               {editing === a.id ? (
                 <form
                   onSubmit={(e) => {

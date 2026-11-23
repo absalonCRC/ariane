@@ -22,7 +22,7 @@ fn signature(m: &fs::Metadata) -> String {
         m.ctime_nsec()
     )
 }
-fn fingerprint(file: &mut fs::File, cancel: &AtomicBool) -> Result<String> {
+pub(crate) fn fingerprint(file: &mut fs::File, cancel: &AtomicBool) -> Result<String> {
     let mut hash = Sha256::new();
     let mut count = 0u64;
     let mut buf = [0u8; 65536];

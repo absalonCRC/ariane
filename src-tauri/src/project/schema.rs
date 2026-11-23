@@ -1,7 +1,7 @@
 use crate::error::{AppResult, Result};
 use rusqlite::{Connection, TransactionBehavior};
 use std::path::Path;
-const SCHEMA_VERSION: i64 = 6;
+const SCHEMA_VERSION: i64 = 7;
 
 #[test]
 fn bundled_sqlite_includes_the_wal_security_fix() {
@@ -56,8 +56,10 @@ pub fn database(root: &Path) -> Result<Connection> {
                     "identites"
                 } else if schema < 5 {
                     "captures"
-                } else {
+                } else if schema < 6 {
                     "reperes-ecriture"
+                } else {
+                    "ancres-documentaires"
                 },
             )?;
         }

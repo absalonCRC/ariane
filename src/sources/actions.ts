@@ -8,6 +8,7 @@ import type { EditorHandle } from '../editor/Editor';
 import { composeCitation, sourceRef } from './citations';
 import type { ProjectController } from '../project/useProject';
 interface OperationContext {
+  beginReaderRequest: () => () => boolean;
   activity?: Pick<NoteActivityController, 'record'>;
   editor: RefObject<EditorHandle | null>;
   doc: ProjectController;
@@ -21,6 +22,7 @@ export function createSourceActions({
   setCard,
   fail,
   setReader,
+  beginReaderRequest,
   activity,
 }: OperationContext) {
   async function registerCitation(s: Source, text: string) {
@@ -42,14 +44,20 @@ export function createSourceActions({
       fail(e);
     }
   }
-  async function read(s: Source) {
+  async function read(s: Source | string, beforeOpen?: () => void) {
+    const current = beginReaderRequest();
     try {
-      const full = await request('source', { id: s.id });
-      full.page = s.page;
+      const full = await request('source', { id: typeof s === 'string' ? s : s.id });
+      if (!current()) return;
+      if (typeof s !== 'string') {
+        full.page = s.page;
+        full.selectedExcerpt = s.selectedExcerpt;
+      }
+      beforeOpen?.();
       setReader(full);
       setCard(null);
     } catch (e) {
-      fail(e);
+      if (current()) fail(e);
     }
   }
   return { registerCitation, cite, read };

@@ -21,6 +21,7 @@ import { passageExcerpt } from './excerpts';
 import { entityTint } from './entityTypes';
 import './memory-refinements.css';
 export interface MemoryReaderInput {
+  beginReaderRequest?: () => () => boolean;
   activity?: NoteActivityController;
   p: Project | null;
   scenes: Section[];
@@ -144,12 +145,13 @@ export function MemoryReader({
     fingerprint?: string,
     excerpt?: string,
   ) {
+    const current = workspace.beginReaderRequest?.();
     try {
       const source = await request('memorySource', {
         id,
         fingerprint: fingerprint ?? null,
       });
-      if (workspace.doc.ref.current?.path !== path) return;
+      if ((current && !current()) || workspace.doc.ref.current?.path !== path) return;
       if (fingerprint && source.fingerprint !== fingerprint)
         throw new Error(t('Cette source a changé. Le rapprochement sera recalculé.'));
       memory.close();
@@ -316,14 +318,19 @@ export function MemoryReader({
               onOpen={(event) => {
                 if (event.entityId && !event.sourceId)
                   memory.open({ kind: 'entity', id: event.entityId });
-                else if (event.sourceId)
+                else if (event.sourceId) {
+                  const current = workspace.beginReaderRequest?.();
                   void request('source', { id: event.sourceId })
                     .then((source) => {
-                      if (workspace.doc.ref.current?.path !== path) return;
+                      if ((current && !current()) || workspace.doc.ref.current?.path !== path)
+                        return;
                       memory.close();
                       workspace.setReader(source);
                     })
-                    .catch((e) => setError(String(e)));
+                    .catch((e) => {
+                      if (!current || current()) setError(String(e));
+                    });
+                }
               }}
             />
           )}

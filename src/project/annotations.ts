@@ -1,7 +1,10 @@
-import type { Annotation } from '../contracts/annotations';
+import type { Annotation, DocumentAnchor } from '../contracts/annotations';
 import type { Section } from '../contracts/project';
 
 export interface AnnotationTarget {
+  requestId?: string;
+  document?: DocumentAnchor;
+  branch?: string;
   section: string;
   from: number;
   to: number;

@@ -11,6 +11,7 @@ export function marginLayout(
   openGroup: number | string | null,
   expandedId: string | undefined,
   expandedHeight: number,
+  measuredHeights?: ReadonlyMap<string, number>,
 ) {
   let bottom = -Infinity;
   return groups.map((group) => {
@@ -18,9 +19,10 @@ export function marginLayout(
     const visible = group.sources.slice(0, count);
     const expanded = visible.some((source) => source.id === expandedId);
     const height =
+      measuredHeights?.get(String(group.id)) ??
       count * 54 +
-      (expanded ? Math.max(0, expandedHeight - 54) : 0) +
-      (group.sources.length > 2 ? 24 : 0);
+        (expanded ? Math.max(0, expandedHeight - 54) : 0) +
+        (group.sources.length > 2 ? 24 : 0);
     const top = Math.max(group.top, bottom);
     bottom = top + height + 12;
     return { ...group, top, height };
