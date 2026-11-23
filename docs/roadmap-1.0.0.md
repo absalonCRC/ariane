@@ -18,6 +18,8 @@ Les 12 idées initiales et tous les ajouts retenus font partie de la 1.0.0. Cela
 
 **Révision du 18 novembre 2026.** Neuf gestes d’écriture, de relecture et de navigation rejoignent les séries 0.7 à 0.9 (F17 à F25). Dix améliorations d’interface retenues le même jour complètent ce périmètre (F26 à F35). Les trois séries de développement sont désormais découpées en neuf livraisons fonctionnelles avant le gel. La cible du 30 décembre est conservée. La charge supplémentaire reste à estimer lors des premières recettes, notamment pour la conservation des essais de phrase et les interruptions audio sur Mac.
 
+**Révision du 23 novembre 2026.** La connexion facultative « Sign in with ChatGPT » rejoint le périmètre 1.0.0 (F36 à F40). L’écriture locale reste disponible sans compte. Le lot est à intégrer avant le gel prévu le 17 décembre. Sa charge reste à estimer après les essais d’accès au forfait, de dictée et de latence.
+
 Le calendrier repose sur un travail presque quotidien avec Codex et des validations régulières de l’utilisateur. Du 4 novembre au 31 décembre, il existe **58 jours calendaires et 42 jours du lundi au vendredi, avant prise en compte des jours fériés**. La période des fêtes réduit potentiellement la disponibilité des testeurs.
 
 **Le risque de calendrier est élevé.** L’inspection du dépôt établit des dépendances et des bases réutilisables ; elle ne mesure pas une capacité de production permettant de garantir toutes ces dates. Les dates ci-dessous sont des cibles conditionnelles. Le travail sur la distribution et les prototypes incertains commence dès novembre. Le 17 décembre est la cible de fin des ajouts fonctionnels ; les 18–30 décembre sont réservés à la qualification et aux corrections.
@@ -302,6 +304,14 @@ Les réglages propres à chaque fonction sont intégrés lors de son lot. Cette 
 
 **Dépendances.** Tous les états livrés de 0.3 à 0.8 ; `src/app/Settings.tsx`, `src/app/Preferences.tsx`, `src/components/WritingCounter.tsx`, `src/enrichment/useMemory.ts`, `src/timer/usePomodoro.ts` et leurs persistances.
 
+### 1.0.0 · Utiliser son forfait ChatGPT dans ariane
+
+- [ ] **F36 · Connecter son forfait dans les paramètres.** Permettre à l’auteur de connecter et déconnecter son compte, de reconnaître les fonctions qui transmettent du contenu et de continuer à travailler localement hors connexion. Qualifier le parcours open source sur Mac. [Guide OpenAI](https://developers.openai.com/siwc/token-sharing-open-source)
+- [ ] **F37 · Poser une question là où l’on écrit.** La barre unifiée conserve les résultats du manuscrit et du vault pendant la frappe ainsi que les commandes `/`. « Demander à ChatGPT ⌘↵ » ou **⌘ Entrée** envoie la question. La recherche locale choisit dans le vault les extraits pertinents à joindre à la page ouverte. Le clic droit « Poser une question sur ce passage » joint la sélection et place le curseur dans le champ. La première réponse arrive dans la barre dépliée. Une carte repliée apparaît dans la marge droite à hauteur du passage, ou du titre si la question porte sur la page. Ouvrir la carte déplie tout le fil et son champ de saisie sur place. Les relances conservent la sélection et le contexte. « Nouvelle question » démarre un fil vierge en conservant l’ancien. Distinguer par pictogramme et libellé les notes détectées, suggestions, notes personnelles et chats.
+- [ ] **F38 · Agir directement depuis la réponse.** Ouvrir chaque citation à l’extrait source. « Lier cet extrait au passage » conserve le lien documentaire choisi par l’auteur. Sur une reformulation, « Essayer cette formulation » permet d’alterner entre Original et Essai dans le paragraphe. « Adopter » inscrit la proposition dans le manuscrit.
+- [ ] **F39 · Choisir sa dictée.** Choisir le moteur uniquement dans les paramètres. Le mode « Retranscription exacte » conserve l’oralité, les répétitions et les reprises. Le mode « Corrigé » nettoie les hésitations et rétablit ponctuation et grammaire. Qualifier la transcription directe via le forfait connecté. Si l’accès audio est indisponible, prévoir « Corrigé avec ChatGPT » sur la transcription locale, avec envoi du seul texte et retranscription exacte locale. [Documentation de la transcription en temps réel](https://developers.openai.com/api/docs/guides/realtime-transcription)
+- [ ] **F40 · Assister la frappe et la vérification des entités.** Le moteur de prédiction se choisit indépendamment de la dictée, avec le moteur local par défaut. Pour ChatGPT, expliquer l’envoi d’un extrait en cours de frappe et proposer « Mot suivant » ou « Fin de phrase » en grisé, acceptés avec Entrée. La détection locale continue pendant l’écriture. « Vérifier les entités de cette page » lance la relecture distante sur demande. Sur chaque mention proposée, présenter « Rattacher à [fiche proposée] », « Choisir une autre fiche », « Créer une fiche » et « Ignorer ».
+
 ## 7. Chantier continu : données, installation et distribution
 
 Ce chantier est indispensable à la 1.0.0 et consomme une part des plages ci-dessus. Il commence immédiatement ; il n’attend pas la bêta. Le dépôt dispose déjà de migrations et d’une procédure de publication : les compléter pour les nouvelles données et qualifier leurs résultats.
@@ -409,7 +419,7 @@ Chaque lot livre comportement, stockage, migration éventuelle, interface, acces
 
 ### Conditions d’entrée en bêta — 18 décembre
 
-- [ ] Toutes les fonctions F01–F35 de la matrice ci-dessous sont réellement utilisables et ont leur recette ciblée.
+- [ ] Toutes les fonctions F01–F40 de la matrice ci-dessous sont réellement utilisables et ont leur recette ciblée.
 - [ ] Les migrations depuis les projets 0.2.2 et les jalons intermédiaires sont testées sur copies ; les versions, métadonnées, captures et liens se restaurent.
 - [ ] L’installation et les modules ont déjà été exercés sur environnement vierge.
 - [ ] Aucun blocage connu de sauvegarde ou perte de données. Les limites non bloquantes sont listées.
@@ -468,6 +478,11 @@ La RC n’est pas promue en stable tant qu’une case bloquante reste ouverte. S
 | F33 | Aperçu d’export sur extrait réel | 0.8.2 | Floutage, citation et blanc concordent entre aperçu et fichier. |
 | F34 | Aperçu de scission dans la palette | 0.7.2 | Annulation sans modification et coupure conforme à l’aperçu après validation. |
 | F35 | Position de retour dans les paramètres | 0.9.0 | Groupe, défilement et contrôle retrouvés dans la même séance. |
+| F36 | Connexion facultative au forfait | 1.0.0 avant gel | Connexion, déconnexion et écriture locale sur Mac qualifiées. |
+| F37 | Chat dans la recherche et la marge | 1.0.0 avant gel | Même fil depuis la barre et la carte, ancrages au titre et à la sélection, reprise après réouverture. |
+| F38 | Citations liées et essais inline | 1.0.0 avant gel | Extrait source retrouvé et lié, essai relu et adopté au bon endroit. |
+| F39 | Dictée exacte ou corrigée | 1.0.0 avant gel | Oralité préservée en Exacte, grammaire rétablie en Corrigé, parcours qualifié selon les capacités du forfait. |
+| F40 | Prédiction et entités inline | 1.0.0 avant gel | Deux longueurs avec ChatGPT, choix de moteur indépendant, quatre décisions sur la mention. |
 
 Le socle de données, d’installation et de distribution de la section 7 s’ajoute à cette matrice comme condition de stabilité. Aucune demande initiale ni ajout retenu n’est placé après 1.0.0.
 
@@ -481,4 +496,4 @@ Pour chaque version, suivre : date cible, avancement des cases, défauts bloquan
 
 **Premier lot concret : 0.3.0.** Reproduire sur un projet de test l’effacement actuel des suggestions ; instrumenter les blocs modifiés et les requêtes ; stabiliser leurs identités et résultats ; livrer le focus avec ses contrôles de bas de page et sa continuité d’analyse. En parallèle de ce travail au sens du calendrier, préparer les vérifications de distribution et les prototypes PDF, compact et prédiction. Le lot 0.3.0 est désormais implémenté ; les autres lots et prototypes restent des travaux planifiés.
 
-**Vérification de ce document.** Les 20 réponses initiales figurent en section 2. La matrice de la section 12 couvre les 16 exigences initiales, les neuf gestes d’écriture et les dix améliorations d’interface décidés le 18 novembre ; chaque exigence dispose d’un jalon et d’une preuve de fin. La cohérence des versions, dates et dépendances a été relue, les liens vers les sources contrôlés et la structure Markdown vérifiée. La rédaction initiale était documentaire ; la vérification de l’implémentation 0.3.0 est consignée ci-dessus. Cette version publiée de la roadmap accompagne les changements applicatifs de la 0.3.0 dans `main`.
+**Vérification de ce document.** Les 20 réponses initiales figurent en section 2. La matrice de la section 12 couvre les 16 exigences initiales, les neuf gestes d’écriture et les dix améliorations d’interface décidés le 18 novembre et les cinq engagements ChatGPT du 23 novembre ; chaque exigence dispose d’un jalon et d’une preuve de fin. La cohérence des versions, dates et dépendances a été relue, les liens vers les sources contrôlés et la structure Markdown vérifiée. La rédaction initiale était documentaire ; la vérification de l’implémentation 0.3.0 est consignée ci-dessus. Cette version publiée de la roadmap accompagne les changements applicatifs de la 0.3.0 dans `main`.
