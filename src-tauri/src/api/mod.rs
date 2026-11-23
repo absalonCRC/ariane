@@ -304,7 +304,7 @@ pub fn handle(
                 let held = state
                     .project_guard
                     .lock()
-                    .map_err(|e| e.to_string())?
+                    .map_err(|e| e.to_string())?.active
                     .clone();
                 (
                     current.clone().ok_or("Ouvrez un projet pour continuer.")?,

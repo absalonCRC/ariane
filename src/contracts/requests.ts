@@ -22,7 +22,7 @@ import type { Settings } from './settings';
 import type { Source, SourcePage, Vault } from './sources';
 import type { Version, HistoryState, MergePreview, MergeResolution } from './history';
 import type { LibraryOperation, ManuscriptOperation } from './library';
-import type { Annotation } from './annotations';
+import type { Annotation, DocumentAnchor } from './annotations';
 import type { Report } from './import';
 import type { NoteRef } from './notes';
 import type { EntityBatch } from './entities';
@@ -117,6 +117,9 @@ export interface Requests {
   appLanguage: { value: string };
   annotations: { projectPath: string };
   addAnnotation: {
+    requestId?: string;
+    document?: DocumentAnchor;
+    branch?: string;
     projectPath: string;
     section: string;
     revision: number;
@@ -125,6 +128,8 @@ export interface Requests {
     note: string;
   };
   updateAnnotation: {
+    document?: DocumentAnchor;
+    branch?: string;
     projectPath: string;
     id: string;
     revision: number;
@@ -151,7 +156,12 @@ export interface Requests {
   update: { section: Section };
   reorder: { ids: string[]; id: string; parent?: string | null };
   settings: { value: Partial<Settings> };
-  resolveExternal: { id: string; keepLocal: boolean; pending?: string | null; pendingWritingAids?: WritingAid[] };
+  resolveExternal: {
+    id: string;
+    keepLocal: boolean;
+    pending?: string | null;
+    pendingWritingAids?: WritingAid[];
+  };
   vaults: {};
   connectVault: { path: string; projectPath?: string; vaultId?: string };
   createOwnedVault: {};
@@ -168,7 +178,7 @@ export interface Requests {
   suggest: { text: string; depth: number; allowEnd: boolean; anchor?: string | null };
   search: { query: string };
   source: { id: string };
-  sourceFile: { id: string };
+  sourceFile: { id: string; fingerprint?: string };
   versions: { offset?: number };
   version: { id: string };
   capture: { name: string; scope?: string | null };

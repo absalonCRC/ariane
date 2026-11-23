@@ -166,55 +166,63 @@
   line-height: 14px;
 }
 
-.source-margin .margin-source-item > .source-label,
-.memory-suggestion > .memory-context {
-  --control-radius: 14px;
+/* Leave room for the next mention while keeping the resting title on its passage. */
+.source-group {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
-
-@supports (clip-path: shape(from 0 0, line to 100% 0, close)) {
-  .source-margin .margin-source-item > .source-label,
-  .memory-suggestion > .memory-context {
-    --control-radius: 0px;
-    --card-corner: 20px;
-    --card-curve: 2px;
-    clip-path: shape(
-      from var(--card-corner) 0,
-      hline to calc(100% - var(--card-corner)),
-      curve to 100% var(--card-corner) with calc(100% - var(--card-curve)) 0 / 100% var(--card-curve),
-      vline to calc(100% - var(--card-corner)),
-      curve to calc(100% - var(--card-corner)) 100% with 100% calc(100% - var(--card-curve)) /
-        calc(100% - var(--card-curve)) 100%,
-      hline to var(--card-corner),
-      curve to 0 calc(100% - var(--card-corner)) with var(--card-curve) 100% /
-        0 calc(100% - var(--card-curve)),
-      vline to var(--card-corner),
-      curve to var(--card-corner) 0 with 0 var(--card-curve) / var(--card-curve) 0,
-      close
-    );
-    outline-offset: -5px;
-  }
+.margin-source-item {
+  min-height: 54px;
 }
-
 .more-sources {
   height: 24px;
+  align-self: flex-start;
 }
 
-/* Suggestions include enough of the passage to judge the proposed connection. */
-.memory-context.source-label {
+:is(.margin-source-item, .memory-suggestion) > .margin-mention {
+  --control-radius: var(--suggestion-card-radius);
+  --mention-color: var(--entity-tint, var(--theme-secondary, #555));
   height: auto;
-  min-height: 54px;
-  max-width: 190px;
+  min-height: 32px;
+  padding: 7px 12px 7px 14px;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--mention-color);
+  outline-offset: -2px;
 }
-.memory-context .suggestion-excerpt {
+:root[data-theme='dark'] .margin-mention {
+  --mention-color: color-mix(in srgb, var(--entity-tint, #ccc) 68%, white);
+}
+.margin-mention > small,
+.margin-mention > .suggestion-excerpt {
+  display: none;
+}
+:is(.margin-source-item, .memory-suggestion):is(:hover, :has(:focus-visible)) > .margin-mention {
+  background: color-mix(in srgb, var(--mention-color) 9%, transparent);
+}
+:is(.margin-source-item, .memory-suggestion):is(:hover, :has(:focus-visible)) > .margin-mention > small {
+  display: block;
+}
+:is(.margin-source-item, .memory-suggestion):is(:hover, :has(:focus-visible)) > .margin-mention > .suggestion-excerpt {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   white-space: normal;
-  overflow: hidden;
-  margin-top: 7px;
-  font: 14px/1.45 var(--literary);
-  color: var(--theme-secondary, #626262);
+  overflow-wrap: anywhere;
+  color: var(--theme-secondary, #555);
+  font: 12px/1.4 var(--ui);
 }
+.margin-source-item .margin-unpin {
+  opacity: 0;
+  pointer-events: none;
+}
+.margin-source-item:is(:hover, :focus-within) .margin-unpin {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .settings-control .settings {
   max-height: min(calc(100vh - 110px), var(--resume-height-limit, 100vh));
   overflow-y: auto;

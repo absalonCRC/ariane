@@ -348,6 +348,12 @@ mod tests {
         )
         .unwrap();
         let restored = restore(&backup, dir.path()).unwrap();
+        let journal = |root: &Path| {
+            open_readonly(&root.join(DATABASE)).unwrap()
+                .pragma_query_value::<String, _>(None, "journal_mode", |row| row.get(0)).unwrap()
+        };
+        assert_eq!(journal(&backup), "delete");
+        assert_eq!(journal(&restored), "wal");
         let second = restore(&backup, dir.path()).unwrap();
         assert_ne!(restored, second);
         assert_ne!(

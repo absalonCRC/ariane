@@ -76,7 +76,13 @@ pub fn decode_group(value: ValueRef<'_>) -> Option<Vec<Vec<f32>>> {
 }
 pub fn migrate_batch(c: &rusqlite::Connection) -> crate::error::Result<()> {
     use crate::error::AppResult;
-    let tx = c.unchecked_transaction().app()?;
+    let pending: bool = c.query_row(
+        "SELECT EXISTS(SELECT 1 FROM chunks WHERE typeof(vector)='text')", [], |r| r.get(0)
+    ).app()?;
+    if !pending { return Ok(()); }
+    // Reserve the writer before selecting a legacy batch. Another reader can
+    // otherwise commit its migration before this transaction upgrades to write.
+    let tx = rusqlite::Transaction::new_unchecked(c, rusqlite::TransactionBehavior::Immediate).app()?;
     let rows = {
         let mut q=tx.prepare("SELECT id,CASE WHEN length(vector)<=65536 THEN vector ELSE NULL END FROM chunks WHERE typeof(vector)='text' LIMIT 512").app()?;
         let rows = q

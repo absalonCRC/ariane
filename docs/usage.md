@@ -58,6 +58,7 @@ Les fiches trouvées dans les vaults apparaissent dans de petites cartes flottan
 
 ## Sources et vaults
 
+Dans la marge, le nom de chaque fiche prend la couleur de son type. Survolez une mention ou placez-y le focus avec Tab pour lire son type, la raison de sa présence et sa description ou un extrait. Un clic ou la touche Entrée ouvre la fiche complète.
 
 À la création d’un projet, ariane peut connecter un vault Obsidian existant en lecture seule, ou créer un dossier `Vault` dans le projet. Ce vault personnel contient des modèles Markdown avec front-matter pour les personnes, lieux, organisations, événements, concepts, croyances et traditions, œuvres, documents et objets. Leurs propriétés généralisent les modèles de RLC System ; elles restent vides tant qu’elles ne sont pas renseignées.
 
@@ -170,3 +171,12 @@ Saisir `#enquête + #à revoir` pour une intersection, `#enquête, #à revoir` p
 Donner un nom à une requête puis « Enregistrer la vue » la rend accessible depuis la même barre de recherche. Les IDs conservés permettent de retrouver tags et entités après renommage ; une référence manquante est signalée. La vue peut être renommée, modifiée ou supprimée.
 
 `/Configurer les raccourcis` ouvre leur page dans les paramètres. Sélectionner un champ et presser la combinaison souhaitée ; un conflit explique quelle action l’utilise. Les actions Retirer et Rétablir les raccourcis par défaut permettent de revenir au réglage voulu. Le raccourci global de capture arrive avec le jalon 0.6.0.
+
+## Annoter un PDF ou une image sur Mac
+
+1. Ouvrez le document depuis les sources du projet ou un résultat de recherche. Vous pouvez continuer à écrire à gauche. Les flèches du lecteur changent de page et les boutons − et + règlent le zoom.
+2. Sélectionnez le passage à relier dans le manuscrit. Dans le PDF, sélectionnez les mots, ou activez **Zone** pour tracer un cadre. Sur une image ou un scan, tracez directement le cadre. Au clavier, placez le focus sur la zone et utilisez les flèches pour déplacer le cadre, ou Maj et les flèches pour le redimensionner.
+3. Choisissez **Relier au passage du manuscrit**. Vérifiez le passage et la cible, écrivez votre note, puis choisissez **Ajouter l’annotation**. Vous pouvez aussi choisir la cible documentaire avant de sélectionner le passage à gauche.
+4. Dans **Annotations**, **Retrouver la source** rouvre la bonne page avec le passage surligné ou la zone encadrée. Si le fichier a changé ou a été déplacé, choisissez **Rattacher à une source**, ouvrez le bon document, sélectionnez à nouveau la cible puis choisissez **Confirmer le nouveau lien**. Si le vault demande une autorisation, reconnectez son dossier dans **Sources du projet**.
+
+Pour lire une note de bas de page, activez le signe † dans la phrase, au clic, avec Entrée ou avec Espace. La définition apparaît sous la ligne. Activez à nouveau l’appel pour la replier et retrouver le focus. Le manuscrit et son export conservent la syntaxe Markdown de la note.

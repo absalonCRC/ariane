@@ -7,13 +7,46 @@ use crate::{
 use std::{
     collections::VecDeque,
     fs::{File, OpenOptions},
-    os::unix::fs::{FileExt, OpenOptionsExt},
+    os::unix::fs::{FileExt, MetadataExt, OpenOptionsExt},
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
 use tauri::http::{Request, Response};
+fn stamp(file: &std::fs::Metadata) -> (u64, u64, u64, i64, i64) {
+    (
+        file.dev(),
+        file.ino(),
+        file.len(),
+        file.ctime(),
+        file.ctime_nsec(),
+    )
+}
+fn open_file(path: &Path) -> Result<File> {
+    OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(path)
+        .app()
+}
+pub(crate) fn verified_file(path: &Path, expected: &str) -> Result<File> {
+    let mut file = open_file(path)?;
+    verify_content(&mut file, expected)?;
+    Ok(file)
+}
+fn verify_content(file: &mut File, expected: &str) -> Result<std::fs::Metadata> {
+    let before = file.metadata().app()?;
+    if !before.is_file()
+        || before.len() > 100_000_000
+        || vaults::fingerprint(file, &false.into())? != expected
+        || stamp(&before) != stamp(&file.metadata().app()?)
+    {
+        return Err("Source modifiée. Vérifiez le lien documentaire.".into());
+    }
+    Ok(before)
+}
 struct Grant {
+    stamp: (u64, u64, u64, i64, i64),
     token: String,
     root: PathBuf,
     id: String,
@@ -25,7 +58,13 @@ struct Grant {
 #[derive(Default)]
 pub struct Files(Mutex<VecDeque<Grant>>);
 impl Files {
-    pub fn grant(&self, state: &AppState, root: &Path, id: &str) -> Result<serde_json::Value> {
+    pub fn grant(
+        &self,
+        state: &AppState,
+        root: &Path,
+        id: &str,
+        fingerprint: Option<&str>,
+    ) -> Result<serde_json::Value> {
         let index = crate::project::backup::source_index(&state.data, root);
         let path = vaults::file(&index, id, &vaults::list(root, &index)?)?;
         let mime = match path
@@ -41,12 +80,12 @@ impl Files {
             "webp" => "image/webp",
             _ => return Err("Format non affichable".into()),
         };
-        let file = OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
-            .open(&path)
-            .app()?;
-        if !file.metadata().app()?.is_file() || file.metadata().app()?.len() > 100_000_000 {
+        let mut file = open_file(&path)?;
+        let metadata = match fingerprint {
+            Some(expected) => verify_content(&mut file, expected)?,
+            None => file.metadata().app()?,
+        };
+        if !metadata.is_file() || metadata.len() > 100_000_000 {
             return Err("Fichier invalide ou trop volumineux".into());
         }
         let token = uuid::Uuid::new_v4().to_string();
@@ -55,6 +94,7 @@ impl Files {
             files.pop_front();
         }
         files.push_back(Grant {
+            stamp: stamp(&metadata),
             token: token.clone(),
             root: root.into(),
             id: id.into(),
@@ -76,7 +116,7 @@ impl Files {
             .map_err(|e| e.to_string())?
             .clone()
             .ok_or("Projet fermé")?;
-        let (id, path, file, mime) = {
+        let (id, path, file, mime, original) = {
             let files = self.0.lock().map_err(|e| e.to_string())?;
             let grant = files
                 .iter()
@@ -91,11 +131,15 @@ impl Files {
                 grant.path.clone(),
                 grant.file.clone(),
                 grant.mime,
+                grant.stamp,
             )
         };
         let index = crate::project::backup::source_index(&state.data, &root);
         if vaults::file(&index, &id, &vaults::list(&root, &index)?)? != path {
             return Err("Source déplacée".into());
+        }
+        if stamp(&std::fs::symlink_metadata(&path).app()?) != original {
+            return Err("Source modifiée. Vérifiez le lien documentaire.".into());
         }
         let len = file.metadata().app()?.len();
         if len > 100_000_000 {
@@ -122,6 +166,22 @@ impl Files {
             .header("Cache-Control", "no-store")
             .header("X-Content-Type-Options", "nosniff")
             .header("Content-Security-Policy", "default-src 'none'; sandbox");
+        if let Some(origin) = request
+            .headers()
+            .get("origin")
+            .and_then(|h| h.to_str().ok())
+        {
+            if origin == "tauri://localhost"
+                || (cfg!(debug_assertions) && origin == "http://127.0.0.1:1420")
+            {
+                response = response
+                    .header("Access-Control-Allow-Origin", origin)
+                    .header(
+                        "Access-Control-Expose-Headers",
+                        "Content-Range, Accept-Ranges, Content-Length",
+                    );
+            }
+        }
         if requested.is_some() {
             response = response.header("Content-Range", format!("bytes {start}-{end}/{len}"));
         }
@@ -129,6 +189,9 @@ impl Files {
         if request.method() == "GET" {
             body.resize(count as usize, 0);
             file.read_exact_at(&mut body, start).app()?;
+        }
+        if stamp(&file.metadata().app()?) != original {
+            return Err("Source modifiée. Vérifiez le lien documentaire.".into());
         }
         response.body(body).app()
     }
@@ -184,7 +247,13 @@ mod tests {
         let vault = temp.path().join("vault");
         std::fs::create_dir(&vault).unwrap();
         std::fs::write(vault.join("picture.png"), b"0123456789").unwrap();
-        vaults::connect(&root, temp.path(), vaults::VaultFolder::selected(&vault).unwrap(), None).unwrap();
+        vaults::connect(
+            &root,
+            temp.path(),
+            vaults::VaultFolder::selected(&vault).unwrap(),
+            None,
+        )
+        .unwrap();
         let index = temp.path().join("sources.sqlite");
         let id = vaults::list(&root, &index).unwrap()[0].id.clone();
         let mut source = vaults::parse::parse(&id, "picture.png", "");
@@ -228,7 +297,10 @@ mod tests {
             exporting: false.into(),
             exit_approved: false.into(),
         };
-        let grant = state.source_files.grant(&state, &root, &source.id).unwrap();
+        let grant = state
+            .source_files
+            .grant(&state, &root, &source.id, None)
+            .unwrap();
         let url = grant["url"].as_str().unwrap();
         let request = || {
             Request::builder()

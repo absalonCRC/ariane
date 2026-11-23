@@ -238,18 +238,20 @@ Le [bilan 0.7.0](validation-0.7.0.md) consigne le gain sur le corpus de contrôl
 
 ### 0.8.0 — Lire et référencer les sources
 
+Le candidat local du 23 novembre implémente le lecteur partagé et les références dépliables. Les parcours, les captures et les limites de la recette sur Mac figurent dans le [bilan de validation](validation-0.8.0.md). [Plan de la version](plan-0.8.0.md)
+
 **Résultat.** Ouvrir un PDF ou une image bascule vers une vue partagée inspirée de Versions : manuscrit éditable à gauche, document à droite. Fermer le document restitue l’espace précédent. Un lien depuis l’annotation retrouve exactement l’extrait ou la zone visée.
 
-- [ ] Étendre le lecteur existant avec navigation de pages, zoom et sélection. Évaluer un rendu local pilotable tel que [PDF.js](https://mozilla.github.io/pdf.js/), plateforme de lecture/rendu PDF, au lieu de supposer que l’iframe actuelle offre les contrôles nécessaires.
-- [ ] Ancrer un extrait PDF par identité/empreinte du fichier, page, texte sélectionné, contexte et rectangles normalisés. Ancrer une zone d’image par identité/empreinte et coordonnées normalisées. Stocker les annotations côté Ariane ; ne pas réécrire les fichiers externes.
-- [ ] Créer depuis la sélection une annotation liée à un passage du manuscrit ; conserver le lien lors des modifications, déplacements et restaurations. Le retour vers le document sélectionne et révèle l’emplacement, au bon zoom si utile.
-- [ ] Gérer fichier déplacé, remplacé, absent ou extrait devenu ambigu : proposer de retrouver/reconnecter la source et conserver la note ; ne pas réattacher silencieusement à un autre passage.
-- [ ] Pour un PDF scanné sans couche texte, permettre une sélection de zone comme pour une image. L’OCR n’est pas un prérequis ajouté à cette 1.0.0.
-- [ ] **F31 · Déplier une référence sur place.** Activer l’appel de note pour lire sa référence juste sous la ligne. La même action replie le texte et rend le focus à l’appel.
+- [x] Étendre le lecteur existant avec navigation de pages, zoom et sélection. Évaluer un rendu local pilotable tel que [PDF.js](https://mozilla.github.io/pdf.js/), plateforme de lecture/rendu PDF, au lieu de supposer que l’iframe actuelle offre les contrôles nécessaires.
+- [x] Ancrer un extrait PDF par identité/empreinte du fichier, page, texte sélectionné, contexte et rectangles normalisés. Ancrer une zone d’image par identité/empreinte et coordonnées normalisées. Stocker les annotations côté Ariane ; ne pas réécrire les fichiers externes.
+- [x] Créer depuis la sélection une annotation liée à un passage du manuscrit ; conserver le lien lors des modifications, déplacements et restaurations. Le retour vers le document sélectionne et révèle l’emplacement, au bon zoom si utile.
+- [x] Gérer fichier déplacé, remplacé, absent ou extrait devenu ambigu : proposer de retrouver/reconnecter la source et conserver la note ; ne pas réattacher silencieusement à un autre passage.
+- [x] Pour un PDF scanné sans couche texte, permettre une sélection de zone comme pour une image. L’OCR n’est pas un prérequis ajouté à cette 1.0.0.
+- [x] **F31 · Déplier une référence sur place.** Activer l’appel de note pour lire sa référence juste sous la ligne. La même action replie le texte et rend le focus à l’appel.
 
 **Recette.** Lier une sélection sur deux lignes d’un PDF et une zone d’image ; fermer, rouvrir, changer le zoom et revenir depuis le manuscrit. Modifier le fichier source et constater un état de lien à vérifier. Déplier puis replier une référence au clavier et retrouver le passage en cours de lecture.
 
-**Dépendances.** Identités et annotations de 0.3.0, lecteur existant, exports. Le choix de moteur PDF et la stabilité des coordonnées doivent être éprouvés par prototype avant le 12 novembre.
+**Dépendances.** Identités et annotations de 0.3.0, lecteur existant, exports. Le candidat utilise PDF.js embarqué. La recette sur une page tournée vérifie le repère retenu pour les lots suivants.
 
 ### 0.8.1 — Relire et annoter une sélection
 

@@ -68,7 +68,7 @@ export function MemorySuggestion({
             ],
           });
         }}
-        className={`source-label memory-context${memory.suggestion!.kind === 'entity' ? ' entity-tinted' : ''}`}
+        className={`source-label margin-mention memory-context${memory.suggestion!.kind === 'entity' ? ' entity-tinted' : ''}`}
         style={
           memory.suggestion!.kind === 'entity'
             ? entityTint(memory.result?.entities[0]?.kind ?? 'Note', colors)

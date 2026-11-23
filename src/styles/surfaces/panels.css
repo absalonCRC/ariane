@@ -499,7 +499,7 @@
   max-height: calc(100vh - 110px);
   padding: 18px;
   border: 0;
-  border-radius: 18px;
+  border-radius: var(--suggestion-card-radius);
   background: var(--theme-surface, #f2f2f2);
   box-shadow: none;
   animation: none;

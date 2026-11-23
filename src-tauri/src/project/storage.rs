@@ -22,6 +22,12 @@ pub(crate) fn load_unlocked(root: &Path) -> Result<Project> {
         return Err("Ce dossier ne contient pas de projet ariane.".into());
     }
     let c = database(root)?;
+    // Standalone backup files use a rollback journal. Re-enable the project's
+    // normal WAL mode before the restored project is offered to concurrent readers.
+    let journal: String = c.pragma_query_value(None, "journal_mode", |row| row.get(0)).app()?;
+    if !journal.eq_ignore_ascii_case("wal") {
+        c.pragma_update(None, "journal_mode", "WAL").app()?;
+    }
     let mut recovered = false;
     let mut conflicts = vec![];
     // Read each section only once, including trash. It is important that all

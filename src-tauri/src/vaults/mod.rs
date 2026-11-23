@@ -14,6 +14,7 @@ use access::Access;
 pub(crate) use access::VaultFolder;
 mod pdf;
 mod scan;
+pub(crate) use scan::fingerprint;
 pub use browse::browse;
 mod owned;
 pub mod parse;
@@ -31,10 +32,23 @@ use std::{
     sync::{atomic::AtomicBool, Mutex},
 };
 pub fn index_db(path: &Path) -> Result<Connection> {
-    let c = Connection::open(path).app()?;
+    let mut c = Connection::open(path).app()?;
     c.busy_timeout(std::time::Duration::from_secs(10)).app()?;
-    c.execute_batch("PRAGMA journal_mode=WAL;
-        CREATE TABLE IF NOT EXISTS sources(id TEXT PRIMARY KEY,vault TEXT,path TEXT,hash TEXT,payload TEXT);
+    let version: i64 = c.pragma_query_value(None, "user_version", |r| r.get(0)).app()?;
+    if version == 0 {
+        // SQLite may return BUSY immediately on simultaneous WAL mode changes.
+        // Serialize initialization per index, including the first reads after a restore.
+        project::with_lock(path, || initialize_index(&mut c))?;
+    }
+    crate::vectors::migrate_batch(&c)?;
+    Ok(c)
+}
+fn initialize_index(c: &mut Connection) -> Result<()> {
+    let version: i64 = c.pragma_query_value(None, "user_version", |r| r.get(0)).app()?;
+    if version != 0 { return Ok(()); }
+    c.pragma_update(None, "journal_mode", "WAL").app()?;
+    let tx = c.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).app()?;
+    tx.execute_batch("CREATE TABLE IF NOT EXISTS sources(id TEXT PRIMARY KEY,vault TEXT,path TEXT,hash TEXT,payload TEXT);
         CREATE INDEX IF NOT EXISTS sources_vault_path ON sources(vault,path);
         CREATE TABLE IF NOT EXISTS chunks(id INTEGER PRIMARY KEY,source TEXT,page INTEGER,text TEXT,vector TEXT,model TEXT);
         CREATE INDEX IF NOT EXISTS chunk_source ON chunks(source);
@@ -49,19 +63,19 @@ pub fn index_db(path: &Path) -> Result<Connection> {
         CREATE TRIGGER IF NOT EXISTS chunks_generation_update AFTER UPDATE ON chunks BEGIN UPDATE index_generations SET vectors=vectors+1 WHERE singleton=1; END;
         CREATE TRIGGER IF NOT EXISTS chunks_generation_delete AFTER DELETE ON chunks BEGIN UPDATE index_generations SET vectors=vectors+1 WHERE singleton=1; END;").app()?;
     let has_verified = {
-        let mut columns = c.prepare("PRAGMA table_info(source_file_state)").app()?;
+        let mut columns = tx.prepare("PRAGMA table_info(source_file_state)").app()?;
         let mut rows = columns.query_map([], |r| r.get::<_, String>(1)).app()?;
         rows.any(|row| row.is_ok_and(|name| name == "verified"))
     };
     if !has_verified {
-        c.execute(
+        tx.execute(
             "ALTER TABLE source_file_state ADD COLUMN verified INTEGER NOT NULL DEFAULT 0",
             [],
         )
         .app()?;
     }
-    crate::vectors::migrate_batch(&c)?;
-    Ok(c)
+    tx.pragma_update(None, "user_version", 1).app()?;
+    tx.commit().app()
 }
 pub fn list(root: &Path, index: &Path) -> Result<Vec<Vault>> {
     let c = project::database(root)?;
@@ -363,6 +377,24 @@ pub fn remove(root: &Path, data: &Path, id: &str) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn concurrent_first_readers_can_open_a_restored_source_index() {
+        let dir = tempfile::tempdir().unwrap();
+        for n in 0..8 {
+            let index = dir.path().join(format!("sources-{n}.sqlite"));
+            let barrier = std::sync::Barrier::new(8);
+            std::thread::scope(|scope| {
+                for _ in 0..8 {
+                    scope.spawn(|| {
+                        barrier.wait();
+                        let conn = super::index_db(&index).unwrap();
+                        let count: i64 = conn.query_row("SELECT count(*) FROM sources", [], |r| r.get(0)).unwrap();
+                        assert_eq!(count, 0);
+                    });
+                }
+            });
+        }
+    }
     use super::*;
     #[test]
     fn received_project_reconnects_without_sharing_relocated_sources_or_changing_citations() {

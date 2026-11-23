@@ -11,6 +11,7 @@ import {
 import { RangeSetBuilder } from '@codemirror/state';
 import { liveTables } from './liveTables';
 import { blankMarker } from '../project/writingAids';
+import { footnoteReading, isFootnote, toggleFootnote } from './footnoteReading';
 const delimiters = new Set([
   'HeaderMark',
   'EmphasisMark',
@@ -24,12 +25,18 @@ class FootnoteMarker extends WidgetType {
   constructor(
     readonly id: string,
     readonly definition: boolean,
+    readonly pos: number,
+    readonly expanded: boolean,
   ) {
     super();
   }
   eq(other: FootnoteMarker) {
     return (
-      other.locale === this.locale && other.id === this.id && other.definition === this.definition
+      other.pos === this.pos &&
+      other.expanded === this.expanded &&
+      other.locale === this.locale &&
+      other.id === this.id &&
+      other.definition === this.definition
     );
   }
   toDOM(view: EditorView) {
@@ -43,19 +50,22 @@ class FootnoteMarker extends WidgetType {
       marker.setAttribute('role', 'button');
       marker.setAttribute('aria-label', t('Lire la note de source'));
       marker.tabIndex = 0;
+      marker.setAttribute('aria-expanded', String(this.expanded));
+      marker.dataset.footnoteAt = String(this.pos);
       const open = () => {
-        const pos = view.state.doc.toString().indexOf(`[^${this.id}]:`);
-        if (pos >= 0) {
-          view.dispatch({
-            selection: { anchor: pos },
-            effects: EditorView.scrollIntoView(pos, { y: 'center' }),
-          });
-          view.focus();
-        }
+        view.dispatch({ effects: toggleFootnote.of(this.pos) });
+        view.dom
+          .querySelector<HTMLElement>(`[data-footnote-at="${this.pos}"]`)
+          ?.focus({ preventScroll: true });
       };
+      marker.addEventListener('mousedown', (e) => e.preventDefault());
       marker.addEventListener('click', open);
       marker.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') open();
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          event.stopPropagation();
+          open();
+        }
       });
     }
     return marker;
@@ -69,6 +79,7 @@ const inlineMarkdown = ViewPlugin.fromClass(
     }
     update(u: ViewUpdate) {
       if (
+        u.startState.field(footnoteReading) !== u.state.field(footnoteReading) ||
         u.docChanged ||
         u.selectionSet ||
         u.viewportChanged ||
@@ -90,6 +101,7 @@ const inlineMarkdown = ViewPlugin.fromClass(
           }),
         );
         for (const note of notes) {
+          if (!isFootnote(view.state, note.from)) continue;
           const active = selection.from <= note.to && selection.to >= note.from;
           if (!active)
             entries.push({
@@ -99,6 +111,8 @@ const inlineMarkdown = ViewPlugin.fromClass(
                 widget: new FootnoteMarker(
                   note.id,
                   view.state.sliceDoc(note.to, note.to + 1) === ':',
+                  note.from,
+                  view.state.field(footnoteReading).pos === note.from,
                 ),
               }),
             });
@@ -146,4 +160,4 @@ const inlineMarkdown = ViewPlugin.fromClass(
   },
   { decorations: (v) => v.decorations },
 );
-export const liveMarkdown = [inlineMarkdown, liveTables];
+export const liveMarkdown = [footnoteReading, inlineMarkdown, liveTables];

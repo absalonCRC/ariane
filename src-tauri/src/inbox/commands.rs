@@ -82,7 +82,7 @@ pub fn handle(
             let _held = state
                 .project_guard
                 .lock()
-                .map_err(|e| e.to_string())?
+                .map_err(|e| e.to_string())?.active
                 .clone();
             serde_json::to_value(transfer::apply(&c, root, &operation)?).app()?
         }

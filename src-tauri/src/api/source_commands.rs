@@ -87,7 +87,7 @@ pub(super) fn handle(
             enrichment::decorate(&root, &index, &mut sources)?;
             json(sources.remove(0))
         }
-        Request::SourceFile { id } => state.source_files.grant(state, &root, &id),
+        Request::SourceFile { id, fingerprint } => state.source_files.grant(state, &root, &id, fingerprint.as_deref()),
         Request::MarginPins {
             project_path,
             section,

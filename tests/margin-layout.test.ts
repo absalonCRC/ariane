@@ -6,6 +6,12 @@ const groups = [
   { id: 1, top: 100, sources: [source('a'), source('b')] },
   { id: 2, top: 230, sources: [source('c')] },
 ];
+it('reserves the measured preview only for its group and restores the passage anchor on exit', () => {
+  const measured = new Map([['1', 178]]);
+  expect(marginLayout(groups, null, undefined, 400, measured)[1].top).toBe(290);
+  measured.set('1', 108);
+  expect(marginLayout(groups, null, undefined, 400, measured)[1].top).toBe(230);
+});
 it('reserves the expanded source height and pushes following groups down', () => {
   const expanded = marginLayout(groups, null, 'a', 400);
   expect(expanded[0]).toMatchObject({ top: 100, height: 454 });

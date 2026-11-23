@@ -1,13 +1,14 @@
-import { localizeMessage, t, useLocale } from '../i18n';
+import { t, useLocale } from '../i18n';
 import { usePanelFocus } from '../components/usePanelFocus';
 import { SourceOccurrences } from './SourceOccurrences';
 import type { SourceOccurrence } from './occurrences';
 import type { Section } from '../contracts/project';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { ProgressiveMarkdown } from './ProgressiveMarkdown';
 import type { Source } from '../contracts/sources';
-import { request } from '../platform/client';
+import { DocumentViewer } from './DocumentViewer';
+import type { DocumentAnchor } from '../contracts/annotations';
 import { useContextMenu } from '../components/ContextMenu';
 import { selectedSourceText, sourceContext } from './contextMenu';
 import { SourceAliases } from './SourceAliases';
@@ -15,6 +16,9 @@ import { EnrichmentView } from '../enrichment/EnrichmentView';
 import { MarginPinAction, type MarginPinProps } from './MarginPinAction';
 export function Reader({
   source: s,
+  reveal,
+  onDocumentSelect,
+  replacing,
   sections = [],
   contentVersion,
   onOccurrence,
@@ -27,6 +31,9 @@ export function Reader({
   marginPin,
 }: {
   source: Source;
+  reveal?: DocumentAnchor;
+  replacing?: boolean;
+  onDocumentSelect?: (value: DocumentAnchor) => Promise<void>;
   sections?: Section[];
   contentVersion?: string;
   onOccurrence?: (hit: SourceOccurrence) => void;
@@ -54,25 +61,7 @@ export function Reader({
   useEffect(() => {
     excerpt.current?.scrollIntoView({ block: 'nearest' });
   }, [s.id, s.selectedExcerpt]);
-  const [url, setUrl] = useState('');
-  const [error, setError] = useState('');
-  useEffect(() => {
-    let alive = true;
-    setUrl('');
-    setError('');
-    if (['PDF', 'Image'].includes(s.kind))
-      void request('sourceFile', { id: s.id })
-        .then((f) => {
-          if (!alive) return;
-          setUrl(f.url);
-        })
-        .catch((e) => {
-          if (alive) setError(String(e));
-        });
-    return () => {
-      alive = false;
-    };
-  }, [s.id, projectPath]);
+  const binary = s.kind === 'PDF' || s.kind === 'Image';
   return (
     <aside
       ref={panel}
@@ -83,7 +72,7 @@ export function Reader({
           onClose();
         }
       }}
-      className="reader"
+      className={binary ? 'reader document-reader' : 'reader'}
       aria-label={t('Source complète')}
       onContextMenu={(event) => {
         if ((event.target as HTMLElement).closest('input, textarea, select, iframe, img')) return;
@@ -106,15 +95,14 @@ export function Reader({
             {s.selectedExcerpt}
           </blockquote>
         )}
-        {error && <p className="error-text">{localizeMessage(error)}</p>}
-        {s.kind === 'PDF' ? (
-          url ? (
-            <iframe title={s.title} src={url + '#page=' + (s.page || 1)} />
-          ) : (
-            <p className="hint">{t('Ouverture du PDF…')}</p>
-          )
-        ) : s.kind === 'Image' ? (
-          url && <img className="attachment" alt={s.title} src={url} />
+        {binary ? (
+          <DocumentViewer
+            key={s.id + s.fingerprint}
+            source={s}
+            reveal={reveal}
+            replacing={!!replacing}
+            onLink={onDocumentSelect}
+          />
         ) : (
           <div className="read-prose">
             <ProgressiveMarkdown text={s.text} excerpt={s.selectedExcerpt} />

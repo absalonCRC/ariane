@@ -32,6 +32,10 @@ function stats(samples: number[]) {
   };
 }
 export function attach(workspace: Workspace, controller: MemoryController) {
+  if (import.meta.env.VITE_READER_REHEARSAL === '1') {
+    void import('./reader').then((m) => m.attachReader(workspace));
+    return;
+  }
   if (import.meta.env.VITE_PERFORMANCE_REFERENCE === '1') {
     attachReference(workspace);
     return;

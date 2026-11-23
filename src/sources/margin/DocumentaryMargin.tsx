@@ -2,14 +2,25 @@ import type { PanelOrigin } from '../../components/useSharedPanel';
 import type { OpenMenu } from '../../components/ContextMenu';
 import type { Surface } from '../../app/workspace/types';
 import type { Dispatch, SetStateAction } from 'react';
+import { useCallback } from 'react';
+import { plainExcerpt } from '../../enrichment/excerpts';
 import { entityTint } from '../../enrichment/entityTypes';
 import { t } from '../../i18n';
 import { panelOrigin } from '../../components/useSharedPanel';
 import { X } from 'lucide-react';
 import type { Source } from '../../contracts/sources';
-import { sourceContext } from '../contextMenu';
+import { sourceContext, sourceExcerpt } from '../contextMenu';
 import type { Settings } from '../../contracts/settings';
+function previewText(source: Source) {
+  const description = source.fields?.Description ?? source.fields?.description;
+  return plainExcerpt(
+    typeof description === 'string' && description.trim() ? description : sourceExcerpt(source),
+    180,
+  );
+}
+
 interface Props {
+  setGroupHeights: Dispatch<SetStateAction<Map<string, number>>>;
   setRailScroll: Dispatch<SetStateAction<number>>;
   sourcePresence: {
     value: { id: string; top: number; sources: Source[] }[] | null;
@@ -47,6 +58,7 @@ interface Props {
   suggestionExcerpt: string;
 }
 export function DocumentaryMargin({
+  setGroupHeights,
   setRailScroll,
   sourcePresence,
   workspaceMarginBounds,
@@ -71,6 +83,31 @@ export function DocumentaryMargin({
   railScroll,
   suggestionExcerpt,
 }: Props) {
+  // The preview wraps at the actual rail width. Keep subsequent passage groups
+  // clear even when a pinned action, keyboard focus or a wider excerpt opens it.
+  const measureGroup = useCallback(
+    (element: HTMLDivElement | null) => {
+      if (!element || typeof ResizeObserver === 'undefined') return;
+      const id = element.dataset.anchorLine!;
+      const observer = new ResizeObserver(() => {
+        const height = element.offsetHeight;
+        setGroupHeights((previous) =>
+          previous.get(id) === height ? previous : new Map(previous).set(id, height),
+        );
+      });
+      observer.observe(element);
+      return () => {
+        observer.disconnect();
+        setGroupHeights((previous) => {
+          if (!previous.has(id)) return previous;
+          const next = new Map(previous);
+          next.delete(id);
+          return next;
+        });
+      };
+    },
+    [setGroupHeights],
+  );
   return (
     <div
       className="source-margin"
@@ -94,66 +131,71 @@ export function DocumentaryMargin({
       {railGroups.map((g) => (
         <div
           className="source-group"
+          ref={measureGroup}
           data-anchor-line={g.id}
           data-expanded={groupOpen === g.id}
           key={g.id}
           style={{ top: g.top - (workspaceMarginBounds?.top ?? 0) }}
         >
-          {g.sources.slice(0, groupOpen === g.id ? g.sources.length : 2).map((s) => (
-            <div key={s.id} className="margin-source-item" data-pinned={g.id === 'pinned'}>
-              <button
-                className="source-label entity-tinted"
-                style={{
-                  ...entityTint(s.kind, colors),
-                  ...(cardPresence.value?.source.id === s.id
-                    ? { height: expandedHeight, minHeight: expandedHeight }
-                    : {}),
-                }}
-                key={s.id}
-                onContextMenu={(event) =>
-                  openMenu(
-                    event,
-                    sourceContext(s, {
-                      onRead: () => read(s),
-                      onCite: (quote) => cite(s, quote),
-                    }),
-                  )
-                }
-                data-expanded={card?.source.id === s.id}
-                onClick={(event) => {
-                  setSurface('none');
-                  setCard({
-                    source: s,
-                    top: g.top,
-                    origin: panelOrigin(event.currentTarget, s.title),
-                  });
-                }}
-              >
-                <span>{s.title}</span>
-                <small>
-                  {t(s.kind)} ·{' '}
-                  {g.id === 'pinned'
-                    ? t('Ajoutée à la marge')
-                    : associated.has(s.id)
-                      ? t('associée à cette section')
-                      : s.score === 100
-                        ? t('mention détectée')
-                        : s.score === 80 || s.score === 40
-                          ? t('lien entre sources')
-                          : 'suggestion'}
-                </small>
-              </button>
-              {g.id === 'pinned' && (
+          {g.sources.slice(0, groupOpen === g.id ? g.sources.length : 2).map((s) => {
+            const excerpt = previewText(s);
+            return (
+              <div key={s.id} className="margin-source-item" data-pinned={g.id === 'pinned'}>
                 <button
-                  className="margin-unpin icon-button"
-                  aria-label={t('Retirer {0} de la marge', { 0: s.title })}
-                  onClick={() => void marginPins.remove(s.id)}
+                  className="source-label margin-mention entity-tinted"
+                  style={{
+                    ...entityTint(s.kind, colors),
+                    ...(cardPresence.value?.source.id === s.id
+                      ? { height: expandedHeight, minHeight: expandedHeight }
+                      : {}),
+                  }}
+                  key={s.id}
+                  onContextMenu={(event) =>
+                    openMenu(
+                      event,
+                      sourceContext(s, {
+                        onRead: () => read(s),
+                        onCite: (quote) => cite(s, quote),
+                      }),
+                    )
+                  }
+                  data-expanded={card?.source.id === s.id}
+                  onClick={(event) => {
+                    setSurface('none');
+                    setCard({
+                      source: s,
+                      top: g.top,
+                      origin: panelOrigin(event.currentTarget, s.title),
+                    });
+                  }}
                 >
-                  <X size={12} />
+                  <span>{s.title}</span>
+                  <small>
+                    {t(s.kind)} ·{' '}
+                    {g.id === 'pinned'
+                      ? t('Ajoutée à la marge')
+                      : associated.has(s.id)
+                        ? t('associée à cette section')
+                        : s.score === 100
+                          ? t('mention détectée')
+                          : s.score === 80 || s.score === 40
+                            ? t('lien entre sources')
+                            : 'suggestion'}
+                  </small>
+                  {excerpt && <span className="suggestion-excerpt">{excerpt}</span>}
                 </button>
-              )}
-            </div>
-          ))}
+                {g.id === 'pinned' && (
+                  <button
+                    className="margin-unpin icon-button"
+                    aria-label={t('Retirer {0} de la marge', { 0: s.title })}
+                    onClick={() => void marginPins.remove(s.id)}
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+            );
+          })}
           {g.sources.length > 2 && (
             <button
               className="more-sources"

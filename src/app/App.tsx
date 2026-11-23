@@ -417,8 +417,11 @@ export function App() {
     update,
     groups,
   } = workspace;
+  const documentOpen = reader?.kind === 'PDF' || reader?.kind === 'Image';
   const focusActive =
     !!doc.settings.immersiveFocus &&
+    !documentOpen &&
+    !workspace.annotationsOpen &&
     !workspace.historyMode &&
     surface === 'none' &&
     !newProject &&
@@ -448,6 +451,7 @@ export function App() {
   const sourcePresence = usePresenceValue(visibleGroups.length ? visibleGroups : null);
   const cardPresence = usePresenceValue(card);
   const [expandedHeight, setExpandedHeight] = useState(400);
+  const [groupHeights, setGroupHeights] = useState(() => new Map<string, number>());
   const [railScroll, setRailScroll] = useState(0);
   useLayoutEffect(() => {
     if (!card) return;
@@ -464,6 +468,7 @@ export function App() {
     groupOpen,
     cardPresence.value?.source.id,
     expandedHeight,
+    groupHeights,
   );
 
   useEffect(() => {
@@ -741,6 +746,7 @@ export function App() {
         }
         className={
           'app ' +
+          (documentOpen ? 'with-document ' : '') +
           (reader || (memory.view && !memory.origin) ? 'with-reader ' : '') +
           (searching ? 'searching-project ' : '') +
           (workspace.historyMode ? 'versions-mode' : '') +
@@ -951,7 +957,12 @@ export function App() {
               },
               sections: scenes,
               generation: doc.generation,
-              readOnly: pageActive || workspace.historyMode || workspace.libraryBusy || branches.busy || !!filteredTag,
+              readOnly:
+                pageActive ||
+                workspace.historyMode ||
+                workspace.libraryBusy ||
+                branches.busy ||
+                !!filteredTag,
               settings: doc.settings,
               immersiveFocus: focusActive,
               projectPath: p.path,
@@ -959,17 +970,11 @@ export function App() {
               noteCreate: createNote,
               noteResolve: (ids) => request('noteReferences', { projectPath: p.path, ids }),
               sourceVersion: workspace.sourceVersion,
-              onOpenNote: (id) => {
-                void request('source', { id })
-                  .then((source) => {
-                    if (doc.ref.current?.path !== p.path) return;
-                    memory.close();
-                    inlineEntities.close();
-                    workspace.setCard(null);
-                    workspace.setReader(source);
-                  })
-                  .catch(fail);
-              },
+              onOpenNote: (id) =>
+                void read(id, () => {
+                  memory.close();
+                  inlineEntities.close();
+                }),
               onNoteError: fail,
               entities: inlineEntities.batches,
               searchQuery: searching ? workspace.searchQuery : undefined,
@@ -1041,15 +1046,7 @@ export function App() {
                   const section = lineReferenceSection(p, relation.section, relation.node);
                   if (section) void workspace.locatePassage(section, relation.node, relation.title);
                   else fail(t('La ligne liée n’est plus disponible.'));
-                } else
-                  void request('source', { id: relation.id })
-                    .then((source) => {
-                      if (doc.ref.current?.path === p.path) {
-                        setTagFilter(null);
-                        workspace.setReader(source);
-                      }
-                    })
-                    .catch(fail);
+                } else void read(relation.id, () => setTagFilter(null));
               }}
               onClose={closeTagFilter}
               onOpen={(passage) => {
@@ -1144,12 +1141,7 @@ export function App() {
                   const section = lineReferenceSection(p, relation.section, relation.node);
                   if (section) void workspace.locatePassage(section, relation.node, relation.title);
                   else fail(t('La ligne liée n’est plus disponible.'));
-                } else
-                  void request('source', { id: relation.id })
-                    .then((source) => {
-                      if (doc.ref.current?.path === p.path) workspace.setReader(source);
-                    })
-                    .catch(fail);
+                } else void read(relation.id);
               }}
             />
           )}
@@ -1158,7 +1150,17 @@ export function App() {
             !filteredTag &&
             !lineDetailVisible && (
               <Annotations
-                key={p.path}
+                key={p.path + ':' + branches.state?.activeBranch}
+                onManage={() => setSurface('sources')}
+                onDocument={(source, a, replacing) => {
+                  workspace.setAnnotationsOpen(false);
+                  workspace.setReader({
+                    ...source,
+                    page: replacing ? source.page : a.document!.page,
+                    reveal: replacing ? undefined : a.document,
+                    replacement: replacing ? a : undefined,
+                  });
+                }}
                 workspace={workspace}
                 left={railVisible ? railLeft : Math.max(12, innerWidth - 290)}
                 width={railVisible ? railWidth : 270}
@@ -1172,6 +1174,7 @@ export function App() {
             railVisible &&
             !(reader || (memory.view && !memory.origin)) && (
               <DocumentaryMargin
+                setGroupHeights={setGroupHeights}
                 setRailScroll={setRailScroll}
                 sourcePresence={sourcePresence}
                 workspaceMarginBounds={workspace.marginBounds}
@@ -1269,13 +1272,50 @@ export function App() {
           <Presence>
             {reader && (
               <Reader
+                key={JSON.stringify([
+                  p.path,
+                  branches.state?.activeBranch,
+                  reader.id,
+                  reader.fingerprint,
+                  reader.reveal?.page ?? reader.page,
+                  reader.replacement?.id,
+                  reader.reveal?.rectangles,
+                ])}
                 source={reader}
+                reveal={reader.reveal}
+                replacing={!!reader.replacement}
+                onDocumentSelect={async (anchor) => {
+                  const branch = branches.state?.activeBranch;
+                  if (!branch || branches.busy) throw new Error(t('La variante active a changé.'));
+                  if (!reader.replacement) {
+                    return workspace.linkDocument(anchor, branch);
+                  }
+                  const a = reader.replacement;
+                  const current = workspace.beginReaderRequest();
+                  await request('updateAnnotation', {
+                    projectPath: p.path,
+                    id: a.id,
+                    revision: a.revision,
+                    note: a.note,
+                    done: a.done,
+                    document: anchor,
+                    branch,
+                  });
+                  if (current()) {
+                    setReader(null);
+                    workspace.setAnnotationTarget(null);
+                    workspace.setAnnotationsOpen(true);
+                  }
+                }}
                 marginPin={marginPinFor(reader)}
                 sections={p.sections}
                 contentVersion={`${doc.status}:${doc.generation}`}
                 onOccurrence={(hit) => void workspace.locateSourceMatch(hit, hit.matched)}
                 onCite={(quote) => cite(reader, quote)}
-                onClose={() => setReader(null)}
+                onClose={() => {
+                  setReader(null);
+                  if (reader.reveal || reader.replacement) workspace.setAnnotationsOpen(true);
+                }}
                 projectPath={p.path}
                 onChange={(source) => {
                   if (doc.ref.current?.path === p.path) {
@@ -1285,18 +1325,14 @@ export function App() {
                       sourceId: source.id,
                       section: active,
                     });
-                    setReader((current) => (current?.id === source.id ? source : current));
+                    setReader((current) =>
+                      current?.id === source.id ? { ...current, ...source } : current,
+                    );
                     workspace.refreshEnrichment();
                     workspace.setSourceVersion((v) => v + 1);
                   }
                 }}
-                onRead={(id) =>
-                  void request('source', { id })
-                    .then((source) => {
-                      if (doc.ref.current?.path === p.path) setReader(source);
-                    })
-                    .catch(fail)
-                }
+                onRead={(id) => void read(id)}
                 onLocate={(section, node, quote) =>
                   void workspace.locatePassage(section, node, quote)
                 }
@@ -1415,7 +1451,8 @@ export function App() {
                                 id: 'split-scene',
                                 label: t('Scinder la scène'),
                                 preview: workspace.splitPreview,
-                                action: () => workspace.confirmSplitPreview(workspace.splitPreview!),
+                                action: () =>
+                                  workspace.confirmSplitPreview(workspace.splitPreview!),
                               },
                             ]
                           : []),
@@ -1547,16 +1584,7 @@ export function App() {
                 workspace.close();
                 void workspace.locatePassage(section, node, quote);
               }}
-              onSource={(id) => {
-                void request('source', { id })
-                  .then((source) => {
-                    if (doc.ref.current?.path === p.path) {
-                      workspace.close();
-                      workspace.setReader(source);
-                    }
-                  })
-                  .catch(fail);
-              }}
+              onSource={(id) => void read(id, workspace.close)}
             />
           )}
           <WorkspaceDialogs

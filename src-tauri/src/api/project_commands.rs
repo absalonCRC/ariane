@@ -80,6 +80,8 @@ pub(super) fn handle(
             json(project::annotations::list(&root)?)
         }
         Request::AddAnnotation {
+            request_id,
+            document, branch,
             project_path,
             section,
             revision,
@@ -90,11 +92,13 @@ pub(super) fn handle(
             if Path::new(&project_path) != root {
                 return Err("Le projet actif a changé.".into());
             }
-            json(project::annotations::create(
-                &root, &section, revision, from, to, &note,
+            if let Some(anchor) = &document { anchor.verify(&root, &index)?; }
+            json(project::annotations::create_linked(
+                &root, &section, revision, from, to, &note, document, branch.as_deref(),request_id.as_deref(),
             )?)
         }
         Request::UpdateAnnotation {
+            document, branch,
             project_path,
             id,
             revision,
@@ -104,8 +108,9 @@ pub(super) fn handle(
             if Path::new(&project_path) != root {
                 return Err("Le projet actif a changé.".into());
             }
-            json(project::annotations::update(
-                &root, &id, revision, &note, done,
+            if let Some(anchor) = &document { anchor.verify(&root, &index)?; }
+            json(project::annotations::update_linked(
+                &root, &id, revision, &note, done, document, branch.as_deref(),
             )?)
         }
         Request::ManuscriptOperation {

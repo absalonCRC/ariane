@@ -26,7 +26,7 @@ Les pages utilisent l’espace selon leur fonction : comparaison côte à côte 
 
 Les états actifs, le focus et les outils de chaque mode restent explicites. Le manuscrit et les traitements en arrière-plan restent montés ; seule leur présentation est masquée. Les opérations occupées verrouillent la navigation du cadre jusqu’à leur fin.
 
-Les boutons utilisent un contour circulaire ou en capsule, également au survol et lorsqu’ils sont actifs. Les fiches et suggestions de la marge documentaire ont des coins squircle. Les champs de texte et les sélecteurs adoptent l’arrondi des commandes, avec des marges adaptées à la saisie sur plusieurs lignes. Les icônes et libellés des commandes sont centrés dans leur surface. Les lignes de navigation conservent leur hiérarchie de lecture.
+Les boutons utilisent un contour circulaire ou en capsule, également au survol et lorsqu’ils sont actifs. Dans la marge documentaire, chaque mention apparaît dans sa couleur. Au survol ou au focus clavier, un fond légèrement teinté avec le même arrondi de 18 px que la fiche ouverte révèle le contexte et un court extrait de la fiche, lorsqu’il est disponible. Les champs de texte et les sélecteurs adoptent l’arrondi des commandes, avec des marges adaptées à la saisie sur plusieurs lignes. Les icônes et libellés des commandes sont centrés dans leur surface. Les lignes de navigation conservent leur hiérarchie de lecture.
 
 ## Mouvement et vérification
 
