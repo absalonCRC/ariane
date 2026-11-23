@@ -185,7 +185,7 @@ fn native_ai_evaluation() {
     let vault = temporary.path().join("vault");
     std::fs::create_dir(&vault).unwrap();
     project::create(&root, "Évaluation synthétique").unwrap();
-    vaults::connect(&root, &vault).unwrap();
+    vaults::connect(&root, temporary.path(), vaults::VaultFolder::selected(&vault).unwrap(), None).unwrap();
     for d in corpus["documents"].as_array().unwrap() {
         std::fs::write(
             vault.join(format!("{}.md", d["id"].as_str().unwrap())),

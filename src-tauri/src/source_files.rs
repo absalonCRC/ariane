@@ -184,7 +184,7 @@ mod tests {
         let vault = temp.path().join("vault");
         std::fs::create_dir(&vault).unwrap();
         std::fs::write(vault.join("picture.png"), b"0123456789").unwrap();
-        vaults::connect(&root, &vault).unwrap();
+        vaults::connect(&root, temp.path(), vaults::VaultFolder::selected(&vault).unwrap(), None).unwrap();
         let index = temp.path().join("sources.sqlite");
         let id = vaults::list(&root, &index).unwrap()[0].id.clone();
         let mut source = vaults::parse::parse(&id, "picture.png", "");

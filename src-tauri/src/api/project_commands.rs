@@ -11,14 +11,13 @@ pub(super) fn handle(
     request: Request,
 ) -> Result<serde_json::Value> {
     match request {
-        Request::EntityMentions {project_path} => {
-            if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}
-            let sections=project::sections(&project::database(&root)?)?;
-            let mut result=vec![];
-            for s in sections.iter().filter(|s|s.kind=="scene"&&!s.trashed) {
-                let mut batch=serde_json::to_value(crate::memory::inline_entities(&root,&index,&s.id,s.revision)?).map_err(|e|e.to_string())?;
-                batch["section"]=serde_json::json!(s.id);batch["revision"]=serde_json::json!(s.revision);result.push(batch);
-            } Ok(serde_json::Value::Array(result))
+        Request::EntityMentions { project_path } => {
+            if Path::new(&project_path) != root {
+                return Err("Le projet actif a changé.".into());
+            }
+            json(crate::memory::project_entity_mentions(&root, &index, || {
+                super::root(state).is_ok_and(|active| active == root)
+            })?)
         }
         Request::EntityCatalog { project_path } => {
             if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into());}

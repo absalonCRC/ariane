@@ -261,7 +261,7 @@ pub fn create_owned(root: &Path) -> Result<PathBuf> {
             &template(category, None, "")?,
         )?;
     }
-    super::connect(&root, &vault)?;
+    super::register(&root, &vault)?;
     project::database(&root)?
         .execute(
             "INSERT OR REPLACE INTO meta(key,value) VALUES('owned_vault',?)",
@@ -328,7 +328,7 @@ pub fn create_project(root: &Path, name: &str, source: Option<&Path>) -> Result<
     }
     project::create(root, name)?;
     if let Some(source) = source {
-        super::connect(root, source)?;
+        super::register(root, source)?;
     } else {
         create_owned(root)?;
     }
@@ -369,7 +369,7 @@ mod tests {
         project::create(&root, "Livre").unwrap();
         fs::create_dir(&external).unwrap();
         fs::write(external.join("source.md"), "note intacte").unwrap();
-        vaults::connect(&root, &external).unwrap();
+        vaults::connect(&root, temp.path(), vaults::VaultFolder::selected(&external).unwrap(), None).unwrap();
         assert!(create_entity(&root, "lieu", "Paris", "").is_err());
         assert_eq!(
             fs::read_to_string(external.join("source.md")).unwrap(),

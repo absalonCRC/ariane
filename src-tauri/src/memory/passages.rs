@@ -6,7 +6,7 @@ use crate::{
     model::Section,
     project,
 };
-use rusqlite::{params, OptionalExtension, TransactionBehavior};
+use rusqlite::{params, Connection, OptionalExtension, Transaction, TransactionBehavior};
 use std::{
     collections::{HashMap, HashSet},
     path::Path,
@@ -123,11 +123,7 @@ pub(super) fn row_passage(r: &rusqlite::Row<'_>) -> rusqlite::Result<Passage> {
 }
 
 pub fn sync(root: &Path) -> Result<()> {
-    sync_preferred(root, None)
-}
-
-pub fn sync_preferred(root: &Path, preferred: Option<&str>) -> Result<()> {
-    sync_idle(root, preferred, || false)
+    sync_idle(root, None, || false)
 }
 
 pub fn sync_idle(
@@ -136,31 +132,52 @@ pub fn sync_idle(
     interrupted: impl Fn() -> bool,
 ) -> Result<()> {
     let mut c = storage::database(root)?;
-    let metadata: Vec<(String, i64, String, String, String)> = {
-        let mut q=c.prepare("SELECT id,revision,mirror,COALESCE(outline,''),title FROM sections WHERE kind='scene' AND trashed=0").app()?;
-        let rows = q
-            .query_map([], |r| {
-                Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?))
-            })
-            .app()?;
-        rows.collect::<std::result::Result<_, _>>().app()?
+    prune_missing(&mut c)?;
+    let mut scenes = scene_revisions(&c, false)?;
+    scenes.sort_by_key(|(id, _)| if Some(id.as_str()) == preferred { 0 } else { 1 });
+    let mut updated = 0;
+    for (id, revision) in scenes {
+        if interrupted() || updated == 16 {
+            break;
+        }
+        if sync_section(&mut c, &id, revision)? == Some(true) {
+            updated += 1;
+        }
+    }
+    Ok(())
+}
+
+pub(super) fn scene_revisions(c: &Connection, document_order: bool) -> Result<Vec<(String, i64)>> {
+    let mut query = c.prepare(if document_order {
+        "SELECT id,revision FROM sections WHERE kind='scene' AND trashed=0 ORDER BY position,id"
+    } else {
+        "SELECT id,revision FROM sections WHERE kind='scene' AND trashed=0"
+    }).app()?;
+    let rows = query.query_map([], |row| Ok((row.get(0)?, row.get(1)?))).app()?;
+    rows.collect::<rusqlite::Result<_>>().app()
+}
+
+pub(super) fn prune_missing(c: &mut Connection) -> Result<()> {
+    let missing: Vec<String> = {
+        let mut query = c.prepare(
+            "SELECT m.id FROM memory_sections m WHERE NOT EXISTS (
+                SELECT 1 FROM sections s WHERE s.id=m.id AND s.kind='scene' AND s.trashed=0
+            )",
+        ).app()?;
+        let rows = query.query_map([], |row| row.get(0)).app()?;
+        rows.collect::<rusqlite::Result<_>>().app()?
     };
-    let seen: HashSet<&str> = metadata
-        .iter()
-        .map(|(id, _, _, _, _)| id.as_str())
-        .collect();
-    let old_sections: Vec<String> = {
-        let mut q = c.prepare("SELECT id FROM memory_sections").app()?;
-        let rows = q.query_map([], |r| r.get(0)).app()?;
-        rows.collect::<std::result::Result<_, _>>().app()?
-    };
-    for id in old_sections
-        .into_iter()
-        .filter(|id| !seen.contains(id.as_str()))
-    {
+    for id in missing {
         let tx = c
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .app()?;
+        if tx.query_row(
+            "SELECT EXISTS(SELECT 1 FROM sections WHERE id=? AND kind='scene' AND trashed=0)",
+            [&id],
+            |row| row.get::<_, bool>(0),
+        ).app()? {
+            continue;
+        }
         let keys: Vec<String> = {
             let mut q = tx
                 .prepare("SELECT key FROM memory_passages WHERE section=?")
@@ -175,96 +192,104 @@ pub fn sync_idle(
             .app()?;
         tx.commit().app()?;
     }
-    let mut processed = 0;
-    let mut metadata = metadata;
-    metadata.sort_by_key(|(id, _, _, _, _)| if Some(id.as_str()) == preferred { 0 } else { 1 });
-    for (id, revision, mirror, outline, title) in metadata {
-        if interrupted() {
-            break;
-        }
-        let outline_hash = storage::fingerprint(&outline);
-        let old: Option<(i64, String, String, String)> = c
-            .query_row(
-                "SELECT revision,mirror,outline_hash,title FROM memory_sections WHERE id=?",
-                [&id],
-                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
-            )
-            .optional()
-            .app()?;
-        if old
-            == Some((
-                revision,
-                mirror.clone(),
-                outline_hash.clone(),
-                title.clone(),
-            ))
-        {
-            continue;
-        }
-        // Bounded transactions yield to saves between scenes, including initial indexing.
-        if processed >= 16 {
-            break;
-        }
-        processed += 1;
-        let tx = c
-            .transaction_with_behavior(TransactionBehavior::Immediate)
-            .app()?;
-        let Some(s) = project::section(&tx, &id)? else {
-            continue;
-        };
-        if s.revision != revision {
-            continue;
-        }
-        let desired = section_passages(&s)?;
-        let existing: HashMap<String, (String, String, usize, i64)> = {
-            let mut q = tx
-                .prepare(
-                    "SELECT key,hash,title,position,revision FROM memory_passages WHERE section=?",
-                )
-                .app()?;
-            let rows = q
-                .query_map([&id], |r| {
-                    Ok((
-                        r.get(0)?,
-                        (
-                            r.get(1)?,
-                            r.get(2)?,
-                            r.get::<_, i64>(3)? as usize,
-                            r.get(4)?,
-                        ),
-                    ))
-                })
-                .app()?;
-            rows.collect::<std::result::Result<_, _>>().app()?
-        };
-        let wanted: HashSet<&str> = desired.iter().map(|p| p.key.as_str()).collect();
-        for key in existing.keys().filter(|key| !wanted.contains(key.as_str())) {
-            storage::delete_passage(&tx, key)?;
-        }
-        for p in desired {
-            match existing.get(&p.key) {
-                Some((hash, old_title, position, old_revision)) if hash == &p.hash => {
-                    if old_title != &p.title {
-                        tx.execute("UPDATE memory_passages SET analyzed=0,vector=NULL,query_vector=NULL,model=NULL WHERE key=?",[&p.key]).app()?;
-                    }
-                    if old_title != &p.title || *position != p.position || *old_revision != revision
-                    {
-                        tx.execute(
-                            "UPDATE memory_passages SET title=?,position=?,revision=? WHERE key=?",
-                            params![p.title, p.position as i64, revision, p.key],
-                        )
-                        .app()?;
-                    }
+    Ok(())
+}
+
+struct SceneStamp {
+    revision: i64,
+    mirror: String,
+    outline_hash: String,
+    title: String,
+    synchronized: bool,
+}
+
+fn scene_stamp(c: &Connection, id: &str) -> Result<Option<SceneStamp>> {
+    c.prepare_cached(
+        "SELECT s.revision,s.mirror,COALESCE(s.outline,''),s.title,
+                m.revision,m.mirror,m.outline_hash,m.title
+         FROM sections s LEFT JOIN memory_sections m ON m.id=s.id
+         WHERE s.id=? AND s.kind='scene' AND s.trashed=0",
+    ).app()?.query_row([id], |row| {
+        let revision = row.get(0)?;
+        let mirror: String = row.get(1)?;
+        let outline_hash = storage::fingerprint(&row.get::<_, String>(2)?);
+        let title: String = row.get(3)?;
+        let synchronized = row.get::<_, Option<i64>>(4)? == Some(revision)
+            && row.get::<_, String>(5)? == mirror
+            && row.get::<_, String>(6)? == outline_hash
+            && row.get::<_, String>(7)? == title;
+        Ok(SceneStamp { revision, mirror, outline_hash, title, synchronized })
+    }).optional().app()
+}
+
+/// Stale or missing scenes return None. Unchanged scenes never take a write lock.
+pub(super) fn sync_section(c: &mut Connection, id: &str, revision: i64) -> Result<Option<bool>> {
+    let Some(stamp) = scene_stamp(c, id)?.filter(|stamp| stamp.revision == revision) else {
+        return Ok(None);
+    };
+    if stamp.synchronized {
+        return Ok(Some(false));
+    }
+    // The scene may have been saved or synchronized while waiting for the lock.
+    let tx = c.transaction_with_behavior(TransactionBehavior::Immediate).app()?;
+    let Some(stamp) = scene_stamp(&tx, id)?.filter(|stamp| stamp.revision == revision) else {
+        return Ok(None);
+    };
+    if stamp.synchronized {
+        return Ok(Some(false));
+    }
+    let Some(section) = project::section(&tx, id)? else {
+        return Ok(None);
+    };
+    write_passages(&tx, &section, &stamp)?;
+    tx.commit().app()?;
+    Ok(Some(true))
+}
+
+fn write_passages(tx: &Transaction<'_>, section: &Section, stamp: &SceneStamp) -> Result<()> {
+    let revision = stamp.revision;
+    let desired = section_passages(section)?;
+    let existing: HashMap<String, (String, String, i64, i64)> = {
+        let mut query = tx.prepare_cached(
+            "SELECT key,hash,title,position,revision FROM memory_passages WHERE section=?",
+        ).app()?;
+        let rows = query.query_map([&section.id], |row| {
+            Ok((row.get(0)?, (row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)))
+        }).app()?;
+        rows.collect::<rusqlite::Result<_>>().app()?
+    };
+    let wanted: HashSet<&str> = desired.iter().map(|passage| passage.key.as_str()).collect();
+    for key in existing.keys().filter(|key| !wanted.contains(key.as_str())) {
+        storage::delete_passage(tx, key)?;
+    }
+    for passage in desired {
+        let previous = existing.get(&passage.key);
+        match previous {
+            Some((hash, old_title, position, old_revision)) if *hash == passage.hash => {
+                if *old_title != passage.title {
+                    tx.execute("UPDATE memory_passages SET analyzed=0,vector=NULL,query_vector=NULL,model=NULL WHERE key=?", [&passage.key]).app()?;
                 }
-                _ => {
-                    storage::upsert_passage(&tx, &p, revision)?;
-                    entities::rules(&tx, &p)?;
+                if *old_title != passage.title || *position != passage.position as i64
+                    || *old_revision != revision
+                {
+                    tx.execute(
+                        "UPDATE memory_passages SET title=?,position=?,revision=? WHERE key=?",
+                        params![passage.title, passage.position as i64, revision, passage.key],
+                    ).app()?;
                 }
             }
+            _ => {
+                storage::upsert_passage(tx, &passage, revision, previous.is_some())?;
+                entities::rules(tx, &passage)?;
+            }
         }
-        tx.execute("INSERT INTO memory_sections(id,revision,mirror,outline_hash,title) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET revision=excluded.revision,mirror=excluded.mirror,outline_hash=excluded.outline_hash,title=excluded.title",params![id,revision,mirror,outline_hash,title]).app()?;
-        tx.commit().app()?;
     }
+    tx.execute(
+        "INSERT INTO memory_sections(id,revision,mirror,outline_hash,title) VALUES(?,?,?,?,?)
+         ON CONFLICT(id) DO UPDATE SET revision=excluded.revision,mirror=excluded.mirror,
+            outline_hash=excluded.outline_hash,title=excluded.title",
+        params![section.id, revision, stamp.mirror, stamp.outline_hash, stamp.title],
+    ).app()?;
     Ok(())
 }
 

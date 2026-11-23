@@ -281,8 +281,8 @@ pub fn evaluate() {
             .query_map([], |r| Ok((
                 r.get::<_, String>(0)?,
                 r.get::<_, String>(1)?,
-                r.get::<_, usize>(2)?,
-                r.get::<_, usize>(3)?,
+                r.get::<_, i64>(2)?,
+                r.get::<_, i64>(3)?,
                 r.get::<_, String>(4)?
             )))
             .unwrap()

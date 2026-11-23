@@ -153,7 +153,7 @@ impl Fixture {
         fs::create_dir(&external).unwrap();
         let raw = "---\ntype: personne\nNom: Claude Nougaro\nDate de naissance:\nDescription:\n---\n# Claude Nougaro\nTexte original.\n";
         fs::write(external.join("Claude Nougaro.md"), raw).unwrap();
-        vaults::connect(&root, &external).unwrap();
+        vaults::connect(&root, temp.path(), vaults::VaultFolder::selected(&external).unwrap(), None).unwrap();
         let index = temp.path().join("index.sqlite");
         let v = vaults::list(&root, &index).unwrap().remove(0);
         let source = vaults::parse::parse(&v.id, "Claude Nougaro.md", raw);
@@ -345,7 +345,7 @@ fn scopes_and_project_boundaries_do_not_leak_enrichment() {
     run(&f.root, &f.index).unwrap();
     let other = f._temp.path().join("other");
     project::create(&other, "Other").unwrap();
-    vaults::connect(&other, &f.external).unwrap();
+    vaults::connect(&other, f._temp.path(), vaults::VaultFolder::selected(&f.external).unwrap(), None).unwrap();
     let mut sources = vec![f.source.clone()];
     decorate(&other, &f.index, &mut sources).unwrap();
     assert!(sources[0].enrichment.is_none());
@@ -422,7 +422,7 @@ fn external_vault_reference_tracks_original_node_without_writing_vault() {
     let temp = tempfile::tempdir().unwrap();
     let root = temp.path().join("projet");
     project::create(&root,"Test RLC").unwrap();
-    vaults::connect(&root,&external).unwrap();
+    vaults::connect(&root, temp.path(), vaults::VaultFolder::selected(&external).unwrap(), None).unwrap();
     let index = temp.path().join("index.sqlite");
     let vault = vaults::list(&root,&index).unwrap().remove(0);
     let rel = file.strip_prefix(&external).unwrap().to_string_lossy().to_string();

@@ -117,7 +117,7 @@ mod tests {
         let external_file = external.path().join("Lieu.md");
         let raw = "---\ntype: lieu\n---\nUn lieu.";
         fs::write(&external_file, raw).unwrap();
-        connect(temp.path(), external.path()).unwrap();
+        connect(temp.path(), temp.path(), VaultFolder::selected(external.path()).unwrap(), None).unwrap();
         super::super::index(
             temp.path(),
             &index,

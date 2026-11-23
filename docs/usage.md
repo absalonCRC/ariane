@@ -18,7 +18,9 @@ La prédiction fonctionne en français, anglais et espagnol. Le manuscrit utilis
 
 ## Sauvegardes de projet et modules locaux
 
-Dans **Paramètres → Projet et données**, « Sauvegarder le projet » crée un dossier dans la destination de votre choix. Il contient la base du projet, ses versions et variantes, ses fichiers Markdown, ses pièces jointes et le vault appartenant au projet. Conservez le dossier complet avec son inventaire. « Restaurer une copie du projet » vérifie la sauvegarde et crée une copie dans un nouveau dossier. Ouvrez ce dossier avec **Fichier → Ouvrir un projet**. Les chemins des vaults externes restent des références vers leurs emplacements habituels. Utilisez la boîte de réception pour sauvegarder les captures.
+Dans **Paramètres → Projet et données**, « Sauvegarder le projet » crée un dossier dans la destination de votre choix. Il contient la base du projet, ses versions et variantes, ses fichiers Markdown, ses pièces jointes et le vault appartenant au projet. Conservez le dossier complet avec son inventaire. « Restaurer une copie du projet » vérifie la sauvegarde et crée une copie dans un nouveau dossier. Ouvrez ce dossier avec **Fichier → Ouvrir un projet**. Utilisez la boîte de réception pour sauvegarder les captures.
+
+Les projets reçus ou restaurés conservent les références de leurs vaults externes. Ouvrez **Sources du projet**, accessible aussi depuis la capsule, puis sélectionnez chaque dossier à autoriser. Les projets créés avant la 0.7.5 demandent également cette autorisation lors du premier accès à leurs vaults externes. Ariane consulte ces dossiers en lecture seule. Le vault appartenant au projet est disponible dès la restauration.
 
 La rubrique **Modules locaux** installe à la demande les moteurs de reconnaissance d’entités, de dictée ou de révision. Une connexion est nécessaire pour le téléchargement. « Interrompre » arrête l’installation et le même bouton permet de la relancer. L’écriture, la prédiction et l’export sont disponibles pendant l’installation.
 

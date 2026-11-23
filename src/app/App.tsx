@@ -568,7 +568,9 @@ export function App() {
                       setSurface('export');
                     },
                   }
-                : undefined,
+                : notice.kind === 'vault-access'
+                  ? { label: t('Autoriser les dossiers'), onClick: () => setSurface('sources') }
+                  : undefined,
     showDetails:
       (notice.kind === 'error' &&
         (workspace.error.startsWith('EXTERNAL:') || doc.status !== 'error')) ||

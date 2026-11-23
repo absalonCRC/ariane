@@ -5,7 +5,7 @@ use crate::{
     error::{AppResult, Result},
     retrieval, vaults,
 };
-use rusqlite::{params, OptionalExtension};
+use rusqlite::{params, Connection, OptionalExtension};
 use serde_json::Value;
 use std::{
     collections::{BTreeMap, HashSet},
@@ -177,16 +177,57 @@ pub fn reconcile(root: &Path, index: &Path) -> Result<()> {
 }
 
 pub fn get(root: &Path, key: &str, hash: &str) -> Result<Option<Value>> {
-    let c = storage::database(root)?;
-    let raw: Option<String> = c
-        .query_row(
+    get_in(&storage::database(root)?, key, hash)
+}
+
+pub(super) fn get_in(c: &Connection, key: &str, hash: &str) -> Result<Option<Value>> {
+    let raw: Option<String> = c.prepare_cached(
             "SELECT payload FROM memory_results WHERE key=? AND hash=?",
+        ).app()?
+        .query_row(
             params![key, hash],
             |r| r.get(0),
         )
         .optional()
         .app()?;
     Ok(raw.and_then(|s| serde_json::from_str(&s).ok()))
+}
+
+pub(super) struct Entry {
+    pub key: String,
+    pub hash: String,
+    pub text: String,
+    pub value: Value,
+}
+
+pub(super) fn put_batch_if_current(
+    c: &Connection,
+    root: &Path,
+    index: &Path,
+    generation: &str,
+    entries: &[Entry],
+) -> Result<()> {
+    // Bound each turn on SQLite's write lock, including a scene with many nodes.
+    for group in entries.chunks(32) {
+        if catalog(root, index)? != generation {
+            return Err("Les sources ont changé. Relancez la recherche.".into());
+        }
+        let tx = c.unchecked_transaction().app()?;
+        for entry in group {
+            put_in(&tx, &entry.key, &entry.hash, &entry.text, &entry.value)?;
+        }
+        tx.commit().app()?;
+        if catalog(root, index)? != generation {
+            let tx = c.unchecked_transaction().app()?;
+            for entry in group {
+                tx.execute("DELETE FROM memory_results WHERE key=? AND hash=?", params![entry.key, entry.hash])
+                    .app()?;
+            }
+            tx.commit().app()?;
+            return Err("Les sources ont changé. Relancez la recherche.".into());
+        }
+    }
+    Ok(())
 }
 
 pub fn source_hits(
@@ -309,8 +350,12 @@ pub fn put_if_current(
 }
 
 pub fn put(root: &Path, key: &str, hash: &str, text: &str, value: &Value) -> Result<()> {
-    let c = storage::database(root)?;
-    c.execute("INSERT INTO memory_results(key,hash,text,payload) VALUES(?,?,?,?) ON CONFLICT(key) DO UPDATE SET hash=excluded.hash,text=excluded.text,payload=excluded.payload",params![key,hash,text,value.to_string()]).app()?;
+    put_in(&storage::database(root)?, key, hash, text, value)
+}
+
+fn put_in(c: &Connection, key: &str, hash: &str, text: &str, value: &Value) -> Result<()> {
+    c.prepare_cached("INSERT INTO memory_results(key,hash,text,payload) VALUES(?,?,?,?) ON CONFLICT(key) DO UPDATE SET hash=excluded.hash,text=excluded.text,payload=excluded.payload").app()?
+        .execute(params![key,hash,text,value.to_string()]).app()?;
     Ok(())
 }
 

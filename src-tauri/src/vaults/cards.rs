@@ -235,7 +235,7 @@ mod tests {
         fs::create_dir(&external).unwrap();
         let file = external.join("Note.md");
         fs::write(&file, "# Important\n\nIntact").unwrap();
-        connect(&root, &external).unwrap();
+        connect(&root, d.path(), VaultFolder::selected(&external).unwrap(), None).unwrap();
         let index = d.path().join("index.sqlite");
         super::super::index(
             &root,

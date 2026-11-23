@@ -106,6 +106,8 @@ export function WorkspaceDialogs({
           sources={
             <>
               <Library
+                key={p.path}
+                projectPath={p.path}
                 onNotice={onNotice}
                 onNoteActivity={workspace.activity.record}
                 embedded
@@ -128,6 +130,8 @@ export function WorkspaceDialogs({
       <Presence>
         {surface === 'sources' && (
           <Library
+            key={p.path}
+            projectPath={p.path}
             onNotice={onNotice}
             onNoteActivity={workspace.activity.record}
             onMemory={

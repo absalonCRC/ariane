@@ -79,6 +79,7 @@ mod tests {
             "inboxBackup",
             "projectBackup",
             "projectRestoreCopy",
+            "connectVault",
             "installRuntime",
             "resetPrediction",
             "forgetPredictionProject",

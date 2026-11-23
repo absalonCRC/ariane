@@ -124,6 +124,8 @@ pub struct Vault {
     pub count: i64,
     pub available: bool,
     #[serde(default)]
+    pub needs_authorization: bool,
+    #[serde(default)]
     pub owned: bool,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]

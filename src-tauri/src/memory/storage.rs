@@ -74,9 +74,16 @@ pub(super) fn upsert_passage(
     tx: &Transaction<'_>,
     p: &super::Passage,
     revision: i64,
+    replace: bool,
 ) -> Result<()> {
-    tx.execute("DELETE FROM memory_mentions WHERE passage_key=?", [&p.key])
-        .app()?;
+    if replace {
+        tx.execute("DELETE FROM memory_mentions WHERE passage_key=?", [&p.key])
+            .app()?;
+        // FTS5 does not index the key column. Search it only when this passage
+        // already exists, so a fresh manuscript never scans the growing index.
+        tx.execute("DELETE FROM memory_fts WHERE key=?", [&p.key])
+            .app()?;
+    }
     tx.execute(
         "INSERT INTO memory_passages(key,section,node,title,text,hash,position,revision)
         VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(key) DO UPDATE SET
@@ -95,8 +102,6 @@ pub(super) fn upsert_passage(
         ],
     )
     .app()?;
-    tx.execute("DELETE FROM memory_fts WHERE key=?", [&p.key])
-        .app()?;
     tx.execute(
         "INSERT INTO memory_fts(key,text) VALUES(?,?)",
         params![p.key, p.text],
