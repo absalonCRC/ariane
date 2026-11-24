@@ -769,7 +769,6 @@ function WorkspaceApp() {
       <ViewTitleCapsuleProvider value={renderCapsule}>
         <WindowDragRegion onError={workspace.fail} />
         <Welcome
-          onModels={() => catalog.offer({ key: 'catalog', id: voices[readingLanguage ?? 'fr'].id })}
           beforeOpen={workspace.activity.flush}
           onOpen={activate}
           onError={fail}

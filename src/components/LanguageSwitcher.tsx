@@ -1,8 +1,12 @@
 import { ChevronDown, Globe2 } from 'lucide-react';
-import { languages, setLocale, t, useLocale } from '../i18n';
+import { useEffect, useRef } from 'react';
+import { changeInterfaceLanguage } from './localeLetterTransition';
+import { languages, t, useLocale } from '../i18n';
 
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   const locale = useLocale();
+  const stop = useRef<(() => void) | undefined>(undefined);
+  useEffect(() => () => stop.current?.(), []);
   return (
     <label className="language-switcher">
       <Globe2 size={15} aria-hidden="true" />
@@ -17,7 +21,13 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
       <select
         aria-label={t('Langue de l’application')}
         value={locale}
-        onChange={(event) => setLocale(event.target.value as typeof locale)}
+        onChange={(event) => {
+          stop.current?.();
+          stop.current = changeInterfaceLanguage(
+            event.currentTarget,
+            event.target.value as typeof locale,
+          );
+        }}
       >
         {languages.map(({ value, label }) => (
           <option key={value} value={value}>

@@ -24,20 +24,19 @@ export function modelNotifications(catalog: Catalog, locale: Locale): PathNotifi
     const choose = (next: RuntimeModule) =>
       catalog.select({ key, id: next, preference: languageOf(next) });
     const downloadLabel = notice.error ? t('Réessayer') : t('Télécharger · {0}', { 0: bytesLabel });
-    const label = key === 'catalog' ? 'Modèles locaux' : title;
     return {
       id: 'model-' + key,
       message: notice.error
         ? t('Installation interrompue · {0}', { 0: voice ? voice.name : t(title) })
         : active
           ? t('Installation · {0}', { 0: voice ? voice.name : t(title) })
-          : t(label),
+          : t(title),
       tone: notice.error ? 'error' : 'info',
       controls: (
         <span className="model-notice-controls" data-model-request={key}>
-          {(key === 'reading' || key === 'catalog') && (
+          {key === 'reading' && (
             <select
-              aria-label={t(key === 'reading' ? 'Langue de lecture' : 'Modèle à installer')}
+              aria-label={t('Langue de lecture')}
               value={id}
               disabled={active}
               onChange={(e) => choose(e.target.value as RuntimeModule)}
@@ -47,12 +46,6 @@ export function modelNotifications(catalog: Catalog, locale: Locale): PathNotifi
                   {voices[code].language} · {voices[code].name}
                 </option>
               ))}
-              {key === 'catalog' &&
-                optional.map((tool) => (
-                  <option key={tool} value={tool}>
-                    {t(choices[tool][0])}
-                  </option>
-                ))}
             </select>
           )}
           {active ? (

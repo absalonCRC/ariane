@@ -202,6 +202,7 @@ pub enum Request {
         name: String,
         vault_path: Option<String>,
         initial_title: Option<String>,
+        language: Option<String>,
     },
     Open {
         path: String,

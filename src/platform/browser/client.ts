@@ -120,7 +120,7 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
       path: String(a.path),
       name: String(a.name),
       sections: [newSection(String(a.initialTitle || t('Sans titre')), null, 'scene')],
-      settings: {},
+      settings: a.language ? { language: String(a.language) } : {},
       recovered: false,
     };
     store(p);

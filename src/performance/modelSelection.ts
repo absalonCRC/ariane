@@ -48,7 +48,7 @@ function pickerLanguage(lang: string) {
 async function downloadVoice() {
   const download = await wait(
     () =>
-      [...document.querySelectorAll<HTMLButtonElement>('.voice-picker button')].find(
+      [...document.querySelectorAll<HTMLButtonElement>('.voice-picker .model-action')].find(
         (b) => !b.disabled && b.textContent?.includes(t('Télécharger')),
       ),
     'Download voice',
@@ -112,13 +112,13 @@ async function run() {
     throw Error('Expected only the bundled semantic model');
   await wait(() => button('Créer un projet'), 'Welcome');
   if (document.querySelector('dialog[open]')) throw Error('Unexpected onboarding dialog');
-  (await wait(() => button('Modèles locaux'), 'Welcome models')).click();
-  await wait(() => capsule('catalog'), 'Welcome capsule');
-  await pause(500);
-  checkGeometry('catalog');
-  if (document.querySelector('dialog[open]')) throw Error('Modal model picker');
-  await capture('accueil');
-  await dismiss('catalog');
+  if (button('Modèles locaux')) throw Error('Unexpected model catalogue on home');
+  (await wait(() => button('Créer un projet'), 'Create project')).click();
+  await wait(() => document.querySelector('.setup-models[open] .model-group[open] .model-action'), 'First project downloads');
+  if (document.querySelector('.setup-models .model-group:not([open])')) throw Error('Hidden first project previews');
+  if (document.querySelector('dialog[open]')) throw Error('Unexpected modal on setup');
+  await capture('creation');
+  button('Accueil', document.querySelector('.project-setup')!)!.click();
   const path = await invoke<string>('performance', { action: 'prepareReader' });
   workspace.activate(await request('open', { path }));
   const view = await wait(

@@ -19,7 +19,7 @@ export const choices = {
 } as const;
 export type OptionalTool = keyof typeof choices;
 
-export type ModelNoticeKey = 'catalog' | 'reading' | RuntimeModule;
+export type ModelNoticeKey = 'reading' | RuntimeModule;
 export type ModelNotice = {
   key: ModelNoticeKey;
   id: RuntimeModule;

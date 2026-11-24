@@ -22,7 +22,9 @@ Dans **Paramètres → Projet et données**, « Sauvegarder le projet » crée u
 
 Les projets reçus ou restaurés conservent les références de leurs vaults externes. Ouvrez **Sources du projet**, accessible aussi depuis la capsule, puis sélectionnez chaque dossier à autoriser. Les projets créés avant la 0.7.5 demandent également cette autorisation lors du premier accès à leurs vaults externes. Ariane consulte ces dossiers en lecture seule. Le vault appartenant au projet est disponible dès la restauration.
 
-Au premier lancement sur Mac, vous pouvez créer ou ouvrir un projet immédiatement. La recherche sémantique est incluse. Sur l’accueil, **Modèles locaux** permet de choisir un téléchargement dans la capsule en haut de la fenêtre. Dans **Paramètres → Modèles locaux**, les outils sont regroupés par usage. Une connexion est nécessaire pour installer un outil. Ensuite, il fonctionne sur le Mac.
+Sur l’accueil, **Créer un projet** ouvre une page où vous nommez le projet, choisissez sa langue et son dossier, et pouvez donner un titre à la première scène. Sur Mac, **Modèles locaux** et ses rubriques sont déjà dépliés pour votre premier projet. Parcourez les exemples animés, puis téléchargez les outils de votre choix. Pour les projets suivants, dépliez le volet au besoin. Vous pouvez aussi créer le projet et commencer à écrire tout de suite. La recherche par le sens est incluse.
+
+Chaque outil présente un petit exemple animé. Utilisez la flèche circulaire pour le revoir. Vous retrouverez les mêmes exemples et téléchargements dans **Paramètres → Modèles locaux**. La capsule supérieure indique les installations en cours. Une connexion est nécessaire pour installer un outil. Ensuite, il fonctionne sur le Mac.
 
 ## Capture rapide et boîte de réception
 

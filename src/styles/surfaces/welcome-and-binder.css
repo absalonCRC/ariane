@@ -6,7 +6,7 @@
   justify-content: center;
   gap: 40px;
 }
-.welcome h1 {
+.welcome > h1 {
   font-size: 44px;
   letter-spacing: -0.5px;
   margin: 0;
@@ -31,16 +31,20 @@
   color: var(--ink);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .welcome-symbol path {
-    stroke-dasharray: 1;
-    animation: welcome-draw 720ms ease-in-out backwards;
+  .welcome-symbol mask path {
+    stroke-dasharray: 1 1.1;
+    animation: welcome-ink 1.12s cubic-bezier(.33,.03,.22,1) 90ms backwards;
   }
-  .welcome-symbol .symbol-loop { animation-delay: 620ms; animation-duration: 540ms; }
-  .welcome-symbol .symbol-tail { animation-delay: 1090ms; animation-duration: 400ms; }
+  .welcome-symbol .ink-bowl {
+    animation-duration: 1.27s;
+    animation-delay: 1.04s;
+    animation-timing-function: cubic-bezier(.38,.05,.24,1);
+  }
 }
-@keyframes welcome-draw {
-  from { stroke-dashoffset: 1; }
-  to { stroke-dashoffset: 0; }
+@keyframes welcome-ink {
+  from { stroke-dashoffset: 1.05; opacity: 0; }
+  7% { opacity: 1; }
+  to { stroke-dashoffset: 0; opacity: 1; }
 }
 .welcome > .language-switcher {
   position: fixed;

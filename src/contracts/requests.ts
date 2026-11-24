@@ -150,7 +150,7 @@ export interface Requests {
     folder?: string | null;
     offset: number;
   };
-  create: { path: string; name: string; vaultPath?: string | null; initialTitle?: string | null };
+  create: { path: string; name: string; vaultPath?: string | null; initialTitle?: string | null; language?: string };
   open: { path: string };
   save: { patches: TextPatch[] };
   add: { parent?: string | null; title: string; kind: string; role?: string | null };

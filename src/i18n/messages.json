@@ -5906,5 +5906,21 @@
   "Choisir une voix de lecture": ["Choose a reading voice", "Elegir una voz de lectura"],
   "Installer la reconnaissance des entités": ["Install entity recognition", "Instalar el reconocimiento de entidades"],
   "Le modèle inclus dans ariane est manquant.": ["The model included with ariane is missing.", "Falta el modelo incluido con ariane."],
-  "+ dépendances": ["+ dependencies", "+ dependencias"]
+  "+ dépendances": ["+ dependencies", "+ dependencias"],
+  "Titre de la première scène": ["First scene title", "Título de la primera escena"],
+  "Outils facultatifs pour lire, dicter et réviser.": ["Optional tools for reading aloud, dictation and revision.", "Herramientas opcionales para leer en voz alta, dictar y revisar."],
+  "bonjour léa comment vas tu": ["hello ava how are you", "hola ana cómo estás"],
+  "Bonjour Léa, comment vas-tu ?": ["Hello, Ava. How are you?", "Hola, Ana. ¿Cómo estás?"],
+  "Les chats joue.": ["The cats plays.", "Los gatos juega."],
+  "Les chats jouent.": ["The cats play.", "Los gatos juegan."],
+  "Il avance de façon très lente.": ["He walks in a very slow manner.", "Camina de una manera muy lenta."],
+  "Il avance à pas lents.": ["He walks slowly.", "Camina despacio."],
+  "Transformer la parole en texte.": ["Turn speech into text.", "Convertir la voz en texto."],
+  "Ponctuer une phrase dictée.": ["Punctuate a dictated sentence.", "Puntuar una frase dictada."],
+  "Corriger un accord.": ["Correct subject–verb agreement.", "Corregir una concordancia."],
+  "Proposer une autre formulation.": ["Suggest another way to say it.", "Proponer otra forma de decirlo."],
+  "Au bord de la mer": ["By the sea", "A orillas del mar"],
+  "Les vagues effleurent le sable.": ["Waves brush the sand.", "Las olas rozan la arena."],
+  "Léa visite": ["Léa visits", "Léa visita"],
+  "Rejouer l’exemple · {0}": ["Replay example · {0}", "Volver a ver el ejemplo · {0}"]
 }

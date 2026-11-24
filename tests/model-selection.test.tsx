@@ -2,6 +2,7 @@
 import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { Welcome } from '../src/app/Welcome';
 import { RuntimeModuleSettings } from '../src/app/RuntimeModuleSettings';
 import { modelNotifications } from '../src/app/modelNotifications';
 import { RuntimeModelsProvider, useRuntimeModels } from '../src/app/runtimeModels';
@@ -93,12 +94,63 @@ async function choose(key: string, id: string) {
     select.dispatchEvent(new Event('change', { bubbles: true }));
   });
 }
+it.each([
+  { entries: [], expanded: true },
+  { entries: [{ archived: true, available: false }], expanded: false },
+])(
+  'shows the download examples on first project creation (expanded=$expanded)',
+  async ({ entries, expanded }) => {
+    request.mockResolvedValueOnce(entries);
+    await act(async () =>
+      root.render(
+        <RuntimeModelsProvider>
+          <Welcome onOpen={vi.fn()} onError={vi.fn()} />
+        </RuntimeModelsProvider>,
+      ),
+    );
+    await click(host.querySelector('.welcome-actions button'));
+    const panel = host.querySelector<HTMLDetailsElement>('.setup-models')!;
+    expect(panel.open).toBe(expanded);
+    const groups = [...panel.querySelectorAll<HTMLDetailsElement>('.model-group')];
+    expect(groups.length).toBeGreaterThan(0);
+    for (const group of groups) {
+      expect(group.open).toBe(expanded);
+      expect(group.querySelector('.model-demo')).toBeTruthy();
+      expect(group.querySelector('.model-action')).toBeTruthy();
+    }
+    await click(panel.querySelector('summary'));
+    expect(panel.open).toBe(!expanded);
+    expect(request.mock.calls).toEqual([['runtimeModules'], ['projects']]);
+  },
+);
 it('includes semantic search and opens the optional catalogue without installing anything', async () => {
   await open('settings');
   expect(host.querySelector('.model-included')?.textContent).toContain('Recherche sémantique');
   expect(host.querySelectorAll('details[open]')).toHaveLength(0);
   expect(request.mock.calls).toEqual([['runtimeModules']]);
 });
+it('replays model examples and switches the reading sample without starting an installation', async () => {
+  await open('settings');
+  const groups = host.querySelectorAll('.model-group');
+  expect(host.querySelectorAll('.model-demo')).toHaveLength(7);
+  await click(groups[0].querySelector('summary'));
+  const picker = groups[0].querySelector('.voice-picker')!;
+  await act(async () => {
+    const select = picker.querySelector('select')!;
+    select.value = 'es';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  expect(picker.querySelector('.demo-reading')?.getAttribute('lang')).toBe('es');
+  expect(picker.textContent).toContain('El sol se levanta.');
+  const scene = picker.querySelector('.demo-scene');
+  await click(picker.querySelector('.demo-replay'));
+  expect(picker.querySelector('.demo-scene')).not.toBe(scene);
+  expect(request.mock.calls).toEqual([['runtimeModules']]);
+  await open('settings');
+  await open('reading');
+  expect(host.querySelector('.model-demo')).toBeNull();
+});
+
 it('keeps the language choice while writing, navigating and showing another notification', async () => {
   vi.useFakeTimers();
   await open('reading');
@@ -143,7 +195,7 @@ it('tracks a settings download separately from a different pending voice choice'
   await open('reading');
   await choose('reading', 'readingEs');
   await open('settings');
-  await click(host.querySelector('.voice-picker button'));
+  await click(host.querySelector('.voice-picker .model-action'));
   await open('settings');
   expect(control('readingFr')!.textContent).toContain('Interrompre');
   expect(control('reading')!.querySelector('select')!.value).toBe('readingEs');

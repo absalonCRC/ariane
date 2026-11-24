@@ -13,6 +13,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { t, useLocale } from '../i18n';
 import type { RuntimeModule } from '../contracts/runtimeModules';
+import { ModelPreview } from './ModelPreview';
 import { useRuntimeModels } from './runtimeModels';
 import {
   choices,
@@ -72,6 +73,7 @@ function Tool({ id }: { id: OptionalTool }) {
         </small>
       </div>
       <InstallButton id={id} label={title} />
+      <ModelPreview id={id} />
     </div>
   );
 }
@@ -123,6 +125,7 @@ function ReadingVoicePicker({ documentLanguage }: { documentLanguage: string }) 
             {t('Installé')}
           </span>
         )}
+        <ModelPreview id={voice.id} />
       </div>
       {!installed && !hasVoice && (
         <p className="model-note">
@@ -183,57 +186,74 @@ const groups: {
     tools: ['revision', 'salamandra'],
   },
 ];
+const firstProjectGroups = [
+  ...groups.filter((group) => group.id === 'dictation'),
+  ...groups.filter((group) => group.id !== 'dictation'),
+];
 export function RuntimeModuleSettings({
   documentLanguage = 'fr',
   expandedTool,
+  firstProject = false,
 }: {
   documentLanguage?: string;
   expandedTool?: string;
+  firstProject?: boolean;
 }) {
   useLocale();
   const catalog = useRuntimeModels();
   if (!catalog) return null;
+  const included = (
+    <div className="model-included">
+      <Search size={19} strokeWidth={1.5} />
+      <div>
+        <strong>{t('Recherche sémantique')}</strong>
+        <small>{t('Retrouver un passage par son sens.')}</small>
+      </div>
+      <span className="model-ready">
+        <Check size={14} />
+        {t('Inclus')}
+      </span>
+      <ModelPreview id="semantic" />
+    </div>
+  );
   return (
     <section className="model-library" aria-label={t('Modèles locaux')}>
-      <div className="model-included">
-        <Search size={19} strokeWidth={1.5} />
-        <div>
-          <strong>{t('Recherche sémantique')}</strong>
-          <small>{t('Retrouver un passage par son sens.')}</small>
-        </div>
-        <span className="model-ready">
-          <Check size={14} />
-          {t('Inclus')}
-        </span>
-      </div>
+      {!firstProject && included}
       <h3>{t('Outils à la demande')}</h3>
-      {groups.map(({ id, title, hint, icon: Icon, tools }) => (
-        <details key={id} open={id === expandedTool || undefined} className="model-group">
-          <summary>
-            <Icon size={19} strokeWidth={1.5} />
-            <span>
-              <strong>{t(title)}</strong>
-              <small>{t(hint)}</small>
-            </span>
-            {id === 'reading' && (
-              <span className="model-languages">
-                {Object.values(voices)
-                  .filter((v) => catalog.status?.installed.includes(v.id))
-                  .map((v) => v.language)
-                  .join(' · ')}
+      {(firstProject ? firstProjectGroups : groups).map(
+        ({ id, title, hint, icon: Icon, tools }) => (
+          <details
+            key={id}
+            open={firstProject || id === expandedTool || undefined}
+            className="model-group"
+          >
+            <summary>
+              <Icon size={19} strokeWidth={1.5} />
+              <span>
+                <strong>{t(title)}</strong>
+                <small>{t(hint)}</small>
               </span>
-            )}
-            <ChevronDown size={16} />
-          </summary>
-          <div className="model-group-body">
-            {id === 'reading' ? (
-              <ReadingVoicePicker documentLanguage={documentLanguage} />
-            ) : (
-              tools.map((id) => <Tool key={id} id={id} />)
-            )}
-          </div>
-        </details>
-      ))}
+              {id === 'reading' && (
+                <span className="model-languages">
+                  {Object.values(voices)
+                    .filter((v) => catalog.status?.installed.includes(v.id))
+                    .map((v) => v.language)
+                    .join(' · ')}
+                </span>
+              )}
+              <ChevronDown size={16} />
+            </summary>
+            <div className="model-group-body">
+              {id === 'reading' ? (
+                <ReadingVoicePicker documentLanguage={documentLanguage} />
+              ) : (
+                tools.map((id) => <Tool key={id} id={id} />)
+              )}
+            </div>
+          </details>
+        ),
+      )}
+      {firstProject && included}
       {catalog.error && (
         <div className="model-error" role="alert">
           {catalog.error}{' '}

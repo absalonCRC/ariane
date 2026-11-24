@@ -183,6 +183,7 @@ pub fn handle(
             name,
             vault_path,
             initial_title,
+            language,
         } => {
             state.grants.require("create", Path::new(&path))?;
             let folder = vault_path.as_deref()
@@ -192,6 +193,9 @@ pub fn handle(
             vaults::create_project(root, &name, folder.as_ref().map(|folder| folder.path.as_path()))?;
             if let Some(folder) = folder {
                 vaults::connect(root, &state.data, folder, None)?;
+            }
+            if let Some(language) = language {
+                project::settings(root, json!({ "language": language }))?;
             }
             if let Some(title) = initial_title.filter(|title| !title.trim().is_empty()) {
                 if let Some(mut first) = project::load(root)?

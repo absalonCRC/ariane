@@ -520,20 +520,6 @@
 .model-error {
   font: 12px/1.5 var(--ui);
 }
-.welcome-local {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
-.welcome .welcome-local button {
-  border: 0;
-  border-left: 1px solid var(--theme-line, #ddd);
-  border-radius: 0;
-  padding: 0 0 0 12px;
-  font: inherit;
-  color: var(--theme-secondary, #666);
-}
-
 .model-library .model-group summary:focus-visible {
   outline-offset: 1px;
 }
