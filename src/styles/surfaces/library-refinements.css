@@ -855,21 +855,6 @@
   width: auto;
   margin-left: auto;
 }
-.welcome > .language-switcher {
-  position: absolute;
-  top: 3rem;
-  right: 2rem;
-  font-size: 13px;
-  color: var(--muted);
-}
-.welcome > .language-switcher > span {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
-
 .source-aliases {
   margin-top: 24px;
 }

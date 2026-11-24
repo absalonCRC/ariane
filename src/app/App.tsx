@@ -625,7 +625,7 @@ function WorkspaceApp() {
       project={view?.home ? undefined : (p ?? undefined)}
       view={view}
       selected={selected}
-      continuous={doc.settings.continuous}
+      continuous={!view?.home && doc.settings.continuous}
       onSelect={selectFromChrome}
       onAdd={(parent) => {
         if (!pageBusy)
@@ -755,7 +755,15 @@ function WorkspaceApp() {
       }}
     />
   ) : null;
-  if (!ready) return <div className="boot" aria-label={t('Ouverture du projet')} />;
+  if (!ready)
+    return (
+      <div className="boot" aria-label={t('Ouverture du projet')}>
+        <WindowDragRegion onError={fail} />
+        <div className="window-title">
+          {renderCapsule({ title: t('Ouverture du projet'), home: true })}
+        </div>
+      </div>
+    );
   if (!p || newProject)
     return (
       <ViewTitleCapsuleProvider value={renderCapsule}>

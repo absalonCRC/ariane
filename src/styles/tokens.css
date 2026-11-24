@@ -14,6 +14,7 @@
   --writing-mono: 'Source Code Pro', monospace;
   --ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --writing-size: 23px;
+  --window-title-top: 12px;
   --sidebar-width: 285px;
   --sidebar-panel-inset: 12px;
   --sidebar-panel-width: calc(var(--sidebar-width) - 2 * var(--sidebar-panel-inset));

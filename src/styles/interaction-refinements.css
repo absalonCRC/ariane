@@ -34,6 +34,7 @@
   border-radius: 18px;
   transition: width 300ms var(--motion-ease), height 240ms var(--motion-ease), background-color 180ms ease, color 180ms ease;
 }
+.path-heading:not([data-notifying='true']),
 .path-heading:hover, .path-heading:focus-within { background: var(--theme-surface, #f2f2f2); }
 .path-heading::-webkit-scrollbar { display: none; }
 .path-heading:has(:focus-visible) { outline: 2px solid var(--theme-muted, #8b8b8b); outline-offset: 2px; }

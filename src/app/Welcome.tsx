@@ -7,7 +7,7 @@ import { Dialog } from '../components/Dialog';
 import { choosePath } from './choosePath';
 import { native, request } from '../platform/client';
 import type { Project } from '../contracts/project';
-import { ArianeWordmark } from '../components/ArianeWordmark';
+import { ArianeSymbol } from '../components/ArianeWordmark';
 import { ViewTitleCapsule } from '../components/ViewTitleCapsule';
 
 export function Welcome({
@@ -91,15 +91,32 @@ export function Welcome({
   }
   return (
     <div className="welcome">
-      <ArianeWordmark compact />
-      <LanguageSwitcher />
-      <ViewTitleCapsule view={{ title: t('Accueil'), home: true }} />
+      <ArianeSymbol draw />
+      <LanguageSwitcher compact />
+      <ViewTitleCapsule
+        view={{
+          title:
+            screen === 'create'
+              ? t('Nouveau projet')
+              : screen === 'open'
+                ? t('Ouvrir un projet')
+                : t('Accueil'),
+          home: true,
+        }}
+      />
       <h1>{t('Un espace pour écrire.')}</h1>
-      <div>
+      <div className="welcome-actions">
         <button onClick={() => setScreen('create')}>{t('Créer un projet')}</button>
         <button onClick={() => setScreen('open')}>{t('Ouvrir un projet')}</button>
       </div>
-      <p className="welcome-local">{t('Tout reste sur ce Mac.')}{native && onModels && <button type="button" onClick={onModels}>{t('Modèles locaux')}</button>}</p>
+      <p className="welcome-local">
+        {t('Tout reste sur ce Mac.')}
+        {native && onModels && (
+          <button type="button" onClick={onModels}>
+            {t('Modèles locaux')}
+          </button>
+        )}
+      </p>
       <Presence>
         {screen === 'create' && (
           <Dialog
