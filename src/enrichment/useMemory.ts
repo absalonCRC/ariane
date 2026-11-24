@@ -40,7 +40,7 @@ export type MemoryView =
   | { kind: 'resume' }
   | { kind: 'list' };
 
-export function useMemory(workspace: MemoryInput) {
+export function useMemory(workspace: MemoryInput, entitiesEnabled = true) {
   const { doc, editor, p } = workspace;
   const [result, setResult] = useState<MemoryResult | null>(null);
   const [anchor, setAnchor] = useState<MemoryPosition | null>(null);
@@ -340,7 +340,7 @@ export function useMemory(workspace: MemoryInput) {
         entitiesInFlight.current = false;
       }
     };
-    entityTimer = setTimeout(() => void runEntities(), 1200);
+    if (entitiesEnabled) entityTimer = setTimeout(() => void runEntities(), 1200);
     timer = setTimeout(() => void run(), 600);
     const save = setTimeout(() => void saveSession().catch(() => {}), 1500);
     return () => {
@@ -350,6 +350,7 @@ export function useMemory(workspace: MemoryInput) {
       clearTimeout(save);
     };
   }, [
+    entitiesEnabled,
     p?.path,
     doc.status,
     doc.generation,

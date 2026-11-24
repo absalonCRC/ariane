@@ -18,6 +18,7 @@ import { searchKeymap } from '@codemirror/search';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { footnoteScenes } from '../footnoteReading';
 import { liveMarkdown } from '../markdown';
+import {speechMarks} from '../spokenSelection';
 import { compose, sectionMapping, type Span } from '../composite';
 import type { Outline } from '../../contracts/project';
 import { outlineEditor } from '../outline/state';
@@ -202,6 +203,7 @@ export function mountEditor({
     doc: data.text,
     selection: { anchor: Math.min(latest.current.settings.cursor, data.text.length) },
     extensions: [
+      speechMarks,
       history(),
       nextWord(() => prediction.current),
       EditorState.transactionFilter.of((tr) =>

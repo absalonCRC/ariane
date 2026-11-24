@@ -1,0 +1,52 @@
+{
+  "fr/model.safetensors": {
+    "url": "https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/resolve/1e08e6a23401048648a9fdcfde2f89348215c2a7/languages/french/model.safetensors",
+    "sha256": "56366cfed6c25bfcd3bf4c61e66e06efaf52e78a5d06e1dcade1c588495bc699",
+    "bytes": 219029196
+  },
+  "fr/tokenizer.json": {
+    "url": "https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/resolve/8843db76457a91db32077edf8dfcd1c0e3e755fd/languages/french/tokenizer.json",
+    "sha256": "6211acffe9cb95172f71f0051f18e26ea305b2b32ea00b331ee976551c70887f",
+    "bytes": 246403
+  },
+  "fr/voice.safetensors": {
+    "url": "https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/resolve/a3055dcb533cf2ec90458008a01e7cef550bae2a/languages/french/embeddings/estelle.safetensors",
+    "sha256": "d9efd55657f74ba9483caec23f9fd1d155e121b058feef86af3760d54ea8aa15",
+    "bytes": 7571256
+  },
+  "en/model.safetensors": {
+    "url": "https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/resolve/a7056f505a4a8ca72d8b5fb1440071d6f1a35739/languages/english/model.safetensors",
+    "sha256": "4c56cbd171c63e8a26ea61f5d48b8a0cd8f3c51f4652c0ab9a19bfcced8c931d",
+    "bytes": 219029196
+  },
+  "en/tokenizer.json": {
+    "url": "https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/resolve/00eac05ed3d16bdc3f6b5d598874019c34a89214/languages/english/tokenizer.json",
+    "sha256": "f498428e1eafee50492f7be13dc9bfafcfc12e508cd0eb1b01c92ecd5d8c6687",
+    "bytes": 245020
+  },
+  "en/voice.safetensors": {
+    "url": "https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/resolve/a3055dcb533cf2ec90458008a01e7cef550bae2a/languages/english/embeddings/alba.safetensors",
+    "sha256": "4206b7194018c7e345e5cfd99f147caad36285df858ea153d0188c40d9f261e5",
+    "bytes": 6244152
+  },
+  "es/model.safetensors": {
+    "url": "https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/resolve/1e08e6a23401048648a9fdcfde2f89348215c2a7/languages/spanish/model.safetensors",
+    "sha256": "c4988ff376692f2ab1e85b17350755b08f16e49c0b5f0de8b271efa9abd71de7",
+    "bytes": 219029196
+  },
+  "es/tokenizer.json": {
+    "url": "https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/resolve/4e1e0a3e611c51c0b4ed8174fc10f32a54644303/languages/spanish/tokenizer.json",
+    "sha256": "9ade09bbdc64ab2b59952b90773fa0890b780ece4fd5aef0d36a00c6ad5f0531",
+    "bytes": 246610
+  },
+  "es/voice.safetensors": {
+    "url": "https://huggingface.co/kyutai/pocket-tts-without-voice-cloning/resolve/a3055dcb533cf2ec90458008a01e7cef550bae2a/languages/spanish/embeddings/lola.safetensors",
+    "sha256": "967b8f08639345ff5ad1a912a5542fe421518c3f80b87d52078c6726348ab1e7",
+    "bytes": 5457720
+  },
+  "align.bin": {
+    "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-tiny-q5_1.bin",
+    "sha256": "818710568da3ca15689e31a743197b520007872ff9576237bda97bd1b469c3d7",
+    "bytes": 32152673
+  }
+}

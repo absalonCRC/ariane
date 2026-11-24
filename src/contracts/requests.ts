@@ -22,7 +22,7 @@ import type { Settings } from './settings';
 import type { Source, SourcePage, Vault } from './sources';
 import type { Version, HistoryState, MergePreview, MergeResolution } from './history';
 import type { LibraryOperation, ManuscriptOperation } from './library';
-import type { Annotation, DocumentAnchor } from './annotations';
+import type { Annotation, DocumentAnchor, PassageAction } from './annotations';
 import type { Report } from './import';
 import type { NoteRef } from './notes';
 import type { EntityBatch } from './entities';
@@ -116,6 +116,7 @@ export interface Requests {
   bootstrap: {};
   appLanguage: { value: string };
   annotations: { projectPath: string };
+  passageAnnotation: {projectPath: string; branch: string; id: string; action: PassageAction};
   addAnnotation: {
     requestId?: string;
     document?: DocumentAnchor;
@@ -240,6 +241,8 @@ export interface Requests {
   memorySession: { projectPath: string; value?: unknown | null };
   memorySource: { id: string; fingerprint?: string | null };
   engineStatus: {};
+  selectionSpeech: { id: string; active: boolean };
+  selectionAudio: { id: string; text: string; language: string };
   voiceStatus: {};
   voicePermission: {};
   voicePrepare: {};
@@ -312,6 +315,7 @@ export interface Responses {
   bootstrap: Project | null;
   appLanguage: unknown;
   annotations: Annotation[];
+  passageAnnotation: Annotation;
   addAnnotation: Annotation;
   updateAnnotation: Annotation;
   importPreview: Report;
@@ -379,6 +383,8 @@ export interface Responses {
   memorySession: SessionContext | null;
   memorySource: Source;
   engineStatus: { available: boolean; model?: string; local?: boolean };
+  selectionSpeech: boolean;
+  selectionAudio: { audio: string; tokens: [number, number][] };
   voiceStatus: { available: boolean; model?: string; local?: boolean };
   voicePermission: unknown;
   voicePrepare: unknown;

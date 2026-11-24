@@ -288,3 +288,14 @@ summary:focus-visible {
   outline: 2px solid var(--theme-muted, #8b8b8b);
   outline-offset: 3px;
 }
+
+.model-notice-controls { display: inline-flex; align-items: center; gap: 3px; }
+.model-notice-controls select {
+  width: auto; max-width: 18ch; min-height: 22px; border: 0; border-radius: 10px;
+  padding: 2px 22px 2px 7px; color: inherit; font: inherit;
+  background-color: color-mix(in srgb, currentColor 7%, transparent);
+  background-position: calc(100% - 11px) 50%, calc(100% - 7px) 50%;
+}
+.model-notice-controls option { background: var(--theme-paper, white); color: var(--ink); }
+.model-notice-controls button { font-weight: 600; }
+.path-notice-row:has(.model-notice-controls) :is(button,select):focus-visible { outline: 1px solid currentColor; outline-offset: -2px; }

@@ -1,4 +1,16 @@
 {
+  "reading": {
+    "pocket": {
+      "url": "https://github.com/kyutai-labs/pocket-tts/releases/download/v4.0.1/pocket-tts-3.3.0-aarch64-apple-darwin.tar.gz",
+      "member": "pocket-tts-3.3.0-aarch64-apple-darwin/pocket-tts",
+      "sha256": "ee9ca6c7c000ee72c5846e3a8ba01d08f56636d94a614d2259c3f12b8fd69afa",
+      "binary_sha256": "447d95181e133b3fda268d248126041722cf1bdf767093f44f2a0d047ab192be"
+    },
+    "whisper": {
+      "url": "https://codeload.github.com/ggml-org/whisper.cpp/tar.gz/refs/tags/v1.9.6",
+      "sha256": "7ab15dc88022d2425ad94dcffd8abbf1b6d7018089b4e48d6b40780738e0b445"
+    }
+  },
   "model": {
     "name": "embeddinggemma-300M-Q8_0.gguf",
     "url": "https://huggingface.co/ggml-org/embeddinggemma-300M-GGUF",

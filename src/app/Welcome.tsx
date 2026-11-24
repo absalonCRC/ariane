@@ -14,7 +14,9 @@ export function Welcome({
   onOpen,
   onError,
   beforeOpen,
+  onModels,
 }: {
+  onModels?: () => void;
   beforeOpen?: () => Promise<void>;
   onOpen: (p: Project) => void;
   onError: (e: unknown) => void;
@@ -97,7 +99,7 @@ export function Welcome({
         <button onClick={() => setScreen('create')}>{t('Créer un projet')}</button>
         <button onClick={() => setScreen('open')}>{t('Ouvrir un projet')}</button>
       </div>
-      <p>{t('Tout reste sur ce Mac.')}</p>
+      <p className="welcome-local">{t('Tout reste sur ce Mac.')}{native && onModels && <button type="button" onClick={onModels}>{t('Modèles locaux')}</button>}</p>
       <Presence>
         {screen === 'create' && (
           <Dialog

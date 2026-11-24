@@ -26,6 +26,7 @@ demonstrations/
 *.sqlite
 *.sqlite-*
 *.log
+src-tauri/resources/reading/
 src-tauri/resources/models/*.gguf
 src-tauri/resources/models/*.download
 src-tauri/resources/engine/*

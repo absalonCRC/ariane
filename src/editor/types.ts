@@ -21,6 +21,7 @@ export interface VisibleText {
 }
 export interface EditorHandle {
   writingAid: (command: WritingAidCommand) => boolean;
+  captureSpeech: (onChange:()=>void)=>ReturnType<typeof import('./spokenSelection').captureSpeech>;
   revealPassage: (section: string, from: number, quote: string) => boolean;
   revealBlank: (section: string, from: number) => boolean;
   removeSmartTag: (section: string, node: string, tag: string) => boolean;
@@ -31,6 +32,7 @@ export interface EditorHandle {
     value: import('../contracts/lineProperties').PropertyValue | undefined,
   ) => boolean;
   context: () => { section: string; node: string | null; offset: number; cursor: number } | null;
+  passageTop: (section:string,offset:number)=>number|null;
   contextTop: (section: string, node: string | null) => number | null;
   restoreContext: (context: {
     section: string;

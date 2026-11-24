@@ -255,7 +255,9 @@ Le candidat local du 23 novembre implémente le lecteur partagé et les référe
 
 ### 0.8.1 — Relire et annoter une sélection
 
-- [ ] **F20 · Écouter la sélection.** Lire le passage sélectionné avec une voix locale du Mac et souligner le mot entendu. Prévoir un arrêt accessible au clavier. Changer de texte ou commencer une dictée arrête la lecture.
+Le [plan détaillé de la 0.8.1](plan-0.8.1.md) décrit les quatre parcours, la conservation des ancres entre scènes et la recette vocale sur Mac. Les quatre fonctions sont intégrées au candidat local. La [recette du candidat](validation-0.8.1.md) donne les mesures par langue et les essais matériels restant à effectuer.
+
+- [ ] **F20 · Écouter la sélection.** Lire le passage sélectionné sur Mac avec une voix Pocket TTS au choix en français, anglais ou espagnol et souligner le mot entendu. Prévoir un arrêt accessible au clavier. Changer de texte ou commencer une dictée arrête la lecture.
 - [ ] **F22 · Nouer deux passages.** Marquer un premier passage, puis choisir sa destination dans la même scène ou ailleurs dans le projet. Le lien se suit depuis les deux extrémités et accepte une légende facultative. Un passage perdu ou ambigu reste signalé dans la marge.
 - [ ] **F23 · Dicter une annotation.** Depuis une sélection, démarrer explicitement la dictée locale et recueillir la transcription dans une note de marge. Conserver la sélection de départ pendant la transcription. Si elle devient ambiguë, garder la note à rattacher. Après un refus du microphone, la saisie de la note au clavier reste disponible.
 - [ ] **F32 · Empiler les annotations d’un passage.** Réunir les notes qui visent la même phrase dans une pile en marge. Au repos, les cartes se chevauchent légèrement et laissent lire le début de chacune. Ouvrir une carte la place au premier plan. Les autres restent accessibles par leur première ligne, au pointeur et au clavier. Replier la carte restitue l’ordre de la pile.

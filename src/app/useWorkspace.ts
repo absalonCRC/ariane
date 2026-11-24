@@ -31,7 +31,7 @@ import type { ManuscriptMatch } from './projectSearch';
 import { useEnrichment } from '../enrichment/useEnrichment';
 import { usePassageSuggestions } from '../enrichment/usePassageSuggestions';
 import { passageKey } from '../enrichment/passages';
-export function useWorkspace() {
+export function useWorkspace(beforeLeave?: () => Promise<void>) {
   useLocale();
   const exportJob = useExport();
   const appearance = useTheme();
@@ -414,7 +414,10 @@ export function useWorkspace() {
     update,
     apply,
   } = createProjectOperations({
-    beforeSwitch: activity.flush,
+    beforeSwitch: async () => {
+      await beforeLeave?.();
+      await activity.flush();
+    },
     libraryLock,
     setLibraryBusy,
     doc,

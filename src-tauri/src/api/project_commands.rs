@@ -79,6 +79,10 @@ pub(super) fn handle(
             }
             json(project::annotations::list(&root)?)
         }
+        Request::PassageAnnotation { project_path, branch, id, action } => {
+            if Path::new(&project_path)!=root {return Err("Le projet actif a changé.".into())}
+            json(project::annotations::apply(&root,&branch,&id,action)?)
+        }
         Request::AddAnnotation {
             request_id,
             document, branch,

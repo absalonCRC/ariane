@@ -125,10 +125,10 @@ impl RevisionEngine {
             .as_mut()
             .ok_or_else(|| "LanguageTool indisponible.".into())
     }
-    fn model(&mut self, root: &Path, resources: &Path) -> Result<&mut Server> {
+    fn model(&mut self, data: &Path, resources: &Path) -> Result<&mut Server> {
         if !alive(&mut self.model) {
             self.model = None;
-            let model = root.join("salamandra-q8.gguf");
+            let model = crate::runtime_install::models::salamandra(data);
             let bin = resources.join("engine/llama-server");
             if !model.is_file() || !bin.is_file() {
                 return Err("Le modèle de révision local n’est pas installé.".into());
@@ -247,7 +247,7 @@ impl RevisionEngine {
         let model_result = if stage == "language" {
             Ok(None)
         } else {
-            self.model(&root, resources).and_then(|s| {
+            self.model(data, resources).and_then(|s| {
             let context=if before.is_empty() && after.is_empty(){String::new()}else{format!("Read-only context before: {before}\nRead-only context after: {after}\nCorrect only the sentence below.\n")};
             let prompt = format!("{context}Please fix any mistakes in the following {name} sentence or keep it unedited if it's correct.\nSentence: {text}\nCorrected:");
             crate::local_http::require_alive(&mut s.child)?;

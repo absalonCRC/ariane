@@ -68,6 +68,7 @@ def main():
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument('--root', type=Path, default=ROOT)
     parser.add_argument('--repair-jna', action='store_true', help='Réparer uniquement JNA dans une installation existante, avec sauvegarde')
+    parser.add_argument('--language-only', action='store_true')
     args = parser.parse_args()
     root = args.root
     if sys.platform != 'darwin' or os.uname().machine != 'arm64':
@@ -90,10 +91,13 @@ def main():
         staging = base / 'revision'
         staging.mkdir()
         for name in FILES:
+            if args.language_only and name == "model.gguf":
+                continue
             path = base / name
             print(f'Téléchargement : {name}', flush=True)
             download(path, name)
-        shutil.move(base / 'model.gguf', staging / 'salamandra-q8.gguf')
+        if not args.language_only:
+            shutil.move(base / 'model.gguf', staging / 'salamandra-q8.gguf')
         # Reject archives containing paths outside the intended staging directory.
         for archive_path, opener in ((base / 'languagetool.zip', zipfile.ZipFile), (base / 'java.tar.gz', tarfile.open)):
             with opener(archive_path) as archive:
@@ -107,7 +111,7 @@ def main():
         shutil.move(base / 'LanguageTool-6.6', staging / 'languagetool')
         shutil.move(base / 'jdk-17.0.21+9-jre', staging / 'java')
         repair_jna(staging, base)
-        (staging / 'MANIFEST.txt').write_text('LanguageTool 6.6\nJNA 5.13.0\nTemurin 17.0.21+9\nSalamandraTA 2B Q8\n', encoding='utf-8')
+        (staging / 'MANIFEST.txt').write_text('LanguageTool 6.6\nJNA 5.13.0\nTemurin 17.0.21+9\n' + ('' if args.language_only else 'SalamandraTA 2B Q8\n'), encoding='utf-8')
         os.rename(staging, root)
     print(f'Moteurs de révision installés : {root}')
 

@@ -13,7 +13,8 @@ import type { Project, Section } from '../contracts/project';
 import { sectionPath } from './tree';
 import type { TitleView } from '../components/ViewTitleCapsule';
 export type PathNotification = {
-  id: number;
+  id: number | string;
+  controls?: ReactNode;
   message: string;
   tone: 'success' | 'info' | 'error';
   action?: { label: string; onClick: () => void; disabled?: boolean };
@@ -56,6 +57,7 @@ function NoticeActions({
   }, [returnFocus]);
   return (
     <span className="path-notice-actions" ref={actions}>
+      {notice.controls}
       {notice.action && (
         <button disabled={notice.action.disabled} onClick={notice.action.onClick}>
           {notice.action.label}
@@ -177,7 +179,9 @@ export function PathMenu({
       data-open={open}
       data-notifying={!!primary}
       style={{ '--path-heading-height': (headingSize?.height ?? 28) + 'px' } as CSSProperties}
-      onMouseEnter={() => setOpen(true)}
+      onMouseEnter={() => {
+        if (!notifications.some((notice) => notice.controls)) setOpen(true);
+      }}
       onMouseLeave={() => setOpen(false)}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);

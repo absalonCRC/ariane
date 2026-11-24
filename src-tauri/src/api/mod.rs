@@ -9,7 +9,7 @@ mod vault_commands;
 mod version_commands;
 use crate::{
     error::{AppResult, Result},
-    inference::Engine,
+    runtime_install::Module,
     memory,
     memory_engine::EntityEngine,
     project, vaults, voice,
@@ -163,7 +163,7 @@ pub fn handle(
             Ok(json!(true))
         }
         Request::MemoryStatus => Ok(
-            json!({"available":Engine::available(&state.resources), "entitiesAvailable":EntityEngine::available(&state.data, &state.resources)}),
+            json!({"available":Module::Semantic.ready(&state.data, &state.resources), "entitiesAvailable":EntityEngine::available(&state.data, &state.resources)}),
         ),
         Request::Bootstrap => {
             let path = state.data.join("session.json");
@@ -216,7 +216,7 @@ pub fn handle(
             json(activate(state, &target)?)
         }
         Request::EngineStatus => Ok(
-            json!({"available":state.resources.join("models/embeddinggemma-300M-Q8_0.gguf").exists()&&state.resources.join("engine/llama-server").exists(),"model":"EmbeddingGemma 300M · Q8","local":true}),
+            json!({"available":Module::Semantic.ready(&state.data, &state.resources),"model":"EmbeddingGemma 300M · Q8","local":true}),
         ),
         Request::VoicePrepare => {
             let mut engine = state.voice.lock().map_err(|e| e.to_string())?;
@@ -227,6 +227,12 @@ pub fn handle(
             voice::request_permission()?;
             Ok(json!(true))
         }
+        Request::SelectionSpeech { id, active } => {
+            state.reading.control(id, active)?;
+            json(true)
+        }
+        Request::SelectionAudio { id, text, language } =>
+            json(state.reading.render(&state.data, &state.resources, &id, &language, &text)?),
         Request::VoiceStatus => {
             Ok(json!({"available": voice::available(&state.data, &state.resources)}))
         }
@@ -234,7 +240,7 @@ pub fn handle(
             let root = state.data.join("revision");
             let language = root.join("java/Contents/Home/bin/java").is_file()
                 && root.join("languagetool/languagetool-server.jar").is_file();
-            let model = root.join("salamandra-q8.gguf").is_file()
+            let model = crate::runtime_install::models::salamandra(&state.data).is_file()
                 && state.resources.join("engine/llama-server").is_file();
             Ok(json!({"available":language || model,"language":language,"model":model}))
         }
@@ -339,6 +345,7 @@ pub fn handle(
                 | Request::NoteActivity { .. }
                 | Request::RecordNoteActivity { .. }
                 | Request::Annotations { .. }
+                | Request::PassageAnnotation { .. }
                 | Request::AddAnnotation { .. }
                 | Request::UpdateAnnotation { .. }
                 | Request::ManuscriptOperation { .. }
@@ -478,6 +485,7 @@ mod tests {
             project_guard: Default::default(),
             engine: Default::default(),
             revision: Default::default(),
+            reading: Default::default(),
             voice: Default::default(),
             runtime_install: Default::default(),
             prediction: Default::default(),

@@ -32,6 +32,13 @@ function stats(samples: number[]) {
   };
 }
 export function attach(workspace: Workspace, controller: MemoryController) {
+  if (import.meta.env.VITE_MODEL_REHEARSAL === '1') {
+    void import('./modelSelection').then(m => m.attachModelSelection(workspace));
+    return;
+  }
+  if(import.meta.env.VITE_PASSAGE_REHEARSAL==='1'){
+    void import('./passageReview').then(m=>m.attachPassageReview(workspace));return;
+  }
   if (import.meta.env.VITE_READER_REHEARSAL === '1') {
     void import('./reader').then((m) => m.attachReader(workspace));
     return;

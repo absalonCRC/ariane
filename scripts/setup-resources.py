@@ -58,6 +58,7 @@ def main():
         "files": {name: native.digest(engine / name) for name in sorted(files)},
     }
     (engine / "checksums.json").write_text(json.dumps(checksums, indent=2) + "\n")
+    subprocess.run([sys.executable, ROOT / "scripts/setup-reading.py"], check=True)
     print("Modèle vérifié. Les moteurs et les poids sont prêts.")
 
 

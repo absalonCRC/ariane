@@ -11,7 +11,7 @@
   letter-spacing: -0.5px;
   margin: 0;
 }
-.welcome > div:not(.dialog) {
+.welcome > div:not(.dialog, .window-title) {
   display: flex;
   gap: 20px;
 }

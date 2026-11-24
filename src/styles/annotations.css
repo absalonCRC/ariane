@@ -10,3 +10,15 @@
 .annotation-margin input[type=checkbox] { width: auto; }
 .import-items, .replace-preview { max-height: 30vh; overflow: auto; }
 .replace-preview input[type=checkbox] { width: auto; }
+
+.spoken-word { text-decoration: underline; text-decoration-thickness: .1em; text-underline-offset: .19em; }
+.passage-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.passage-actions:not(:empty) { margin-bottom: 12px; }
+.passage-actions blockquote, .passage-actions label { flex-basis: 100%; }
+.annotation-stack { isolation: isolate; margin-block: 12px; }
+.annotation-stack article { position: relative; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 8px 10px 12px; }
+.annotation-stack article + article { margin-top: -6px; }
+.annotation-stack article[data-expanded=true] { z-index: 1; }
+.annotation-stack .annotation-tab { display: block; width: 100%; text-align: left; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+.annotation-tab:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+.annotation-margin { max-width: calc(100vw - 24px); }

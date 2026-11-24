@@ -1,3 +1,4 @@
+import { useRuntimeModels } from './runtimeModels';
 import { RuntimeModuleSettings } from './RuntimeModuleSettings';
 import { PredictionSettings } from '../prediction/PredictionSettings';
 import { CapturePreferences } from '../capture/CapturePreferences';
@@ -22,6 +23,7 @@ const pages = [
   ['writing', 'Écriture'],
   ['sources', 'Sources et références'],
   ['project', 'Projet et données'],
+  ['models', 'Modèles locaux'],
   ['shortcuts', 'Raccourcis'],
 ] as const;
 export function Preferences({
@@ -54,6 +56,8 @@ export function Preferences({
   flush?: () => Promise<void>;
 }) {
   useLocale();
+  const models = useRuntimeModels();
+  const [expandedTool, setExpandedTool] = useState<string>();
   const [page, setPage] = useState<(typeof pages)[number][0]>(() =>
     consumeShortcutSettings() ? 'shortcuts' : 'appearance',
   );
@@ -98,7 +102,7 @@ export function Preferences({
     >
       <div className="settings-workspace">
         <nav aria-label={t('Catégories de paramètres')}>
-          {pages.map(([id, label]) => (
+          {pages.filter(([id]) => id !== 'models' || native).map(([id, label]) => (
             <button
               key={id}
               aria-current={page === id ? 'page' : undefined}
@@ -110,6 +114,7 @@ export function Preferences({
           ))}
         </nav>
         <div className="settings-page" key={page}>
+          {page === 'models' && <><h2>{t('Modèles locaux')}</h2><RuntimeModuleSettings documentLanguage={value.language} expandedTool={expandedTool} /></>}
           {page === 'appearance' && (
             <>
               <h2>{t('Apparence')}</h2>
@@ -309,7 +314,8 @@ export function Preferences({
                       onChange={(e) => onChange({ enrichment: e.target.checked })}
                     />
                   </label>
-                  <EntityPreferences value={value} onChange={onChange} />
+                  <EntityPreferences value={value} onChange={onChange} modelAvailable={!native || !!models?.status?.installed.includes('memory')}
+                    onModels={native ? () => {setExpandedTool('entities');setPage('models');} : undefined} />
                   {enrichmentError && (
                     <p role="status" className="error-text">
                       {t('Enrichissement suspendu : {0}', { 0: enrichmentError })}
@@ -375,7 +381,6 @@ export function Preferences({
                       {backupResult && <p role="status">{backupResult}</p>}
                     </>
                   )}
-                  {native && <RuntimeModuleSettings onError={onError} />}
                   <h3>{t('Confidentialité')}</h3>
                   <p>
                     {t(

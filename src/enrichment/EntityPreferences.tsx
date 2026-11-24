@@ -10,8 +10,12 @@ import { entityColors, entityColor, entityKind } from './entityTypes';
 export function EntityPreferences({
   value,
   onChange,
+  modelAvailable = true,
+  onModels,
 }: {
   value: Settings;
+  modelAvailable?: boolean;
+  onModels?: () => void;
   onChange: (value: Partial<Settings>) => void;
 }) {
   const [catalogKinds, setCatalogKinds] = useState<string[]>([]);
@@ -111,6 +115,7 @@ export function EntityPreferences({
           onChange={(e) => onChange({ classifyNewNotes: e.target.checked })}
         />
       </label>
+      {!modelAvailable && onModels && <button type="button" onClick={onModels}>{t('Installer la reconnaissance des entités')}</button>}
       <div className="entity-type-definitions">
         {types.map((type) => (
           <details key={type.name}>

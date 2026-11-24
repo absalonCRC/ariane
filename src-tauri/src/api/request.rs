@@ -149,6 +149,7 @@ pub enum Request {
     Annotations {
         project_path: String,
     },
+    PassageAnnotation { project_path: String, branch: String, id: String, action: project::annotations::PassageAction },
     AddAnnotation {
         request_id: Option<String>,
         document: Option<project::annotations::DocumentAnchor>,
@@ -426,6 +427,8 @@ pub enum Request {
         fingerprint: Option<String>,
     },
     EngineStatus,
+    SelectionSpeech { id: String, active: bool },
+    SelectionAudio { id: String, text: String, language: String },
     VoiceStatus,
     VoicePermission,
     VoicePrepare,

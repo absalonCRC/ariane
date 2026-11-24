@@ -3,6 +3,7 @@
 ## Plateforme et outils
 
 - macOS 26 ou ultérieur, processeur Apple Silicon (arm64).
+- CMake pour compiler l’aligneur de la lecture à voix haute.
 - Xcode Command Line Tools : `xcode-select --install`.
 - Node.js 24 ou ultérieur et npm ; `.nvmrc` sélectionne Node 24.
 - Rust et Cargo 1.95.0 ; `rust-toolchain.toml` sélectionne cette version avec rustup.
@@ -20,7 +21,7 @@ npm run tauri build -- --bundles app
 open src-tauri/target/release/bundle/macos/ariane.app
 ```
 
-`setup-resources.py` télécharge les archives décrites dans `native-dependencies.lock.json`, vérifie leurs empreintes et copie uniquement les exécutables et bibliothèques nécessaires. Aucun script d’installation Homebrew n’est exécuté. Les dépendances Mach-O sont relocalisées dans le paquet, puis signées ad hoc. `pdf-text` est compilé depuis son source Swift. Le modèle est téléchargé depuis la révision de `resources.lock.json` et vérifié avant installation.
+`setup-resources.py` télécharge les archives décrites dans `native-dependencies.lock.json`, vérifie leurs empreintes et copie uniquement les exécutables et bibliothèques nécessaires. Aucun script d’installation Homebrew n’est exécuté. Les dépendances Mach-O sont relocalisées dans le paquet, puis signées ad hoc. `pdf-text` est compilé depuis son source Swift. La préparation vérifie les poids EmbeddingGemma destinés à la recherche sémantique. C’est le seul modèle inclus dans le paquet.
 
 Les entrées externes sont figées ; le résultat n’est pas garanti identique octet pour octet entre versions de Xcode/macOS. `engine/checksums.json` décrit le résultat local et l’empreinte du verrou natif. Il est généré, jamais utilisé pour choisir des téléchargements. Les caches sous `.cache/` et les ressources natives produites restent exclus de Git ; `engine/memory.py` est une source versionnée.
 
@@ -36,13 +37,17 @@ L’aperçu `npm run dev` ne donne pas accès aux fichiers natifs. Après une mo
 
 ## Installations facultatives
 
-Installer `uv`, puis lancer les commandes du README. Elles écrivent dans `~/Library/Application Support/fr.ariane.writer/`, pas dans le projet.
+Les commandes de premier usage et **Paramètres → Modèles locaux** installent les outils choisis dans `~/Library/Application Support/fr.ariane.writer/`. Les scripts du README sont également disponibles pour le développement.
 
-- Mémoire : GLiNER multilingue, dépendances Python figées et poids quantifiés préparés localement. La recherche sémantique utilise EmbeddingGemma embarqué.
+- Mémoire : GLiNER multilingue, dépendances Python figées et poids quantifiés préparés localement. EmbeddingGemma est inclus pour la recherche sémantique.
 - Dictée : Parakeet MLX et Spokenly Cleanup. La dépendance principale et les révisions des modèles sont figées ; les dépendances transitives Python de la dictée ne sont pas encore verrouillées intégralement.
 - Révision : LanguageTool, JRE Temurin et SalamandraTA ; archives vérifiées par empreinte.
 
 Les prérequis et téléchargements de ces fonctions sont distincts du paquet de base. Leur installation n’est pas un prérequis pour écrire ou exporter.
+
+## Ressources de lecture
+
+`npm run setup:resources` prépare aussi le binaire Pocket TTS pour macOS arm64 et compile l’aligneur avec CMake et le SDK macOS. Pour préparer uniquement cette partie, exécuter `python3 scripts/setup-reading.py`. Les révisions et les empreintes figurent dans `resources.lock.json` et `scripts/reading/assets.json`. Le sélecteur télécharge les poids de chaque langue choisie, ainsi que Whisper tiny partagé à la première voix. Chaque configuration YAML pointe vers les fichiers locaux vérifiés.
 
 ## Distribution
 

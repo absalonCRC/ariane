@@ -283,6 +283,7 @@ mod tests {
             project_guard: Default::default(),
             engine: Default::default(),
             revision: Default::default(),
+            reading: Default::default(),
             voice: Default::default(),
             runtime_install: Default::default(),
             prediction: Default::default(),

@@ -23,7 +23,7 @@ import { useNoteCreation } from '../enrichment/useNoteCreation';
 import { useInlineEntities } from '../enrichment/useInlineEntities';
 import { EntityProposal } from '../enrichment/EntityProposal';
 import { localizeMessage, t, useLocale, localeTag } from '../i18n';
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Presence, usePresenceValue } from '../components/Presence';
 import { SelectionToolbar, type SelectionAnchor } from '../components/SelectionToolbar';
 import { WritingCounter } from '../components/WritingCounter';
@@ -32,6 +32,9 @@ import { AlignLeft, Table2, ChevronRight, GitCompareArrows } from 'lucide-react'
 import { Palette } from './Palette';
 import { request, native } from '../platform/client';
 import { Welcome } from './Welcome';
+import { modelNotifications } from './modelNotifications';
+import { RuntimeModelsProvider, useRuntimeModels } from './runtimeModels';
+import { voiceLanguage, voices } from './modelCatalog';
 import { Annotations } from '../project/AnnotationMargin';
 import { Binder } from '../project/Binder';
 import { trackSidebarPointer } from '../project/sidebarPointer';
@@ -58,6 +61,8 @@ import { WorkspaceScreenHost } from '../components/WorkspaceScreen';
 import type { Settings as WritingSettings } from '../contracts/settings';
 import type { Source } from '../contracts/sources';
 import { countVaultNotes } from '../sources/countNotes';
+import type { AnnotationRecorder } from '../voice/types';
+import { useSelectionSpeech } from '../voice/useSelectionSpeech';
 import { VoiceButton } from '../voice/VoiceButton';
 import { Settings } from './Settings';
 import { useContextMenu } from '../components/ContextMenu';
@@ -67,12 +72,24 @@ import { BinderActions } from '../project/BinderActions';
 import { useChromeObstructions } from '../components/useChromeObstructions';
 const History = lazy(() => import('../history/History').then((m) => ({ default: m.History })));
 export function App() {
+  return (
+    <RuntimeModelsProvider>
+      <WorkspaceApp />
+    </RuntimeModelsProvider>
+  );
+}
+function WorkspaceApp() {
   const locale = useLocale();
+  const catalog = useRuntimeModels()!;
   const [inboxOpen, setInboxOpen] = useState(false);
   const [inboxSelection, setInboxSelection] = useState<string | null>(null);
   const resumeInbox = useRef(false);
   const openMenu = useContextMenu();
-  const workspace = useWorkspace();
+  const recorder = useRef<AnnotationRecorder | null>(null);
+  const finishDictation = useCallback(async () => {
+    await recorder.current?.finish();
+  }, []);
+  const workspace = useWorkspace(finishDictation);
   const pageSurface =
     workspace.surface === 'profile' ||
     workspace.surface === 'preferences' ||
@@ -175,7 +192,7 @@ export function App() {
     query: StructuredQuery;
     name?: string;
   } | null>(null);
-  const memory = useMemory(workspace);
+  const memory = useMemory(workspace, catalog.status?.installed.includes('memory') ?? false);
   const inlineEntities = useInlineEntities(
     workspace,
     memory.result,
@@ -312,7 +329,10 @@ export function App() {
   const branches = useWritingBranches({
     path: workspace.p?.path ?? null,
     generation: workspace.doc.generation,
-    checkpoint: workspace.doc.checkpoint,
+    checkpoint: async () => {
+      await finishDictation();
+      await workspace.doc.checkpoint();
+    },
     onChanged: (project) => {
       workspace.activate(project);
       workspace.setHistoryMode(false);
@@ -321,6 +341,23 @@ export function App() {
     },
     onError: workspace.fail,
   });
+  const docLanguage = workspace.doc.settings.language;
+  const readingLanguage = catalog.preferred === 'auto' ? voiceLanguage(docLanguage) : catalog.preferred;
+  const hasVoice = readingLanguage && catalog.status?.installed.includes(voices[readingLanguage].id);
+  const speech = useSelectionSpeech(
+    workspace.editor,
+    readingLanguage ?? 'fr',
+    [
+      workspace.p?.path,
+      branches.state?.activeBranch,
+      workspace.active,
+      workspace.historyMode,
+      workspace.surface,
+      workspace.reader?.id,
+      pageActive,
+    ].join('|'),
+    workspace.fail,
+  );
   const titleNotices = useTitleNotices(workspace, memory.pending);
   const createNote = useNoteCreation(workspace);
 
@@ -594,7 +631,11 @@ export function App() {
         if (!pageBusy)
           void createPage(parent, doc.settings.continuous ? 'manuscript' : selected?.role);
       }}
-      notifications={pathNotices}
+      notifications={[
+        ...pathNotices.filter((notice) => notice.tone === 'error'),
+        ...modelNotifications(catalog, locale),
+        ...pathNotices.filter((notice) => notice.tone !== 'error'),
+      ]}
       hasPending={titleNotices.hasPending}
       hasError={titleNotices.hasError}
       noticeDetails={<WorkspaceNotices workspace={workspace} embedded />}
@@ -719,7 +760,12 @@ export function App() {
     return (
       <ViewTitleCapsuleProvider value={renderCapsule}>
         <WindowDragRegion onError={workspace.fail} />
-        <Welcome beforeOpen={workspace.activity.flush} onOpen={activate} onError={fail} />
+        <Welcome
+          onModels={() => catalog.offer({ key: 'catalog', id: voices[readingLanguage ?? 'fr'].id })}
+          beforeOpen={workspace.activity.flush}
+          onOpen={activate}
+          onError={fail}
+        />
         {inbox}
         {newProject && p && (
           <button className="return-project" onClick={() => setNewProject(false)}>
@@ -1112,6 +1158,19 @@ export function App() {
             anchor={searching || workspace.historyMode || !!filteredTag ? null : textSelection}
             onFormat={(format) => editor.current?.format(format)}
             onAnnotate={native ? workspace.openAnnotations : undefined}
+            onListen={native ? () => {
+              if (speech.reading || hasVoice) {
+                void speech.toggle();
+                return;
+              }
+              catalog.offer({
+                key: 'reading',
+                id: voices[readingLanguage ?? 'fr'].id,
+                preference: readingLanguage ? catalog.preferred : 'fr',
+              });
+            } : undefined}
+            needsVoice={native && !hasVoice}
+            reading={speech.reading}
             onTry={() => editor.current?.writingAid('trial-start')}
           />
           {lineDetailVisible && lineDetail && !filteredTag && (
@@ -1151,6 +1210,8 @@ export function App() {
             !lineDetailVisible && (
               <Annotations
                 key={p.path + ':' + branches.state?.activeBranch}
+                recorder={recorder}
+                branch={branches.state?.activeBranch}
                 onManage={() => setSurface('sources')}
                 onDocument={(source, a, replacing) => {
                   workspace.setAnnotationsOpen(false);
@@ -1353,6 +1414,10 @@ export function App() {
             >
               <div className="bottom-connector" aria-hidden="true" />
               <VoiceButton
+                ref={recorder}
+                beforeRecording={speech.stop}
+                needsInstall={!!catalog.status && !catalog.status.installed.includes('voice')}
+                onInstall={() => catalog.offer({ key: 'voice', id: 'voice' })}
                 projectPath={p?.path}
                 language={doc.settings.language}
                 onActivity={memory.setRecording}

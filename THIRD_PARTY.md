@@ -33,3 +33,7 @@ Les installateurs de mémoire, dictée et révision téléchargent séparément 
 La présence des notices et des URL ne suffit pas à clore les obligations de redistribution. Préparer les sources correspondantes complètes des composants GPL/LGPL effectivement distribués, leurs scripts de construction et les notices de toutes les bibliothèques incorporées. Associer ces éléments au binaire exact de la release. Le paquet de travail actuel n’est pas déclaré prêt pour une distribution publique.
 
 La notice et les conditions EmbeddingGemma sont conservées dans les ressources. Les restrictions du modèle s’appliquent aux poids, indépendamment du code d’Ariane. Références : [conditions Gemma](https://ai.google.dev/gemma/terms), [FAQ GNU sur la distribution](https://www.gnu.org/licenses/gpl-faq.html).
+
+### Lecture de sélection sur Mac
+
+Pocket TTS de Kyutai (MIT) et les poids préentraînés FR, EN et ES (CC BY 4.0) assurent la lecture locale. Les voix proposées au téléchargement sont Estelle, Alba MacKenna et Lola. L’aligneur est construit avec whisper.cpp et Whisper tiny multilingue (MIT). Les empreintes sont épinglées dans `resources.lock.json` et `scripts/reading/assets.json`. Les attributions, adaptations et licences sont disponibles dans les [notices du paquet](src-tauri/resources/notices/README.md).
