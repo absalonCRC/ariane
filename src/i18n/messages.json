@@ -5922,5 +5922,25 @@
   "Au bord de la mer": ["By the sea", "A orillas del mar"],
   "Les vagues effleurent le sable.": ["Waves brush the sand.", "Las olas rozan la arena."],
   "Léa visite": ["Léa visits", "Léa visita"],
-  "Rejouer l’exemple · {0}": ["Replay example · {0}", "Volver a ver el ejemplo · {0}"]
+  "Rejouer l’exemple · {0}": ["Replay example · {0}", "Volver a ver el ejemplo · {0}"],
+  "Un projet réunit vos scènes et vos notes dans un dossier sur votre Mac.": [
+    "A project keeps your scenes and notes together in a folder on your Mac.",
+    "Un proyecto reúne tus escenas y notas en una carpeta de tu Mac."
+  ],
+  "Un projet réunit vos scènes et vos notes dans ce navigateur.": [
+    "A project keeps your scenes and notes together in this browser.",
+    "Un proyecto reúne tus escenas y notas en este navegador."
+  ],
+  "Dossier à choisir à la création": [
+    "Choose a folder when you create the project",
+    "Elige la carpeta al crear el proyecto"
+  ],
+  "Détails du projet": [
+    "Project details",
+    "Detalles del proyecto"
+  ],
+  "Ces outils sont facultatifs. Vous pouvez aussi les ajouter dans les paramètres.": [
+    "These tools are optional. You can also add them later in Settings.",
+    "Estas herramientas son opcionales. También puedes añadirlas más tarde en los ajustes."
+  ]
 }
