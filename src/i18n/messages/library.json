@@ -1,0 +1,502 @@
+{
+  "Inclure dans le manuscrit": [
+    "Include in manuscript",
+    "Incluir en el manuscrito"
+  ],
+  "Inclus dans le manuscrit": [
+    "Included in manuscript",
+    "Incluido en el manuscrito"
+  ],
+  "Nom de la section": [
+    "Section name",
+    "Nombre de la sección"
+  ],
+  "Nom du chapitre": [
+    "Chapter name",
+    "Nombre del capítulo"
+  ],
+  "Nom de la scène": [
+    "Scene name",
+    "Nombre de la escena"
+  ],
+  "Valider le nom": [
+    "Confirm name",
+    "Confirmar el nombre"
+  ],
+  "Ouvrir": [
+    "Open",
+    "Abrir"
+  ],
+  "Renommer": [
+    "Rename",
+    "Renombrar"
+  ],
+  "Réunir avec « {0} »": [
+    "Join with “{0}”",
+    "Unir con «{0}»"
+  ],
+  "Déplier": [
+    "Expand",
+    "Desplegar"
+  ],
+  "Replier": [
+    "Collapse",
+    "Contraer"
+  ],
+  "Restaurer": [
+    "Restore",
+    "Restaurar"
+  ],
+  "Déplacer vers…": [
+    "Move to…",
+    "Mover a…"
+  ],
+  "Dupliquer": [
+    "Duplicate",
+    "Duplicar"
+  ],
+  "Mettre à la corbeille": [
+    "Move to trash",
+    "Mover a la papelera"
+  ],
+  "Nouvelle scène après celle-ci": [
+    "New scene after this one",
+    "Nueva escena después de esta"
+  ],
+  "Exclure les textes du manuscrit": [
+    "Exclude texts from manuscript",
+    "Excluir los textos del manuscrito"
+  ],
+  "Inclure les textes dans le manuscrit": [
+    "Include texts in manuscript",
+    "Incluir los textos en el manuscrito"
+  ],
+  "Un chapitre ne peut pas contenir un autre chapitre.": [
+    "A chapter cannot contain another chapter.",
+    "Un capítulo no puede contener otro capítulo."
+  ],
+  "Impossible de déplacer un élément dans sa propre branche.": [
+    "An item cannot be moved into its own branch.",
+    "No se puede mover un elemento dentro de su propia rama."
+  ],
+  "Déplier ": [
+    "Expand ",
+    "Desplegar "
+  ],
+  "Replier ": [
+    "Collapse ",
+    "Contraer "
+  ],
+  "Nouveau titre": [
+    "New title",
+    "Nuevo título"
+  ],
+  "Ajouter dans ": [
+    "Add in ",
+    "Añadir en "
+  ],
+  "Ajouter au projet": [
+    "Add to project",
+    "Añadir al proyecto"
+  ],
+  "Replier la sidebar": [
+    "Collapse sidebar",
+    "Contraer la barra lateral"
+  ],
+  "Créer ou ouvrir un projet…": [
+    "Create or open a project…",
+    "Crear o abrir un proyecto…"
+  ],
+  "Contenu du projet": [
+    "Project content",
+    "Contenido del proyecto"
+  ],
+  "Sources": [
+    "Sources",
+    "Fuentes"
+  ],
+  "Ajouter une section, un chapitre ou une scène": [
+    "Add a section, chapter or scene",
+    "Añadir una sección, un capítulo o una escena"
+  ],
+  "Lire le manuscrit": [
+    "Read manuscript",
+    "Leer el manuscrito"
+  ],
+  "Restaurez un document pour le retrouver à son emplacement.": [
+    "Restore a document to return it to its location.",
+    "Restaura un documento para devolverlo a su ubicación."
+  ],
+  "Actions de sélection": [
+    "Selection actions",
+    "Acciones de selección"
+  ],
+  "{0} sélectionné{1}": [
+    "{0} selected",
+    "{0} seleccionado{1}"
+  ],
+  "Déplacer…": [
+    "Move…",
+    "Mover…"
+  ],
+  "Dupliquer la sélection": [
+    "Duplicate selection",
+    "Duplicar la selección"
+  ],
+  "Mettre la sélection à la corbeille": [
+    "Move selection to trash",
+    "Mover la selección a la papelera"
+  ],
+  "Documents supprimés": [
+    "Deleted documents",
+    "Documentos eliminados"
+  ],
+  "Textes du projet": [
+    "Project texts",
+    "Textos del proyecto"
+  ],
+  "La corbeille est vide.": [
+    "The trash is empty.",
+    "La papelera está vacía."
+  ],
+  "Vos textes apparaîtront ici.": [
+    "Your texts will appear here.",
+    "Tus textos aparecerán aquí."
+  ],
+  "Dans": [
+    "Inside",
+    "Dentro de"
+  ],
+  "Avant": [
+    "Before",
+    "Antes de"
+  ],
+  "Après": [
+    "After",
+    "Después de"
+  ],
+  "Déposer à la racine": [
+    "Drop at root",
+    "Soltar en la raíz"
+  ],
+  "Corbeille": [
+    "Trash",
+    "Papelera"
+  ],
+  "Annuler le dernier rangement": [
+    "Undo last organisation change",
+    "Deshacer el último cambio de organización"
+  ],
+  "Options de la bibliothèque": [
+    "Library options",
+    "Opciones de la biblioteca"
+  ],
+  "Bibliothèque": [
+    "Library",
+    "Biblioteca"
+  ],
+  "Gérer les vaults…": [
+    "Manage vaults…",
+    "Gestionar los vaults…"
+  ],
+  "Déplacer la sélection": [
+    "Move selection",
+    "Mover la selección"
+  ],
+  "Destination": [
+    "Destination",
+    "Destino"
+  ],
+  "Textes · Racine": [
+    "Texts · Root",
+    "Textos · Raíz"
+  ],
+  "Textes / {0}": [
+    "Texts / {0}",
+    "Textos / {0}"
+  ],
+  "Déplacer": [
+    "Move",
+    "Mover"
+  ],
+  "Dossier Markdown ou TextBundle": [
+    "Markdown or TextBundle folder",
+    "Carpeta Markdown o TextBundle"
+  ],
+  "Markdown, dossier de textes, DOCX ou TextBundle. Les textes sont ajoutés au projet ouvert.": [
+    "Markdown, text folders, DOCX or TextBundle. Texts are added to the open project.",
+    "Markdown, carpeta de textos, DOCX o TextBundle. Los textos se añaden al proyecto abierto."
+  ],
+  "Choisir un fichier…": [
+    "Choose a file…",
+    "Elegir un archivo…"
+  ],
+  "L’import est disponible dans l’application Mac.": [
+    "Import is available in the Mac application.",
+    "La importación está disponible en la aplicación para Mac."
+  ],
+  "Ouvrez ou créez un projet pour y importer ces textes.": [
+    "Open or create a project to import these texts.",
+    "Abre o crea un proyecto para importar estos textos."
+  ],
+  "{0} textes · {1} ressources copiées": [
+    "{0} texts · {1} resources copied",
+    "{0} textos · {1} recursos copiados"
+  ],
+  "Les textes sont ajoutés au projet courant ; les fichiers source restent à leur emplacement.": [
+    "Texts are added to the current project; source files stay in their original location.",
+    "Los textos se añaden al proyecto actual; los archivos de origen permanecen en su ubicación."
+  ],
+  "Import en cours…": [
+    "Importing…",
+    "Importando…"
+  ],
+  "Écrire dans ce projet": [
+    "Write in this project",
+    "Escribir en este proyecto"
+  ],
+  "Importer dans ce projet": [
+    "Import into this project",
+    "Importar en este proyecto"
+  ],
+  "Import terminé": [
+    "Import complete",
+    "Importación terminada"
+  ],
+  "Réorganiser le texte": [
+    "Reorganise text",
+    "Reorganizar el texto"
+  ],
+  "Opération": [
+    "Operation",
+    "Operación"
+  ],
+  "Séparer au curseur": [
+    "Split at cursor",
+    "Separar en el cursor"
+  ],
+  "Réunir avec la scène suivante": [
+    "Join with next scene",
+    "Unir con la escena siguiente"
+  ],
+  "Titre de la nouvelle scène": [
+    "New scene title",
+    "Título de la nueva escena"
+  ],
+  "« {0} » sera ajoutée à la fin. Sa scène d’origine restera dans la corbeille.": [
+    "“{0}” will be appended. Its original scene will stay in the trash.",
+    "«{0}» se añadirá al final. Su escena original permanecerá en la papelera."
+  ],
+  "Aucune scène suivante dans ce dossier.": [
+    "No next scene in this folder.",
+    "No hay una escena siguiente en esta carpeta."
+  ],
+  "Appliquer": [
+    "Apply",
+    "Aplicar"
+  ],
+  "Arborescence du projet": [
+    "Project tree",
+    "Árbol del proyecto"
+  ],
+  "Hiérarchie de la page courante": [
+    "Current page hierarchy",
+    "Jerarquía de la página actual"
+  ],
+  "Nouvelle page": [
+    "New page",
+    "Nueva página"
+  ],
+  "Préparation": [
+    "Preparation",
+    "Preparación"
+  ],
+  "Synopsis": [
+    "Synopsis",
+    "Sinopsis"
+  ],
+  "Ce que cette section doit raconter…": [
+    "What this section should tell…",
+    "Lo que debe contar esta sección…"
+  ],
+  "Statut": [
+    "Status",
+    "Estado"
+  ],
+  "Brouillon": [
+    "Draft",
+    "Borrador"
+  ],
+  "En cours": [
+    "In progress",
+    "En curso"
+  ],
+  "À relire": [
+    "To review",
+    "Por revisar"
+  ],
+  "Terminé": [
+    "Complete",
+    "Terminado"
+  ],
+  "Objectif de mots": [
+    "Word goal",
+    "Objetivo de palabras"
+  ],
+  "Fiches du projet": [
+    "Project entries",
+    "Fichas del proyecto"
+  ],
+  "Ces fiches sont propres au projet. Les notes du vault restent inchangées.": [
+    "These entries belong to the project. Vault notes remain unchanged.",
+    "Estas fichas pertenecen al proyecto. Las notas del vault permanecen sin cambios."
+  ],
+  "Notes sur ": [
+    "Notes on ",
+    "Notas sobre "
+  ],
+  "Bibliothèque de projets": [
+    "Project library",
+    "Biblioteca de proyectos"
+  ],
+  "Filtrer les projets": [
+    "Filter projects",
+    "Filtrar los proyectos"
+  ],
+  "Retrouver un projet…": [
+    "Find a project…",
+    "Buscar un proyecto…"
+  ],
+  "Récents": [
+    "Recent",
+    "Recientes"
+  ],
+  "Projets": [
+    "Projects",
+    "Proyectos"
+  ],
+  "Archives": [
+    "Archives",
+    "Archivados"
+  ],
+  "Aucun projet correspondant.": [
+    "No matching projects.",
+    "No hay proyectos coincidentes."
+  ],
+  "Aucun projet archivé.": [
+    "No archived projects.",
+    "No hay proyectos archivados."
+  ],
+  "Les projets créés ou ouverts apparaîtront ici.": [
+    "Projects you create or open will appear here.",
+    "Los proyectos que crees o abras aparecerán aquí."
+  ],
+  "Épinglés": [
+    "Pinned",
+    "Fijados"
+  ],
+  "Dossier introuvable · Ouvrez son nouvel emplacement": [
+    "Folder not found · Open its new location",
+    "Carpeta no encontrada · Abre su nueva ubicación"
+  ],
+  "Épinglé": [
+    "Pinned",
+    "Fijado"
+  ],
+  "Désépingler ": [
+    "Unpin ",
+    "Desfijar "
+  ],
+  "Épingler ": [
+    "Pin ",
+    "Fijar "
+  ],
+  "Désarchiver ": [
+    "Unarchive ",
+    "Desarchivar "
+  ],
+  "Archiver ": [
+    "Archive ",
+    "Archivar "
+  ],
+  "Les projets archivés restent sur ce Mac.": [
+    "Archived projects stay on this Mac.",
+    "Los proyectos archivados permanecen en este Mac."
+  ],
+  "Aucune opération à annuler.": [
+    "No operation to undo.",
+    "No hay ninguna operación que deshacer."
+  ],
+  "Sélection introuvable.": [
+    "Selection not found.",
+    "Selección no encontrada."
+  ],
+  "Destination introuvable.": [
+    "Destination not found.",
+    "Destino no encontrado."
+  ],
+  "Impossible de déplacer un dossier dans sa propre branche.": [
+    "A folder cannot be moved into its own branch.",
+    "No se puede mover una carpeta dentro de su propia rama."
+  ],
+  "Choisissez un dossier ou un chapitre.": [
+    "Choose a folder or chapter.",
+    "Elige una carpeta o un capítulo."
+  ],
+  "Un chapitre ne peut pas être placé dans un autre chapitre.": [
+    "A chapter cannot be placed inside another chapter.",
+    "Un capítulo no se puede colocar dentro de otro capítulo."
+  ],
+  "Inclusion manquante.": [
+    "Missing inclusion setting.",
+    "Falta el ajuste de inclusión."
+  ],
+  "Dernière modification de la bibliothèque annulée.": [
+    "Last library change undone.",
+    "Se ha deshecho el último cambio de la biblioteca."
+  ],
+  "texte": [
+    "text",
+    "texto"
+  ],
+  "élément": [
+    "item",
+    "elemento"
+  ],
+  "{0} placé{1} dans la corbeille.": [
+    "{0} moved to trash.",
+    "{0} enviado{1} a la papelera."
+  ],
+  "{0} restauré{1}.": [
+    "{0} restored.",
+    "{0} restaurado{1}."
+  ],
+  "{0} dupliqué{1}.": [
+    "{0} duplicated.",
+    "{0} duplicado{1}."
+  ],
+  "à la racine": [
+    "at root",
+    "en la raíz"
+  ],
+  "avant": [
+    "before",
+    "antes de"
+  ],
+  "après": [
+    "after",
+    "después de"
+  ],
+  "dans": [
+    "inside",
+    "dentro de"
+  ],
+  "{0} déplacé{1} {2}.": [
+    "{0} moved {2}.",
+    "{0} movido{1} {2}."
+  ],
+  "Place le curseur dans un passage ou sélectionne du texte dans une seule scène.": [
+    "Place the cursor in a passage or select text within a single scene.",
+    "Coloca el cursor en un pasaje o selecciona texto dentro de una sola escena."
+  ]
+}

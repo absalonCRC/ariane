@@ -168,3 +168,44 @@ it('keeps resolved mention identities across a renamed title, rejects stale batc
     evaluateQuery(project, q, catalog, [{ ...batch, text: 'Ancien texte' }], []).passages,
   ).toHaveLength(0);
 });
+
+it('locates repeated mentions in legacy Markdown and uses the current outline on the next search', () => {
+  const scene = {
+    ...project.sections[0],
+    text: '🌿 Léa et Léa.\n\nLéa revient.',
+    outline: null,
+  } as Project['sections'][number];
+  const manuscript = { ...project, sections: [scene] };
+  const catalog = emptyCatalog();
+  catalog.entities.push({
+    id: 'lea',
+    title: 'Léa',
+    kind: 'Personnage',
+    aliases: [],
+    sourceIds: [],
+    detectedIds: [],
+    confirmed: true,
+  });
+  const query = resolveQuery('@Léa', [], catalog);
+  const passages = () =>
+    evaluateQuery(manuscript, query, catalog, [], []).passages.map(({ from, node, text }) => ({
+      from,
+      node,
+      text,
+    }));
+  const second = scene.text.lastIndexOf('Léa');
+  expect(passages()).toEqual([
+    { from: 0, node: null, text: '🌿 Léa et Léa.\n' },
+    { from: second, node: null, text: 'Léa revient.' },
+  ]);
+  scene.outline = {
+    version: 1,
+    nodes: [
+      { id: 'first', parent: null, start: 0 },
+      { id: 'second', parent: null, start: second },
+    ],
+  };
+  expect(passages().map(({ node }) => node)).toEqual(['first', 'second']);
+  scene.text = 'Léa change de scène.';
+  expect(passages()).toEqual([{ from: 0, node: null, text: scene.text }]);
+});

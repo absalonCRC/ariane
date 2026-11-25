@@ -1,0 +1,590 @@
+{
+  "Sélectionne un passage de 800 caractères maximum.": [
+    "Select a passage of up to 800 characters.",
+    "Selecciona un pasaje de 800 caracteres como máximo."
+  ],
+  "Le texte a changé ; relance la révision.": [
+    "The text has changed; run the revision again.",
+    "El texto ha cambiado; vuelve a ejecutar la revisión."
+  ],
+  "Les moteurs de révision sont indisponibles.": [
+    "Revision engines are unavailable.",
+    "Los motores de revisión no están disponibles."
+  ],
+  "Un des moteurs est indisponible ; résultats partiels.": [
+    "One engine is unavailable; partial results.",
+    "Uno de los motores no está disponible; resultados parciales."
+  ],
+  "Aucune suggestion disponible pour ce passage.": [
+    "No suggestions available for this passage.",
+    "No hay sugerencias para este pasaje."
+  ],
+  "La révision locale est indisponible.": [
+    "Local revision is unavailable.",
+    "La revisión local no está disponible."
+  ],
+  "Correction appliquée.": [
+    "Correction applied.",
+    "Corrección aplicada."
+  ],
+  "Révision locale": [
+    "Local revision",
+    "Revisión local"
+  ],
+  "Analyse…": [
+    "Analysing…",
+    "Analizando…"
+  ],
+  "Réviser le passage": [
+    "Review passage",
+    "Revisar el pasaje"
+  ],
+  "Réviser la sélection ou la ligne active (800 caractères maximum)": [
+    "Review selection or active line (up to 800 characters)",
+    "Revisar la selección o la línea activa (800 caracteres como máximo)"
+  ],
+  "Moteurs locaux indisponibles.": [
+    "Local engines unavailable.",
+    "Motores locales no disponibles."
+  ],
+  "IA locale": [
+    "Local AI",
+    "IA local"
+  ],
+  "Appliquer cette suggestion": [
+    "Apply this suggestion",
+    "Aplicar esta sugerencia"
+  ],
+  "Suggestions de révision": [
+    "Revision suggestions",
+    "Sugerencias de revisión"
+  ],
+  "Répétition rapprochée de « {0} ».": [
+    "“{0}” repeated nearby.",
+    "Repetición cercana de «{0}»."
+  ],
+  "Phrase de plus de 40 mots.": [
+    "Sentence longer than 40 words.",
+    "Frase de más de 40 palabras."
+  ],
+  "Suggestion locale": [
+    "Local suggestion",
+    "Sugerencia local"
+  ],
+  "Vault": [
+    "Vault",
+    "Vault"
+  ],
+  "Tous les vaults": [
+    "All vaults",
+    "Todos los vaults"
+  ],
+  "Aucune entité indexée. Ajoutez des sources ou actualisez le vault.": [
+    "No indexed entities. Add sources or refresh the vault.",
+    "No hay entidades indexadas. Añade fuentes o actualiza el vault."
+  ],
+  "Sans type": [
+    "No type",
+    "Sin tipo"
+  ],
+  "Précédent": [
+    "Previous",
+    "Anterior"
+  ],
+  "Suivant": [
+    "Next",
+    "Siguiente"
+  ],
+  "Indexation suspendue.": [
+    "Indexing paused.",
+    "Indexación pausada."
+  ],
+  "Les sources sont prêtes.": [
+    "Sources are ready.",
+    "Las fuentes están listas."
+  ],
+  "Connectez vos dossiers de sources depuis l’application macOS.": [
+    "Connect your source folders from the macOS application.",
+    "Conecta tus carpetas de fuentes desde la aplicación para macOS."
+  ],
+  "Choisir un dossier de sources (vault Obsidian)": [
+    "Choose a source folder (Obsidian vault)",
+    "Elegir una carpeta de fuentes (vault de Obsidian)"
+  ],
+  "Autorisez les dossiers de sources externes de ce projet.": [
+    "Authorize this project's external source folders.",
+    "Autoriza las carpetas de fuentes externas de este proyecto."
+  ],
+  "Autoriser les dossiers": [
+    "Authorize folders",
+    "Autorizar las carpetas"
+  ],
+  "Autoriser {0}…": [
+    "Authorize {0}…",
+    "Autorizar {0}…"
+  ],
+  "Autoriser le dossier de sources {0}": [
+    "Authorize source folder {0}",
+    "Autorizar la carpeta de fuentes {0}"
+  ],
+  "Autorisation requise": [
+    "Authorization required",
+    "Autorización necesaria"
+  ],
+  "Ajoutez un dossier de sources (vault) et autorisez-le dans le dialogue macOS. Le projet reste indépendant de ses sources.": [
+    "Add a source folder (vault) and authorize it in the macOS dialog. The project remains independent of its sources.",
+    "Añade una carpeta de fuentes (vault) y autorízala en el diálogo de macOS. El proyecto sigue siendo independiente de sus fuentes."
+  ],
+  "Le dossier a changé. Sélectionnez-le à nouveau.": [
+    "The folder has changed. Select it again.",
+    "La carpeta ha cambiado. Selecciónala de nuevo."
+  ],
+  "Ce dossier de sources est déjà rattaché au projet.": [
+    "This source folder is already attached to the project.",
+    "Esta carpeta de fuentes ya está vinculada al proyecto."
+  ],
+  "Choisissez un dossier de sources externe au projet.": [
+    "Choose a source folder outside the project.",
+    "Elige una carpeta de fuentes externa al proyecto."
+  ],
+  "Fiches issues du manuscrit": [
+    "Entries from the manuscript",
+    "Fichas del manuscrito"
+  ],
+  "Ajouter un dossier de sources": [
+    "Add a source folder",
+    "Añadir una carpeta de fuentes"
+  ],
+  "Créer mon dossier de sources": [
+    "Create my source folder",
+    "Crear mi carpeta de fuentes"
+  ],
+  "Nouvelle fiche": [
+    "New entry",
+    "Nueva ficha"
+  ],
+  "Actualiser l’index": [
+    "Refresh index",
+    "Actualizar el índice"
+  ],
+  "Type": [
+    "Type",
+    "Tipo"
+  ],
+  "Personne": [
+    "Person",
+    "Persona"
+  ],
+  "Lieu": [
+    "Place",
+    "Lugar"
+  ],
+  "Organisation": [
+    "Organisation",
+    "Organización"
+  ],
+  "Événement": [
+    "Event",
+    "Evento"
+  ],
+  "Concept": [
+    "Concept",
+    "Concepto"
+  ],
+  "Croyance ou tradition": [
+    "Belief or tradition",
+    "Creencia o tradición"
+  ],
+  "Œuvre": [
+    "Work",
+    "Obra"
+  ],
+  "Document ou source": [
+    "Document or source",
+    "Documento o fuente"
+  ],
+  "Objet": [
+    "Object",
+    "Objeto"
+  ],
+  "Description": [
+    "Description",
+    "Descripción"
+  ],
+  "Créer la fiche": [
+    "Create entry",
+    "Crear la ficha"
+  ],
+  "Dossier ariane": [
+    "ariane folder",
+    "Carpeta de ariane"
+  ],
+  "Lecture seule": [
+    "Read-only",
+    "Solo lectura"
+  ],
+  "Dossier introuvable": [
+    "Folder not found",
+    "Carpeta no encontrada"
+  ],
+  "Déconnecter ": [
+    "Disconnect ",
+    "Desconectar "
+  ],
+  "Emplacement du dossier": [
+    "Folder location",
+    "Ubicación de la carpeta"
+  ],
+  "Dossiers inclus": [
+    "Included folders",
+    "Carpetas incluidas"
+  ],
+  "— dossiers ou fichiers, un par ligne": [
+    "— folders or files, one per line",
+    "— carpetas o archivos, uno por línea"
+  ],
+  "Dossiers inclus dans ": [
+    "Included folders in ",
+    "Carpetas incluidas en "
+  ],
+  "Tous les dossiers": [
+    "All folders",
+    "Todas las carpetas"
+  ],
+  "Ajoutez un dossier de sources (vault), ou glissez-le depuis le Finder. Le projet reste indépendant de ses sources.": [
+    "Add a source folder (vault), or drag one from Finder. The project remains independent of its sources.",
+    "Añade una carpeta de fuentes (vault) o arrástrala desde Finder. El proyecto sigue siendo independiente de sus fuentes."
+  ],
+  "Markdown et PDF textuels. Les images restent consultables sans reconnaissance du texte.": [
+    "Markdown and text-based PDFs. Images can be viewed without text recognition.",
+    "Markdown y PDF con texto. Las imágenes se pueden consultar sin reconocimiento de texto."
+  ],
+  "Détails de la recherche locale": [
+    "Local search details",
+    "Detalles de la búsqueda local"
+  ],
+  "Aperçu navigateur : les fiches sont enregistrées dans ce navigateur, sans créer de fichiers. ": [
+    "Browser preview: entries are saved in this browser without creating files. ",
+    "Vista previa del navegador: las fichas se guardan en este navegador sin crear archivos. "
+  ],
+  "EmbeddingGemma 300M · Q8 · Recherche locale multilingue": [
+    "EmbeddingGemma 300M · Q8 · Local multilingual search",
+    "EmbeddingGemma 300M · Q8 · Búsqueda local multilingüe"
+  ],
+  "Moteur sémantique non disponible dans cet environnement.": [
+    "Semantic engine unavailable in this environment.",
+    "Motor semántico no disponible en este entorno."
+  ],
+  "Source complète": [
+    "Full source",
+    "Fuente completa"
+  ],
+  "SOURCE · LECTURE SEULE": [
+    "SOURCE · READ-ONLY",
+    "FUENTE · SOLO LECTURA"
+  ],
+  "Fermer la source": [
+    "Close source",
+    "Cerrar la fuente"
+  ],
+  "Ouverture du PDF…": [
+    "Opening PDF…",
+    "Abriendo el PDF…"
+  ],
+  "Résultats des vaults dans la marge": [
+    "Vault results in the margin",
+    "Resultados de los vaults en el margen"
+  ],
+  "Dans les vaults": [
+    "In vaults",
+    "En los vaults"
+  ],
+  "Recherche…": [
+    "Searching…",
+    "Buscando…"
+  ],
+  "Recherche des vaults indisponible. {0}": [
+    "Vault search unavailable. {0}",
+    "Búsqueda en los vaults no disponible. {0}"
+  ],
+  "Aucune source correspondante.": [
+    "No matching sources.",
+    "No hay fuentes coincidentes."
+  ],
+  "Fiche ": [
+    "Entry ",
+    "Ficha "
+  ],
+  "Fermer la fiche": [
+    "Close entry",
+    "Cerrar la ficha"
+  ],
+  " · manuscrit": [
+    " · manuscript",
+    " · manuscrito"
+  ],
+  "Tags": [
+    "Tags",
+    "Etiquetas"
+  ],
+  "Cette source est une pièce jointe.": [
+    "This source is an attachment.",
+    "Esta fuente es un archivo adjunto."
+  ],
+  " · valeurs à vérifier": [
+    " · values to check",
+    " · valores por verificar"
+  ],
+  "Références liées · {0} instance(s){1}": [
+    "Linked references · {0} occurrence(s){1}",
+    "Referencias vinculadas · {0} aparición(es){1}"
+  ],
+  "Associer à la préparation": [
+    "Link to preparation",
+    "Vincular a la preparación"
+  ],
+  "Ouvrir la note": [
+    "Open note",
+    "Abrir la nota"
+  ],
+  "Citer": [
+    "Cite",
+    "Citar"
+  ],
+  "Insérer une référence": [
+    "Insert reference",
+    "Insertar una referencia"
+  ],
+  "Afficher les suivantes": [
+    "Show more",
+    "Mostrar las siguientes"
+  ],
+  "Références explicites": [
+    "Explicit references",
+    "Referencias explícitas"
+  ],
+  "· Mentions du nom": [
+    "· Name mentions",
+    "· Menciones del nombre"
+  ],
+  "Les références sont des citations insérées dans le texte. Les mentions sont des noms ou alias repérés littéralement : elles ne confirment ni l’identité ni une association au projet.": [
+    "References are citations inserted in the text. Mentions are names or aliases found literally; they do not confirm identity or an association with the project.",
+    "Las referencias son citas insertadas en el texto. Las menciones son nombres o alias detectados literalmente; no confirman la identidad ni una asociación con el proyecto."
+  ],
+  "Aucune occurrence dans les textes actuels.": [
+    "No occurrences in the current texts.",
+    "No hay apariciones en los textos actuales."
+  ],
+  "Références explicites · {0}": [
+    "Explicit references · {0}",
+    "Referencias explícitas · {0}"
+  ],
+  "Mentions du nom · {0}": [
+    "Name mentions · {0}",
+    "Menciones del nombre · {0}"
+  ],
+  "Citer l’extrait": [
+    "Cite excerpt",
+    "Citar el fragmento"
+  ],
+  "Une partie de la dictée n’a pas pu être transcrite.": [
+    "Part of the dictation could not be transcribed.",
+    "No se ha podido transcribir una parte del dictado."
+  ],
+  "Le texte a changé pendant la dictée. Copiez la transcription ci-dessous.": [
+    "The text changed during dictation. Copy the transcription below.",
+    "El texto ha cambiado durante el dictado. Copia la transcripción de abajo."
+  ],
+  "La dictée est disponible dans l’application macOS.": [
+    "Dictation is available in the macOS application.",
+    "El dictado está disponible en la aplicación para macOS."
+  ],
+  "Les modèles de dictée locale ne sont pas disponibles.": [
+    "Local dictation models are unavailable.",
+    "Los modelos de dictado local no están disponibles."
+  ],
+  "Microphone indisponible.": [
+    "Microphone unavailable.",
+    "Micrófono no disponible."
+  ],
+  "Arrêter la dictée": [
+    "Stop dictation",
+    "Detener el dictado"
+  ],
+  "Clic : démarrer ou arrêter · maintenir : dicter pendant l’appui · ⌘ ⇧ M": [
+    "Click: start or stop · hold: dictate while pressed · ⌘ ⇧ M",
+    "Clic: iniciar o detener · mantener: dictar mientras se pulsa · ⌘ ⇧ M"
+  ],
+  "Préparation…": [
+    "Preparing…",
+    "Preparando…"
+  ],
+  "Durée de l’enregistrement": [
+    "Recording duration",
+    "Duración de la grabación"
+  ],
+  "Dictée en cours": [
+    "Dictating",
+    "Dictado en curso"
+  ],
+  "Transcription…": [
+    "Transcribing…",
+    "Transcribiendo…"
+  ],
+  "Clic pour dicter · maintenir pour parler": [
+    "Click to dictate · hold to speak",
+    "Clic para dictar · mantener para hablar"
+  ],
+  "Transcription à copier": [
+    "Transcription to copy",
+    "Transcripción para copiar"
+  ],
+  "Ce passage contient des enfants repliés. Dépliez le parent pour modifier ce contenu.": [
+    "This passage contains collapsed children. Expand the parent to edit this content.",
+    "Este pasaje contiene subpasajes contraídos. Despliega el pasaje principal para modificar este contenido."
+  ],
+  "Déplier le passage": [
+    "Expand passage",
+    "Expandir pasaje"
+  ],
+  "Replier le passage": [
+    "Collapse passage",
+    "Contraer pasaje"
+  ],
+  "Déplacer le passage": [
+    "Move passage",
+    "Mover el pasaje"
+  ],
+  "replié": [
+    "collapsed",
+    "contraído"
+  ],
+  "déplié": [
+    "expanded",
+    "desplegado"
+  ],
+  "Glisser pour déplacer · cliquer pour replier ou déplier": [
+    "Drag to move · click to collapse or expand",
+    "Arrastrar para mover · clic para contraer o desplegar"
+  ],
+  "Glisser pour déplacer le passage": [
+    "Drag to move passage",
+    "Arrastrar para mover el pasaje"
+  ],
+  "Langue de l’application": [
+    "Application language",
+    "Idioma de la aplicación"
+  ],
+  "Notes reconnues": [
+    "Recognised notes",
+    "Notas reconocidas"
+  ],
+  "Notes dont le nom ou un alias est reconnu dans le texte.": [
+    "Notes whose name or alias is recognised in the text.",
+    "Notas cuyo nombre o alias se reconoce en el texto."
+  ],
+  "Notes et liens": [
+    "Notes and links",
+    "Notas y enlaces"
+  ],
+  "Notes reconnues et notes auxquelles elles renvoient.": [
+    "Recognised notes and the notes they link to.",
+    "Notas reconocidas y las notas a las que enlazan."
+  ],
+  "Liens et thèmes": [
+    "Links and themes",
+    "Enlaces y temas"
+  ],
+  "Notes reconnues, liens directs et thèmes partagés.": [
+    "Recognised notes, direct links and shared themes.",
+    "Notas reconocidas, enlaces directos y temas compartidos."
+  ],
+  "Recherche associée": [
+    "Related search",
+    "Búsqueda relacionada"
+  ],
+  "Liens et thèmes, avec une recherche de sources associées.": [
+    "Links and themes, with a search for related sources.",
+    "Enlaces y temas, con una búsqueda de fuentes relacionadas."
+  ],
+  "Liens étendus": [
+    "Extended links",
+    "Enlaces ampliados"
+  ],
+  "Recherche associée et liens supplémentaires au deuxième degré.": [
+    "Related search and additional second-degree links.",
+    "Búsqueda relacionada y enlaces adicionales de segundo grado."
+  ],
+  "Exploration élargie": [
+    "Broader exploration",
+    "Exploración ampliada"
+  ],
+  "Liens étendus et recherche associée plus large.": [
+    "Extended links and a broader related search.",
+    "Enlaces ampliados y una búsqueda relacionada más amplia."
+  ],
+  "Barré": [
+    "Strikethrough",
+    "Tachado"
+  ],
+  "Code en ligne": [
+    "Inline code",
+    "Código en línea"
+  ],
+  "Lien": [
+    "Link",
+    "Enlace"
+  ],
+  "Liste à puces": [
+    "Bullet list",
+    "Lista con viñetas"
+  ],
+  "Liste numérotée": [
+    "Numbered list",
+    "Lista numerada"
+  ],
+  "Liste de tâches": [
+    "Task list",
+    "Lista de tareas"
+  ],
+  "Citation": [
+    "Quotation",
+    "Cita"
+  ],
+  "Bloc de code": [
+    "Code block",
+    "Bloque de código"
+  ],
+  "Insérer un séparateur": [
+    "Insert separator",
+    "Insertar un separador"
+  ],
+  "Insérer un tableau": [
+    "Insert table",
+    "Insertar una tabla"
+  ],
+  "Note de bas de page": [
+    "Footnote",
+    "Nota al pie"
+  ],
+  "Mentionnés dans le même passage :": [
+    "Mentioned in the same passage:",
+    "Mencionados en el mismo pasaje:"
+  ],
+  "Ouvrir la barre": [
+    "Open toolbar",
+    "Abrir la barra"
+  ],
+  "{0} inclus dans le manuscrit.": [
+    "{0} included in the manuscript.",
+    "{0} incluido(s) en el manuscrito."
+  ],
+  "{0} exclu{1} du manuscrit.": [
+    "{0} excluded from the manuscript.",
+    "{0} excluido{1} del manuscrito."
+  ],
+  "{0} mot(s) sélectionné(s)": [
+    "{0} word(s) selected",
+    "{0} palabra(s) seleccionada(s)"
+  ]
+}

@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
+import { forceParsing, syntaxTreeAvailable } from '@codemirror/language';
 import { markdown } from '@codemirror/lang-markdown';
 import { sectionMapping } from '../src/editor/composite';
 import { footnoteScenes } from '../src/editor/footnoteReading';
@@ -28,6 +29,7 @@ it('reads the local multiline definition and restores focus to the exact repeate
     }),
   });
   try {
+    expect(forceParsing(view, doc.length)).toBe(true);
     const calls = () => Array.from(view.dom.querySelectorAll<HTMLElement>('[data-footnote-at]'));
     expect(calls()).toHaveLength(3);
     calls()[2].click();
@@ -37,6 +39,32 @@ it('reads the local multiline definition and restores focus to the exact repeate
     expect(view.dom.querySelector('.footnote-reading')).toBeNull();
     expect(view.state.doc.toString()).toBe(doc);
     expect(view.state.selection.main.head).toBe(0);
+  } finally {
+    view.destroy();
+  }
+});
+
+it('reveals parsed calls without turning inline code into a footnote during background parsing', () => {
+  const doc = 'A[^1]\n\nB[^2]\n\n`[^code]`';
+  // Exhaust the initial parse budget between paragraphs, independently of host speed.
+  let time = Date.now();
+  const clock = vi.spyOn(Date, 'now').mockImplementation(() => (time += 100));
+  let state: EditorState;
+  try {
+    state = EditorState.create({ doc, extensions: [markdown(), liveMarkdown] });
+  } finally {
+    clock.mockRestore();
+  }
+  const view = new EditorView({ state, parent: document.body });
+  try {
+    const positions = () =>
+      Array.from(view.dom.querySelectorAll<HTMLElement>('[data-footnote-at]'), (el) =>
+        Number(el.dataset.footnoteAt),
+      );
+    expect(syntaxTreeAvailable(state)).toBe(false);
+    expect(positions()).not.toContain(doc.indexOf('[^code]'));
+    expect(forceParsing(view, doc.length)).toBe(true);
+    expect(positions()).toEqual([doc.indexOf('[^1]'), doc.indexOf('[^2]')]);
   } finally {
     view.destroy();
   }

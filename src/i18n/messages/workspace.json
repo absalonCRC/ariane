@@ -1,0 +1,666 @@
+{
+  "Ouverture du projet": [
+    "Opening project",
+    "Abriendo el proyecto"
+  ],
+  "Revenir au projet": [
+    "Back to project",
+    "Volver al proyecto"
+  ],
+  "Dans votre manuscrit": [
+    "In your manuscript",
+    "En tu manuscrito"
+  ],
+  "Fiche du manuscrit": [
+    "Manuscript entry",
+    "Ficha del manuscrito"
+  ],
+  "Déplier la sidebar": [
+    "Expand sidebar",
+    "Desplegar la barra lateral"
+  ],
+  "Ouvrir la sidebar": [
+    "Open sidebar",
+    "Abrir la barra lateral"
+  ],
+  "Menu du projet": [
+    "Project menu",
+    "Menú del proyecto"
+  ],
+  "Exporter le manuscrit": [
+    "Export manuscript",
+    "Exportar el manuscrito"
+  ],
+  "Sources du projet": [
+    "Project sources",
+    "Fuentes del proyecto"
+  ],
+  "Créer une variante / Voir les versions": [
+    "Create a variant / View versions",
+    "Crear una variante / Ver versiones"
+  ],
+  "Créer un projet": [
+    "Create a project",
+    "Crear un proyecto"
+  ],
+  "Ouvrir un projet": [
+    "Open a project",
+    "Abrir un proyecto"
+  ],
+  "Texte de travail · Hors manuscrit": [
+    "Working text · Outside manuscript",
+    "Texto de trabajo · Fuera del manuscrito"
+  ],
+  "Aucun texte inclus dans le manuscrit.": [
+    "No texts included in the manuscript.",
+    "No hay textos incluidos en el manuscrito."
+  ],
+  "Choisir les textes dans la bibliothèque": [
+    "Choose texts in the library",
+    "Elegir textos en la biblioteca"
+  ],
+  "Ajouter une scène à cette section": [
+    "Add a scene to this section",
+    "Añadir una escena a esta sección"
+  ],
+  "Ouverture des versions…": [
+    "Opening versions…",
+    "Abriendo las versiones…"
+  ],
+  "associée à cette section": [
+    "linked to this section",
+    "vinculada a esta sección"
+  ],
+  "mention détectée": [
+    "mention detected",
+    "mención detectada"
+  ],
+  "lien entre sources": [
+    "link between sources",
+    "enlace entre fuentes"
+  ],
+  "Réduire": [
+    "Collapse",
+    "Contraer"
+  ],
+  "Afficher les {0} autres sources": [
+    "Show the other {0} sources",
+    "Mostrar las otras {0} fuentes"
+  ],
+  "Ligne {0}, colonne {1}": [
+    "Row {0}, column {1}",
+    "Fila {0}, columna {1}"
+  ],
+  "Réduire les sources": [
+    "Collapse sources",
+    "Contraer las fuentes"
+  ],
+  "Sources dans la marge": [
+    "Sources in the margin",
+    "Fuentes en el margen"
+  ],
+  "Reprendre le fil": [
+    "Pick up where you left off",
+    "Retomar el hilo"
+  ],
+  "Passage suggéré": [
+    "Suggested passage",
+    "Pasaje sugerido"
+  ],
+  "Ouvrir la fiche": [
+    "Open entry",
+    "Abrir la ficha"
+  ],
+  "Voir le passage": [
+    "View passage",
+    "Ver el pasaje"
+  ],
+  "Copier l’extrait": [
+    "Copy excerpt",
+    "Copiar el fragmento"
+  ],
+  "Depuis votre texte": [
+    "From your text",
+    "Desde tu texto"
+  ],
+  "Passage à confronter": [
+    "Passage to compare",
+    "Pasaje para contrastar"
+  ],
+  "Enregistrement…": [
+    "Saving…",
+    "Guardando…"
+  ],
+  "Modifications non enregistrées": [
+    "Unsaved changes",
+    "Cambios sin guardar"
+  ],
+  "Sans titre": [
+    "Untitled",
+    "Sin título"
+  ],
+  "Scène": [
+    "Scene",
+    "Escena"
+  ],
+  "Chapitre": [
+    "Chapter",
+    "Capítulo"
+  ],
+  "Section": [
+    "Section",
+    "Sección"
+  ],
+  "Fiches du manuscrit": [
+    "Manuscript entries",
+    "Fichas del manuscrito"
+  ],
+  "Rechercher dans les sources": [
+    "Search sources",
+    "Buscar en las fuentes"
+  ],
+  "Outils des versions": [
+    "Version tools",
+    "Herramientas de versiones"
+  ],
+  "Réglages d’écriture": [
+    "Writing settings",
+    "Ajustes de escritura"
+  ],
+  "Préparation des sources · {0} / {1}": [
+    "Preparing sources · {0} / {1}",
+    "Preparando las fuentes · {0} / {1}"
+  ],
+  "Suspendre": [
+    "Pause",
+    "Pausar"
+  ],
+  "Fermer la recherche": [
+    "Close search",
+    "Cerrar la búsqueda"
+  ],
+  "Rechercher dans les textes et les vaults": [
+    "Search texts and vaults",
+    "Buscar en los textos y los vaults"
+  ],
+  "Rechercher une section": [
+    "Go to a section",
+    "Ir a una sección"
+  ],
+  "Rechercher une section…": [
+    "Search for a section…",
+    "Buscar una sección…"
+  ],
+  "Rechercher dans les textes et les vaults…": [
+    "Search texts and vaults…",
+    "Buscar en los textos y los vaults…"
+  ],
+  "Aucun résultat": [
+    "No results",
+    "Sin resultados"
+  ],
+  "Résultats de recherche": [
+    "Search results",
+    "Resultados de búsqueda"
+  ],
+  "{0} résultat{1} dans les textes": [
+    "{0} result{1} in texts",
+    "{0} resultado{1} en los textos"
+  ],
+  "Aucun passage dans les textes": [
+    "No passages found in texts",
+    "No hay pasajes en los textos"
+  ],
+  " · {0} affichés, précisez la recherche": [
+    " · {0} shown, refine your search",
+    " · {0} mostrados, concreta la búsqueda"
+  ],
+  "Passages du projet": [
+    "Project passages",
+    "Pasajes del proyecto"
+  ],
+  "Paramètres": [
+    "Settings",
+    "Configuración"
+  ],
+  "Catégories de paramètres": [
+    "Settings categories",
+    "Categorías de configuración"
+  ],
+  "Apparence": [
+    "Appearance",
+    "Apariencia"
+  ],
+  "Une interface calme, adaptée à votre lumière. Le thème s’applique à toute l’application.": [
+    "A calm interface that suits your lighting. The theme applies throughout the application.",
+    "Una interfaz tranquila, adaptada a la luz de tu entorno. El tema se aplica a toda la aplicación."
+  ],
+  "Thème": [
+    "Theme",
+    "Tema"
+  ],
+  "Clair": [
+    "Light",
+    "Claro"
+  ],
+  "Sombre": [
+    "Dark",
+    "Oscuro"
+  ],
+  "Système": [
+    "System",
+    "Sistema"
+  ],
+  "Texte de ce projet": [
+    "Text in this project",
+    "Texto de este proyecto"
+  ],
+  "Typographie": [
+    "Typography",
+    "Tipografía"
+  ],
+  "Littéraire · EB Garamond": [
+    "Literary · EB Garamond",
+    "Literaria · EB Garamond"
+  ],
+  "Chasse fixe": [
+    "Monospace",
+    "Monoespaciada"
+  ],
+  "Taille du texte ·": [
+    "Text size ·",
+    "Tamaño del texto ·"
+  ],
+  "px": [
+    "px",
+    "px"
+  ],
+  "Taille du texte": [
+    "Text size",
+    "Tamaño del texto"
+  ],
+  "La page s’ouvre. Une phrase trouve son rythme.": [
+    "The page opens. A sentence finds its rhythm.",
+    "La página se abre. Una frase encuentra su ritmo."
+  ],
+  "Écriture": [
+    "Writing",
+    "Escritura"
+  ],
+  "Ces réglages sont conservés avec le projet.": [
+    "These settings are saved with the project.",
+    "Estos ajustes se guardan con el proyecto."
+  ],
+  "Concentration": [
+    "Focus",
+    "Concentración"
+  ],
+  "Aucune": [
+    "None",
+    "Ninguna"
+  ],
+  "Paragraphe actif": [
+    "Active paragraph",
+    "Párrafo activo"
+  ],
+  "Phrase active": [
+    "Active sentence",
+    "Frase activa"
+  ],
+  "Machine à écrire": [
+    "Typewriter",
+    "Máquina de escribir"
+  ],
+  "Sans empattement · Figtree": [
+    "Sans serif · Figtree",
+    "Sin serifa · Figtree"
+  ],
+  "Chasse fixe · Source Code Pro": [
+    "Monospaced · Source Code Pro",
+    "Monoespaciada · Source Code Pro"
+  ],
+  "Son de machine à écrire": [
+    "Typewriter sounds",
+    "Sonido de máquina de escribir"
+  ],
+  "Jouer un son pendant la frappe dans le manuscrit.": [
+    "Play sounds while typing in the manuscript.",
+    "Reproducir sonidos al escribir en el manuscrito."
+  ],
+  "Garder la ligne active au centre pendant la saisie.": [
+    "Keep the active line centred while typing.",
+    "Mantener la línea activa en el centro al escribir."
+  ],
+  "Révision": [
+    "Revision",
+    "Revisión"
+  ],
+  "Afficher les repères de révision dans l’éditeur.": [
+    "Show revision markers in the editor.",
+    "Mostrar las marcas de revisión en el editor."
+  ],
+  "Compteur": [
+    "Counter",
+    "Contador"
+  ],
+  "Mots": [
+    "Words",
+    "Palabras"
+  ],
+  "Caractères": [
+    "Characters",
+    "Caracteres"
+  ],
+  "Lignes": [
+    "Lines",
+    "Líneas"
+  ],
+  "Langue du document": [
+    "Document language",
+    "Idioma del documento"
+  ],
+  "Français": [
+    "Français",
+    "Français"
+  ],
+  "English": [
+    "English",
+    "English"
+  ],
+  "Español": [
+    "Español",
+    "Español"
+  ],
+  "Deutsch": [
+    "Deutsch",
+    "Deutsch"
+  ],
+  "Italiano": [
+    "Italiano",
+    "Italiano"
+  ],
+  "Sources et références": [
+    "Sources and references",
+    "Fuentes y referencias"
+  ],
+  "Profondeur de recherche ·": [
+    "Search depth ·",
+    "Profundidad de búsqueda ·"
+  ],
+  "Profondeur des sources": [
+    "Source depth",
+    "Profundidad de las fuentes"
+  ],
+  "0 · Notes détectées dans le texte — 5 · Exploration des liens": [
+    "0 · Notes detected in the text — 5 · Explore links",
+    "0 · Notas detectadas en el texto — 5 · Exploración de enlaces"
+  ],
+  "Style des citations": [
+    "Citation style",
+    "Estilo de citas"
+  ],
+  "Notes simples": [
+    "Simple notes",
+    "Notas simples"
+  ],
+  "Bibliographie · APA": [
+    "Bibliography · APA",
+    "Bibliografía · APA"
+  ],
+  "Bibliographie · Chicago": [
+    "Bibliography · Chicago",
+    "Bibliografía · Chicago"
+  ],
+  "Enrichir les fiches pendant l’écriture": [
+    "Enrich entries while writing",
+    "Enriquecer las fichas al escribir"
+  ],
+  "Analyse locale après une pause, conservée dans ce projet.": [
+    "Local analysis after a pause, saved in this project.",
+    "Análisis local tras una pausa, guardado en este proyecto."
+  ],
+  "Disponible dans l’application macOS.": [
+    "Available in the macOS application.",
+    "Disponible en la aplicación para macOS."
+  ],
+  "Enrichissement suspendu : {0}": [
+    "Enrichment paused: {0}",
+    "Enriquecimiento pausado: {0}"
+  ],
+  "Vaults connectés": [
+    "Connected vaults",
+    "Vaults conectados"
+  ],
+  "Projet et données": [
+    "Project and data",
+    "Proyecto y datos"
+  ],
+  "Projet": [
+    "Project",
+    "Proyecto"
+  ],
+  "Emplacement": [
+    "Location",
+    "Ubicación"
+  ],
+  "Aperçu local de ce navigateur": [
+    "Local preview in this browser",
+    "Vista previa local de este navegador"
+  ],
+  "Textes": [
+    "Texts",
+    "Textos"
+  ],
+  "{0} textes · {1} inclus dans le manuscrit": [
+    "{0} texts · {1} included in the manuscript",
+    "{0} textos · {1} incluidos en el manuscrito"
+  ],
+  "Enregistrement": [
+    "Saving",
+    "Guardado"
+  ],
+  "Les modifications sont enregistrées automatiquement. Les versions permettent de conserver un état nommé et de revenir sur une révision.": [
+    "Changes are saved automatically. Versions let you keep a named snapshot and revisit a revision.",
+    "Los cambios se guardan automáticamente. Las versiones permiten conservar un estado con nombre y volver a una revisión."
+  ],
+  "Ouvrir les versions": [
+    "Open versions",
+    "Abrir las versiones"
+  ],
+  "Confidentialité": [
+    "Privacy",
+    "Privacidad"
+  ],
+  "La recherche et l’analyse s’exécutent localement dans l’application macOS. Les vaults externes restent en lecture seule.": [
+    "Search and analysis run locally in the macOS application. External vaults remain read-only.",
+    "La búsqueda y el análisis se ejecutan localmente en la aplicación para macOS. Los vaults externos permanecen en modo de solo lectura."
+  ],
+  "Raccourcis": [
+    "Keyboard shortcuts",
+    "Atajos de teclado"
+  ],
+  "Rechercher textes et sources": [
+    "Search texts and sources",
+    "Buscar textos y fuentes"
+  ],
+  "Rejoindre une section": [
+    "Go to a section",
+    "Ir a una sección"
+  ],
+  "Commandes": [
+    "Commands",
+    "Comandos"
+  ],
+  "Ouvrir ou replier la sidebar": [
+    "Open or collapse sidebar",
+    "Abrir o contraer la barra lateral"
+  ],
+  "Enregistrer": [
+    "Save",
+    "Guardar"
+  ],
+  "Exporter": [
+    "Export",
+    "Exportar"
+  ],
+  "Dicter": [
+    "Dictate",
+    "Dictar"
+  ],
+  "Parcourir la bibliothèque": [
+    "Browse the library",
+    "Explorar la biblioteca"
+  ],
+  "Replier / déplier une branche": [
+    "Collapse / expand a branch",
+    "Contraer / desplegar una rama"
+  ],
+  "Renommer dans la bibliothèque": [
+    "Rename in the library",
+    "Renombrar en la biblioteca"
+  ],
+  "Sélectionner plusieurs textes": [
+    "Select multiple texts",
+    "Seleccionar varios textos"
+  ],
+  "Annuler un rangement, dans la bibliothèque": [
+    "Undo organisation in the library",
+    "Deshacer la organización en la biblioteca"
+  ],
+  "Écriture et lecture": [
+    "Writing and reading",
+    "Escritura y lectura"
+  ],
+  "Fermer les réglages": [
+    "Close settings",
+    "Cerrar los ajustes"
+  ],
+  "Littéraire": [
+    "Literary",
+    "Literaria"
+  ],
+  "Taille du texte · {0} px": [
+    "Text size · {0} px",
+    "Tamaño del texto · {0} px"
+  ],
+  "Paragraphe": [
+    "Paragraph",
+    "Párrafo"
+  ],
+  "Mot": [
+    "Word",
+    "Palabra"
+  ],
+  "Phrase": [
+    "Sentence",
+    "Frase"
+  ],
+  "Défilement": [
+    "Scrolling",
+    "Desplazamiento"
+  ],
+  "Classique": [
+    "Classic",
+    "Clásico"
+  ],
+  "Enregistrer le projet dans…": [
+    "Save project in…",
+    "Guardar el proyecto en…"
+  ],
+  "Ouvrir un projet ariane": [
+    "Open an ariane project",
+    "Abrir un proyecto de ariane"
+  ],
+  "Un espace pour écrire.": [
+    "A space to write.",
+    "Un espacio para escribir."
+  ],
+  "Tout reste sur ce Mac.": [
+    "Everything stays on this Mac.",
+    "Todo se queda en este Mac."
+  ],
+  "Nouveau projet": [
+    "New project",
+    "Nuevo proyecto"
+  ],
+  "Nom du projet": [
+    "Project name",
+    "Nombre del proyecto"
+  ],
+  "Le titre de votre projet": [
+    "Your project title",
+    "El título de tu proyecto"
+  ],
+  "Annuler": [
+    "Cancel",
+    "Cancelar"
+  ],
+  "Créer le projet": [
+    "Create project",
+    "Crear el proyecto"
+  ],
+  "Choisir un dossier…": [
+    "Choose a folder…",
+    "Elegir una carpeta…"
+  ],
+  "Ouverture…": [
+    "Opening…",
+    "Abriendo…"
+  ],
+  "Vos projets": [
+    "Your projects",
+    "Tus proyectos"
+  ],
+  "Ouvrir un dossier…": [
+    "Open a folder…",
+    "Abrir una carpeta…"
+  ],
+  "Fermer le message de rangement": [
+    "Dismiss organisation message",
+    "Cerrar el mensaje de organización"
+  ],
+  "Export en cours…": [
+    "Exporting…",
+    "Exportando…"
+  ],
+  "Votre manuscrit est prêt.": [
+    "Your manuscript is ready.",
+    "Tu manuscrito está listo."
+  ],
+  "L’export n’a pas abouti.": [
+    "The export could not be completed.",
+    "No se ha podido completar la exportación."
+  ],
+  "Voir l’export": [
+    "View export",
+    "Ver la exportación"
+  ],
+  "Fermer": [
+    "Close",
+    "Cerrar"
+  ],
+  "Votre texte a été récupéré.": [
+    "Your text has been recovered.",
+    "Tu texto se ha recuperado."
+  ],
+  "Reprendre l’écriture": [
+    "Resume writing",
+    "Volver a escribir"
+  ],
+  "Voir les versions": [
+    "View versions",
+    "Ver las versiones"
+  ],
+  "Ce texte a été modifié ailleurs. Une copie sera conservée avant résolution.": [
+    "This text was modified elsewhere. A copy will be kept before resolving the conflict.",
+    "Este texto se ha modificado en otro lugar. Se conservará una copia antes de resolver el conflicto."
+  ],
+  "Lire la version externe": [
+    "Read external version",
+    "Leer la versión externa"
+  ],
+  "Conserver mon texte": [
+    "Keep my text",
+    "Conservar mi texto"
+  ]
+}

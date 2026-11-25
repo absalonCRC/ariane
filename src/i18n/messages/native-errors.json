@@ -1,0 +1,402 @@
+{
+  "Les liens symboliques ne sont pas acceptés à l’import.": [
+    "Symbolic links cannot be imported.",
+    "No se pueden importar enlaces simbólicos."
+  ],
+  "Source invalide.": [
+    "Invalid source.",
+    "Fuente no válida."
+  ],
+  "Lien symbolique refusé : {0}": [
+    "Symbolic link rejected: {0}",
+    "Enlace simbólico rechazado: {0}"
+  ],
+  "Fichier spécial refusé : {0}": [
+    "Special file rejected: {0}",
+    "Archivo especial rechazado: {0}"
+  ],
+  "Source trop volumineuse.": [
+    "Source is too large.",
+    "La fuente es demasiado grande."
+  ],
+  "L’import dépasse 500 fichiers ou 100 Mio.": [
+    "Import exceeds 500 files or 100 MiB.",
+    "La importación supera los 500 archivos o los 100 MiB."
+  ],
+  "Aucun Markdown, DOCX ou TextBundle importable dans la source.": [
+    "No importable Markdown, DOCX or TextBundle found in the source.",
+    "No hay archivos Markdown, DOCX o TextBundle importables en la fuente."
+  ],
+  "Image non locale conservée telle quelle : {destination}": [
+    "Non-local image kept as is: {destination}",
+    "Imagen no local conservada sin cambios: {destination}"
+  ],
+  "DOCX trop complexe : plus de 500 éléments.": [
+    "DOCX is too complex: over 500 elements.",
+    "El DOCX es demasiado complejo: más de 500 elementos."
+  ],
+  "DOCX décompressé trop volumineux.": [
+    "Uncompressed DOCX is too large.",
+    "El DOCX descomprimido es demasiado grande."
+  ],
+  "Conversion DOCX interrompue après 30 secondes.": [
+    "DOCX conversion stopped after 30 seconds.",
+    "Conversión DOCX interrumpida tras 30 segundos."
+  ],
+  "Le moteur de révision s’est arrêté au démarrage.": [
+    "The revision engine stopped during startup.",
+    "El motor de revisión se ha detenido al iniciarse."
+  ],
+  "Le moteur de révision n’a pas démarré dans le délai prévu.": [
+    "The revision engine did not start within the time limit.",
+    "El motor de revisión no se ha iniciado dentro del plazo previsto."
+  ],
+  "LanguageTool local n’est pas installé.": [
+    "Local LanguageTool is not installed.",
+    "LanguageTool local no está instalado."
+  ],
+  "Le modèle de révision local n’est pas installé.": [
+    "The local revision model is not installed.",
+    "El modelo de revisión local no está instalado."
+  ],
+  "Modèle local indisponible.": [
+    "Local model unavailable.",
+    "Modelo local no disponible."
+  ],
+  "Langue de révision non prise en charge.": [
+    "Revision language not supported.",
+    "Idioma de revisión no compatible."
+  ],
+  "Sélectionnez un passage de 800 caractères maximum.": [
+    "Select a passage of up to 800 characters.",
+    "Selecciona un pasaje de 800 caracteres como máximo."
+  ],
+  "Réponse LanguageTool invalide.": [
+    "Invalid LanguageTool response.",
+    "Respuesta de LanguageTool no válida."
+  ],
+  "La suggestion du modèle est incomplète.": [
+    "The model’s suggestion is incomplete.",
+    "La sugerencia del modelo está incompleta."
+  ],
+  "Réponse du modèle invalide.": [
+    "Invalid model response.",
+    "Respuesta del modelo no válida."
+  ],
+  "Microphone : entrée du moteur indisponible": [
+    "Microphone: engine input unavailable",
+    "Micrófono: entrada del motor no disponible"
+  ],
+  "La transcription locale a échoué.": [
+    "Local transcription failed.",
+    "La transcripción local ha fallado."
+  ],
+  "Transcription invalide": [
+    "Invalid transcription",
+    "Transcripción no válida"
+  ],
+  "Les modèles de dictée locale ne sont pas installés.": [
+    "Local dictation models are not installed.",
+    "Los modelos de dictado local no están instalados."
+  ],
+  "Enregistrement audio invalide.": [
+    "Invalid audio recording.",
+    "Grabación de audio no válida."
+  ],
+  "Le projet actif a changé.": [
+    "The active project has changed.",
+    "El proyecto activo ha cambiado."
+  ],
+  "Cette source a changé ou n’est plus disponible. Actualisez son index.": [
+    "This source has changed or is no longer available. Refresh its index.",
+    "Esta fuente ha cambiado o ya no está disponible. Actualiza su índice."
+  ],
+  "Une indexation est déjà en cours.": [
+    "Indexing is already in progress.",
+    "Ya hay una indexación en curso."
+  ],
+  "Le fichier dépasse 100 Mo": [
+    "The file exceeds 100 MB",
+    "El archivo supera los 100 MB"
+  ],
+  "Un export est déjà en cours.": [
+    "An export is already in progress.",
+    "Ya hay una exportación en curso."
+  ],
+  "Action invalide": [
+    "Invalid action",
+    "Acción no válida"
+  ],
+  "Plan de scène invalide.": [
+    "Invalid scene outline.",
+    "Esquema de escena no válido."
+  ],
+  "Modèle manquant.": [
+    "Missing model.",
+    "Falta el modelo."
+  ],
+  "Modèle vectoriel incompatible.": [
+    "Incompatible embedding model.",
+    "Modelo vectorial incompatible."
+  ],
+  "Vecteur non normalisé.": [
+    "Vector is not normalised.",
+    "Vector no normalizado."
+  ],
+  "Vecteur de requête invalide.": [
+    "Invalid query vector.",
+    "Vector de consulta no válido."
+  ],
+  "Section de session manquante.": [
+    "Missing session section.",
+    "Falta la sección de la sesión."
+  ],
+  "Section de session introuvable.": [
+    "Session section not found.",
+    "Sección de la sesión no encontrada."
+  ],
+  "La session doit viser une scène.": [
+    "The session must target a scene.",
+    "La sesión debe apuntar a una escena."
+  ],
+  "Nœud de session introuvable.": [
+    "Session node not found.",
+    "Nodo de la sesión no encontrado."
+  ],
+  "Mention hors du passage ou mal alignée.": [
+    "Mention is outside the passage or misaligned.",
+    "La mención está fuera del pasaje o mal alineada."
+  ],
+  "Type d'entité inconnu.": [
+    "Unknown entity type.",
+    "Tipo de entidad desconocido."
+  ],
+  "Nom d'entité vide.": [
+    "Empty entity name.",
+    "Nombre de entidad vacío."
+  ],
+  "Projet ariane introuvable.": [
+    "ariane project not found.",
+    "Proyecto de ariane no encontrado."
+  ],
+  "Résultat GLiNER incompatible.": [
+    "Incompatible GLiNER result.",
+    "Resultado de GLiNER incompatible."
+  ],
+  "Une section ne peut pas être placée dans sa propre branche.": [
+    "A section cannot be placed inside its own branch.",
+    "Una sección no se puede colocar dentro de su propia rama."
+  ],
+  "Cette sélection n’est plus disponible.": [
+    "This selection is no longer available.",
+    "Esta selección ya no está disponible."
+  ],
+  "Type inconnu.": [
+    "Unknown type.",
+    "Tipo desconocido."
+  ],
+  "Opération inconnue.": [
+    "Unknown operation.",
+    "Operación desconocida."
+  ],
+  "Projet absent de la bibliothèque.": [
+    "Project is not in the library.",
+    "El proyecto no está en la biblioteca."
+  ],
+  "Scène introuvable.": [
+    "Scene not found.",
+    "Escena no encontrada."
+  ],
+  "Placez le curseur à l’intérieur du texte.": [
+    "Place the cursor inside the text.",
+    "Coloca el cursor dentro del texto."
+  ],
+  "Scène suivante introuvable.": [
+    "Next scene not found.",
+    "Escena siguiente no encontrada."
+  ],
+  "Choisissez deux scènes consécutives du même emplacement.": [
+    "Choose two consecutive scenes in the same location.",
+    "Elige dos escenas consecutivas de la misma ubicación."
+  ],
+  "Sélection invalide ou trop longue (10 000 caractères maximum).": [
+    "Invalid or overly long selection (10,000 characters maximum).",
+    "Selección no válida o demasiado larga (10 000 caracteres como máximo)."
+  ],
+  "Écrivez une annotation de moins de 20 000 caractères.": [
+    "Write an annotation of fewer than 20,000 characters.",
+    "Escribe una anotación de menos de 20 000 caracteres."
+  ],
+  "Le texte a changé. Sélectionnez à nouveau le passage.": [
+    "The text has changed. Select the passage again.",
+    "El texto ha cambiado. Selecciona el pasaje de nuevo."
+  ],
+  "L’annotation a changé. Rechargez-la.": [
+    "The annotation has changed. Reload it.",
+    "La anotación ha cambiado. Vuelve a cargarla."
+  ],
+  "Le projet doit avoir un nom.": [
+    "The project must have a name.",
+    "El proyecto debe tener un nombre."
+  ],
+  "Ce dossier contient déjà un projet.": [
+    "This folder already contains a project.",
+    "Esta carpeta ya contiene un proyecto."
+  ],
+  "Une section ne peut être sauvegardée deux fois dans le même lot.": [
+    "A section cannot be saved twice in the same batch.",
+    "Una sección no se puede guardar dos veces en el mismo lote."
+  ],
+  "Le texte a changé depuis cette sauvegarde. Rechargez sa version.": [
+    "The text has changed since this save. Reload its version.",
+    "El texto ha cambiado desde que se guardó. Vuelve a cargar su versión."
+  ],
+  "Type de section inconnu.": [
+    "Unknown section type.",
+    "Tipo de sección desconocido."
+  ],
+  "Section parente introuvable.": [
+    "Parent section not found.",
+    "Sección principal no encontrada."
+  ],
+  "Un dossier ne peut pas être placé dans lui-même.": [
+    "A folder cannot be placed inside itself.",
+    "Una carpeta no se puede colocar dentro de sí misma."
+  ],
+  "Section introuvable": [
+    "Section not found",
+    "Sección no encontrada"
+  ],
+  "Plan invalide : version ou nœuds manquants.": [
+    "Invalid outline: missing version or nodes.",
+    "Esquema no válido: faltan la versión o los nodos."
+  ],
+  "Plan invalide : identifiant vide ou répété.": [
+    "Invalid outline: empty or duplicate identifier.",
+    "Esquema no válido: identificador vacío o repetido."
+  ],
+  "Plan invalide : position de nœud hors d'une ligne du texte.": [
+    "Invalid outline: node position is not at the start of a text line.",
+    "Esquema no válido: la posición del nodo no está al principio de una línea del texto."
+  ],
+  "Nom ou description de fiche invalide.": [
+    "Invalid entry name or description.",
+    "Nombre o descripción de ficha no válido."
+  ],
+  "Type de fiche inconnu.": [
+    "Unknown entry type.",
+    "Tipo de ficha desconocido."
+  ],
+  "Ce projet ne possède pas de vault ariane accessible en écriture.": [
+    "This project has no writable ariane vault.",
+    "Este proyecto no tiene un vault de ariane con acceso de escritura."
+  ],
+  "Le dossier de fiches n’est pas accessible en sécurité.": [
+    "The entry folder cannot be accessed safely.",
+    "No se puede acceder a la carpeta de fichas de forma segura."
+  ],
+  "La fiche existe déjà ou ne peut pas être créée ; aucun fichier existant n’a été remplacé.": [
+    "The entry already exists or cannot be created; no existing files were replaced.",
+    "La ficha ya existe o no se puede crear; no se ha reemplazado ningún archivo existente."
+  ],
+  "Le dossier du projet n’est pas vide. Choisissez un autre nom.": [
+    "The project folder is not empty. Choose another name.",
+    "La carpeta del proyecto no está vacía. Elige otro nombre."
+  ],
+  "Le projet doit être créé hors du vault en lecture seule.": [
+    "The project must be created outside the read-only vault.",
+    "El proyecto debe crearse fuera del vault de solo lectura."
+  ],
+  "Périmètre de sources invalide": [
+    "Invalid source scope",
+    "Ámbito de fuentes no válido"
+  ],
+  "Source hors du périmètre du projet": [
+    "Source is outside the project scope",
+    "La fuente está fuera del ámbito del proyecto"
+  ],
+  "Le fichier est hors du vault": [
+    "The file is outside the vault",
+    "El archivo está fuera del vault"
+  ],
+  "PDF illisible ou protégé": [
+    "PDF is unreadable or protected",
+    "El PDF es ilegible o está protegido"
+  ],
+  "Nommez cette version.": [
+    "Name this version.",
+    "Dale un nombre a esta versión."
+  ],
+  "Le moteur de recherche locale n’est pas installé.": [
+    "The local search engine is not installed.",
+    "El motor de búsqueda local no está instalado."
+  ],
+  "Le modèle local n’a pas démarré dans le délai prévu.": [
+    "The local model did not start within the time limit.",
+    "El modelo local no se ha iniciado dentro del plazo previsto."
+  ],
+  "Le modèle a renvoyé un vecteur vide": [
+    "The model returned an empty vector",
+    "El modelo ha devuelto un vector vacío"
+  ],
+  "Dimension inattendue du modèle local": [
+    "Unexpected local model dimension",
+    "Dimensión inesperada del modelo local"
+  ],
+  "La scène « {title} » définit deux fois la note [^{label}].": [
+    "Scene “{title}” defines note [^{label}] twice.",
+    "La escena «{title}» define la nota [^{label}] dos veces."
+  ],
+  "La scène « {title} » utilise la note [^{missing}] sans définition.": [
+    "Scene “{title}” uses note [^{missing}] without a definition.",
+    "La escena «{title}» usa la nota [^{missing}] sin definirla."
+  ],
+  "Export annulé.": [
+    "Export cancelled.",
+    "Exportación cancelada."
+  ],
+  "Format d’export inconnu": [
+    "Unknown export format",
+    "Formato de exportación desconocido"
+  ],
+  "Destination invalide": [
+    "Invalid destination",
+    "Destino no válido"
+  ],
+  "Le dossier de destination n’est plus accessible": [
+    "The destination folder is no longer accessible",
+    "La carpeta de destino ya no es accesible"
+  ],
+  "Le moteur de mémoire locale n’est pas installé.": [
+    "The local memory engine is not installed.",
+    "El motor de memoria local no está instalado."
+  ],
+  "Entrée du moteur indisponible": [
+    "Engine input unavailable",
+    "Entrada del motor no disponible"
+  ],
+  "Analyse locale différée : délai dépassé.": [
+    "Local analysis deferred: timed out.",
+    "Análisis local aplazado: tiempo de espera agotado."
+  ],
+  "Moteur arrêté": [
+    "Engine stopped",
+    "Motor detenido"
+  ],
+  "Le moteur local s’est arrêté.": [
+    "The local engine has stopped.",
+    "El motor local se ha detenido."
+  ],
+  "Ce dossier ne contient pas de projet ariane.": [
+    "This folder does not contain an ariane project.",
+    "Esta carpeta no contiene un proyecto de ariane."
+  ],
+  "+ Ligne": [
+    "+ Row",
+    "+ Fila"
+  ],
+  "− Ligne": [
+    "− Row",
+    "− Fila"
+  ]
+}

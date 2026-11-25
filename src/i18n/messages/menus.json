@@ -1,0 +1,206 @@
+{
+  "{0} instance liée": [
+    "{0} linked occurrence",
+    "{0} aparición vinculada"
+  ],
+  "{0} instances liées": [
+    "{0} linked occurrences",
+    "{0} apariciones vinculadas"
+  ],
+  "Fichier": [
+    "File",
+    "Archivo"
+  ],
+  "Édition": [
+    "Edit",
+    "Edición"
+  ],
+  "Présentation": [
+    "View",
+    "Visualización"
+  ],
+  "Fenêtre": [
+    "Window",
+    "Ventana"
+  ],
+  "Aide": [
+    "Help",
+    "Ayuda"
+  ],
+  "Quitter ariane": [
+    "Quit ariane",
+    "Salir de ariane"
+  ],
+  "Réglages…": [
+    "Settings…",
+    "Configuración…"
+  ],
+  "Nouveau projet…": [
+    "New project…",
+    "Nuevo proyecto…"
+  ],
+  "Ouvrir un projet…": [
+    "Open a project…",
+    "Abrir un proyecto…"
+  ],
+  "Importer un manuscrit…": [
+    "Import a manuscript…",
+    "Importar un manuscrito…"
+  ],
+  "Exporter…": [
+    "Export…",
+    "Exportar…"
+  ],
+  "Versions…": [
+    "Versions…",
+    "Versiones…"
+  ],
+  "Fermer la fenêtre": [
+    "Close window",
+    "Cerrar la ventana"
+  ],
+  "Rechercher…": [
+    "Search…",
+    "Buscar…"
+  ],
+  "Réorganiser le texte…": [
+    "Reorganise text…",
+    "Reorganizar el texto…"
+  ],
+  "Afficher ou masquer le classeur": [
+    "Show or hide binder",
+    "Mostrar u ocultar el archivador"
+  ],
+  "Commandes…": [
+    "Commands…",
+    "Comandos…"
+  ],
+  "Rejoindre une section…": [
+    "Go to a section…",
+    "Ir a una sección…"
+  ],
+  "Sources du projet…": [
+    "Project sources…",
+    "Fuentes del proyecto…"
+  ],
+  "À propos d’ariane": [
+    "About ariane",
+    "Acerca de ariane"
+  ],
+  "Masquer ariane": [
+    "Hide ariane",
+    "Ocultar ariane"
+  ],
+  "Masquer les autres": [
+    "Hide Others",
+    "Ocultar las demás"
+  ],
+  "Tout afficher": [
+    "Show All",
+    "Mostrar todo"
+  ],
+  "Services": [
+    "Services",
+    "Servicios"
+  ],
+  "Réduire la fenêtre": [
+    "Minimise",
+    "Minimizar"
+  ],
+  "Agrandir": [
+    "Zoom",
+    "Ampliar"
+  ],
+  "Plein écran": [
+    "Toggle Full Screen",
+    "Alternar pantalla completa"
+  ],
+  "Tout sélectionner": [
+    "Select All",
+    "Seleccionar todo"
+  ],
+  "Aller à la ligne": [
+    "Go to line",
+    "Ir a la línea"
+  ],
+  "Aller": [
+    "Go",
+    "Ir"
+  ],
+  "Rechercher": [
+    "Find",
+    "Buscar"
+  ],
+  "suivant": [
+    "next",
+    "siguiente"
+  ],
+  "précédent": [
+    "previous",
+    "anterior"
+  ],
+  "Tout": [
+    "all",
+    "todo"
+  ],
+  "Respecter la casse": [
+    "match case",
+    "distinguir mayúsculas"
+  ],
+  "Expression régulière": [
+    "regexp",
+    "expresión regular"
+  ],
+  "Mots entiers": [
+    "by word",
+    "palabras completas"
+  ],
+  "Remplacer": [
+    "Replace",
+    "Reemplazar"
+  ],
+  "Remplacer tout": [
+    "replace all",
+    "reemplazar todo"
+  ],
+  "Remplacer par": [
+    "Replace with",
+    "Reemplazar por"
+  ],
+  "fermer": [
+    "close",
+    "cerrar"
+  ],
+  "Sélection supprimée": [
+    "Selection deleted",
+    "Selección eliminada"
+  ],
+  "Caractère de contrôle": [
+    "Control character",
+    "Carácter de control"
+  ],
+  "correspondance actuelle": [
+    "current match",
+    "coincidencia actual"
+  ],
+  "à la ligne": [
+    "on line",
+    "en la línea"
+  ],
+  "correspondance remplacée à la ligne $": [
+    "replaced match on line $",
+    "coincidencia reemplazada en la línea $"
+  ],
+  "$ correspondances remplacées": [
+    "replaced $ matches",
+    "$ coincidencias reemplazadas"
+  ],
+  "Chemin de ressource invalide.": [
+    "Invalid resource path.",
+    "Ruta de recurso no válida."
+  ],
+  "Le texte « {0} » n’est pas lisible en UTF-8.": [
+    "The text “{0}” cannot be read as UTF-8.",
+    "El texto «{0}» no se puede leer en UTF-8."
+  ]
+}

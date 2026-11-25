@@ -1,9 +1,43 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import ts from 'typescript';
 
 const root = path.resolve(import.meta.dirname, '..');
 const errors = [];
+const code = '*.{ts,tsx,js,jsx,mjs,cjs,rs,py,css,html,swift,c,cpp,h,sh}';
+const messages = 'src/i18n/messages/*.json';
+const listing = spawnSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {
+  cwd: root,
+  encoding: 'utf8',
+});
+// Include new source directories, while ignoring installed runtimes and local artifacts.
+// Source archives can run the same check without a Git checkout.
+const maintained =
+  listing.status === 0 && listing.stdout
+    ? listing.stdout
+        .split('\0')
+        .filter(
+          (file) =>
+            (path.matchesGlob(path.basename(file), code) || path.matchesGlob(file, messages)) &&
+            fs.existsSync(path.join(root, file)),
+        )
+    : fs.globSync(
+        [
+          code,
+          `{src,tests,benchmarks,scripts}/**/${code}`,
+          `src-tauri/${code}`,
+          `src-tauri/{src,tests}/**/${code}`,
+          'src-tauri/resources/{engine,voice}/*.py',
+          messages,
+        ],
+        { cwd: root },
+      );
+for (const relative of maintained) {
+  const content = fs.readFileSync(path.join(root, relative), 'utf8');
+  const lines = content.split('\n').length - Number(content.endsWith('\n') || !content);
+  if (lines > 800) errors.push(`${relative}: ${lines} lines (maximum 800)`);
+}
 function walk(folder) {
   return fs.readdirSync(folder, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(folder, entry.name);
@@ -72,4 +106,8 @@ for (const name of ['Requests', 'Responses']) {
 if (errors.length) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
-} else console.log(`Architecture: contract boundaries and ${native.length} IPC names verified.`);
+} else {
+  console.log(
+    `Architecture: ${maintained.length} files within 800 lines, contract boundaries and ${native.length} IPC names verified.`,
+  );
+}

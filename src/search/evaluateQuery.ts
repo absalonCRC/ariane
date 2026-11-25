@@ -3,10 +3,20 @@ import type { StructuredQuery } from '../contracts/structuredQuery';
 import type { EntityCatalog } from '../contracts/entityIdentity';
 import type { EntityBatch } from '../contracts/entities';
 import type { Source } from '../contracts/sources';
-import { taggedPassages, type TagPassage } from '../tags/passages';
-import { initialOutline, validOutline } from '../editor/outline/model';
+import { passageAtIndex, passageOutline, taggedPassages, type TagPassage } from '../tags/passages';
 import { identityOccurrences } from '../entities/occurrences';
 import { canonicalEntity } from '../entities/model';
+function passageIndex(nodes: ReturnType<typeof passageOutline>['nodes'], offset: number) {
+  let low = 0;
+  let high = nodes.length;
+  while (low < high) {
+    const middle = Math.floor((low + high) / 2);
+    if (nodes[middle].start <= offset) low = middle + 1;
+    else high = middle;
+  }
+  return low - 1;
+}
+
 export function evaluateQuery(
   project: Project,
   query: StructuredQuery,
@@ -17,6 +27,9 @@ export function evaluateQuery(
   if (query.version !== 1 || !query.groups.length || query.groups.some((g) => !g.length))
     throw Error('Vue enregistrée invalide ou trop récente.');
   const result = new Map<string, TagPassage>();
+  const order = new Map(project.sections.map((s, i) => [s.id, i]));
+  // A search sees the current drafts. Reuse outlines only within this evaluation.
+  const outlines = new Map<string, ReturnType<typeof passageOutline>>();
   let ambiguous = 0;
   for (const group of query.groups) {
     let matches: Map<string, TagPassage> | null = null;
@@ -34,24 +47,14 @@ export function evaluateQuery(
             ambiguous++;
             continue;
           }
-          const section = project.sections.find((s) => s.id === hit.section)!;
-          const saved = validOutline(section.text, section.outline),
-            outline = initialOutline(section.text, saved ? section.outline : null);
-          let i = outline.nodes.length - 1;
-          while (i >= 0 && outline.nodes[i].start > hit.from) i--;
-          const node = outline.nodes[i];
-          if (node)
-            passages.push({
-              section: section.id,
-              title: section.title,
-              node: saved ? node.id : null,
-              from: node.start,
-              text: section.text.slice(
-                node.start,
-                outline.nodes[i + 1] ? outline.nodes[i + 1].start - 1 : section.text.length,
-              ),
-              inherited: false,
-            });
+          const section = project.sections[order.get(hit.section)!];
+          let outline = outlines.get(section.id);
+          if (!outline) {
+            outline = passageOutline(section);
+            outlines.set(section.id, outline);
+          }
+          const index = passageIndex(outline.nodes, hit.from);
+          if (index >= 0) passages.push(passageAtIndex(section, outline, index, false));
         }
       } else throw Error('Référence de recherche invalide.');
       const map = new Map(passages.map((p) => [p.section + ':' + p.from, p]));
@@ -63,7 +66,6 @@ export function evaluateQuery(
     }
     for (const [key, p] of matches ?? []) result.set(key, p);
   }
-  const order = new Map(project.sections.map((s, i) => [s.id, i]));
   return {
     passages: [...result.values()].sort(
       (a, b) => order.get(a.section)! - order.get(b.section)! || a.from - b.from,

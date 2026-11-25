@@ -38,6 +38,21 @@ function button(label: string, scope: ParentNode = document) {
       !b.disabled && !b.closest('[inert]'),
   );
 }
+async function openAnnotation(note: string) {
+  const article = await wait(
+    () =>
+      Array.from(document.querySelectorAll<HTMLElement>('.annotation-margin article')).find(
+        (card) =>
+          Array.from(card.querySelectorAll('.annotation-tab, p')).some(
+            (label) => label.textContent === note,
+          ),
+      ),
+    'annotation ' + note,
+  );
+  article.querySelector<HTMLButtonElement>('.annotation-tab[aria-expanded="false"]')?.click();
+  await wait(() => article.querySelector('p')?.textContent === note, 'expanded ' + note);
+  return article;
+}
 async function run() {
   const fresh = !w.p;
   if (fresh) {
@@ -150,12 +165,7 @@ async function run() {
       );
       input.dispatchEvent(new Event('input', { bubbles: true }));
       (await wait(() => button('Ajouter l’annotation'), 'save note'))!.click();
-      await wait(
-        () =>
-          document.querySelector('.annotation-margin article:last-child p')?.textContent ===
-          'Note ' + name,
-        'saved ' + name,
-      );
+      await openAnnotation('Note ' + name);
       w.setAnnotationsOpen(false);
       await pause(100);
     }
@@ -164,14 +174,9 @@ async function run() {
   check(saved.length === 3 && saved.every((a) => a.document), 'three persisted anchors');
   for (const a of saved) {
     if (!w.annotationsOpen) w.openAnnotations();
+    const article = await openAnnotation(a.note);
     const target = await wait(
-      () =>
-        button(
-          'Retrouver la source',
-          Array.from(document.querySelectorAll('.annotation-margin article')).find((el) =>
-            el.textContent?.includes(a.note),
-          ) ?? document.createElement('div'),
-        ),
+      () => button('Retrouver la source', article),
       'annotation link',
     );
     target.click();
@@ -253,14 +258,8 @@ async function run() {
         'moved copy detected',
       );
       w.openAnnotations();
-      const article = () =>
-        Array.from(document.querySelectorAll('.annotation-margin article')).find((el) =>
-          el.textContent?.includes('Note Texte'),
-        );
-      const oldLink = await wait(
-        () => article() && button('Retrouver la source', article()),
-        'stale link',
-      );
+      const article = await openAnnotation('Note Texte');
+      const oldLink = await wait(() => button('Retrouver la source', article), 'stale link');
       oldLink.click();
       await wait(
         () => document.querySelector('.annotation-margin [role=alert]'),
@@ -269,7 +268,7 @@ async function run() {
       check(!document.querySelector('.document-sheet mark'), 'stale highlight withheld');
       const pdfGroup = await wait(
         () =>
-          Array.from(article()!.querySelectorAll<HTMLButtonElement>('.entity-type-heading')).find(
+          Array.from(article.querySelectorAll<HTMLButtonElement>('.entity-type-heading')).find(
             (b) => b.textContent?.includes('PDF'),
           ),
         'reconnection catalog',
@@ -277,7 +276,7 @@ async function run() {
       pdfGroup.click();
       (
         await wait(
-          () => article()?.querySelector<HTMLButtonElement>('[title="Texte déplacé.pdf"]'),
+          () => article.querySelector<HTMLButtonElement>('[title="Texte déplacé.pdf"]'),
           'moved PDF',
         )
       ).click();

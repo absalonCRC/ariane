@@ -22,7 +22,7 @@ import {
   setLocale,
   translate,
 } from '../src/i18n';
-import messages from '../src/i18n/messages.json';
+import { messages } from '../src/i18n/catalog';
 
 vi.mock('../src/platform/client', () => ({ native: false, request: vi.fn(async () => []) }));
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
