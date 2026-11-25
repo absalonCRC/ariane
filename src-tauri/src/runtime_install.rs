@@ -1,4 +1,5 @@
 //! Explicit user-initiated downloads. Active runtimes are published only after verification.
+pub(crate) mod models;
 use crate::error::{AppResult, Result};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -48,32 +49,64 @@ const SCRIPTS: &[(&str, &str)] = &[
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Module {
+    Semantic,
+    ReadingFr,
+    ReadingEn,
+    ReadingEs,
+    Cleanup,
+    Salamandra,
     Memory,
     Voice,
     Revision,
 }
+const MODULES: [Module; 9] = [
+    Module::ReadingFr,
+    Module::ReadingEn,
+    Module::ReadingEs,
+    Module::Semantic,
+    Module::Memory,
+    Module::Voice,
+    Module::Cleanup,
+    Module::Revision,
+    Module::Salamandra,
+];
 impl Module {
+    fn reading(self) -> Option<(&'static str, &'static str)> {
+        match self {
+            Self::ReadingFr => Some(("fr", include_str!("../../scripts/reading/fr.yaml"))),
+            Self::ReadingEn => Some(("en", include_str!("../../scripts/reading/en.yaml"))),
+            Self::ReadingEs => Some(("es", include_str!("../../scripts/reading/es.yaml"))),
+            _ => None,
+        }
+    }
+
     fn name(self) -> &'static str {
         match self {
+            Self::Semantic => "semantic",
+            Self::ReadingFr => "reading-fr",
+            Self::ReadingEn => "reading-en",
+            Self::ReadingEs => "reading-es",
+            Self::Cleanup => "cleanup",
+            Self::Salamandra => "salamandra",
             Self::Memory => "memory",
             Self::Voice => "voice",
             Self::Revision => "revision",
         }
     }
 
-    fn ready(self, data: &Path, resources: &Path) -> bool {
+    pub(crate) fn ready(self, data: &Path, resources: &Path) -> bool {
         match self {
-            Self::Memory => crate::memory_engine::EntityEngine::available(data, resources),
-            Self::Voice => {
-                crate::voice::available(data, resources)
-                    && data.join("voice/models/cleanup-1-q8_0.gguf").is_file()
-                    && data.join("voice/manifest.json").is_file()
+            Self::Semantic => crate::inference::Engine::available(resources),
+            Self::Cleanup => models::cleanup(data).is_file(),
+            Self::Salamandra => models::salamandra(data).is_file(),
+            Self::ReadingFr | Self::ReadingEn | Self::ReadingEs => {
+                models::reading_ready(data, self.reading().unwrap().0)
             }
+            Self::Memory => crate::memory_engine::EntityEngine::available(data, resources),
+            Self::Voice => crate::voice::available(data, resources),
             Self::Revision => [
                 "revision/java/Contents/Home/bin/java",
                 "revision/languagetool/languagetool-server.jar",
-                "revision/salamandra-q8.gguf",
-                "revision/MANIFEST.txt",
             ]
             .iter()
             .all(|file| data.join(file).is_file()),
@@ -102,7 +135,7 @@ pub struct Installer {
 impl Installer {
     pub fn status(&self, data: &Path, resources: &Path) -> Result<Status> {
         Ok(Status {
-            installed: [Module::Memory, Module::Voice, Module::Revision]
+            installed: MODULES
                 .into_iter()
                 .filter(|module| module.ready(data, resources))
                 .collect(),
@@ -146,16 +179,22 @@ impl Installer {
             if active.is_some() {
                 return Err("Un module est déjà en cours d’installation.".into());
             }
-            if module.ready(data, resources) {
-                return Ok(());
-            }
             self.cancelled.store(false, Ordering::Release);
             *active = Some(Progress {
                 module,
                 phase: "bootstrap",
             });
         }
-        let result = self.prepare_and_publish(data, resources, module);
+        let result = if module.ready(data, resources) {
+            Ok(())
+        } else {
+            match module {
+                Module::Voice | Module::Revision | Module::Memory => {
+                    self.prepare_and_publish(data, resources, module)
+                }
+                _ => self.install_weights(data, module),
+            }
+        };
         *self.progress.lock().app()? = None;
         result
     }
@@ -197,6 +236,12 @@ impl Installer {
             .env_remove("PYTHONPATH")
             .env_remove("PYTHONHOME")
             .env_remove("VIRTUAL_ENV");
+        if module == Module::Voice {
+            command.arg("--transcription-only");
+        }
+        if module == Module::Revision {
+            command.arg("--language-only");
+        }
         if module == Module::Memory {
             command
                 .arg("--worker")
@@ -205,7 +250,12 @@ impl Installer {
         self.phase(module, "download")?;
         self.run(&mut command)?;
         self.phase(module, "verify")?;
-        if !module.ready(job.path(), resources) {
+        let receipt = if module == Module::Revision {
+            "MANIFEST.txt"
+        } else {
+            "manifest.json"
+        };
+        if !module.ready(job.path(), resources) || !staged.join(receipt).is_file() {
             return Err("Les fichiers vérifiés du module sont incomplets.".into());
         }
         let _active = self.progress.lock().app()?;

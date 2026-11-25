@@ -64,9 +64,12 @@ class Downloads(unittest.TestCase):
             for name in names:
                 (engine / name).write_bytes(name.encode())
             (engine / 'checksums.json').write_text(json.dumps({'native_lock_sha256': bundler.digest(lock), 'files': {name: bundler.digest(engine / name) for name in names}}))
-            def run():
-                return subprocess.run([sys.executable, str(root / 'scripts/verify-resources.py')], capture_output=True, text=True)
+            def run(*args):
+                return subprocess.run([sys.executable, str(root / 'scripts/verify-resources.py'), *args], capture_output=True, text=True)
             self.assertEqual(run().returncode, 0)
+            self.assertEqual(run(resources).returncode, 0)
+            (resources / 'models/optional.gguf').write_bytes(b'optional')
+            self.assertIn('Unexpected optional model', run(resources).stderr)
             (engine / 'memory.py').write_text('changed worker')
             self.assertIn('Checksum mismatch', run().stderr)
             (engine / 'memory.py').unlink()

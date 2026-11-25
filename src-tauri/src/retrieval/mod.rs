@@ -124,6 +124,7 @@ fn search_inner(
     }
     if semantic {
         let vector = engine.try_lock().ok().and_then(|mut engine| {
+            if !Engine::available(resources) { return None; }
             engine
                 .embed(
                     resources,

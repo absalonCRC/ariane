@@ -2,7 +2,17 @@ import { t, useLocale } from '../i18n';
 import { usePresenceValue } from './Presence';
 import { useLayoutEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Bold, Italic, Strikethrough, Link2, Quote, MessageSquare, PenLine } from 'lucide-react';
+import {
+  Bold,
+  Italic,
+  Strikethrough,
+  Link2,
+  Volume2,
+  Square,
+  Quote,
+  MessageSquare,
+  PenLine,
+} from 'lucide-react';
 import type { MarkdownFormat } from '../editor/formatMarkdown';
 import { useContextMenuOpen } from './ContextMenu';
 
@@ -22,10 +32,16 @@ const actions = [
 export function SelectionToolbar({
   anchor,
   onFormat,
+  onListen,
+  reading,
+  needsVoice,
   onAnnotate,
   onTry,
 }: {
   anchor: SelectionAnchor | null;
+  onListen?: () => void;
+  reading?: boolean;
+  needsVoice?: boolean;
   onFormat: (format: MarkdownFormat) => void;
   onAnnotate?: () => void;
   onTry?: () => void;
@@ -78,6 +94,15 @@ export function SelectionToolbar({
       {onAnnotate && (
         <button type="button" aria-label={t('Annoter la sélection')} onClick={onAnnotate}>
           <MessageSquare size={15} strokeWidth={1.6} />
+        </button>
+      )}
+      {onListen && (
+        <button
+          type="button"
+          aria-label={reading ? t('Arrêter la lecture') : needsVoice ? t('Choisir une voix de lecture') : t('Écouter la sélection')}
+          onClick={onListen}
+        >
+          {reading ? <Square size={15} /> : <Volume2 size={15} />}
         </button>
       )}
       {onTry && (

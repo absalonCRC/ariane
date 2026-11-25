@@ -58,7 +58,7 @@
   top: 0;
   left: 130px;
   right: 130px;
-  padding-top: 12px;
+  padding-top: var(--window-title-top);
   padding-inline: 0;
   overflow: visible;
   white-space: nowrap;

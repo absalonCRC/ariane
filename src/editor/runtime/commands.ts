@@ -1,3 +1,4 @@
+import {captureSpeech} from '../spokenSelection';
 import { blankMarker } from '../../project/writingAids';
 import type { OutlineEditor } from '../outline/state';
 import type { RefObject } from 'react';
@@ -41,6 +42,7 @@ export function createEditorHandle({ view, outlineRef, spans, latest, writingAid
     return true;
   };
   return {
+    captureSpeech: (onChange)=>view.current && captureSpeech(view.current,onChange),
     writingAid,
     revealPassage,
     revealBlank: (section, from) => revealPassage(section, from, blankMarker),
@@ -84,6 +86,12 @@ export function createEditorHandle({ view, outlineRef, spans, latest, writingAid
         offset: cursor - (entry?.from ?? span.from),
         cursor,
       };
+    },
+    passageTop(section,offset) {
+      const v=view.current, span=spans.current.find(s=>s.id===section);
+      if(!v || !span || offset<0 || span.from+offset>span.to)return null;
+      const y=v.coordsAtPos(span.from+offset)?.top, bounds=documentBounds(v);
+      return y!==undefined && y>=bounds.top && y<bounds.bottom-70 ? y:null;
     },
     contextTop(section, node) {
       const v = view.current,

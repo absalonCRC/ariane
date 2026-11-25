@@ -6,6 +6,13 @@
 - Boutons, champs de saisie et sélecteurs harmonisés en formes rondes ou en capsules, avec des contenus recentrés et des repères d’activité arrondis.
 - Adaptation des commandes de thème, de Versions et du catalogue Smart-tags à ces formes et à l’espace disponible.
 
+## 0.8.1 — candidat de développement, 24 novembre 2026
+
+- Recherche sémantique incluse dès l’ouverture. À la première lecture ou au premier clic sur le micro, la capsule supérieure propose le téléchargement. Le choix reste visible pendant l’écriture jusqu’à sa fermeture ou à la fin de l’installation. **Paramètres → Modèles locaux** regroupe les outils facultatifs par usage.
+- Lecture de la sélection avec les voix Pocket TTS installées à la demande en français, anglais et espagnol, suivi des mots dans le manuscrit et arrêt par Échap.
+- Liens entre deux passages avec légende et rattachement des extrémités. Une note peut recevoir une dictée locale. Les notes d’une même phrase se déplient au clavier ou au pointeur.
+- Migration du projet vers le schéma 8 avec copie de récupération.
+
 ## 0.8.0 — candidat de développement, 23 novembre 2026
 
 - Les suggestions de la marge affichent leur titre en couleur. Le survol et le focus clavier révèlent leur contexte et un court extrait dans un rectangle légèrement arrondi.

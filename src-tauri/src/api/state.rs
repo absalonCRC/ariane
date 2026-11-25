@@ -21,6 +21,7 @@ pub struct AppState {
     pub project_guard: Mutex<project::SessionGuards>,
     pub engine: Mutex<Engine>,
     pub revision: Mutex<RevisionEngine>,
+    pub reading: voice::speech::Reading,
     pub voice: Mutex<voice::VoiceEngine>,
     pub runtime_install: crate::runtime_install::Installer,
     pub prediction: crate::prediction::Service,

@@ -34,6 +34,7 @@
   border-radius: 18px;
   transition: width 300ms var(--motion-ease), height 240ms var(--motion-ease), background-color 180ms ease, color 180ms ease;
 }
+.path-heading:not([data-notifying='true']),
 .path-heading:hover, .path-heading:focus-within { background: var(--theme-surface, #f2f2f2); }
 .path-heading::-webkit-scrollbar { display: none; }
 .path-heading:has(:focus-visible) { outline: 2px solid var(--theme-muted, #8b8b8b); outline-offset: 2px; }
@@ -288,3 +289,14 @@ summary:focus-visible {
   outline: 2px solid var(--theme-muted, #8b8b8b);
   outline-offset: 3px;
 }
+
+.model-notice-controls { display: inline-flex; align-items: center; gap: 3px; }
+.model-notice-controls select {
+  width: auto; max-width: 18ch; min-height: 22px; border: 0; border-radius: 10px;
+  padding: 2px 22px 2px 7px; color: inherit; font: inherit;
+  background-color: color-mix(in srgb, currentColor 7%, transparent);
+  background-position: calc(100% - 11px) 50%, calc(100% - 7px) 50%;
+}
+.model-notice-controls option { background: var(--theme-paper, white); color: var(--ink); }
+.model-notice-controls button { font-weight: 600; }
+.path-notice-row:has(.model-notice-controls) :is(button,select):focus-visible { outline: 1px solid currentColor; outline-offset: -2px; }

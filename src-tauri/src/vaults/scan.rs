@@ -87,7 +87,7 @@ pub(super) fn run(
     let mut c = index_db(index)?;
     let mut indexed = 0;
     let mut errors = vec![];
-    let mut semantic = true;
+    let mut semantic = Engine::available(resources);
     let mut deferred = false;
     let mut forwards = 0;
     for vault in vaults {

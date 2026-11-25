@@ -22,7 +22,9 @@ Dans **Paramètres → Projet et données**, « Sauvegarder le projet » crée u
 
 Les projets reçus ou restaurés conservent les références de leurs vaults externes. Ouvrez **Sources du projet**, accessible aussi depuis la capsule, puis sélectionnez chaque dossier à autoriser. Les projets créés avant la 0.7.5 demandent également cette autorisation lors du premier accès à leurs vaults externes. Ariane consulte ces dossiers en lecture seule. Le vault appartenant au projet est disponible dès la restauration.
 
-La rubrique **Modules locaux** installe à la demande les moteurs de reconnaissance d’entités, de dictée ou de révision. Une connexion est nécessaire pour le téléchargement. « Interrompre » arrête l’installation et le même bouton permet de la relancer. L’écriture, la prédiction et l’export sont disponibles pendant l’installation.
+Sur l’accueil, **Créer un projet** ouvre une page où vous nommez le projet, choisissez sa langue et son dossier, et pouvez donner un titre à la première scène. Sur Mac, **Modèles locaux** et ses rubriques sont déjà dépliés pour votre premier projet. Parcourez les exemples animés, puis téléchargez les outils de votre choix. Pour les projets suivants, dépliez le volet au besoin. Vous pouvez aussi créer le projet et commencer à écrire tout de suite. La recherche par le sens est incluse.
+
+Chaque outil présente un petit exemple animé. Utilisez la flèche circulaire pour le revoir. Vous retrouverez les mêmes exemples et téléchargements dans **Paramètres → Modèles locaux**. La capsule supérieure indique les installations en cours. Une connexion est nécessaire pour installer un outil. Ensuite, il fonctionne sur le Mac.
 
 ## Capture rapide et boîte de réception
 
@@ -70,6 +72,14 @@ Dans « Sources du projet », « Nouvelle fiche » crée une note dans le vault 
 Entrée crée un nouveau passage ; Maj+Entrée ajoute un retour interne dans le même passage. Tab indente le passage sous son frère précédent, Maj+Tab le remonte. Option+↑/↓ déplace sa branche parmi ses frères. Un petit point apparaît lorsqu'on approche de sa zone : glissez-le pour déplacer la branche dans la scène, ou cliquez dessus pour replier ses enfants. Une branche repliée conserve un chevron visible à la place du point ; cliquer sur ce chevron la déplie. Les mêmes actions figurent dans la palette de commandes.
 
 Le texte, les identifiants et la hiérarchie sont sauvegardés ensemble dans le projet. Cmd+Z annule également les opérations de structure. Les anciens documents conservent leur texte ; leurs blocs Markdown servent de passages initiaux. Le déplacement entre scènes et les références partagées ne font pas encore partie de cet incrément.
+## Lire et annoter une sélection sur Mac
+
+Sélectionnez un passage et activez le haut-parleur. Au premier usage, la capsule supérieure propose le français, l’anglais et l’espagnol. La langue du document est présélectionnée lorsqu’elle est disponible. Choisissez une voix et cliquez sur **Télécharger**. Vous pouvez continuer à écrire ou ouvrir les paramètres pendant l’installation. La croix ferme la demande et **Interrompre** arrête un téléchargement. Une fois la voix installée, cliquez sur **Écouter la sélection** pour lire le passage de votre choix. Le texte se souligne mot à mot. **Échap** ou **Arrêter la lecture** interrompt le son. Une édition, un changement de sélection ou le démarrage du micro l’interrompt aussi. Pour changer de voix ou revenir à la langue du document, ouvrez **Paramètres → Modèles locaux → Lecture à voix haute**. Le premier téléchargement ajoute 32 Mo partagés pour le suivi des mots.
+
+Dans **Annoter la sélection**, choisissez **Dicter une annotation** pour déposer la transcription dans la marge. Le module de dictée utilise le micro. Pour relier deux extraits, choisissez **Nouer deux passages**, sélectionnez l’autre extrait, ouvrez **Annoter la sélection**, puis **Relier à cette sélection**. Vous pouvez ajouter une légende. Les boutons **Origine** et **Destination** retrouvent les passages. Si une extrémité doit être rattachée, sélectionnez son nouveau texte puis confirmez dans la marge.
+
+Les notes d’une même phrase forment une pile. Activez le titre d’une note au clavier ou au pointeur pour l’ouvrir, puis de nouveau pour la replier.
+
 ## Dictée locale
 
 
@@ -79,7 +89,7 @@ Un clic bref sur le micro active la dictée continue ; le clic suivant l'arrête
 
 Le moteur Parakeet reste chargé pendant les fragments de dictée continue ; ceux-ci sont transcrits directement, sans attendre une mise au propre par le second modèle. Le push-to-talk garde la mise au propre après l'arrêt. Les modèles restent locaux. Si le manuscrit est modifié entre deux fragments, la suite est conservée dans une transcription à copier plutôt que d'écraser le texte. La dictée native n'est pas disponible dans l'aperçu navigateur.
 
-Pour installer le moteur et les modèles sur un Mac Apple Silicon, avec Python 3 et `uv` disponibles : `python3 scripts/setup-voice.py`. Les fichiers sont placés dans les données d’ariane et téléchargés une seule fois ; la transcription fonctionne ensuite sans téléchargement. La compilation de l’application macOS est nécessaire pour prendre en compte l’autorisation du microphone et le nouveau moteur natif.
+Au premier clic sur le micro, la capsule propose de télécharger Parakeet. Une fois le modèle installé, activez le micro pour dicter. Dans **Paramètres → Modèles locaux → Dictée**, **Mise en forme de la dictée** permet d’ajouter le nettoyage de la transcription.
 
 ## Révision locale
 
@@ -117,7 +127,7 @@ Le calendrier suit les jours d’écriture dans les projets ouverts sur cet appa
 
 Le pied de la bibliothèque donne accès aux paramètres et au bouton Clair/Sombre. Le choix est conservé sur cet appareil ; les paramètres proposent aussi le thème du système. L’animation respecte la réduction des mouvements.
 
-Les paramètres occupent un écran complet : apparence, écriture, sources et références, projet et données, raccourcis. Revenir au texte ou Échap ferme cet écran.
+Les paramètres occupent un écran complet : apparence, écriture, sources et références, projet et données, modèles locaux sur Mac, raccourcis. Revenir au texte ou Échap ferme cet écran.
 
 Les versions sont créées automatiquement par texte : premier état sauvegardé, puis toutes les cinq minutes si le contenu évolue, après 90 secondes de pause, au changement de texte ou de projet, et à la fermeture normale de l’application Mac. Une réécriture importante conserve aussi l’état précédent. Les doublons et les seuls changements de curseur ou de compteur de révision ne créent pas de version. La sauvegarde courante continue de fonctionner indépendamment, après 650 ms de pause.
 
@@ -153,7 +163,7 @@ Les fiches de sources distinguent les **références explicites** des **mentions
 
 ## Langue de l’interface
 
-ariane est disponible en français, anglais et espagnol. Choisissez la langue sur l’écran d’accueil, ou dans **Paramètres → Apparence → Langue de l’application**. Le choix s’applique immédiatement à l’interface et aux menus natifs, puis reste mémorisé sur ce Mac. La langue du document, utilisée pour la dictée et la révision, se règle séparément dans **Paramètres → Écriture**.
+ariane est disponible en français, anglais et espagnol. Choisissez la langue sur l’écran d’accueil, ou dans **Paramètres → Apparence → Langue de l’application**. Le choix s’applique immédiatement à l’interface et aux menus natifs, puis reste mémorisé sur ce Mac. La langue du document, utilisée pour la lecture, la dictée et la révision, se règle séparément dans **Paramètres → Écriture**.
 
 ### Entités automatiques et alias
 

@@ -1,3 +1,4 @@
+import { useImperativeHandle } from 'react';
 import { useVoiceSession, pendingKey } from './useVoiceSession';
 import type { VoiceButtonProps } from './types';
 import { localizeMessage, t } from '../i18n';
@@ -26,15 +27,27 @@ export function VoiceButton(props: VoiceButtonProps) {
     startPress,
     endPress,
   } = useVoiceSession(props);
+  useImperativeHandle(props.ref, () => ({
+    begin(deliver) {
+      if (session.current || phase !== 'idle' || pending)
+        throw new Error(t('Une dictée est déjà en cours.'));
+      void begin('press', deliver);
+    },
+    finish() {
+      return session.current?.deliver || phase === 'transcribing' ? stop() : Promise.resolve();
+    },
+  }));
   return (
     <div className="voice-control" data-phase={phase} data-open={open}>
       <button
         className="voice-trigger"
-        aria-label={mode === 'continuous' ? t('Arrêter la dictée') : t('Dicter')}
+        aria-label={
+          mode === 'continuous' || session.current?.deliver ? t('Arrêter la dictée') : props.needsInstall ? t('Installer la dictée') : t('Dicter')
+        }
         aria-expanded={open}
         aria-controls="bottom-writing-panel"
-        data-hint={t('Clic : dicter · maintenir : parler · ⌘ ⇧ M')}
-        aria-description={t(
+        data-hint={props.needsInstall ? t('Installer la dictée') : t('Clic : dicter · maintenir : parler · ⌘ ⇧ M')}
+        aria-description={props.needsInstall ? undefined : t(
           'Clic : démarrer ou arrêter. Maintenir : dicter pendant l’appui. ⌘ ⇧ M',
         )}
         onPointerDown={(event) => {
@@ -55,7 +68,7 @@ export function VoiceButton(props: VoiceButtonProps) {
         }}
         onClick={(event) => {
           if (event.detail !== 0) return;
-          if (session.current?.mode === 'continuous') void stop();
+          if (session.current?.mode === 'continuous' || session.current?.deliver) void stop();
           else void begin('continuous');
         }}
         onKeyDown={(event) => {

@@ -144,7 +144,7 @@ Optional **local dictation** lets you speak a thought into the page. Click for c
 
 For revision, select a passage and ask ariane to review it. Grammar suggestions appear first, followed by suggestions from the local model, using nearby text as context. Each correction needs your choice. Suggestions can be wrong or miss something; your manuscript remains yours to revise.
 
-Entity detection, dictation and revision use engines running on your Mac. An Internet connection is needed to download and install the engines and models. **You can write, save and export without installing the optional modules.**
+Semantic search is included on Mac. You can start writing immediately. Open **Settings → Local models** at any time to add French, English or Spanish read-aloud voices, entity detection, dictation, grammar or style review. Writing and playback use local files after installation. **You can write, save and export without installing the optional modules.**
 
 ## A manuscript you can take with you
 
@@ -190,7 +190,7 @@ npm run tauri build -- --bundles app
 open src-tauri/target/release/bundle/macos/ariane.app
 ```
 
-Resource preparation downloads pinned native engines and EmbeddingGemma 300M Q8 (about 334 MB). The [Gemma terms](https://ai.google.dev/gemma/terms) apply to that model. A locally built bundle is signed ad hoc and is not notarized.
+Resource preparation downloads pinned native engines and EmbeddingGemma (334 MB) for built-in semantic search. Other models are installed on demand. The [Gemma terms](https://ai.google.dev/gemma/terms) apply to that model. A locally built bundle is signed ad hoc and is not notarized.
 
 For development, run `npm run tauri dev`. `npm run dev` starts a browser preview with simulated data; it does not access native project files.
 </details>

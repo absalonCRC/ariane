@@ -1,5 +1,6 @@
 mod fidelity;
 mod microphone;
+pub mod speech;
 pub use microphone::request_permission;
 pub(crate) mod lexicon;
 use crate::error::{AppResult, Result};
@@ -153,12 +154,12 @@ impl VoiceEngine {
             self.shutdown();
         }
     }
-    fn cleanup_text(&mut self, resources: &Path, voice: &Path, raw: &str,
+    fn cleanup_text(&mut self, resources: &Path, model: &Path, raw: &str,
         before: &str,
         after: &str,
     ) -> Result<String> {
         if self.cleanup.as_mut().is_some_and(|s| crate::local_http::require_alive(&mut s.process.0).is_err()) { self.cleanup=None; }
-        if self.cleanup.is_none() { self.cleanup=Some(CleanupServer::start(resources,voice)?); }
+        if self.cleanup.is_none() { self.cleanup=Some(CleanupServer::start(resources,model)?); }
         let result=self.cleanup.as_mut().unwrap().complete(raw, before, after);
         if result.is_err() || crate::memory_engine::critical_memory_pressure() { self.cleanup=None; }
         result
@@ -230,10 +231,11 @@ impl VoiceEngine {
             });
         }
         // Cleanup 1 has not been trained on Italian; preserve the transcript in that case.
-        let formatted = if !live
+        let cleanup = crate::runtime_install::models::cleanup(data);
+        let formatted = if !live && cleanup.is_file()
             && !crate::memory_engine::critical_memory_pressure()
             && matches!(language, "fr" | "en" | "de" | "es") {
-            self.cleanup_text(resources, &data.join("voice"), &raw, before, after)
+            self.cleanup_text(resources, &cleanup, &raw, before, after)
                 .ok()
                 .filter(|s| plausible_cleanup(&raw, s))
         } else {
@@ -261,7 +263,7 @@ struct CleanupServer { process: Process, client: reqwest::blocking::Client, url:
     warm_requests: usize,
 }
 impl CleanupServer {
-fn start(resources: &Path, voice: &Path) -> Result<Self> {
+fn start(resources: &Path, model: &Path) -> Result<Self> {
     let socket = std::net::TcpListener::bind("127.0.0.1:0").app()?;
     let port = socket.local_addr().app()?.port();
     drop(socket);
@@ -269,7 +271,7 @@ fn start(resources: &Path, voice: &Path) -> Result<Self> {
     let mut process = Process(
         Command::new(resources.join("engine/llama-server"))
             .arg("-m")
-            .arg(voice.join("models/cleanup-1-q8_0.gguf"))
+            .arg(model)
             .args([
                 "--host",
                 "127.0.0.1",

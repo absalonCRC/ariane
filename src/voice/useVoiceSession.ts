@@ -14,6 +14,7 @@ type Mode = 'press' | 'continuous';
 export const pendingKey = 'ariane.voice.pending';
 const shortPressMs = 280;
 type Session = {
+  deliver?: (text: string) => Promise<void>;
   mode: Mode;
   active: boolean;
   cancelled: boolean;
@@ -49,6 +50,9 @@ function release(current: Session) {
 }
 export function useVoiceSession({
   language,
+  beforeRecording,
+  needsInstall,
+  onInstall,
   prepareInsertion,
   projectPath,
   open,
@@ -169,8 +173,13 @@ export function useVoiceSession({
       .then(({ available: installed }) => (available.current = installed))
       .catch(() => (available.current = false));
   }
-  async function begin(mode: Mode = 'press') {
+  async function begin(mode: Mode = 'press', deliver?: Session['deliver']) {
     if (session.current || finishing.current || pending) return;
+    if (native && needsInstall && onInstall) {
+      press.current = null;
+      onInstall();
+      return;
+    }
     onOpen();
     setMessage('');
     setLastText('');
@@ -193,7 +202,8 @@ export function useVoiceSession({
       silenceSamples: 0,
       queue: Promise.resolve(),
       parts: [],
-      insertion: prepareInsertion(),
+      deliver,
+      insertion: deliver ? () => false : prepareInsertion(),
       language,
       projectPath,
       samples: 0,
@@ -207,8 +217,17 @@ export function useVoiceSession({
     setMode(mode);
     setPhase('preparing');
     try {
+      if (beforeRecording) await beforeRecording();
       const ready = available.current ?? (await availability.current);
       if (!current.active || current.cancelled || session.current !== current) return;
+      if (!ready && onInstall) {
+        session.current = null;
+        press.current = null;
+        setPhase('idle');
+        onClose();
+        onInstall();
+        return;
+      }
       if (!ready) throw new Error(t('Les modèles de dictée locale ne sont pas disponibles.'));
       void request('voicePrepare').catch(() => {});
       await request('voicePermission');
@@ -364,7 +383,15 @@ export function useVoiceSession({
         .map((part) => part.result?.text?.trim())
         .filter(Boolean)
         .join(' ');
-      if (current.failed) {
+      if (current.deliver) {
+        if (text)
+          try {
+            await current.deliver(text);
+          } catch (error) {
+            current.failed = true;
+            if (alive.current) setMessage(String(error));
+          }
+      } else if (current.failed) {
         recover(text);
       } else if (!text) {
         if (alive.current) onClose();
@@ -389,7 +416,7 @@ export function useVoiceSession({
   function startPress(id: string | number) {
     if (press.current) return;
     const at = Date.now();
-    if (session.current?.mode === 'continuous') {
+    if (session.current?.mode === 'continuous' || session.current?.deliver) {
       press.current = { id, at, stopped: true };
       void stop();
       return;
@@ -418,7 +445,7 @@ export function useVoiceSession({
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
       if ((event.target as HTMLElement)?.closest?.('.shortcut-settings input')) return;
-      if (document.querySelector('.workspace-page') && !session.current) return;
+      if (document.querySelector('.workspace-page, dialog[aria-modal="true"][open]') && !session.current) return;
       if (event.key.toLowerCase() !== 'm' || !(event.metaKey || event.ctrlKey) || !event.shiftKey)
         return;
       event.preventDefault();

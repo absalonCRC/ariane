@@ -120,7 +120,7 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
       path: String(a.path),
       name: String(a.name),
       sections: [newSection(String(a.initialTitle || t('Sans titre')), null, 'scene')],
-      settings: {},
+      settings: a.language ? { language: String(a.language) } : {},
       recovered: false,
     };
     store(p);
@@ -293,7 +293,7 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
     localStorage.setItem(key, JSON.stringify([event, ...items]));
     return { inserted: true, event };
   }
-  if (['annotations', 'addAnnotation', 'updateAnnotation', 'manuscriptOperation'].includes(type))
+  if (['selectionAudio', 'selectionSpeech', 'annotations', 'passageAnnotation', 'addAnnotation', 'updateAnnotation', 'manuscriptOperation'].includes(type))
     throw new Error(t('Cette fonction est disponible dans l’application Mac.'));
   if (type === 'libraryOperation') {
     const op = a.operation as LibraryOperation;

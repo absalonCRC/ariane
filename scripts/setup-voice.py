@@ -17,6 +17,7 @@ MODELS = {
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=ROOT)
+    parser.add_argument("--transcription-only", action="store_true")
     args = parser.parse_args()
     if sys.platform != "darwin":
         raise SystemExit("Le runtime de dictée cible macOS.")
@@ -26,9 +27,10 @@ def main():
     lock = Path(__file__).with_name("voice-requirements.lock")
     with staged_install(args.root) as stage:
         python = install_python(stage, uv, lock)
-        models = download_models(stage, python, MODELS)
+        models = download_models(stage, python, {"parakeet": MODELS["parakeet"]} if args.transcription_only else MODELS)
         # Preserve the path used by the native cleanup engine.
-        (stage / "models/cleanup/cleanup-1-q8_0.gguf").rename(stage / "models/cleanup-1-q8_0.gguf")
+        if not args.transcription_only:
+            (stage / "models/cleanup/cleanup-1-q8_0.gguf").rename(stage / "models/cleanup-1-q8_0.gguf")
         if not (stage / "models/parakeet/model.safetensors").is_file():
             raise RuntimeError("Poids Parakeet manquants")
         manifest = inventory(stage, python, uv, lock) | {"models": models}

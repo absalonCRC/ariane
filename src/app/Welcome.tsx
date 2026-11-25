@@ -1,5 +1,6 @@
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { t, useLocale } from '../i18n';
+import { ProjectSetup, type NewProjectFields } from './ProjectSetup';
 import { ProjectCatalog } from '../project/ProjectCatalog';
 import { Presence } from '../components/Presence';
 import { useState, useEffect, useRef } from 'react';
@@ -7,7 +8,7 @@ import { Dialog } from '../components/Dialog';
 import { choosePath } from './choosePath';
 import { native, request } from '../platform/client';
 import type { Project } from '../contracts/project';
-import { ArianeWordmark } from '../components/ArianeWordmark';
+import { ArianeSymbol } from '../components/ArianeWordmark';
 import { ViewTitleCapsule } from '../components/ViewTitleCapsule';
 
 export function Welcome({
@@ -21,11 +22,27 @@ export function Welcome({
 }) {
   useLocale();
   const [screen, setScreen] = useState<'none' | 'create' | 'open'>('none');
-  const [name, setName] = useState('');
+  const createTrigger = useRef<HTMLButtonElement>(null);
   const [busy, setBusy] = useState(false);
+  const [firstProject, setFirstProject] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!native) return;
+    let live = true;
+    void request('projects').then(
+      (entries) => {
+        if (live) setFirstProject(entries.length === 0);
+      },
+      () => {
+        if (live) setFirstProject(false);
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, []);
   const menuAction = useRef<(id: string) => void>(() => {});
   menuAction.current = (id) => {
-    if (id === 'open-project') setScreen('open');
+    if (!busy && id === 'open-project') setScreen('open');
   };
   useEffect(() => {
     if (!native) return;
@@ -43,12 +60,12 @@ export function Welcome({
       stop?.();
     };
   }, []);
-  async function create() {
+  async function create({ name, folder, language, initialTitle }: NewProjectFields) {
     setBusy(true);
     try {
       let path = 'browser:' + crypto.randomUUID();
       if (native) {
-        const folder = await choosePath('create', { title: t('Enregistrer le projet dans…') });
+        folder ??= await choosePath('create', { title: t('Enregistrer le projet dans…') });
         if (typeof folder !== 'string') return;
         path = folder + '/' + name.trim().replace(/[/:\\]/g, '-');
       }
@@ -56,7 +73,8 @@ export function Welcome({
       const project = await request('create', {
         path,
         name: name.trim(),
-        initialTitle: t('Sans titre'),
+        initialTitle: initialTitle.trim() || t('Sans titre'),
+        language,
         vaultPath: null,
       });
       onOpen(project);
@@ -89,50 +107,43 @@ export function Welcome({
   }
   return (
     <div className="welcome">
-      <ArianeWordmark compact />
-      <LanguageSwitcher />
-      <ViewTitleCapsule view={{ title: t('Accueil'), home: true }} />
-      <h1>{t('Un espace pour écrire.')}</h1>
-      <div>
-        <button onClick={() => setScreen('create')}>{t('Créer un projet')}</button>
-        <button onClick={() => setScreen('open')}>{t('Ouvrir un projet')}</button>
-      </div>
-      <p>{t('Tout reste sur ce Mac.')}</p>
+      <LanguageSwitcher compact />
+      <ViewTitleCapsule
+        view={{
+          title:
+            screen === 'create'
+              ? t('Nouveau projet')
+              : screen === 'open'
+                ? t('Ouvrir un projet')
+                : t('Accueil'),
+          home: true,
+        }}
+      />
+      {screen === 'create' ? (
+        <ProjectSetup
+          firstProject={firstProject}
+          busy={busy}
+          onCreate={create}
+          onError={onError}
+          onBack={() => {
+            setScreen('none');
+            requestAnimationFrame(() => createTrigger.current?.focus());
+          }}
+        />
+      ) : (
+        <>
+          <ArianeSymbol draw />
+          <h1>{t('Un espace pour écrire.')}</h1>
+          <div className="welcome-actions">
+            <button ref={createTrigger} onClick={() => setScreen('create')}>
+              {t('Créer un projet')}
+            </button>
+            <button onClick={() => setScreen('open')}>{t('Ouvrir un projet')}</button>
+          </div>
+          <p className="welcome-local">{t('Tout reste sur ce Mac.')}</p>
+        </>
+      )}
       <Presence>
-        {screen === 'create' && (
-          <Dialog
-            title={t('Nouveau projet')}
-            onClose={() => {
-              if (!busy) setScreen('none');
-            }}
-          >
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                void create();
-              }}
-            >
-              <label>
-                {t('Nom du projet')}
-                <input
-                  autoFocus
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={t('Le titre de votre projet')}
-                />
-              </label>
-              <div className="dialog-actions">
-                <button type="button" disabled={busy} onClick={() => setScreen('none')}>
-                  {t('Annuler')}
-                </button>
-                <button className="primary" disabled={!name.trim() || busy}>
-                  {t('Créer le projet')}
-                </button>
-              </div>
-            </form>
-          </Dialog>
-        )}
         {screen === 'open' && (
           <Dialog
             title={t('Ouvrir un projet')}

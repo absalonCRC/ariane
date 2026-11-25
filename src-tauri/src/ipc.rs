@@ -39,13 +39,13 @@ pub async fn admit(kind: &str) -> Result<tokio::sync::OwnedSemaphorePermit> {
         "save" | "resolveExternal" | "inboxSave" | "inboxFinish" => (&*SAVE, None),
         "memoryActivity" | "cancelIndex" | "cancelExport" | "quit" | "voiceStatus"
         | "engineStatus" | "memoryStatus" | "appReady" | "appClose" | "appFlushed"
-        | "captureWindow" | "runtimeModules" | "cancelRuntimeInstall" => (&*CONTROL, None),
+        | "selectionSpeech" | "captureWindow" | "runtimeModules" | "cancelRuntimeInstall" => (&*CONTROL, None),
         "installRuntime" => (&*INSTALL, None),
         "predictWord" | "predictionFeedback" => (&*PREDICTION, None),
         "search" => (&*HEAVY, Some(&SEARCH)),
         "suggest" => (&*HEAVY, Some(&SUGGEST)),
         "revisionCheck" => (&*HEAVY, Some(&REVISION)),
-        "index" | "scan" | "voiceTranscribe" | "enrich" | "memoryQueue" | "memoryEntities"
+        "selectionAudio" | "index" | "scan" | "voiceTranscribe" | "enrich" | "memoryQueue" | "memoryEntities"
         | "export" | "importPreview" | "importIntoProject" | "projectBackup"
         | "projectRestoreCopy" => (&*HEAVY, None),
         _ => (&*NORMAL, None),

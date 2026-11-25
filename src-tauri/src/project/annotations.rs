@@ -3,12 +3,17 @@ use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 pub(crate) use super::document_anchor::DocumentAnchor;
+mod passages;
+pub use passages::{Passage, PassageAction, apply};
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Annotation {
     #[serde(default, skip_serializing_if="Option::is_none")]
     pub document: Option<DocumentAnchor>,
-    pub id: String, pub section: String, pub quote: String, pub before: String, pub after: String,
+    pub id: String,
+    #[serde(flatten)] pub passage: Passage,
+    #[serde(default, skip_serializing_if="Option::is_none")] pub peer: Option<Passage>,
+    #[serde(default, skip_serializing_if="Option::is_none")] pub receipt: Option<String>,
     pub note: String, pub done: bool, pub created: String, pub revision: i64,
 }
 fn check_branch(tx: &Connection, branch: Option<&str>, linked: bool) -> Result<()> {
@@ -63,12 +68,12 @@ pub fn create_linked(root: &Path, section: &str, revision: i64, from: usize, to:
         let existing: Option<String>=tx.query_row("SELECT payload FROM annotations WHERE id=?",[&id],|r| r.get(0)).optional().app()?;
         if let Some(raw)=existing {
             let prior: Annotation=serde_json::from_str(&raw).app()?;
-            if prior.section==section && prior.quote==quote && prior.before==before && prior.after==after &&
+            if prior.passage.section==section && prior.passage.quote==quote && prior.passage.before==before && prior.passage.after==after &&
                 prior.document==document && prior.note==note.trim() {return Ok(prior)}
             return Err("L’annotation a changé. Rechargez-la.".into());
         }
     }
-    let value = Annotation { document, id, section: section.into(), quote, before, after,
+    let value = Annotation { document, id, passage: Passage {section: section.into(), quote, before, after, offset:Some(from), scene_revision:Some(revision),detached:false}, peer:None, receipt:None,
         note: note.trim().into(), done: false, created: chrono::Utc::now().to_rfc3339(), revision: 0 };
     tx.execute("INSERT INTO annotations VALUES(?,?)",params![value.id, serde_json::to_string(&value).app()?]).app()?;
     tx.commit().app()?; Ok(value)
@@ -79,12 +84,13 @@ pub fn update(root: &Path, id: &str, revision: i64, note: &str, done: bool) -> R
 }
 #[allow(clippy::too_many_arguments)]
 pub fn update_linked(root: &Path, id: &str, revision: i64, note: &str, done: bool, document: Option<DocumentAnchor>, branch: Option<&str>) -> Result<Annotation> {
-    if note.trim().is_empty() || note.len() > 20000 { return Err("Annotation vide ou trop longue.".into()); }
+    if note.len() > 20000 { return Err("Annotation vide ou trop longue.".into()); }
     let mut c = database(root)?;
     let tx = c.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).app()?;
     check_branch(&tx, branch, document.is_some())?;
     let raw: String = tx.query_row("SELECT payload FROM annotations WHERE id=?",[id],|r|r.get(0)).app()?;
     let mut value: Annotation = serde_json::from_str(&raw).app()?;
+    if value.peer.is_none() && note.trim().is_empty() {return Err("Annotation vide.".into())}
     if value.revision != revision { return Err("L’annotation a changé. Rechargez-la.".into()); }
     if document.is_some() { value.document = document; }
     value.note = note.trim().into(); value.done = done; value.revision += 1;
@@ -103,7 +109,7 @@ mod tests {
         assert!(create(dir.path(),id,0,0,5,"Vérifier la date").is_err());
         assert!(create(dir.path(),id,1,6,7,"Emoji coupé").is_err());
         let a = create(dir.path(),id,1,0,5,"Vérifier la date").unwrap();
-        assert_eq!(a.quote,"Élise");
+        assert_eq!(a.passage.quote,"Élise");
         update(dir.path(),&a.id,0,"Date confirmée",true).unwrap();
         assert!(update(dir.path(),&a.id,0,"Ancien brouillon",false).is_err());
         assert!(list(dir.path()).unwrap()[0].done);
@@ -119,22 +125,32 @@ pub(super) fn relocate(tx: &rusqlite::Transaction<'_>, op: &super::manuscript::O
     let values: Vec<String> = tx.prepare("SELECT payload FROM annotations").app()?.query_map([],|r|r.get(0)).app()?.collect::<std::result::Result<_,_>>().app()?;
     for raw in values {
         let mut value: Annotation = serde_json::from_str(&raw).app()?;
-        let destination = if op.action == "join" && Some(value.section.as_str()) == op.target_id.as_deref() {
-            Some(op.source_id.clone())
-        } else if value.section == op.source_id && op.action == "split" {
-            let original = before.iter().find(|s|s.id == value.section).ok_or("Scène d’annotation absente.")?;
-            let all_matches: Vec<_> = original.text.match_indices(&value.quote).collect();
-            let contextual: Vec<_> = original.text.match_indices(&value.quote).filter(|(from,_)|
-                original.text[..*from].ends_with(&value.before) && original.text[*from+value.quote.len()..].starts_with(&value.after)).collect();
-            let matches = if contextual.len() == 1 { contextual } else { all_matches };
-            if matches.len() != 1 { continue; }
-            let from = original.text[..matches[0].0].encode_utf16().count();
-            if op.action == "split" && from >= op.offset.unwrap() {
-                after.iter().find(|s| !before.iter().any(|old|old.id == s.id)).map(|s|s.id.clone())
-            } else { None }
-        } else { None };
-        if let Some(destination) = destination {
-            value.section = destination;
+        let mut changed = false;
+        for anchor in std::iter::once(&mut value.passage).chain(value.peer.iter_mut()) {
+            if anchor.detached || (anchor.section != op.source_id && Some(&anchor.section) != op.target_id.as_ref()) { continue; }
+            let original=before.iter().find(|s|s.id==anchor.section).ok_or("Scène introuvable.")?;
+            let length=anchor.quote.encode_utf16().count();
+            let mut offset=anchor.offset.filter(|&at| anchor.scene_revision==Some(original.revision) &&
+                at.checked_add(length).and_then(|end|Passage::at(original,at,end).ok()).is_some_and(|p|p.quote==anchor.quote));
+            if offset.is_none() {
+                let mut hits=original.text.char_indices().filter(|(i,_)|original.text[*i..].starts_with(&anchor.quote) &&
+                    original.text[..*i].ends_with(&anchor.before) && original.text[*i+anchor.quote.len()..].starts_with(&anchor.after));
+                if let Some((i,_))=hits.next() { if hits.next().is_none(){offset=Some(original.text[..i].encode_utf16().count());} }
+            }
+            let Some(mut at)=offset else {continue};
+            let dest=if let Some(cut)=op.offset.filter(|_|op.action=="split") {
+                if at>=cut {at-=cut;after.iter().find(|s|!before.iter().any(|old|old.id==s.id))}
+                else if at+length>cut {anchor.detached=true; changed=true; continue}
+                else {after.iter().find(|s|s.id==op.source_id)}
+            } else {
+                let joined=after.iter().find(|s|s.id==op.source_id).ok_or("Scène introuvable.")?;
+                if anchor.section!=op.source_id {at+=joined.text.encode_utf16().count()-original.text.encode_utf16().count();}
+                Some(joined)
+            }.ok_or("Scène introuvable.")?;
+            *anchor=Passage::at(dest,at,at+length)?;
+            changed=true;
+        }
+        if changed {
             value.revision += 1;
             tx.execute("UPDATE annotations SET payload=? WHERE id=?",params![serde_json::to_string(&value).app()?,value.id]).app()?;
         }
@@ -193,12 +209,12 @@ mod relocation_tests {
         ).unwrap();
         let changed = project::manuscript::apply(root, op.clone()).unwrap();
         let relocated = || list(root).unwrap().into_iter().find(|item| item.id == linked.id).unwrap();
-        assert_eq!(relocated().section, changed.sections[1].id);
+        assert_eq!(relocated().passage.section, changed.sections[1].id);
         assert_eq!(relocated().document.as_ref(), Some(&replacement));
         project::manuscript::apply(root, project::manuscript::Operation {
             action: "join".into(), target_id: Some(changed.sections[1].id.clone()), ..op
         }).unwrap();
-        assert_eq!(&relocated().section, id);
+        assert_eq!(&relocated().passage.section, id);
         assert_eq!(relocated().document.as_ref(), Some(&replacement));
     }
     #[test]
@@ -211,9 +227,9 @@ mod relocation_tests {
         let op = super::super::manuscript::Operation {action:"split".into(),source_id:id.clone(),
             target_id:None,offset:Some(7),title:None};
         let p = project::manuscript::apply(temp.path(),op.clone()).unwrap();
-        assert_eq!(list(temp.path()).unwrap()[0].section,p.sections[1].id);
+        assert_eq!(list(temp.path()).unwrap()[0].passage.section,p.sections[1].id);
         project::manuscript::apply(temp.path(),super::super::manuscript::Operation{action:"join".into(),
             target_id:Some(p.sections[1].id.clone()),..op}).unwrap();
-        assert_eq!(list(temp.path()).unwrap()[0].section,id);
+        assert_eq!(list(temp.path()).unwrap()[0].passage.section,id);
     }
 }

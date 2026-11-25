@@ -8,6 +8,7 @@ const request = vi.hoisted(() => vi.fn());
 vi.mock('../src/platform/client', () => ({ native: true, request }));
 
 describe('voice gestures and live transcription', () => {
+  const recorder={current:null as import('../src/voice/types').AnnotationRecorder|null};
   let root: Root;
   let host: HTMLDivElement;
   let panel: HTMLDivElement;
@@ -77,7 +78,7 @@ describe('voice gestures and live transcription', () => {
     root = createRoot(host);
     await act(async () => {
       root.render(
-        <VoiceButton
+        <VoiceButton ref={recorder}
           language="fr"
           prepareInsertion={() => insertion}
           panel={panel}
@@ -87,6 +88,20 @@ describe('voice gestures and live transcription', () => {
         />,
       );
     });
+  });
+
+  it('propose le téléchargement au clic et au clavier avant toute demande de micro', async () => {
+    const onInstall = vi.fn();
+    await act(async () => {
+      root.render(<VoiceButton ref={recorder} language="fr" prepareInsertion={() => insertion}
+        panel={panel} open={false} onOpen={() => {}} onClose={() => {}} needsInstall onInstall={onInstall}/>);
+    });
+    const trigger = host.querySelector<HTMLButtonElement>('[aria-label="Installer la dictée"]')!;
+    await act(async () => trigger.click());
+    await act(async () => window.dispatchEvent(new KeyboardEvent('keydown', {key:'m',metaKey:true,shiftKey:true})));
+    expect(onInstall).toHaveBeenCalledTimes(2);
+    expect(request.mock.calls.map(([kind]) => kind)).not.toContain('voicePermission');
+    expect(getUserMedia).not.toHaveBeenCalled();
   });
 
   afterEach(async () => {
@@ -123,6 +138,16 @@ describe('voice gestures and live transcription', () => {
       }),
     );
   }
+
+  it('delivers annotation dictation once to the captured callback after release',async()=>{
+    const deliver=vi.fn(async()=>{ expect(stopTrack).toHaveBeenCalledTimes(1) });
+    await act(async()=>{recorder.current!.begin(deliver)});
+    audio();
+    await act(async()=>{await Promise.all([recorder.current!.finish(),recorder.current!.finish()])});
+    expect(deliver).toHaveBeenCalledExactlyOnceWith('Bonjour.');
+    expect(insertion).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem('ariane.voice.pending')).toBeNull();
+  });
 
   function transcriptions() {
     return request.mock.calls.filter(([type]) => type === 'voiceTranscribe');

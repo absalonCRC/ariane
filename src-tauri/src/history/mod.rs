@@ -12,6 +12,7 @@ use crate::{
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+mod annotation_restore;
 #[derive(Serialize, Deserialize, Default, Clone)]
 pub(super) struct Snapshot {
     #[serde(default)]
@@ -96,7 +97,7 @@ pub(super) fn snapshot(c: &Connection, scope: &Option<String>) -> Result<Snapsho
         rows.collect::<std::result::Result<Vec<_>, _>>().app()?
     } else { vec![] };
     let annotations = if c.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='annotations')",[],|r|r.get::<_,bool>(0)).app()? {
-        let mut q=c.prepare("SELECT id,payload FROM annotations WHERE ?1 IS NULL OR json_extract(payload,'$.section') IN (SELECT value FROM json_each(?2)) ORDER BY id").app()?;
+        let mut q=c.prepare("SELECT id,payload FROM annotations WHERE ?1 IS NULL OR json_extract(payload,'$.section') IN (SELECT value FROM json_each(?2)) OR json_extract(payload,'$.peer.section') IN (SELECT value FROM json_each(?2)) ORDER BY id").app()?;
         let values=q.query_map(params![scope,ids],|r|Ok((r.get(0)?,r.get(1)?))).app()?.collect::<std::result::Result<Vec<_>,_>>().app()?;
         Some(values)
     } else {Some(vec![])};
@@ -211,8 +212,7 @@ pub fn restore(root: &Path, id: &str) -> Result<Project> {
         next.pins.retain(|(section,_)|!affected.contains(section));next.pins.extend(restored.pins);
         if let Some(annotations)=restored.annotations {
             let values=next.annotations.get_or_insert_with(Vec::new);
-            values.retain(|(_,payload)|serde_json::from_str::<serde_json::Value>(payload).ok().and_then(|v|v["section"].as_str().map(str::to_owned)).is_none_or(|id|!affected.contains(&id)));
-            values.extend(annotations);
+            annotation_restore::scoped(values,annotations,&affected)?;
         }
         for (id,payload) in restored.citations {next.citations.retain(|(existing,_)|*existing!=id);next.citations.push((id,payload));}
     }

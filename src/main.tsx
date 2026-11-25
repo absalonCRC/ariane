@@ -15,6 +15,7 @@ import './styles/interaction-refinements.css';
 import './styles/entities.css';
 import './styles/capture.css';
 import './styles/workspace-pages.css';
+import './styles/project-setup.css';
 document.documentElement.lang = getLocale();
 const surface = new URLSearchParams(location.search).has('capture')
   ? import('./capture/CaptureApp').then((m) => m.CaptureApp)

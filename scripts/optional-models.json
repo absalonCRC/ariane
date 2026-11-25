@@ -1,0 +1,12 @@
+{
+  "cleanup": {
+    "url": "https://huggingface.co/spokenly/cleanup-1-gguf/resolve/79936c95e5c0ea9162ae7a435e64cb3127020e36/cleanup-1-q8_0.gguf",
+    "sha256": "66509e0fe1578d2ac4b0773c79a6c83e8d6f218618dfe11e4532beacd999b6e8",
+    "bytes": 639442784
+  },
+  "salamandra": {
+    "url": "https://huggingface.co/BSC-LT/salamandraTA-2B-instruct-GGUF/resolve/f8dd48ca1de2f65ec494a6d03f1005f8d509a738/salamandrata_2b_inst_q8.gguf",
+    "sha256": "9cfebb63cd7e6b6d1755ea8ef001fcdadfa17831da1db96eafe3fc554913d5e1",
+    "bytes": 2401075552
+  }
+}
