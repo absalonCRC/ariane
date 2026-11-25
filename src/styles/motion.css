@@ -66,7 +66,7 @@ input:not([type='range']), textarea, select {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
-.welcome > :is(h1, .welcome-actions, .welcome-local) { animation: ariane-fade-in var(--motion-standard) var(--motion-ease) both; }
+.welcome-intro { animation: ariane-fade-in 150ms var(--motion-ease) both; }
 .index-strip progress::-webkit-progress-value { transition: width var(--motion-standard) var(--motion-ease); }
 .boot::after { content: ''; position: absolute; left: calc(50% - 36px); top: 50%; width: 72px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, var(--theme-hover, #eee), var(--theme-quiet, #999), var(--theme-hover, #eee)); background-size: 200% 100%; animation: progress 1800ms linear infinite; }
 @media (prefers-reduced-motion: reduce) { .boot::after { animation: none; } }

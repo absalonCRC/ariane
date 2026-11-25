@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import messages from './messages.json';
+import { messages as catalog } from './catalog';
 
 export type Locale = 'fr' | 'en' | 'es';
 export const languages: readonly { value: Locale; label: string }[] = [
@@ -49,7 +49,6 @@ export function localeTag() {
   return { fr: 'fr-FR', en: 'en-GB', es: 'es-ES' }[locale];
 }
 type TranslationParameters = Record<string, string | number | boolean | null | undefined>;
-const catalog: Record<string, string[]> = messages;
 export function translate(
   message: string,
   language: Locale,

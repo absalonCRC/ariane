@@ -81,7 +81,7 @@ export function useSharedPanel(
     if (writing) observer?.observe(writing);
     const anchorObserver =
       typeof MutationObserver === 'undefined' ? null : new MutationObserver(reanchor);
-    const rail = origin?.anchor?.closest('.source-margin, .vault-search-margin');
+    const rail = origin?.anchor?.closest('.source-margin');
     rail?.addEventListener('scroll', reanchor, { passive: true });
     if (rail)
       anchorObserver?.observe(rail, {

@@ -278,7 +278,7 @@ pub fn file(index: &Path, id: &str, vaults: &[Vault]) -> Result<PathBuf> {
     Ok(path)
 }
 /// Compatibility entry point for callers without interactive activity tracking.
-#[cfg(any(test, feature = "performance-harness"))]
+#[cfg(test)]
 pub fn index(
     root: &Path,
     index: &Path,

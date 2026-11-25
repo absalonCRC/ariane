@@ -18,22 +18,24 @@ flowchart TD
 
 Les contrats ne dépendent ni de React, ni de Tauri, ni des contrôleurs. Les fonctions métier ne dépendent pas d’`App` ou du type global `Workspace`. Les interfaces de domaine sont importées directement depuis leur propriétaire ; les anciennes façades `app/types.ts` et `app/client.ts` ont été retirées.
 
-`npm run verify:architecture` vérifie ces frontières et la présence des mêmes 119 noms de commandes dans `Requests`, `Responses` et l’énumération Rust. Ce contrôle ne prouve pas l’équivalence de chaque champ JSON : les tests de comportement, le témoin IPC partagé et la recette native complètent le typage.
+`npm run verify:architecture` contrôle ces frontières, les 119 noms de commandes communs à `Requests`, `Responses` et l’énumération Rust, ainsi que la limite de 800 lignes physiques par fichier de code ou de traductions maintenu dans le projet. Les tests de comportement, le témoin IPC partagé et la recette native vérifient les données et les opérations qui traversent ces interfaces.
 
 ## Frontend : responsabilités et état
 
 | Module | Responsabilité et propriétaire de l’état |
 | --- | --- |
 | `app/App.tsx` | Compose les domaines, relie leurs événements, conserve les états de présentation transversaux et les points d’ancrage des portails. |
-| `app/chrome/` | En-tête et géométrie du panneau commun recherche/dictée. `useBottomPanel` libère son observer et son timer. |
+| `app/chrome/` | `WorkspaceSidebar` compose le classeur, `WorkspaceTitle` la capsule et `WritingFooter` les contrôles du manuscrit. `useWritingControls` conserve les ancres, les aperçus de réglage et le mode du panneau recherche/dictée pendant les changements de vue. |
+| `app/workspace/useWorkspacePages.ts`, `WorkspaceInbox.tsx` | Le hook conserve l’état des pages centrales, leur point de retour du focus et les abonnements natifs de la réception. La vue de réception relie l’ouverture des captures et leur transfert au projet. |
 | `app/writing/WritingSurface.tsx` | Maintient titre et éditeur dans la même `.manuscript-column`, sans conteneur supplémentaire. Versions masque cette surface sans détruire l’éditeur. |
+| `app/writing/ManuscriptEditor.tsx`, `ManuscriptTagViews.tsx` | Le premier relie le manuscrit aux transactions et aux commandes de l’éditeur. Le second présente les filtres et les vues enregistrées. Leur sélection et leur mode d’affichage sont conservés par `useManuscriptFilters` au niveau de l’espace de travail. |
 | `app/useWorkspace.ts` | Possède navigation, sélection, session et verrous des opérations UI ; compose les contrôleurs. `WorkspaceDialogs`, `WorkspaceNotices` et `useTitleNotices` sont des adaptateurs de cette couche de composition. |
 | `app/commands/useWorkspaceCommands.ts` | Registre des commandes à identifiants stables, raccourcis et abonnement au menu natif. Conserve les différences de sauvegarde/navigation entre palette et menus natifs. |
 | `project/useProject.ts` | Propriétaire unique des brouillons, de la file de sauvegarde et des révisions confirmées. Un échec conserve le tampon ; un acquittement ancien ne remplace pas une édition récente. |
 | `project/operations.ts` | Opérations de bibliothèque, création, métadonnées, ouverture et réorganisation ; reçoit les mêmes verrous et files que le coordinateur. Aucun deuxième état de projet. |
 | `project/Binder.tsx`, `project/binder/` | Vue de bibliothèque, contrôleur de sélection/virtualisation et ligne d’arbre. Les clés restent les identifiants des sections. La création prépare le nom dans la sidebar avant validation. |
 | `editor/Editor.tsx`, `editor/runtime/` | Le composant possède les refs et les effets React ; `mount` possède une instance CodeMirror et son nettoyage ; `commands` expose l’interface impérative ; `revision` actualise les marques. |
-| `sources/` | Lecteurs, recherche, navigation des sources et épinglage ; `actions` gère lecture/citation, `margin/DocumentaryMargin` rend la marge documentaire. |
+| `sources/` | Lecteurs, recherche et navigation des sources. `margin/useDocumentaryRail` suit les épingles, les liens et les dimensions de la marge, que rend `DocumentaryMargin`. Dans la composition de l’application, `WorkspaceMargin` relie cette marge aux actions et `WorkspaceSourcePanels` relie les lecteurs et les annotations au manuscrit. |
 | `enrichment/` | Suggestions et fiches dérivées du manuscrit. Les hooks reçoivent des interfaces d’entrée explicites, pas le type global `Workspace`. Leurs contrôles de contexte et de fraîcheur restent auprès des tâches asynchrones. |
 | `history/` | `useHistory` possède chargements, sélection, comparaison, variantes et restauration ; `History` rend la vue ; `HistoryTools` rend les outils dans le portail existant. `useWritingBranches` synchronise la variante active avec la capsule du titre et attend la sauvegarde avant tout changement. Les états automatiques et les brouillons des variantes restent distincts. |
 | `voice/` | `useVoiceSession` possède acquisition, sessions, files audio, annulation et nettoyage ; `VoiceButton` rend les commandes et contenus du panneau. |
@@ -51,6 +53,8 @@ La saisie reste gérée par les transactions CodeMirror. React ne contrôle pas 
 
 Les commandes, événements, formats persistés, valeurs par défaut et ressources ne changent pas avec ce découpage. Le JSON `tests/fixtures/ipc-save.json` est consommé par les tests TypeScript et Rust pour vérifier notamment révisions, caractères accentués, emoji et offsets UTF-16.
 
+Les traductions sont réparties par domaine dans `src/i18n/messages/`. Le catalogue TypeScript conserve l’ordre de correspondance des messages à paramètres. À la compilation, `src-tauri/build.rs` assemble les mêmes fichiers pour les menus natifs et signale les clés présentes dans plusieurs fichiers.
+
 ## Backend : contexte, transactions et moteurs
 
 - `api/request.rs` définit le protocole serde ; `api/state.rs` conserve les ressources partagées. `api/dispatch.rs` valide et admet la requête avant `spawn_blocking`, puis conserve le permis jusqu’à sa fin.
@@ -59,7 +63,7 @@ Les commandes, événements, formats persistés, valeurs par défaut et ressourc
 - `memory/passages.rs` synchronise les passages par scène et calcule les travaux en attente. La signature de synchronisation regroupe révision, miroir, outline et titre, avec une nouvelle lecture sous verrou d’écriture lorsqu’une mise à jour est nécessaire. `memory/inline.rs` livre les mentions du projet sur une connexion et un catalogue de sources communs. `memory/results.rs` contrôle la fraîcheur du catalogue avant et après les écritures groupées du cache. `memory/context.rs` lit contexte, entités, passages, session et rejets. `memory/mod.rs` conserve l’application transactionnelle des résultats et la normalisation. Les files et priorités des moteurs gardent leurs propriétaires. [Mesures de la 0.7.5](optimisation-entites-0.7.5.md)
 - `vaults/` lit les dossiers externes, YAML, tags, alias et PDF. L’index FTS5 et les données dérivées restent dans une base distincte. Une source externe s’ouvre en lecture seule ; une fiche appartenant à Ariane est distincte.
 - `retrieval/` distingue identité exacte, liens explicites, tags et proximité sémantique. Les résultats restent filtrés par périmètre. `inference/`, `memory_engine/` et `voice/` conservent leurs processus, priorités et protocoles ; le découpage ne modifie aucun modèle ni seuil.
-- `history/` conserve les versions de texte, structure, paramètres, références et annotations. Les variantes et leurs brouillons sont stockés dans SQLite ; la relecture compare une origine commune et conserve des points de retour avant intégration ou restauration. `export/` assemble et convertit avec les ressources locales existantes ; son annulation arrête le groupe de processus.
+- `history/` conserve les versions de texte, structure, paramètres, références et annotations. `history/branches.rs` gère les variantes et leurs brouillons. `history/branches/merge.rs` compare leur origine commune, prépare la prévisualisation et applique l’intégration dans une transaction SQLite avec un point de retour. `export/` assemble et convertit avec les ressources locales existantes. Son annulation arrête le groupe de processus.
 - `platform.rs` conserve les menus macOS et la demande de sauvegarde avant sortie. `app/useNativeClose.ts` partage le chemin de fermeture/quitter ; le backend attend la confirmation du frontend.
 
 ## Format de projet et invariants
@@ -74,7 +78,7 @@ Les sections conservent rôle, inclusion et corbeille ; le champ historique `rol
 
 ## Styles et maintenance
 
-Les points d’entrée `styles/editor.css` et `styles/surfaces.css` importent leurs groupes de règles dans un ordre explicite. Les autres feuilles gardent leur ordre de chargement. Les règles transversales et correctives restent dans leur position de cascade : ne pas les déplacer dans un composant sans vérifier leur priorité et les vues concernées.
+Les points d’entrée `styles/editor.css` et `styles/surfaces.css` importent leurs groupes de règles dans un ordre explicite. Pour la bibliothèque, les ajustements communs précèdent les règles de l’arbre puis celles des contrôles. Cet ordre conserve la priorité des sélecteurs partagés avec les autres surfaces.
 
 La marge documentaire affiche le titre dans la couleur du type de source. Le survol et le focus clavier révèlent le type, le motif du rapprochement et la description ou un extrait disponible sur un fond teinté. L’aperçu et la fiche ouverte partagent le rayon `--suggestion-card-radius`, y compris pendant l’animation d’ouverture. Les suggestions issues du manuscrit reprennent la même présentation avec leur contexte. `DocumentaryMargin` mesure les groupes dépliés pour que `marginLayout` conserve les ancrages et réserve la place nécessaire aux mentions suivantes.
 
@@ -143,6 +147,8 @@ Les actions partagées sont rendues par `project/BinderActions` : thème et quat
 
 `search/query.ts` analyse la syntaxe ; `resolveQuery.ts` résout les noms en IDs ; `evaluateQuery.ts` calcule une union d’intersections de passages courants. Ces fonctions ne dépendent pas de React/Tauri. Les vues structurées partagent `TagFilterView` et sa projection texte/tableau, en conservant l’éditeur monté et en lecture seule. Les analyses manquantes et ambiguïtés sont explicites. Les expressions enregistrées portent une version de format indépendante de celle de l’application.
 
+Pour une recherche d’entité, l’évaluateur prépare le plan de chaque scène au premier résultat dans cette scène. Les mentions suivantes retrouvent leur passage par recherche binaire sur les positions UTF-16. Ce plan est propre à une exécution de la requête, y compris pour les scènes anciennes dont il faut reconstruire les paragraphes. La commande `ARIANE_STRUCTURED_SEARCH_REPORT=/tmp/ariane-search.json npm exec -- vitest run benchmarks/structured-search.test.ts` mesure neuf recherches sur les deux formats de scène et enregistre une empreinte des résultats dans leur ordre de lecture.
+
 `contracts/commands.ts` et `app/commands/registry.ts` décrivent IDs, portées et combinaisons par défaut. `shortcuts.ts` conserve les préférences locales et synchronise les accélérateurs ; `useWorkspaceCommands` conserve les actions et leurs différences de flush/checkpoint. Le clavier de l’application intercepte ses commandes avant CodeMirror ; les événements de menu correspondants sont dédoublonnés. Les commandes auparavant propres aux menus gardent leur chemin natif. Les champs d’enregistrement suspendent ces accélérateurs et les rétablissent à la sortie. Les keymaps et l’instance CodeMirror ne sont pas recréées pour changer une combinaison. Le format persistant est `ariane.shortcuts.v1` ; ce stockage reste celui des raccourcis applicatifs. Depuis la 0.6.0, la combinaison globale de capture appartient à la base de réception et à l’enregistrement natif décrit ci-dessous.
 
 
@@ -192,7 +198,7 @@ Le listener CodeMirror de `editor/runtime/mount` émet `onWritingEdit` uniquemen
 
 ## Pages intégrées et rythme d’interface
 
-`App` possède une zone centrale `workspace-page-layout`, masquée en écriture, et le point de retour du focus. `WorkspaceScreenHost` fournit uniquement cette cible de portail, le retour de focus et le signal d’occupation. `WorkspaceScreen` y rend une section nommée pour Profil, Paramètres, réception, Smart-tags et entités. Ces sections ne sont pas des dialogues modaux et ne recréent ni le logo, ni la sidebar, ni les accès, ni la capsule du titre. Les états de page sont exclusifs avec la réception. En dehors d’un projet, la réception garde une présentation autonome avec les contrôles natifs existants.
+`App` rend la zone centrale `workspace-page-layout`, masquée en écriture. Son hook `useWorkspacePages` conserve la cible du portail, le point de retour du focus et le signal d’occupation transmis par `WorkspaceScreenHost`. `WorkspaceScreen` y rend une section nommée pour Profil, Paramètres, réception, Smart-tags et entités. Ces pages partagent le logo, la sidebar, les accès et la capsule du titre. Les états de page sont exclusifs avec la réception. En dehors d’un projet, la réception garde une présentation autonome avec les contrôles natifs existants.
 
 Le main d’écriture reste monté, masqué et inerte pendant une page, de même que le groupe des outils et lecteurs. L’éditeur devient en lecture seule ; ses transactions, sa sélection, son défilement et son annulation sont conservés. Les panneaux et leurs traitements ne sont pas démontés pour cacher leur présentation. La sélection d’un texte depuis le cadre rejoint l’écriture. Un passage entre pages garde un unique retour de focus ; Échap depuis la page ferme celle-ci, sans intercepter une liste déroulante ou un dialogue enfant. Les champs d’enregistrement de raccourcis gardent la main sur les combinaisons. Une page occupée verrouille les accès et commandes transversales jusqu’à la fin de l’opération, notamment le rangement de captures et les opérations de tags.
 
@@ -242,7 +248,7 @@ La vue partagée conserve l’éditeur monté et réserve la partie droite aux P
 
 Le schéma projet **7** protège le champ facultatif `document` du JSON d’annotation. La cible documentaire v1 contient l’ID du vault et de la source, le chemin relatif, l’empreinte complète, la page à partir de 1, les rectangles, la citation et ses contextes. Chaque rectangle contient les coordonnées gauche, haut, droite et bas dans [0, 1], depuis le coin supérieur gauche du contenu orienté. Les annotations antérieures gardent leur forme. La migration crée une copie dans `recuperation/`. Le schéma des captures reste indépendant. Les variantes, Versions et la sauvegarde de projet emportent la cible avec la note. Le rattachement à une nouvelle source requiert une sélection et une confirmation.
 
-La lecture d’une note Markdown utilise le découpage des scènes de CodeMirror pour trouver sa définition. `editor/footnoteReading.ts` rend une décoration de bloc sous l’appel. L’ouverture et le repli conservent le texte, la sélection et les définitions en fin de scène utilisées par l’export. Une même étiquette peut servir à des notes différentes dans deux scènes.
+La lecture d’une note Markdown utilise le découpage des scènes de CodeMirror pour trouver sa définition. `editor/markdown.ts` affiche les appels dans la partie déjà analysée du texte visible et actualise leurs marques lorsque le parseur progresse. Un exemple de syntaxe dans du code reste ainsi du texte. `editor/footnoteReading.ts` rend une décoration de bloc sous l’appel. L’ouverture et le repli conservent le texte, la sélection et les définitions en fin de scène utilisées par l’export. Une même étiquette peut servir à des notes différentes dans deux scènes.
 
 À la première ouverture d’un index de sources restauré ou antérieur au marquage de son schéma, les lecteurs du processus partagent le verrou d’initialisation de ce fichier. Les tables et le numéro de schéma de l’index sont validés dans la même transaction SQLite. Une ouverture ordinaire consulte le schéma et traite les anciens vecteurs texte encore présents. Cet index dérivé possède son propre numéro de schéma, indépendant de celui du projet. À l’ouverture du projet, la base de travail utilise le journal WAL, y compris pour une copie restaurée depuis une sauvegarde autonome en mode DELETE.
 

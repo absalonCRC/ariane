@@ -1,0 +1,466 @@
+{
+  "Rétablir les instances masquées ({0})": [
+    "Restore hidden occurrences ({0})",
+    "Restablecer las apariciones ocultas ({0})"
+  ],
+  "Cette source a changé. Le rapprochement sera recalculé.": [
+    "This source has changed. The connection will be recalculated.",
+    "Esta fuente ha cambiado. La relación se volverá a calcular."
+  ],
+  "Mémoire du manuscrit": [
+    "Manuscript memory",
+    "Memoria del manuscrito"
+  ],
+  "REPRENDRE LE FIL": [
+    "PICK UP WHERE YOU LEFT OFF",
+    "RETOMAR EL HILO"
+  ],
+  "DEPUIS VOTRE TEXTE": [
+    "FROM YOUR TEXT",
+    "DESDE TU TEXTO"
+  ],
+  "Fermer la mémoire": [
+    "Close memory",
+    "Cerrar la memoria"
+  ],
+  "Au fil du manuscrit": [
+    "Through the manuscript",
+    "A lo largo del manuscrito"
+  ],
+  "Les fiches se constituent à partir de vos passages, sans modifier vos sources.": [
+    "Entries are built from your passages, without modifying your sources.",
+    "Las fichas se crean a partir de tus pasajes, sin modificar tus fuentes."
+  ],
+  "{0} passage(s)": [
+    "{0} passage(s)",
+    "{0} pasaje(s)"
+  ],
+  "Les noms et les lieux reconnus apparaîtront ici après une pause d’écriture.": [
+    "Recognised names and places will appear here after a pause in writing.",
+    "Los nombres y lugares reconocidos aparecerán aquí tras una pausa en la escritura."
+  ],
+  "L’analyse locale est momentanément indisponible. Les informations déjà enregistrées restent accessibles.": [
+    "Local analysis is temporarily unavailable. Previously saved information remains accessible.",
+    "El análisis local no está disponible temporalmente. La información ya guardada sigue siendo accesible."
+  ],
+  "Informations dérivées du manuscrit · chaque passage reste la référence.": [
+    "Information derived from the manuscript · each passage remains the reference.",
+    "Información derivada del manuscrito · cada pasaje sigue siendo la referencia."
+  ],
+  "Vers ": [
+    "Around ",
+    "Hacia "
+  ],
+  "Repères dans le temps": [
+    "Timeline",
+    "Cronología"
+  ],
+  "Passages liés": [
+    "Linked passages",
+    "Pasajes vinculados"
+  ],
+  "Rejoindre le passage": [
+    "Go to passage",
+    "Ir al pasaje"
+  ],
+  "Masquer ce rapprochement": [
+    "Hide this connection",
+    "Ocultar esta relación"
+  ],
+  "Passage à confronter à votre texte. Ce rapprochement ne constitue pas une confirmation.": [
+    "Compare this passage with your text. This connection does not constitute confirmation.",
+    "Contrasta este pasaje con tu texto. Esta relación no constituye una confirmación."
+  ],
+  "Page {0}": [
+    "Page {0}",
+    "Página {0}"
+  ],
+  "Lire dans la source": [
+    "Read in source",
+    "Leer en la fuente"
+  ],
+  "Dernier passage travaillé": [
+    "Last passage edited",
+    "Último pasaje trabajado"
+  ],
+  "Dernière source consultée": [
+    "Last source consulted",
+    "Última fuente consultada"
+  ],
+  "Passage précédent": [
+    "Previous passage",
+    "Pasaje anterior"
+  ],
+  "Le contexte de cette session sera conservé pendant votre travail.": [
+    "This session’s context will be saved as you work.",
+    "El contexto de esta sesión se conservará mientras trabajas."
+  ],
+  "L’export n’a pas abouti": [
+    "The export could not be completed",
+    "No se ha podido completar la exportación"
+  ],
+  "Contenu": [
+    "Content",
+    "Contenido"
+  ],
+  "Manuscrit entier": [
+    "Whole manuscript",
+    "Manuscrito completo"
+  ],
+  "Section actuelle": [
+    "Current section",
+    "Sección actual"
+  ],
+  "Titres, texte Markdown et notes de bas de page seront assemblés dans l’ordre du projet. Les textes exclus sont omis du manuscrit entier ; l’export de la section actuelle les conserve.": [
+    "Headings, Markdown text and footnotes will be assembled in project order. Excluded texts are omitted from the whole manuscript; exporting the current section keeps them.",
+    "Los títulos, el texto Markdown y las notas al pie se unirán en el orden del proyecto. Los textos excluidos se omiten del manuscrito completo; la exportación de la sección actual los conserva."
+  ],
+  "Préparation du document…": [
+    "Preparing document…",
+    "Preparando el documento…"
+  ],
+  "Vous pouvez fermer cette fenêtre et continuer à écrire.": [
+    "You can close this window and keep writing.",
+    "Puedes cerrar esta ventana y seguir escribiendo."
+  ],
+  "Annuler l’export": [
+    "Cancel export",
+    "Cancelar la exportación"
+  ],
+  "Nouvel export": [
+    "New export",
+    "Nueva exportación"
+  ],
+  "Les exports PDF, Word et EPUB sont disponibles dans l’application macOS.": [
+    "PDF, Word and EPUB exports are available in the macOS application.",
+    "Las exportaciones a PDF, Word y EPUB están disponibles en la aplicación para macOS."
+  ],
+  "Aucun texte inclus dans cet export.": [
+    "No texts included in this export.",
+    "No hay textos incluidos en esta exportación."
+  ],
+  "Avant reprise de passage": [
+    "Before applying passage",
+    "Antes de recuperar el pasaje"
+  ],
+  "Versions du texte": [
+    "Text versions",
+    "Versiones del texto"
+  ],
+  "Versions": [
+    "Versions",
+    "Versiones"
+  ],
+  "Fermer les outils des versions": [
+    "Close version tools",
+    "Cerrar las herramientas de versiones"
+  ],
+  "Conserver une version": [
+    "Save a version",
+    "Guardar una versión"
+  ],
+  "Parcourir les modifications": [
+    "Browse changes",
+    "Explorar los cambios"
+  ],
+  "Chargement…": [
+    "Loading…",
+    "Cargando…"
+  ],
+  "{0} passages modifiés": [
+    "{0} changed passages",
+    "{0} pasajes modificados"
+  ],
+  "Modification précédente": [
+    "Previous change",
+    "Cambio anterior"
+  ],
+  "Précédente": [
+    "Previous",
+    "Anterior"
+  ],
+  "Modification suivante": [
+    "Next change",
+    "Cambio siguiente"
+  ],
+  "Suivante": [
+    "Next",
+    "Siguiente"
+  ],
+  "Textes modifiés uniquement": [
+    "Changed texts only",
+    "Solo textos modificados"
+  ],
+  "Restaurer cette version…": [
+    "Restore this version…",
+    "Restaurar esta versión…"
+  ],
+  "Une sauvegarde est conservée avant chaque reprise ou restauration.": [
+    "A backup is kept before each passage is applied or version restored.",
+    "Se conserva una copia antes de recuperar un pasaje o restaurar una versión."
+  ],
+  "Nom": [
+    "Name",
+    "Nombre"
+  ],
+  "Avant révision, autre début…": [
+    "Before revision, another opening…",
+    "Antes de la revisión, otro comienzo…"
+  ],
+  "Portée": [
+    "Scope",
+    "Ámbito"
+  ],
+  "Tout le projet": [
+    "Whole project",
+    "Todo el proyecto"
+  ],
+  "Section actuelle et ses scènes": [
+    "Current section and its scenes",
+    "Sección actual y sus escenas"
+  ],
+  "Conserver": [
+    "Save",
+    "Conservar"
+  ],
+  "Aucune version enregistrée": [
+    "No saved versions",
+    "No hay versiones guardadas"
+  ],
+  "Conservez un état du texte pour comparer vos révisions côte à côte et reprendre les passages de votre choix.": [
+    "Save a snapshot to compare revisions side by side and recover the passages you choose.",
+    "Conserva un estado del texto para comparar tus revisiones en paralelo y recuperar los pasajes que elijas."
+  ],
+  "Conserver la première version": [
+    "Save the first version",
+    "Conservar la primera versión"
+  ],
+  "Aucun texte": [
+    "No text",
+    "Sin texto"
+  ],
+  " · Ajouté": [
+    " · Added",
+    " · Añadido"
+  ],
+  " · Retiré": [
+    " · Removed",
+    " · Retirado"
+  ],
+  "Texte comparé": [
+    "Compared text",
+    "Texto comparado"
+  ],
+  "+{0} mots": [
+    "+{0} words",
+    "+{0} palabras"
+  ],
+  "−{0} mots": [
+    "−{0} words",
+    "−{0} palabras"
+  ],
+  "Version de référence": [
+    "Reference version",
+    "Versión de referencia"
+  ],
+  "Texte actuel": [
+    "Current text",
+    "Texto actual"
+  ],
+  "Comparer avec": [
+    "Compare with",
+    "Comparar con"
+  ],
+  "Version comparée": [
+    "Compared version",
+    "Versión comparada"
+  ],
+  "pour sa section": [
+    "for its section",
+    "para su sección"
+  ],
+  "pour tout le projet": [
+    "for the whole project",
+    "para todo el proyecto"
+  ],
+  "Restaurer « {0} » {1} ? L’état actuel sera conservé avant restauration.": [
+    "Restore “{0}” {1}? The current state will be saved before restoration.",
+    "¿Restaurar «{0}» {1}? El estado actual se conservará antes de la restauración."
+  ],
+  "Confirmer la restauration": [
+    "Confirm restoration",
+    "Confirmar la restauración"
+  ],
+  "Chargement des versions…": [
+    "Loading versions…",
+    "Cargando las versiones…"
+  ],
+  "Ces versions concernent des sections différentes. Comparez chacune avec le texte actuel.": [
+    "These versions cover different sections. Compare each one with the current text.",
+    "Estas versiones corresponden a secciones diferentes. Compara cada una con el texto actual."
+  ],
+  "Le texte est identique ; les changements de structure figurent ci-dessus.": [
+    "The text is identical; structural changes are shown above.",
+    "El texto es idéntico; los cambios de estructura se muestran arriba."
+  ],
+  "Ce texte est vide dans les deux versions.": [
+    "This text is empty in both versions.",
+    "Este texto está vacío en ambas versiones."
+  ],
+  "Aucun texte dans cette sélection.": [
+    "No text in this selection.",
+    "No hay texto en esta selección."
+  ],
+  "Retrait": [
+    "Removal",
+    "Eliminación"
+  ],
+  "Ajout": [
+    "Addition",
+    "Adición"
+  ],
+  "Reprendre le passage de référence": [
+    "Apply reference passage",
+    "Recuperar el pasaje de referencia"
+  ],
+  "Passages comparés": [
+    "Compared passages",
+    "Pasajes comparados"
+  ],
+  "Les reprises de passages modifient le texte actuel. Une version est conservée avant chaque reprise.": [
+    "Applying passages changes the current text. A version is saved before each change.",
+    "Al recuperar pasajes se modifica el texto actual. Se conserva una versión antes de cada cambio."
+  ],
+  "Comparaison de deux instantanés. Choisissez « Texte actuel » à droite pour reprendre un passage.": [
+    "Comparing two snapshots. Choose “Current text” on the right to apply a passage.",
+    "Comparación de dos instantáneas. Elige «Texto actual» a la derecha para recuperar un pasaje."
+  ],
+  "Comparaison des versions": [
+    "Version comparison",
+    "Comparación de versiones"
+  ],
+  "Élément retiré": [
+    "Item removed",
+    "Elemento retirado"
+  ],
+  "Élément ajouté": [
+    "Item added",
+    "Elemento añadido"
+  ],
+  "Titre modifié": [
+    "Title changed",
+    "Título modificado"
+  ],
+  "Emplacement modifié": [
+    "Location changed",
+    "Ubicación modificada"
+  ],
+  "Ordre modifié": [
+    "Order changed",
+    "Orden modificado"
+  ],
+  "Espace modifié": [
+    "Space changed",
+    "Espacio modificado"
+  ],
+  "Inclusion dans le manuscrit modifiée": [
+    "Manuscript inclusion changed",
+    "Inclusión en el manuscrito modificada"
+  ],
+  "Synopsis modifié": [
+    "Synopsis changed",
+    "Sinopsis modificada"
+  ],
+  "Statut modifié": [
+    "Status changed",
+    "Estado modificado"
+  ],
+  "Objectif modifié": [
+    "Goal changed",
+    "Objetivo modificado"
+  ],
+  "Plan du texte modifié": [
+    "Text outline changed",
+    "Esquema del texto modificado"
+  ],
+  "Le passage a changé. Sélectionnez-le à nouveau pour l’annoter.": [
+    "The passage has changed. Select it again to annotate it.",
+    "El pasaje ha cambiado. Selecciónalo de nuevo para anotarlo."
+  ],
+  "Annotations du manuscrit": [
+    "Manuscript annotations",
+    "Anotaciones del manuscrito"
+  ],
+  "Annotations": [
+    "Annotations",
+    "Anotaciones"
+  ],
+  "Fermer les annotations": [
+    "Close annotations",
+    "Cerrar las anotaciones"
+  ],
+  "À vérifier ou à faire": [
+    "To check or do",
+    "Por verificar o hacer"
+  ],
+  "Ajouter l’annotation": [
+    "Add annotation",
+    "Añadir la anotación"
+  ],
+  "Afficher les annotations résolues": [
+    "Show resolved annotations",
+    "Mostrar las anotaciones resueltas"
+  ],
+  "Tout est résolu.": [
+    "Everything is resolved.",
+    "Todo está resuelto."
+  ],
+  "Sélectionnez un passage puis choisissez Annoter.": [
+    "Select a passage, then choose Annotate.",
+    "Selecciona un pasaje y elige Anotar."
+  ],
+  "Passage modifié ou introuvable": [
+    "Passage changed or not found",
+    "Pasaje modificado o no encontrado"
+  ],
+  "Annotation": [
+    "Annotation",
+    "Anotación"
+  ],
+  "Modifier": [
+    "Edit",
+    "Modificar"
+  ],
+  "Rouvrir": [
+    "Reopen",
+    "Reabrir"
+  ],
+  "Marquer comme résolu": [
+    "Mark as resolved",
+    "Marcar como resuelto"
+  ],
+  "Nouvelle section": [
+    "New section",
+    "Nueva sección"
+  ],
+  "Nouveau chapitre": [
+    "New chapter",
+    "Nuevo capítulo"
+  ],
+  "Nouvelle scène": [
+    "New scene",
+    "Nueva escena"
+  ],
+  "Aucun texte à inclure": [
+    "No texts to include",
+    "No hay textos para incluir"
+  ],
+  "Inclusion partielle · ": [
+    "Partly included · ",
+    "Inclusión parcial · "
+  ],
+  "Exclure du manuscrit": [
+    "Exclude from manuscript",
+    "Excluir del manuscrito"
+  ]
+}

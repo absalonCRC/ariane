@@ -5,3 +5,5 @@
 @import './surfaces/versions-and-feedback.css';
 @import './surfaces/panels.css';
 @import './surfaces/library-refinements.css';
+@import './surfaces/library-tree.css';
+@import './surfaces/library-controls.css';

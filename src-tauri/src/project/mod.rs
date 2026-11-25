@@ -15,7 +15,7 @@ mod queries;
 mod schema;
 pub use mirrors::resolve_external;
 pub(crate) use mirrors::scene_disk;
-#[cfg(any(test, feature = "performance-harness"))]
+#[cfg(test)]
 pub use mutations::add;
 pub use mutations::{create, reorder, settings, update};
 pub(crate) use queries::row_section;
@@ -23,7 +23,7 @@ pub use queries::{all_sections, section, sections};
 pub(crate) use schema::backup_before_migration;
 pub use schema::database;
 pub(crate) use storage::load_unlocked;
-#[cfg(any(test, feature = "performance-harness"))]
+#[cfg(test)]
 pub use storage::save;
 pub use storage::{hash, load, save_report};
 

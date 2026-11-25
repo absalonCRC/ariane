@@ -1,0 +1,446 @@
+{
+  "Réessayer": [
+    "Retry",
+    "Reintentar"
+  ],
+  "Fermer le message": [
+    "Dismiss message",
+    "Cerrar el mensaje"
+  ],
+  "Ouvrez un projet pour continuer.": [
+    "Open a project to continue.",
+    "Abre un proyecto para continuar."
+  ],
+  "Disponible dans l’application macOS": [
+    "Available in the macOS application",
+    "Disponible en la aplicación para macOS"
+  ],
+  "Cette fonction est disponible dans l’application Mac.": [
+    "This feature is available in the Mac application.",
+    "Esta función está disponible en la aplicación para Mac."
+  ],
+  "Version de texte périmée.": [
+    "Text version is out of date.",
+    "La versión del texto está desactualizada."
+  ],
+  "Section répétée dans la sauvegarde.": [
+    "Duplicate section in save.",
+    "Sección repetida al guardar."
+  ],
+  "Structure de passages invalide.": [
+    "Invalid passage structure.",
+    "Estructura de pasajes no válida."
+  ],
+  "Ce projet possède déjà un vault.": [
+    "This project already has a vault.",
+    "Este proyecto ya tiene un vault."
+  ],
+  "Créez un vault ariane.": [
+    "Create an ariane vault.",
+    "Crea un vault de ariane."
+  ],
+  "Nom ou type de fiche invalide.": [
+    "Invalid entry name or type.",
+    "Nombre o tipo de ficha no válido."
+  ],
+  "Cette fiche existe déjà.": [
+    "This entry already exists.",
+    "Esta ficha ya existe."
+  ],
+  "Version introuvable": [
+    "Version not found",
+    "Versión no encontrada"
+  ],
+  "Cette fonction utilise le moteur Rust et les fichiers locaux. Ouvrez l’application macOS.": [
+    "This feature uses the Rust engine and local files. Open the macOS application.",
+    "Esta función utiliza el motor Rust y los archivos locales. Abre la aplicación para macOS."
+  ],
+  "Titre du texte ou du dossier": [
+    "Text or folder title",
+    "Título del texto o de la carpeta"
+  ],
+  "Ouvrir le classeur": [
+    "Open binder",
+    "Abrir el archivador"
+  ],
+  "Annoter la sélection / Voir les annotations": [
+    "Annotate selection / View annotations",
+    "Anotar la selección / Ver anotaciones"
+  ],
+  "Importer un manuscrit": [
+    "Import a manuscript",
+    "Importar un manuscrito"
+  ],
+  "Séparer ou réunir des scènes": [
+    "Split or join scenes",
+    "Separar o unir escenas"
+  ],
+  "Préparer cette section": [
+    "Prepare this section",
+    "Preparar esta sección"
+  ],
+  "Indenter le passage": [
+    "Indent passage",
+    "Sangrar el pasaje"
+  ],
+  "Désindenter le passage": [
+    "Outdent passage",
+    "Reducir la sangría del pasaje"
+  ],
+  "Monter la branche": [
+    "Move branch up",
+    "Subir la rama"
+  ],
+  "Descendre la branche": [
+    "Move branch down",
+    "Bajar la rama"
+  ],
+  "Replier ou déplier le passage": [
+    "Collapse or expand passage",
+    "Contraer o desplegar el pasaje"
+  ],
+  "Lire le manuscrit entier": [
+    "Read the whole manuscript",
+    "Leer el manuscrito completo"
+  ],
+  "Ajouter une scène": [
+    "Add a scene",
+    "Añadir una escena"
+  ],
+  "Le texte a changé. Replacez le curseur puis réessayez.": [
+    "The text has changed. Reposition the cursor and try again.",
+    "El texto ha cambiado. Vuelve a colocar el cursor e inténtalo de nuevo."
+  ],
+  "Texte réorganisé.": [
+    "Text reorganised.",
+    "Texto reorganizado."
+  ],
+  "Le texte a changé. Relancez la comparaison.": [
+    "The text has changed. Run the comparison again.",
+    "El texto ha cambiado. Vuelve a ejecutar la comparación."
+  ],
+  "Cette action n’a pas pu aboutir. Vérifiez notamment l’accès au presse-papiers.": [
+    "This action could not be completed. Check clipboard access.",
+    "No se ha podido completar esta acción. Comprueba el acceso al portapapeles."
+  ],
+  "Cette action n’a pas pu aboutir.": [
+    "This action could not be completed.",
+    "No se ha podido completar esta acción."
+  ],
+  "Profondeur {0} : {1} Régler la profondeur": [
+    "Depth {0}: {1} Adjust depth",
+    "Profundidad {0}: {1} Ajustar la profundidad"
+  ],
+  "Niveau {0} : {1}. {2}": [
+    "Level {0}: {1}. {2}",
+    "Nivel {0}: {1}. {2}"
+  ],
+  "Titre de la section": [
+    "Section title",
+    "Título de la sección"
+  ],
+  "Titre de la page": [
+    "Page title",
+    "Título de la página"
+  ],
+  "Titre": [
+    "Title",
+    "Título"
+  ],
+  "Modifier le titre": [
+    "Edit title",
+    "Modificar el título"
+  ],
+  "Copier le titre": [
+    "Copy title",
+    "Copiar el título"
+  ],
+  "Formatage Markdown": [
+    "Markdown formatting",
+    "Formato Markdown"
+  ],
+  "Formatage": [
+    "Formatting",
+    "Formato"
+  ],
+  "Niveau de titre": [
+    "Heading level",
+    "Nivel de encabezado"
+  ],
+  "Titre…": [
+    "Heading…",
+    "Encabezado…"
+  ],
+  "Texte normal": [
+    "Normal text",
+    "Texto normal"
+  ],
+  "Titre {0}": [
+    "Heading {0}",
+    "Encabezado {0}"
+  ],
+  "Mise en forme du texte": [
+    "Text formatting",
+    "Formato del texto"
+  ],
+  "Annoter la sélection": [
+    "Annotate selection",
+    "Anotar la selección"
+  ],
+  "Mettre en forme la sélection": [
+    "Format selection",
+    "Dar formato a la selección"
+  ],
+  "Thème sombre": [
+    "Dark theme",
+    "Tema oscuro"
+  ],
+  "Passer au thème clair": [
+    "Switch to light theme",
+    "Cambiar al tema claro"
+  ],
+  "Passer au thème sombre": [
+    "Switch to dark theme",
+    "Cambiar al tema oscuro"
+  ],
+  "Revenir au texte": [
+    "Back to text",
+    "Volver al texto"
+  ],
+  "Pause": [
+    "Break",
+    "Descanso"
+  ],
+  "Pause longue": [
+    "Long break",
+    "Descanso largo"
+  ],
+  "caractère": [
+    "character",
+    "carácter"
+  ],
+  "caractères": [
+    "characters",
+    "caracteres"
+  ],
+  "ligne": [
+    "line",
+    "línea"
+  ],
+  "lignes": [
+    "lines",
+    "líneas"
+  ],
+  "mot": [
+    "word",
+    "palabra"
+  ],
+  "mots": [
+    "words",
+    "palabras"
+  ],
+  "note": [
+    "note",
+    "nota"
+  ],
+  "notes": [
+    "notes",
+    "notas"
+  ],
+  "Recherche des notes du vault en cours": [
+    "Searching vault notes",
+    "Buscando notas del vault"
+  ],
+  "Nombre de notes du vault indisponible": [
+    "Vault note count unavailable",
+    "Número de notas del vault no disponible"
+  ],
+  "suggérée": [
+    "suggested",
+    "sugerida"
+  ],
+  "suggérées": [
+    "suggested",
+    "sugeridas"
+  ],
+  "{0} {1} du vault {2} pour le passage affiché": [
+    "{0} vault {1} {2} for the displayed passage",
+    "{0} {1} del vault {2} para el pasaje mostrado"
+  ],
+  "pause ": [
+    "break ",
+    "descanso "
+  ],
+  " en pause": [
+    " paused",
+    " en pausa"
+  ],
+  "Compteur et Pomodoro": [
+    "Counter and Pomodoro",
+    "Contador y Pomodoro"
+  ],
+  "Mettre le minuteur en pause": [
+    "Pause timer",
+    "Pausar el temporizador"
+  ],
+  "Démarrer le minuteur": [
+    "Start timer",
+    "Iniciar el temporizador"
+  ],
+  "Recommencer le cycle Pomodoro": [
+    "Restart Pomodoro cycle",
+    "Reiniciar el ciclo Pomodoro"
+  ],
+  "Manuscrit": [
+    "Manuscript",
+    "Manuscrito"
+  ],
+  "Couper": [
+    "Cut",
+    "Cortar"
+  ],
+  "Copier": [
+    "Copy",
+    "Copiar"
+  ],
+  "Coller": [
+    "Paste",
+    "Pegar"
+  ],
+  "Rétablir": [
+    "Redo",
+    "Rehacer"
+  ],
+  "Gras": [
+    "Bold",
+    "Negrita"
+  ],
+  "Italique": [
+    "Italic",
+    "Cursiva"
+  ],
+  "Monter le passage": [
+    "Move passage up",
+    "Subir el pasaje"
+  ],
+  "Descendre le passage": [
+    "Move passage down",
+    "Bajar el pasaje"
+  ],
+  "Déplier les sous-passages": [
+    "Expand subpassages",
+    "Desplegar los subpasajes"
+  ],
+  "Replier les sous-passages": [
+    "Collapse subpassages",
+    "Contraer los subpasajes"
+  ],
+  "Sélection": [
+    "Selection",
+    "Selección"
+  ],
+  "Passage": [
+    "Passage",
+    "Pasaje"
+  ],
+  "{0} mot{1} sélectionné{2}": [
+    "{0} word{1} selected",
+    "{0} palabra{1} seleccionada{2}"
+  ],
+  "description de l’image": [
+    "image description",
+    "descripción de la imagen"
+  ],
+  "texte du lien": [
+    "link text",
+    "texto del enlace"
+  ],
+  "Texte de la note": [
+    "Note text",
+    "Texto de la nota"
+  ],
+  "Tableau Markdown modifiable": [
+    "Editable Markdown table",
+    "Tabla Markdown editable"
+  ],
+  "Modifier le tableau": [
+    "Edit table",
+    "Modificar la tabla"
+  ],
+  "Ajouter une ligne": [
+    "Add row",
+    "Añadir una fila"
+  ],
+  "Supprimer la ligne": [
+    "Delete row",
+    "Eliminar la fila"
+  ],
+  "Ajouter une colonne": [
+    "Add column",
+    "Añadir una columna"
+  ],
+  "Supprimer la colonne": [
+    "Delete column",
+    "Eliminar la columna"
+  ],
+  "Modifier la cellule ligne {0}, colonne {1}": [
+    "Edit cell in row {0}, column {1}",
+    "Modificar la celda de la fila {0}, columna {1}"
+  ],
+  "Référence de la source": [
+    "Source reference",
+    "Referencia de la fuente"
+  ],
+  "Lire la note de source": [
+    "Read source note",
+    "Leer la nota de la fuente"
+  ],
+  "Image": [
+    "Image",
+    "Imagen"
+  ],
+  "Enrichissements du manuscrit": [
+    "Manuscript enrichment",
+    "Enriquecimiento del manuscrito"
+  ],
+  "Références liées": [
+    "Linked references",
+    "Referencias vinculadas"
+  ],
+  "Un même passage, affiché ici depuis le manuscrit. Modifiez l’original pour le retrouver à jour dans ses références.": [
+    "The same passage, shown here from the manuscript. Edit the original to keep its references up to date.",
+    "El mismo pasaje, mostrado aquí desde el manuscrito. Modifica el original para mantener sus referencias actualizadas."
+  ],
+  "À vérifier · valeurs différentes": [
+    "Check · different values",
+    "Por verificar · valores diferentes"
+  ],
+  "Déjà dans la fiche": [
+    "Already in the entry",
+    "Ya está en la ficha"
+  ],
+  "Complété depuis le manuscrit": [
+    "Added from the manuscript",
+    "Completado desde el manuscrito"
+  ],
+  "{0} · ligne {1}": [
+    "{0} · line {1}",
+    "{0} · línea {1}"
+  ],
+  "Les formulations incertaines, négatives ou citées restent du contexte ; elles ne remplissent pas de champ.": [
+    "Uncertain, negative or quoted statements remain context; they do not populate fields.",
+    "Las formulaciones inciertas, negativas o citadas se conservan como contexto; no rellenan campos."
+  ],
+  "Mentionnés dans le même passage : {0}": [
+    "Mentioned in the same passage: {0}",
+    "Mencionados en el mismo pasaje: {0}"
+  ],
+  "Masquer cette instance": [
+    "Hide this occurrence",
+    "Ocultar esta aparición"
+  ],
+  "{0} instance{1} liée{2}": [
+    "{0} linked occurrence{1}",
+    "{0} aparición(es) vinculada{2}"
+  ]
+}

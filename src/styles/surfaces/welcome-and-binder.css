@@ -6,29 +6,42 @@
   justify-content: center;
   gap: 40px;
 }
-.welcome > h1 {
-  font-size: 44px;
-  letter-spacing: -0.5px;
+.welcome-intro {
+  width: min(100%, 36rem);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+}
+.welcome-symbol {
+  display: block;
+  width: clamp(92px, 10vw, 124px);
+  height: auto;
+  margin: 0 auto var(--space-xl);
+  color: var(--ink);
+}
+.welcome-intro h1 {
   margin: 0;
+  font: 400 clamp(36px, 5vw, 52px)/1.08 var(--literary);
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+.welcome-intro p {
+  max-width: 42ch;
+  margin: var(--space-sm) auto 0;
+  font: 14px/1.55 var(--ui);
+  color: var(--theme-secondary, #585858);
+  text-wrap: balance;
 }
 .welcome-actions {
   display: flex;
-  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-xl);
 }
-.welcome-actions > button {
-  border: 1px solid var(--theme-line, #e3e3e3);
-  border-radius: 6px;
-  padding: 14px 28px;
-}
-.welcome > p {
-  font-size: 11px;
-  color: var(--theme-quiet, #a0a0a0);
-  margin: 0;
-}
-.welcome-symbol {
-  width: clamp(108px, 13vw, 164px);
-  height: auto;
-  color: var(--ink);
+.welcome-actions button {
+  min-height: 40px;
+  padding-inline: var(--space-md);
+  font: 500 13px var(--ui);
 }
 @media (prefers-reduced-motion: no-preference) {
   .welcome-symbol mask path {

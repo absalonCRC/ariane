@@ -1,4 +1,4 @@
-import { t } from '../i18n';
+import { localizeMessage, t } from '../i18n';
 import { noteEventLabel } from '../notes/useNoteActivity';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useContextMenuNotice } from '../components/ContextMenu';
@@ -235,9 +235,60 @@ export function useTitleNotices(workspace: Workspace, memoryPending = false) {
     (message: string, tone: NoticeTone = 'info') => enqueue('operation', message, tone),
     [enqueue],
   );
+  const { p, doc, fail, setSurface } = workspace;
+  const pathNotices = notices.map((notice) => ({
+    id: notice.id,
+    message: localizeMessage(notice.message),
+    tone: notice.tone,
+    action:
+      notice.kind === 'library' &&
+      notice.libraryNotice === workspace.libraryNotice &&
+      notice.libraryNotice?.undo &&
+      p?.canUndoStructure
+        ? {
+            label: t('Annuler'),
+            disabled: workspace.libraryBusy,
+            onClick: () => {
+              dismiss(notice);
+              void workspace.operate({ action: 'undo' });
+            },
+          }
+        : notice.kind === 'version' && doc.versionStatus === 'error'
+          ? { label: t('Réessayer'), onClick: () => void doc.checkpoint().catch(fail) }
+          : (notice.kind === 'error' || notice.kind === 'save') &&
+              !workspace.error.startsWith('EXTERNAL:') &&
+              doc.status === 'error'
+            ? {
+                label: t('Réessayer'),
+                onClick: () => {
+                  dismiss(notice);
+                  if (doc.status === 'error') void doc.flush().catch(fail);
+                },
+              }
+            : notice.kind === 'index'
+              ? { label: t('Suspendre'), onClick: () => void request('cancelIndex').catch(fail) }
+              : notice.kind === 'export'
+                ? {
+                    label: t('Voir'),
+                    onClick: () => {
+                      dismiss(notice);
+                      setSurface('export');
+                    },
+                  }
+                : notice.kind === 'vault-access'
+                  ? { label: t('Autoriser les dossiers'), onClick: () => setSurface('sources') }
+                  : undefined,
+    showDetails:
+      (notice.kind === 'error' &&
+        (workspace.error.startsWith('EXTERNAL:') || doc.status !== 'error')) ||
+      notice.kind === 'recovery' ||
+      notice.kind === 'index',
+    onDismiss: () => dismiss(notice),
+  }));
   return {
     notify,
     notices,
+    pathNotices,
     dismiss,
     setDialogLoading,
     hasPending:

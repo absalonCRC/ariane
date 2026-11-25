@@ -154,7 +154,7 @@ fn text(value: &str, language: &str) -> String {
     static MESSAGES: std::sync::OnceLock<std::collections::HashMap<String, [String; 2]>> =
         std::sync::OnceLock::new();
     let messages = MESSAGES.get_or_init(|| {
-        serde_json::from_str(include_str!("../../src/i18n/messages.json"))
+        serde_json::from_str(include_str!(concat!(env!("OUT_DIR"), "/messages.json")))
             .expect("valid translation catalog")
     });
     messages

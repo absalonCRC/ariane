@@ -83,6 +83,7 @@ const inlineMarkdown = ViewPlugin.fromClass(
         u.docChanged ||
         u.selectionSet ||
         u.viewportChanged ||
+        syntaxTree(u.startState) !== syntaxTree(u.state) ||
         u.transactions.some((tr) => tr.reconfigured)
       )
         this.decorations = this.build(u.view);
@@ -92,8 +93,11 @@ const inlineMarkdown = ViewPlugin.fromClass(
       const selection = view.state.selection.main;
       const tree = syntaxTree(view.state);
       for (const range of view.visibleRanges) {
+        // CodeMirror may publish the rest of the Markdown tree in a later update.
+        const parsedTo = Math.min(range.to, tree.length);
+        if (parsedTo <= range.from) continue;
         const notes = Array.from(
-          view.state.sliceDoc(range.from, range.to).matchAll(/\[\^([^\]\n]+)\]/g),
+          view.state.sliceDoc(range.from, parsedTo).matchAll(/\[\^([^\]\n]+)\]/g),
           (m) => ({
             from: range.from + m.index!,
             to: range.from + m.index! + m[0].length,

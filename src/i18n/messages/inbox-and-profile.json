@@ -1,0 +1,466 @@
+{
+  "Vues concernées": [
+    "Affected views",
+    "Vistas afectadas"
+  ],
+  "Sauvegarder ou restaurer les captures": [
+    "Back up or restore captures",
+    "Guardar o restaurar capturas"
+  ],
+  "Boîte de réception": [
+    "Inbox",
+    "Bandeja de entrada"
+  ],
+  "Terminer": [
+    "Finish",
+    "Terminar"
+  ],
+  "Une idée à garder…": [
+    "An idea to keep…",
+    "Una idea para guardar…"
+  ],
+  "Texte de la capture": [
+    "Capture text",
+    "Texto de la captura"
+  ],
+  "Capture rapide": [
+    "Quick capture",
+    "Captura rápida"
+  ],
+  "Volume de la machine à écrire": [
+    "Typewriter volume",
+    "Volumen de la máquina de escribir"
+  ],
+  "Son dans la capture rapide": [
+    "Sound in quick capture",
+    "Sonido en la captura rápida"
+  ],
+  "Défilement machine à écrire dans la capture": [
+    "Typewriter scrolling in captures",
+    "Desplazamiento de máquina de escribir en las capturas"
+  ],
+  "Le volume est partagé. Le son du manuscrit reste réglable par projet.": [
+    "Volume is shared. Manuscript sound is still set per project.",
+    "El volumen es compartido. El sonido del manuscrito se configura por proyecto."
+  ],
+  "Capture rangée.": [
+    "Capture filed.",
+    "Captura archivada."
+  ],
+  "{0} captures restaurées.": [
+    "{0} captures restored.",
+    "{0} capturas restauradas."
+  ],
+  "Captures sauvegardées.": [
+    "Captures backed up.",
+    "Capturas guardadas."
+  ],
+  "Des idées à retrouver et à ranger dans vos projets.": [
+    "Ideas to revisit and file in your projects.",
+    "Ideas para recuperar y archivar en tus proyectos."
+  ],
+  "Rechercher une capture": [
+    "Search captures",
+    "Buscar una captura"
+  ],
+  "À ranger": [
+    "To file",
+    "Por archivar"
+  ],
+  "Rangées": [
+    "Filed",
+    "Archivadas"
+  ],
+  "Nouvelle capture": [
+    "New capture",
+    "Nueva captura"
+  ],
+  "La capture globale est disponible dans l’application macOS.": [
+    "Global capture is available in the macOS application.",
+    "La captura global está disponible en la aplicación para macOS."
+  ],
+  "Captures": [
+    "Captures",
+    "Capturas"
+  ],
+  "Aucune capture ici pour le moment.": [
+    "No captures here yet.",
+    "Todavía no hay capturas aquí."
+  ],
+  "Afficher davantage": [
+    "Show more",
+    "Mostrar más"
+  ],
+  "Rangée dans : {0}": [
+    "Filed in: {0}",
+    "Archivada en: {0}"
+  ],
+  "Rejoindre le texte": [
+    "Go to text",
+    "Ir al texto"
+  ],
+  "Destination : {0} · {1}": [
+    "Destination: {0} · {1}",
+    "Destino: {0} · {1}"
+  ],
+  "Ouvrez ou créez un projet pour ranger cette capture.": [
+    "Open or create a project to file this capture.",
+    "Abre o crea un proyecto para archivar esta captura."
+  ],
+  "Ranger dans ce projet": [
+    "File in this project",
+    "Archivar en este proyecto"
+  ],
+  "Choisir un projet": [
+    "Choose a project",
+    "Elegir un proyecto"
+  ],
+  "Parcourir…": [
+    "Browse…",
+    "Explorar…"
+  ],
+  "Le texte sera ajouté hors du manuscrit. La capture originale est conservée.": [
+    "The text will be added outside the manuscript. The original capture is kept.",
+    "El texto se añadirá fuera del manuscrito. Se conserva la captura original."
+  ],
+  "Sélectionnez une capture.": [
+    "Select a capture.",
+    "Selecciona una captura."
+  ],
+  "Sauvegarder les captures": [
+    "Back up captures",
+    "Guardar las capturas"
+  ],
+  "Restaurer les captures": [
+    "Restore captures",
+    "Restaurar las capturas"
+  ],
+  "La sauvegarde comprend les captures et leurs réglages. Sauvegardez vos projets séparément.": [
+    "The backup includes captures and their settings. Back up your projects separately.",
+    "La copia incluye las capturas y sus ajustes. Guarda tus proyectos por separado."
+  ],
+  "Rangement à reprendre : {0} · {1}": [
+    "Filing to resume: {0} · {1}",
+    "Archivo pendiente: {0} · {1}"
+  ],
+  "Ouvrir la destination": [
+    "Open destination",
+    "Abrir el destino"
+  ],
+  "Titre de la capture": [
+    "Capture title",
+    "Título de la captura"
+  ],
+  "Variante de destination": [
+    "Destination variant",
+    "Variante de destino"
+  ],
+  "Reprendre le rangement": [
+    "Resume filing",
+    "Reanudar el archivo"
+  ],
+  "Raccourci global : {0}": [
+    "Global shortcut: {0}",
+    "Atajo global: {0}"
+  ],
+  "Enregistré": [
+    "Saved",
+    "Guardado"
+  ],
+  "Enregistrement impossible": [
+    "Unable to save",
+    "No se ha podido guardar"
+  ],
+  "Ouverture de la capture en cours. Réessayez.": [
+    "Opening the capture. Try again.",
+    "Abriendo la captura. Inténtalo de nuevo."
+  ],
+  "La finalisation doit être confirmée avant de reprendre.": [
+    "Finishing must be confirmed before continuing.",
+    "Se debe confirmar la finalización antes de continuar."
+  ],
+  "Le texte rangé est absent de cette variante ou a été retiré. La capture est conservée.": [
+    "The filed text is absent from this variant or has been removed. The capture is kept.",
+    "El texto archivado no está en esta variante o ha sido retirado. Se conserva la captura."
+  ],
+  "Ouvrez la destination et la variante du rangement en attente.": [
+    "Open the destination and variant of the pending filing.",
+    "Abre el destino y la variante del archivo pendiente."
+  ],
+  "La sauvegarde n’a pas été confirmée. Réessayez.": [
+    "Saving was not confirmed. Try again.",
+    "No se ha confirmado el guardado. Inténtalo de nuevo."
+  ],
+  "Une sauvegarde de fenêtre est déjà en cours.": [
+    "A window is already being saved.",
+    "Ya se está guardando una ventana."
+  ],
+  "La restauration n’a pas été confirmée.": [
+    "Restoring was not confirmed.",
+    "No se ha confirmado la restauración."
+  ],
+  "Raccourci global invalide.": [
+    "Invalid global shortcut.",
+    "Atajo global no válido."
+  ],
+  "Fenêtre de capture indisponible.": [
+    "Capture window unavailable.",
+    "Ventana de captura no disponible."
+  ],
+  "Cette boîte de réception nécessite une version plus récente d’ariane.": [
+    "This inbox requires a newer version of ariane.",
+    "Esta bandeja de entrada necesita una versión más reciente de ariane."
+  ],
+  "La capture a changé. Votre texte reste disponible.": [
+    "The capture has changed. Your text is still available.",
+    "La captura ha cambiado. Tu texto sigue disponible."
+  ],
+  "La capture a changé. Rechargez la boîte de réception.": [
+    "The capture has changed. Reload the inbox.",
+    "La captura ha cambiado. Vuelve a cargar la bandeja de entrada."
+  ],
+  "Cette capture possède déjà un rangement en attente. Retrouvez sa destination.": [
+    "This capture already has a pending filing. Find its destination.",
+    "Esta captura ya tiene un archivo pendiente. Busca su destino."
+  ],
+  "Cette capture possède déjà une autre destination.": [
+    "This capture already has another destination.",
+    "Esta captura ya tiene otro destino."
+  ],
+  "La capture a changé pendant le rangement.": [
+    "The capture changed while being filed.",
+    "La captura cambió durante el archivo."
+  ],
+  "Le dossier de destination a été remplacé.": [
+    "The destination folder has been replaced.",
+    "La carpeta de destino ha sido reemplazada."
+  ],
+  "La variante de destination a changé.": [
+    "The destination variant has changed.",
+    "La variante de destino ha cambiado."
+  ],
+  "Ouvrez un projet pour ranger la capture.": [
+    "Open a project to file the capture.",
+    "Abre un proyecto para archivar la captura."
+  ],
+  "Sauvegarde de captures trop volumineuse.": [
+    "Capture backup is too large.",
+    "La copia de las capturas es demasiado grande."
+  ],
+  "Sauvegarde symbolique refusée.": [
+    "Symbolic backup link refused.",
+    "No se admite un enlace simbólico como copia."
+  ],
+  "Sauvegarde de captures invalide ou incompatible.": [
+    "Invalid or incompatible capture backup.",
+    "Copia de capturas no válida o incompatible."
+  ],
+  "Réglages de capture invalides.": [
+    "Invalid capture settings.",
+    "Ajustes de captura no válidos."
+  ],
+  "Capture invalide ou trop volumineuse.": [
+    "Invalid or oversized capture.",
+    "Captura no válida o demasiado grande."
+  ],
+  "Brouillon actif invalide.": [
+    "Invalid active draft.",
+    "Borrador activo no válido."
+  ],
+  "Capture rangée. Copie Markdown à reprendre.": [
+    "Capture filed. Markdown copy needs to be retried.",
+    "Captura archivada. Es necesario reintentar la copia Markdown."
+  ],
+  "Raccourci actif : {0}": [
+    "Active shortcut: {0}",
+    "Atajo activo: {0}"
+  ],
+  "Profil": [
+    "Profile",
+    "Perfil"
+  ],
+  "Votre espace d’écriture": [
+    "Your writing space",
+    "Tu espacio de escritura"
+  ],
+  "Modifier le profil": [
+    "Edit profile",
+    "Editar perfil"
+  ],
+  "Nom ou nom de plume": [
+    "Name or pen name",
+    "Nombre o seudónimo"
+  ],
+  "Quelques mots sur votre écriture": [
+    "A few words about your writing",
+    "Unas palabras sobre tu escritura"
+  ],
+  "En cours d’écriture": [
+    "Currently writing",
+    "En curso de escritura"
+  ],
+  "Un aperçu du manuscrit de ce projet, tel qu’il est aujourd’hui.": [
+    "An overview of this project’s manuscript as it stands today.",
+    "Un vistazo al manuscrito de este proyecto tal como está hoy."
+  ],
+  "Mots du manuscrit": [
+    "Manuscript words",
+    "Palabras del manuscrito"
+  ],
+  "Scènes incluses": [
+    "Included scenes",
+    "Escenas incluidas"
+  ],
+  "Objectifs du manuscrit": [
+    "Manuscript goals",
+    "Objetivos del manuscrito"
+  ],
+  "À votre rythme": [
+    "At your own pace",
+    "A tu ritmo"
+  ],
+  "{0} / {1} mots · {2} scènes avec un objectif": [
+    "{0} / {1} words · {2} scenes with a goal",
+    "{0} / {1} palabras · {2} escenas con un objetivo"
+  ],
+  "Chaque scène contribue dans la limite de son objectif.": [
+    "Each scene contributes up to its own goal.",
+    "Cada escena contribuye hasta alcanzar su propio objetivo."
+  ],
+  "Vous pouvez définir un objectif de mots dans la préparation de chaque scène.": [
+    "You can set a word goal in each scene’s preparation.",
+    "Puedes definir un objetivo de palabras en la preparación de cada escena."
+  ],
+  "Votre atelier": [
+    "Your studio",
+    "Tu taller"
+  ],
+  "Retrouver les étapes de votre texte.": [
+    "Revisit the stages of your text.",
+    "Vuelve a las etapas de tu texto."
+  ],
+  "Passer d’un univers à l’autre.": [
+    "Move between your worlds.",
+    "Pasa de un universo a otro."
+  ],
+  "Faire place à votre façon d’écrire.": [
+    "Make room for the way you write.",
+    "Haz espacio a tu forma de escribir."
+  ],
+  "Les compteurs concernent les textes inclus dans le manuscrit. Les textes hors manuscrit et la corbeille sont exclus.": [
+    "Counts cover texts included in the manuscript. Texts outside the manuscript and the trash are excluded.",
+    "Los contadores incluyen los textos del manuscrito. Se excluyen los textos fuera del manuscrito y la papelera."
+  ],
+  "Votre profil": [
+    "Your profile",
+    "Tu perfil"
+  ],
+  "Un endroit pour prendre du recul et retrouver le fil de vos textes.": [
+    "A place to step back and reconnect with your writing.",
+    "Un espacio para tomar perspectiva y retomar el hilo de tus textos."
+  ],
+  "Profil local · sur cet appareil": [
+    "Local profile · on this device",
+    "Perfil local · en este dispositivo"
+  ],
+  "Chapitres": [
+    "Chapters",
+    "Capítulos"
+  ],
+  "Au fil des jours": [
+    "Day by day",
+    "Día a día"
+  ],
+  "{0} jours d’écriture · {1} mots ajoutés nets": [
+    "{0} writing days · {1} net words added",
+    "{0} días de escritura · {1} palabras netas añadidas"
+  ],
+  "Année": [
+    "Year",
+    "Año"
+  ],
+  "Avant le début du suivi": [
+    "Before tracking began",
+    "Antes del inicio del seguimiento"
+  ],
+  "À venir": [
+    "Upcoming",
+    "Próximamente"
+  ],
+  "{0} mots ajoutés nets": [
+    "{0} net words added",
+    "{0} palabras netas añadidas"
+  ],
+  "Lun": [
+    "Mon",
+    "Lun"
+  ],
+  "Mer": [
+    "Wed",
+    "Mié"
+  ],
+  "Ven": [
+    "Fri",
+    "Vie"
+  ],
+  "Calendrier d’activité d’écriture": [
+    "Writing activity calendar",
+    "Calendario de actividad de escritura"
+  ],
+  "Intensité de l’écriture": [
+    "Writing intensity",
+    "Intensidad de escritura"
+  ],
+  "Moins": [
+    "Less",
+    "Menos"
+  ],
+  "Plus": [
+    "More",
+    "Más"
+  ],
+  "Suivi local depuis le {0}, dans tous vos projets sur cet appareil. Les suppressions et annulations corrigent le total du jour ; les jours de réécriture restent actifs.": [
+    "Tracked locally since {0}, across all your projects on this device. Deletions and undo adjust the day’s total; rewriting days still count as active.",
+    "Seguimiento local desde el {0}, en todos tus proyectos en este dispositivo. Las eliminaciones y deshacer corrigen el total del día; los días de reescritura siguen contando como activos."
+  ],
+  "Les jours antérieurs ne sont pas mesurés. Les imports, restaurations et captures rapides ne sont pas comptés.": [
+    "Earlier days were not tracked. Imports, restorations and quick captures are not counted.",
+    "Los días anteriores no se midieron. No se cuentan las importaciones, restauraciones ni capturas rápidas."
+  ],
+  "Activité d’écriture illisible.": [
+    "Writing activity could not be read.",
+    "No se pudo leer la actividad de escritura."
+  ],
+  "Jours d’écriture : {0} · Mots ajoutés nets : {1}": [
+    "Writing days: {0} · Net words added: {1}",
+    "Días de escritura: {0} · Palabras netas añadidas: {1}"
+  ],
+  "Interface": [
+    "Interface",
+    "Interfaz"
+  ],
+  "Document": [
+    "Document",
+    "Documento"
+  ],
+  "Choisir une sauvegarde du projet": [
+    "Choose a project backup",
+    "Elegir una copia de seguridad del proyecto"
+  ],
+  "Choisir le dossier de destination": [
+    "Choose the destination folder",
+    "Elegir la carpeta de destino"
+  ],
+  "Copie restaurée dans {0}": [
+    "Copy restored to {0}",
+    "Copia restaurada en {0}"
+  ],
+  "Projet sauvegardé dans {0}": [
+    "Project backed up to {0}",
+    "Proyecto guardado en {0}"
+  ],
+  "Sauvegarder le projet": [
+    "Back up the project",
+    "Hacer una copia de seguridad del proyecto"
+  ]
+}

@@ -1,3 +1,4 @@
+import { ArrowRight, FolderOpen } from 'lucide-react';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { t, useLocale } from '../i18n';
 import { ProjectSetup, type NewProjectFields } from './ProjectSetup';
@@ -20,7 +21,8 @@ export function Welcome({
   onOpen: (p: Project) => void;
   onError: (e: unknown) => void;
 }) {
-  useLocale();
+  const locale = useLocale();
+  const [draft, setDraft] = useState<NewProjectFields | null>(null);
   const [screen, setScreen] = useState<'none' | 'create' | 'open'>('none');
   const createTrigger = useRef<HTMLButtonElement>(null);
   const [busy, setBusy] = useState(false);
@@ -60,12 +62,27 @@ export function Welcome({
       stop?.();
     };
   }, []);
+  const pickDestination = () => choosePath('create', { title: t('Enregistrer le projet dans…') });
+  function updateDraft(fields: Partial<NewProjectFields>) {
+    setDraft((current) => current && { ...current, ...fields });
+  }
+  async function chooseDestination() {
+    setBusy(true);
+    try {
+      const folder = await pickDestination();
+      if (folder) updateDraft({ folder });
+    } catch (e) {
+      onError(e);
+    } finally {
+      setBusy(false);
+    }
+  }
   async function create({ name, folder, language, initialTitle }: NewProjectFields) {
     setBusy(true);
     try {
       let path = 'browser:' + crypto.randomUUID();
       if (native) {
-        folder ??= await choosePath('create', { title: t('Enregistrer le projet dans…') });
+        folder ??= await pickDestination();
         if (typeof folder !== 'string') return;
         path = folder + '/' + name.trim().replace(/[/:\\]/g, '-');
       }
@@ -79,6 +96,7 @@ export function Welcome({
       });
       onOpen(project);
       setScreen('none');
+      setDraft(null);
     } catch (e) {
       onError(e);
     } finally {
@@ -91,6 +109,7 @@ export function Welcome({
       await beforeOpen?.();
       onOpen(await request('open', { path }));
       setScreen('none');
+      setDraft(null);
     } catch (e) {
       onError(e);
     } finally {
@@ -119,29 +138,47 @@ export function Welcome({
           home: true,
         }}
       />
-      {screen === 'create' ? (
+      {screen === 'create' && draft ? (
         <ProjectSetup
           firstProject={firstProject}
+          draft={draft}
+          onChange={updateDraft}
+          onChooseFolder={chooseDestination}
           busy={busy}
           onCreate={create}
-          onError={onError}
           onBack={() => {
             setScreen('none');
             requestAnimationFrame(() => createTrigger.current?.focus());
           }}
         />
       ) : (
-        <>
+        <main className="welcome-intro" aria-labelledby="welcome-title">
           <ArianeSymbol draw />
-          <h1>{t('Un espace pour écrire.')}</h1>
+          <h1 id="welcome-title">{t('Un espace pour écrire.')}</h1>
+          <p>
+            {native
+              ? t('Un projet réunit vos scènes et vos notes dans un dossier sur votre Mac.')
+              : t('Un projet réunit vos scènes et vos notes dans ce navigateur.')}
+          </p>
           <div className="welcome-actions">
-            <button ref={createTrigger} onClick={() => setScreen('create')}>
-              {t('Créer un projet')}
+            <button
+              className="primary"
+              ref={createTrigger}
+              onClick={() => {
+                setDraft(
+                  (previous) =>
+                    previous ?? { name: '', initialTitle: '', language: locale, folder: null },
+                );
+                setScreen('create');
+              }}
+            >
+              {t('Créer un projet')} <ArrowRight size={15} aria-hidden="true" />
             </button>
-            <button onClick={() => setScreen('open')}>{t('Ouvrir un projet')}</button>
+            <button onClick={() => setScreen('open')}>
+              <FolderOpen size={15} aria-hidden="true" /> {t('Ouvrir un projet')}
+            </button>
           </div>
-          <p className="welcome-local">{t('Tout reste sur ce Mac.')}</p>
-        </>
+        </main>
       )}
       <Presence>
         {screen === 'open' && (
