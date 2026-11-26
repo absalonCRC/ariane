@@ -31,6 +31,10 @@ pub(super) struct Snapshot {
     #[serde(default)]
     pub annotations: Option<Vec<(String,String)>>,
 }
+const PROJECT_SESSION_KEYS: &[&str] = &[
+    "projectGoal", "sessionGoal", "sessionClosed", "sessionWords", "showGoals", "tomorrow", "lastEdit",
+];
+
 pub(super) fn unpack(payload: &str) -> Result<Snapshot> {
     if payload.trim_start().starts_with('[') {
         Ok(Snapshot {
@@ -101,7 +105,11 @@ pub(super) fn snapshot(c: &Connection, scope: &Option<String>) -> Result<Snapsho
         let values=q.query_map(params![scope,ids],|r|Ok((r.get(0)?,r.get(1)?))).app()?.collect::<std::result::Result<Vec<_>,_>>().app()?;
         Some(values)
     } else {Some(vec![])};
-    Ok(Snapshot { entity_catalog: Some(project::entities::read(c)?), smart_tags: project::tags::definitions(c)?, sections, annotations, settings: serde_json::from_str(&settings).app()?, citations, links, pins })
+    let mut preferences: serde_json::Value = serde_json::from_str(&settings).app()?;
+    if let Some(values) = preferences.as_object_mut() {
+        values.retain(|key, _| !PROJECT_SESSION_KEYS.contains(&key.as_str()));
+    }
+    Ok(Snapshot { entity_catalog: Some(project::entities::read(c)?), smart_tags: project::tags::definitions(c)?, sections, annotations, settings: preferences, citations, links, pins })
 }
 fn has_pins(c: &Connection) -> Result<bool> {
     c.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='margin_pins')", [], |r| r.get(0)).app()

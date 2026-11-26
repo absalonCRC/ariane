@@ -3,6 +3,8 @@ import type { Project } from '../contracts/project';
 import type { EditorHandle } from '../editor/types';
 import type { EntityManagerController } from '../entities/useEntityManager';
 import { t } from '../i18n';
+import { useMemo } from 'react';
+import { titleContexts } from '../project/titleContexts';
 import { ordered } from '../project/tree';
 import { StructuredSearch } from '../search/StructuredSearch';
 import { Palette, type Command } from './Palette';
@@ -51,6 +53,13 @@ export function WorkspacePalette({
   commands,
   select,
 }: Props) {
+  const untitled = t('Sans titre');
+  const sectionResults = useMemo(() => {
+    if (mode !== 'sections') return [];
+    const sections = ordered(p.sections).filter((s) => !s.trashed);
+    const contexts = titleContexts(sections, p.name, untitled);
+    return sections.map((section) => ({ section, context: contexts.get(section.id) }));
+  }, [mode, p.sections, p.name, untitled]);
   return (
     <Palette
       open={!!mode}
@@ -80,7 +89,8 @@ export function WorkspacePalette({
       onClose={onClose}
       commands={
         mode === 'sections'
-          ? ordered(p.sections).map((section) => ({
+          ? sectionResults.map(({ section, context }) => ({
+              context,
               id: 'section:' + section.id,
               label: section.title || t('Sans titre'),
               detail:

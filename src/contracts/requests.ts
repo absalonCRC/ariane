@@ -156,7 +156,7 @@ export interface Requests {
   add: { parent?: string | null; title: string; kind: string; role?: string | null };
   update: { section: Section };
   reorder: { ids: string[]; id: string; parent?: string | null };
-  settings: { value: Partial<Settings> };
+  settings: { value: Partial<Settings>; projectPath?: string; sessionOnly?: boolean };
   resolveExternal: {
     id: string;
     keepLocal: boolean;

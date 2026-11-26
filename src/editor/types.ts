@@ -6,6 +6,7 @@ import type { SelectedEntity } from '../enrichment/entityTypes';
 import type { Outline, Section } from '../contracts/project';
 import type { Settings } from '../contracts/settings';
 import type { SelectionAnchor } from '../components/SelectionToolbar';
+import type { WritingPoint } from '../contracts/writingSession';
 import { type SectionDraft } from '../project/draft';
 import { type SearchDirection } from './textSearch';
 import { type MarkdownFormat } from './formatMarkdown';
@@ -32,6 +33,8 @@ export interface EditorHandle {
     value: import('../contracts/lineProperties').PropertyValue | undefined,
   ) => boolean;
   context: () => { section: string; node: string | null; offset: number; cursor: number } | null;
+  writingPoint?: () => WritingPoint | null;
+  holdCaretHeight?: () => () => boolean;
   passageTop: (section:string,offset:number)=>number|null;
   contextTop: (section: string, node: string | null) => number | null;
   restoreContext: (context: {
@@ -92,6 +95,10 @@ export interface EditorProps {
   onLines?: (lines: number) => void;
   onCursor: (cursor: number) => void;
   onTyping: () => void;
+  writingBranch?: string;
+  lineHeightPreview?: number | null;
+  sessionSettings?: () => Settings;
+  onSessionChange?: (patch: Partial<Settings>) => void;
   onWritingEdit?: (netWords: number) => void;
   onSearchSources?: (text: string) => void;
   onSelection?: (anchor: SelectionAnchor | null) => void;

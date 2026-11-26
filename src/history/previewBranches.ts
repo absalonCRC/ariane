@@ -48,10 +48,22 @@ function snapshot(p: Project): Snapshot {
     entityRelations: Object.fromEntries(catalog.relations.map((r) => [r.id, r])),
     tags: Object.fromEntries((p.smartTags ?? []).map((t) => [t.id, t])),
     sections: [...p.sections, ...(p.trash ?? [])],
-    settings: p.settings,
+    settings: Object.fromEntries(
+      Object.entries(p.settings).filter(([key]) => !projectSessionKeys.has(key)),
+    ),
     references,
   });
 }
+const projectSessionKeys = new Set([
+  'projectGoal',
+  'sessionGoal',
+  'sessionClosed',
+  'sessionWords',
+  'showGoals',
+  'tomorrow',
+  'lastEdit',
+]);
+
 function read(p: Project): State {
   const stored = localStorage.getItem(stateKey(p.path));
   if (stored) return JSON.parse(stored);
@@ -100,10 +112,16 @@ function persist(p: Project, state: State, all: SavedVersion[], next?: Snapshot)
     validateMergedSections(next.sections);
     result = {
       ...p,
+      activeBranch: state.activeBranch,
       sections: next.sections.filter((s) => !s.trashed),
       trash: next.sections.filter((s) => s.trashed),
       smartTags: Object.values(next.tags ?? {}),
-      settings: next.settings,
+      settings: {
+        ...next.settings,
+        ...Object.fromEntries(
+          Object.entries(p.settings).filter(([key]) => projectSessionKeys.has(key)),
+        ),
+      },
       canUndoStructure: false,
     };
     result = clone(result);

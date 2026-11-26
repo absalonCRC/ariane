@@ -278,8 +278,8 @@
 .tree-row.drop-after::after {
   content: '';
   position: absolute;
-  left: var(--tree-indent);
-  right: 0;
+  left: var(--drop-title-start, var(--tree-indent));
+  right: 6px;
   height: 1px;
   background: var(--theme-secondary, #595959);
   pointer-events: none;
@@ -290,6 +290,16 @@
 .tree-row.drop-after::after {
   bottom: 0;
 }
+.section-search-context { display: block; color: var(--theme-secondary); font: 11px/1.4 var(--ui); }
+.binder-page-preview {
+  position: fixed; z-index: 95; box-sizing: border-box; padding: 14px 18px;
+  height: min(188px, calc(100dvh - 16px)); overflow: hidden;
+  background: var(--theme-paper); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 12px; box-shadow: 0 5px 20px #0002; pointer-events: auto;
+}
+.binder-page-preview strong { font: 600 12px/1.4 var(--ui); }
+.binder-page-preview p { margin: 7px 0 0; font: 16px/1.25 var(--literary); white-space: pre-line; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.binder-page-preview p + p { border-top: 1px solid var(--line); padding-top: 6px; }
 .tree-row.drop-inside {
   outline: 1px solid var(--theme-muted, #6b6b61);
   outline-offset: -1px;

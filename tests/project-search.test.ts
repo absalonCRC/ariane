@@ -43,6 +43,28 @@ describe('unified manuscript search', () => {
     expect(searchManuscript([section('Lune', 'Autre')], 'lune').items[0].from).toBeNull();
     expect(searchManuscript([section('Lune', 'Lune')], '  ').total).toBe(0);
   });
+  it('adds the shortest distinguishing ancestry only to repeated titles', () => {
+    const chapters = ['Nord', 'Sud'].map((title, i) =>
+      section('root' + i, '', { title, kind: 'chapter' }),
+    );
+    const parts = chapters.map((c, i) =>
+      section('part' + i, '', { title: 'Veille', parent: c.id, kind: 'folder' }),
+    );
+    const scenes = parts.map((c, i) =>
+      section('scene' + i, 'lampe', { title: 'Matin', parent: c.id }),
+    );
+    const { items } = searchManuscript(
+      [...chapters, ...parts, ...scenes, section('unique', 'lampe')],
+      'lampe',
+    );
+    expect(items.map((hit) => [hit.section, hit.context])).toEqual(
+      expect.arrayContaining([
+        ['scene0', 'Nord › Veille'],
+        ['scene1', 'Sud › Veille'],
+        ['unique', undefined],
+      ]),
+    );
+  });
   it('keeps full counts while bounding displayed results', () => {
     const result = searchManuscript([section('a', 'lune '.repeat(210))], 'lune');
     expect(result.total).toBe(210);

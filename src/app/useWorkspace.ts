@@ -18,6 +18,7 @@ import { request, native } from '../platform/client';
 import type { Annotation, DocumentAnchor } from '../contracts/annotations';
 import type { AnnotationTarget } from '../project/annotations';
 import type { Project, Section } from '../contracts/project';
+import type { DocumentPosition } from '../contracts/writingSession';
 import type { Source } from '../contracts/sources';
 import type { Surface } from './workspace/types';
 import { useProject } from '../project/useProject';
@@ -39,6 +40,11 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
   const fail = useCallback((e: unknown) => setError(String(e)), []);
   const doc = useProject(fail);
   const writingActivity = useWritingActivity(fail);
+  function recordWritingEdit(delta: number) {
+    writingActivity.record(delta);
+    const { sessionClosed, sessionWords } = doc.settingsRef.current;
+    if (delta && !sessionClosed) doc.stageSettings({ sessionWords: (sessionWords ?? 0) + delta });
+  }
   const activity = useNoteActivity(doc.project?.path);
   const [annotationsOpen, setAnnotationsOpen] = useState(false);
   const [annotationTarget, setAnnotationTarget] = useState<AnnotationTarget | null>(null);
@@ -70,13 +76,24 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
     null,
   );
   const [reader, storeReader] = useState<
-    (Source & { reveal?: DocumentAnchor; replacement?: Annotation }) | null
+    (Source & { reveal?: DocumentAnchor; replacement?: Annotation; resume?: DocumentPosition; restoreFailed?: () => void }) | null
   >(null);
   const readerGeneration = useRef(0);
+  const readerId = useRef<string | null>(null);
   const setReader: typeof storeReader = useCallback((value) => {
     readerGeneration.current++;
+    if (typeof value !== 'function') {
+      readerId.current = value?.id ?? null;
+      const position = value && (value.kind === 'PDF' || value.kind === 'Image')
+        ? { id: value.id, fingerprint: value.fingerprint, page: value.reveal?.page ?? value.page ?? 1, zoom: 1, top: 0, left: 0 } : null;
+      if (position || doc.settingsRef.current.documentPosition) doc.stageSettings({ documentPosition: position });
+    }
     storeReader(value);
-  }, []);
+  }, [doc.stageSettings]);
+  const recordDocumentPosition = (path: string, position: DocumentPosition) => {
+    if (doc.ref.current?.path === path && readerId.current === position.id)
+      doc.stageSettings({ documentPosition: position });
+  };
   const beginReaderRequest = useCallback(() => {
     const generation = ++readerGeneration.current;
     const path = doc.ref.current?.path;
@@ -93,6 +110,9 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
     } else setSurface(value);
   }, []);
   useEffect(() => setHistoryMode(false), [doc.project?.path]);
+  useEffect(() => {
+    if (surface === 'preferences' && window.innerWidth <= 760) setBinder(false);
+  }, [surface]);
   const [searchQuery, setSearchQuery] = useState('');
   const [initialSearch, setInitialSearch] = useState('');
   const searching = palette === 'text' && !!searchQuery.trim();
@@ -139,6 +159,7 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
   const serial = useRef(0);
   const editor = useRef<EditorHandle>(null);
   const cursor = useRef(0);
+  const selectionRequest = useRef(0);
   const memorySessionSaver = useRef<() => Promise<unknown>>(() => Promise.resolve());
   const [pendingPassage, setPendingPassage] = useState<{
     section: string;
@@ -167,6 +188,11 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
     (p: Project) => {
       binderBeforeFocus.current = null;
       doc.activate(p);
+      selectionRequest.current++;
+      cursor.current = p.settings.cursor ?? 0;
+      setBinder(p.settings.immersiveFocus ? false : (p.settings.binderOpen ?? false));
+      setPendingPassage(null);
+      setPendingMatch(null);
       serial.current++;
       setViewport(null);
       setAnnotationsOpen(false);
@@ -174,8 +200,24 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
       setSources([]);
       setSourceStatus('loading');
       setCard(null);
-      setReader(null);
-      setSearch(null);
+      readerGeneration.current++;
+      readerId.current = null;
+      storeReader(null);
+      const saved = p.settings.documentPosition;
+      if (saved?.id) {
+        const current = beginReaderRequest();
+        void request('source', { id: saved.id }).then(source => {
+          if (!current()) return;
+          if ((source.kind === 'PDF' || source.kind === 'Image') && source.fingerprint === saved.fingerprint) {
+            readerId.current = source.id;
+            storeReader({ ...source, resume: saved, restoreFailed: () => {
+              if (current()) setReader(null);
+            } });
+          } else doc.stageSettings({ documentPosition: null });
+        }).catch(() => { if (current()) doc.stageSettings({ documentPosition: null }); });
+      }
+      setSearch(p.settings.searchText || null);
+      if (p.settings.binderOpen !== undefined) setBinder(!p.settings.immersiveFocus && p.settings.binderOpen);
       setRecovery(p.recovered);
       setError(p.conflicts?.length ? 'EXTERNAL:' + p.conflicts[0] : '');
       setNewProject(false);
@@ -200,15 +242,20 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
       activity.flush().then(() =>
         doc.ref.current
           ? memorySessionSaver.current().then(() =>
-              request('settings', {
-                value: { ...doc.settingsRef.current, cursor: cursor.current },
-              }),
+              doc.persistSettings({ cursor: cursor.current }, true),
             )
           : Promise.resolve(),
       ),
     fail,
   );
   const p = doc.project;
+  useEffect(() => {
+    if (!p || doc.ref.current?.path !== p.path) return;
+    const text = palette === 'text' ? searchQuery : '';
+    const saved = doc.settingsRef.current;
+    if (text !== (saved.searchText ?? '') || binder !== (saved.binderOpen ?? false))
+      doc.stageSettings({ searchText: text, binderOpen: binder });
+  }, [p?.path, palette, searchQuery, binder, doc.stageSettings]);
   const vaultSearch = useVaultSearch(
     p,
     searching && !/^[#@/]/.test(searchQuery.trim()) ? searchQuery : '',
@@ -291,9 +338,12 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
     async (id: string, continuous = false, preserveSource = false) => {
       if (libraryLock.current) return false;
       try {
+        const selection = ++selectionRequest.current;
+        const owner = doc.ref.current?.path;
         await doc.checkpoint();
         await memorySessionSaver.current();
-        doc.configure({ active: id, continuous, cursor: 0 });
+        if (selection !== selectionRequest.current || !owner || doc.ref.current?.path !== owner || !doc.ref.current.sections.some(s => s.id === id)) return false;
+        doc.configure({ active: id, continuous, cursor: 0, writingPosition: null, manuscriptScroll: undefined });
         serial.current++;
         if (!preserveSource) setCard(null);
         setSources([]);
@@ -386,8 +436,7 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
   useEffect(() => {
     const f = () => {
       if (!doc.ref.current) return;
-      const all = { ...doc.settingsRef.current, cursor: cursor.current };
-      void request('settings', { value: all }).catch(() => {});
+      doc.stageSettings({ cursor: cursor.current });
       void doc.checkpoint().catch(fail);
     };
     window.addEventListener('blur', f);
@@ -471,7 +520,9 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
     });
     return () => cancelAnimationFrame(frame);
   }, [blankTarget]);
+  const landmarkActions = useRef<{ lastEdit: () => void; tomorrow: () => void } | null>(null);
   const commands = useWorkspaceCommands({
+    landmarkActions,
     p,
     doc,
     toggleFocus,
@@ -611,6 +662,9 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
   }, [passageSources, viewport, groupOpen]);
   return {
     writingActivity,
+    recordWritingEdit,
+    landmarkActions,
+    recordDocumentPosition,
     activity,
     appearance,
     exportJob,

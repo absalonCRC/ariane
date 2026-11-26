@@ -35,6 +35,7 @@ export interface Section {
 }
 
 export interface Project {
+  activeBranch?: string;
   smartTags?: SmartTag[];
   path: string;
   name: string;

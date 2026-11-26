@@ -176,10 +176,13 @@ pub(super) fn handle(
         ),
         Request::Update { section } => json(project::update(&root, &section)?),
         Request::Reorder { ids, id, parent } => json(project::reorder(&root, &ids, &id, parent)?),
-        Request::Settings { value } => {
+        Request::Settings { value, project_path, session_only } => {
+            if project_path.as_deref().is_some_and(|path| Path::new(path) != root) {
+                return Err("Le projet actif a changé.".into());
+            }
             let enabled = value["enrichment"].as_bool();
             project::settings(&root, value)?;
-            if enabled == Some(false) {
+            if !session_only && enabled == Some(false) {
                 state.memory_activity.cancel_entities();
             }
             json(())

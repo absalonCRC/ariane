@@ -7,7 +7,7 @@ Plan du **23 novembre 2026**, établi sur la branche `ariane/0.8.0` au commit `b
 - **F05 — Lire et annoter une source à côté du manuscrit.** Ouvrir un résultat PDF à la page trouvée, garder son texte éditable à gauche et sélectionner à droite deux lignes du PDF ou une zone d’image. Relier cette sélection à un passage du manuscrit. Après fermeture et réouverture du projet, activer le lien de l’annotation pour retrouver la page et le surlignage ou le cadre exact. Un PDF scanné offre la sélection de zone.
 - **F31 — Lire une référence sans quitter la phrase.** Activer un appel de note au pointeur ou au clavier, lire sa définition sous la ligne, puis replier par le même geste. Le focus revient à cet appel, y compris si plusieurs appels renvoient à la même définition.
 
-La 0.8.1 réutilisera les ancres pour les liens entre passages, l’écoute, la dictée et les piles d’annotations. Le floutage et l’aperçu d’export relèvent de la 0.8.2, la reprise complète de session de la 0.9.2. Pour la 1.0.0, F38 pourra ouvrir une citation avec la même opération de révélation. Le parcours 0.8.0 fonctionne hors ligne, sans compte ni OCR.
+La 0.8.1 réutilisera les ancres pour les liens entre passages, l’écoute, la dictée et les piles d’annotations. La 0.8.2, prévue pour le floutage et l’aperçu d’export, a été annulée le 26 novembre. La reprise complète de session relève de la 0.9.0. Pour la 1.0.0, F38 pourra ouvrir une citation avec la même opération de révélation. Le parcours 0.8.0 fonctionne hors ligne, sans compte ni OCR.
 
 ## Point de départ vérifié
 
@@ -23,7 +23,7 @@ La roadmap posait le prototype PDF **avant le 12 novembre**. Aucun prototype nat
 
 ## Ordre de réalisation
 
-**Chemin critique de F05** — prototype natif (1), vue partagée et contrat de données (2 et 3), création et retour au document (4), puis recette du candidat (6). **F31** (5) peut avancer indépendamment dès le départ. La fenêtre **du 8 au 13 décembre** couvre les trois versions 0.8.0 à 0.8.2. Recaler la prévision de la série dès la décision sur le moteur et la compatibilité des ancres. Le jalon se termine sur les preuves de recette ci-dessous.
+**Chemin critique de F05** — prototype natif (1), vue partagée et contrat de données (2 et 3), création et retour au document (4), puis recette du candidat (6). **F31** (5) peut avancer indépendamment dès le départ. La fenêtre **du 8 au 13 décembre** couvre la série 0.8. Recaler la prévision de la série dès la décision sur le moteur et la compatibilité des ancres. Le jalon se termine sur les preuves de recette ci-dessous.
 
 ### 1 · Choisir le rendu sur un Mac
 

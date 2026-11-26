@@ -19,6 +19,7 @@ import type { Command } from '../Palette';
 import type { EditorHandle } from '../../editor/Editor';
 import type { ProjectController } from '../../project/useProject';
 interface CommandContext {
+  landmarkActions: RefObject<{ lastEdit: () => void; tomorrow: () => void } | null>;
   p: Project | null;
   doc: ProjectController;
   toggleFocus: () => void;
@@ -44,6 +45,7 @@ interface CommandContext {
   setMenu: Dispatch<SetStateAction<boolean>>;
 }
 export function useWorkspaceCommands({
+  landmarkActions,
   p,
   doc,
   toggleFocus,
@@ -116,6 +118,8 @@ export function useWorkspaceCommands({
           label: t('Laisser un blanc'),
           action: () => writingAid('blank-insert', 'Placez le curseur dans le manuscrit.'),
         },
+        { id: 'last-edit', label: t('Revenir à la dernière frappe'), action: () => landmarkActions.current?.lastEdit() },
+        { id: 'tomorrow-note', label: t('Mot pour demain'), action: () => landmarkActions.current?.tomorrow() },
         { id: 'blank-next', label: t('Blanc suivant'), action: () => locateNextBlank?.() },
         {
           id: 'blank-fill',

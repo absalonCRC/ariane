@@ -31,8 +31,12 @@ export function useWritingBranches(p: {
     };
   }, [p.path, p.generation, p.onError]);
   const state = loaded?.path === p.path ? loaded.state : null;
-  async function switchBranch(id: string) {
-    if (!p.path || !state || id === state.activeBranch || busyRef.current) return;
+  async function switchBranch(id: string, onSelected?: () => void) {
+    if (!p.path || !state || busyRef.current) return;
+    if (id === state.activeBranch) {
+      onSelected?.();
+      return;
+    }
     const { path, generation } = context.current;
     const current = () =>
       context.current.path === path && context.current.generation === generation;
@@ -45,6 +49,7 @@ export function useWritingBranches(p: {
       if (!current()) return;
       setLoaded({ path: p.path, state: { ...state, activeBranch: id } });
       p.onChanged(project);
+      onSelected?.();
     } catch (error) {
       if (current()) p.onError(error);
     } finally {

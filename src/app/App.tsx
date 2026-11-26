@@ -1,3 +1,5 @@
+import { useGoalProgress } from '../project/useGoalProgress';
+import { WritingLandmarks } from './writing/WritingLandmarks';
 import { WorkspaceMargin } from './writing/WorkspaceMargin';
 import { useSelectionReading } from './writing/useSelectionReading';
 import { WorkspaceSidebar } from './chrome/WorkspaceSidebar';
@@ -89,6 +91,7 @@ function WorkspaceApp() {
     memory.close();
     inlineEntities.close();
   };
+  const goalProgress = useGoalProgress(workspace.doc);
   const filters = useManuscriptFilters({
     project: workspace.p,
     active: workspace.active,
@@ -101,6 +104,7 @@ function WorkspaceApp() {
     manager,
     batches: inlineEntities.batches,
     removeAssignment: workspace.doc.removeTagAssignment,
+    stageSettings: workspace.doc.stageSettings,
     enterTagFilter: () => {
       workspace.setSurface('none');
       workspace.setHistoryMode(false);
@@ -455,7 +459,9 @@ function WorkspaceApp() {
               searchQuery: searching ? workspace.searchQuery : undefined,
               focusPreview: previewSettings ? controls.focusPreview : null,
               scrollPreview: previewSettings ? controls.scrollPreview : null,
-              onWritingEdit: workspace.writingActivity.record,
+              writingBranch: p.activeBranch ?? branches.state?.activeBranch ?? 'main',
+              lineHeightPreview: previewSettings ? controls.lineHeightPreview : null,
+              onWritingEdit: workspace.recordWritingEdit,
               onVisible: workspace.onVisible,
               onCursor: (v) => {
                 workspace.cursor.current = v;
@@ -582,6 +588,29 @@ function WorkspaceApp() {
                 width={railVisible ? railWidth : 270}
               />
             )}
+          <WritingLandmarks
+            key={p.path}
+            workspace={workspace}
+            branches={branches}
+            visible={
+              !pageActive &&
+              !workspace.historyMode &&
+              !filteredTag &&
+              !lineDetailVisible &&
+              !reader &&
+              !focusActive &&
+              !workspace.annotationsOpen
+            }
+            clearViews={() => {
+              closeEntityPanels();
+              filters.setTagFilter(null);
+              filters.setQueryFilter(null);
+              workspace.setReader(null);
+              workspace.setAnnotationsOpen(false);
+              workspace.setSurface('none');
+              workspace.setSearch(null);
+            }}
+          />
           <WorkspaceMargin
             rail={rail}
             settings={doc.settings}
@@ -623,6 +652,7 @@ function WorkspaceApp() {
             locatePassage={workspace.locatePassage}
             linkDocument={workspace.linkDocument}
             beginReaderRequest={workspace.beginReaderRequest}
+            recordDocumentPosition={workspace.recordDocumentPosition}
             record={workspace.activity.record}
             onAssociated={() => {
               rail.refreshAssociations();
@@ -660,6 +690,7 @@ function WorkspaceApp() {
             goal={selected?.goal}
             words={words}
             counts={{
+              goals: goalProgress,
               words: filteredTag ? filterCounts.words : words,
               characters: filteredTag ? filterCounts.characters : characters,
               lines: filteredTag ? filterCounts.lines : lines,

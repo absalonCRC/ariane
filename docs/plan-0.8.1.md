@@ -1,12 +1,12 @@
 # ariane 0.8.1 — Relire et annoter une sélection
 
-Plan du 24 novembre 2026, établi sur `codex/0.8.1` au commit `2fe39d2`, après intégration de la 0.8.0. Les lots ci-dessous décrivent le périmètre de la version. La [recette du candidat](validation-0.8.1.md) consigne les vérifications réalisées. La fenêtre du **8 au 13 décembre** couvre toute la série 0.8.0 à 0.8.2. L’essai de voix sur Mac et la restauration des liens entre scènes permettront de recaler cette prévision. [Feuille de route](roadmap-1.0.0.md) · [Plan de la série](plan-0.7.0-a-1.0.0.md) · [Recette de départ](validation-0.8.0.md)
+Plan du 24 novembre 2026, établi sur `codex/0.8.1` au commit `2fe39d2`, après intégration de la 0.8.0. Les lots ci-dessous décrivent le périmètre de la version. La [recette du candidat](validation-0.8.1.md) consigne les vérifications réalisées. La fenêtre du **8 au 13 décembre** couvre la série 0.8. L’essai de voix sur Mac et la restauration des liens entre scènes permettront de recaler cette prévision. [Feuille de route](roadmap-1.0.0.md) · [Plan de la série](plan-0.7.0-a-1.0.0.md) · [Recette de départ](validation-0.8.0.md)
 
 ## Parcours de sortie
 
 Dans une scène, l’auteur sélectionne une phrase, l’écoute avec suivi du mot prononcé (**F20**), puis dicte une remarque (**F23**). Il passe à la scène suivante pendant la transcription. À son retour, il retrouve la remarque sur la phrase d’origine, parmi deux autres notes. Il ouvre celle du milieu et atteint chacune au clavier (**F32**). Un lien muni d’une légende le mène à un autre passage, puis le ramène exactement au premier (**F22**). Après déplacement et réouverture, il peut refaire cet aller-retour. Si une extrémité disparaît, la marge conserve le lien et indique laquelle demande son attention.
 
-Le parcours fonctionne localement sur Mac. La dictée utilise le module vocal existant lorsqu’il est disponible. Le lecteur PDF/image, les références dépliables et les annotations documentaires de 0.8.0 servent de témoins de compatibilité. Le floutage et l’aperçu d’export restent au jalon 0.8.2.
+Le parcours fonctionne localement sur Mac. La dictée utilise le module vocal existant lorsqu’il est disponible. Le lecteur PDF/image, les références dépliables et les annotations documentaires de 0.8.0 servent de témoins de compatibilité. La 0.8.2 a été annulée le 26 novembre. La 0.9.0 prend la suite de ce candidat.
 
 ## Ce que fournit la 0.8.0
 

@@ -228,6 +228,30 @@ mod tests {
         assert_eq!(footnotes.matches("<w:footnote w:id=").count(), 2, "{footnotes}");
     }
     #[test]
+    fn tomorrow_note_does_not_change_the_literary_export() {
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path().join("projet");
+        let p = project::create(&root, "Marge").unwrap();
+        project::save(&root, vec![crate::model::TextPatch {
+            writing_aids: None, id: p.sections[0].id.clone(), revision: 0,
+            text: "La lune revient.".into(), outline: None,
+        }]).unwrap();
+        let resources = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources");
+        let target = temp.path().join("manuscrit.md");
+        let render = || {
+            export(&root, &resources, &target, "md", None).unwrap();
+            fs::read_to_string(&target).unwrap()
+        };
+        let before = render();
+        assert!(before.contains("La lune revient."));
+        project::settings(&root, serde_json::json!({"tomorrow": {
+            "text": "SECRET DE REPRISE", "point": {"section": p.sections[0].id, "position": 5}
+        }})).unwrap();
+        assert_eq!(render(), before);
+        project::settings(&root, serde_json::json!({"tomorrow": null})).unwrap();
+        assert_eq!(render(), before);
+    }
+    #[test]
     fn rejects_reference_images_outside_the_project_before_conversion() {
         let d = tempfile::tempdir().unwrap();
         let root = d.path().join("project");

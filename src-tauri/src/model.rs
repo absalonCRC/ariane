@@ -30,6 +30,8 @@ pub struct Section {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Project {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub active_branch: Option<String>,
     #[serde(default)]
     pub smart_tags: Vec<SmartTag>,
     pub path: String,

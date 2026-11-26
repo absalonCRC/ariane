@@ -1,3 +1,4 @@
+import type { useBinderPreview } from './BinderPreview';
 import type { BinderProps } from '../binder/types';
 import { t } from '../../i18n';
 import type { CSSProperties } from 'react';
@@ -23,7 +24,9 @@ export function BinderRow({
   index,
   p,
   controller,
+  preview,
 }: {
+  preview: ReturnType<typeof useBinderPreview>;
   index: number;
   p: BinderProps;
   controller: BinderController;
@@ -179,11 +182,21 @@ export function BinderRow({
       data-kind={s.kind}
       onContextMenu={(event) => {
         if ((event.target as HTMLElement).closest('input')) return;
+        preview.close();
         const ids = picked.includes(s.id) ? picked : [s.id];
         if (!picked.includes(s.id)) setPicked(ids);
         const actions: MenuAction[] = [
           ...(trash ? [] : [{ label: t('Ouvrir'), icon: FileText, run: () => p.onSelect(s.id) }]),
         ];
+        if (!trash && ids.length === 1) {
+          const title = event.currentTarget.querySelector<HTMLElement>('.tree-title');
+          if (title)
+            actions.push({
+              label: t('Aperçu de la page'),
+              icon: Eye,
+              run: () => preview.show(s.id, title),
+            });
+        }
         if (p.onRename && !trash && ids.length === 1)
           actions.push({
             label: t('Renommer'),
@@ -355,6 +368,11 @@ export function BinderRow({
           }
           e.preventDefault();
           e.dataTransfer.dropEffect = 'move';
+          if (placement !== 'inside' && (drop?.id !== s.id || drop.placement !== placement)) {
+            const title = e.currentTarget.querySelector<HTMLElement>('.tree-title');
+            if (title)
+              e.currentTarget.style.setProperty('--drop-title-start', title.offsetLeft + 'px');
+          }
           setDropError('');
           setDrop((old) =>
             old?.id === s.id && old.placement === placement ? old : { id: s.id, placement },
@@ -466,6 +484,12 @@ export function BinderRow({
       ) : (
         <button
           className="tree-title"
+          aria-describedby={preview.current?.id === s.id ? 'binder-page-preview' : undefined}
+          onPointerEnter={(event) => {
+            if (!trash && !drag.length && event.pointerType !== 'touch' && !event.buttons)
+              preview.enter(s.id, event.currentTarget);
+          }}
+          onPointerLeave={preview.leave}
           aria-current={p.active === s.id ? 'page' : undefined}
           aria-label={`${{ folder: t('Section'), chapter: t('Chapitre'), scene: t('Scène') }[s.kind]} : ${s.title || t('Sans titre')}${s.included === false ? ' · Hors manuscrit' : ''}`}
           onClick={(e) => choose(s.id, e)}

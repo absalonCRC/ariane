@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import type { ComponentProps, ReactNode, RefObject } from 'react';
 import { AlignLeft, Table2, GitCompareArrows } from 'lucide-react';
 import { localeTag, t } from '../../i18n';
@@ -29,7 +30,7 @@ interface FooterProps {
   words: number;
   counts: Pick<
     ComponentProps<typeof WritingCounter>,
-    'words' | 'lines' | 'characters' | 'notes' | 'notesStatus'
+    'words' | 'lines' | 'characters' | 'notes' | 'notesStatus' | 'goals'
   >;
   voice: Pick<
     ComponentProps<typeof VoiceButton>,
@@ -72,6 +73,50 @@ export function WritingFooter({
     setFontPreview,
     setScrollPreview,
   } = controls;
+  const caretHeight = useRef<(() => boolean) | undefined>(undefined);
+  useLayoutEffect(() => {
+    if (surface === 'settings' && !historyMode)
+      caretHeight.current = editor.current?.holdCaretHeight?.();
+  }, [surface, historyMode, editor]);
+  useLayoutEffect(() => {
+    const restore = caretHeight.current;
+    if (!restore) return;
+    let cancelled = false,
+      frame = 0,
+      settled = 0;
+    let start = performance.now();
+    // Wrapping, the measured CodeMirror viewport and its scroll bounds settle in separate frames.
+    const adjust = () => {
+      if (cancelled) return;
+      settled = restore() ? 0 : settled + 1;
+      const elapsed = performance.now() - start;
+      if (elapsed < 180 || (settled < 3 && elapsed < 650)) frame = requestAnimationFrame(adjust);
+    };
+    const schedule = () => {
+      if (cancelled) return;
+      start = performance.now();
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(adjust);
+    };
+    const stop = () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+    };
+    schedule();
+    void document.fonts?.ready.then(schedule);
+    window.addEventListener('wheel', stop, { once: true, passive: true });
+    if (surface !== 'settings') caretHeight.current = undefined;
+    return () => {
+      stop();
+      window.removeEventListener('wheel', stop);
+    };
+  }, [
+    controls.fontPreview,
+    controls.lineHeightPreview,
+    doc.settings.font,
+    doc.settings.lineHeight,
+    surface,
+  ]);
   return (
     <footer className="statusbar">
       <div className="chrome-blur chrome-blur-bottom" aria-hidden="true">
@@ -165,6 +210,8 @@ export function WritingFooter({
                 onChange={doc.configure}
                 onFocusPreview={setFocusPreview}
                 onFontPreview={setFontPreview}
+                lineHeightPreview={controls.lineHeightPreview}
+                onLineHeightPreview={controls.setLineHeightPreview}
                 onScrollPreview={setScrollPreview}
                 canFormat={hasScenes}
                 onFormat={(format) => editor.current?.format(format)}

@@ -2,19 +2,21 @@
 
 **Référence du 18 novembre 2026.** Sources 0.6.1, branche `main`, commit `bce60a3`, avec la roadmap modifiée localement qui porte le périmètre à F01–F35. Les étapes ci-dessous sont à réaliser. Les chemins cités désignent des points d’entrée présents dans ce checkout. Les choix de stockage ou de moteur proposés restent à éprouver sur les témoins indiqués. [Roadmap et matrice de couverture](roadmap-1.0.0.md) · [Architecture](architecture.md) · [Annulations à respecter](annulations-2026-11-01.md)
 
+**Décisions du 26 novembre 2026.** La 0.8.2 est annulée. Après la 0.8.1, une seule version, la **0.9.0**, réunit les réglages et objectifs d’écriture, la navigation dans le classeur et la reprise de séance.
+
 | Fenêtre cible 2026 | Ordre de livraison | Résultat à la sortie |
 | --- | --- | --- |
 | Dès novembre | Préparation des données, prototypes, distribution | Possibilité de restaurer un projet, décisions sur la prédiction et le PDF, moyens de qualification identifiés |
 | 2–7 décembre | 0.7.0 → 0.7.1 → 0.7.2 | Prédire, essayer, comparer et scinder en conservant le texte |
 | Après 0.7.2 et avant 0.8.0 | 0.7.5 | Qualifier la sécurité, les performances et les frontières des modules |
-| 8–13 décembre | 0.8.0 → 0.8.1 → 0.8.2 | Revenir à une source, annoter, contrôler le contenu réellement exporté |
-| 14–17 décembre | 0.9.0 → 0.9.1 → 0.9.2 | Régler la page, parcourir le classeur, retrouver la séance |
+| 8–13 décembre | 0.8.0 → 0.8.1 | Revenir à une source, écouter et annoter une sélection |
+| 14–17 décembre | 0.9.0 | Régler la page, parcourir le classeur, retrouver la séance |
 | Avant le gel du 17 décembre, charge à estimer | Intégration ChatGPT pour 1.0.0 | Qualifier F36 à F40 avec et sans compte connecté |
 | 18–30 décembre | beta.1 → beta.2 si nécessaire → rc.1 → rc.2 si nécessaire → 1.0.0 | Qualifier le candidat, corriger les défauts, préparer la distribution stable |
 
 Le candidat 0.7.0 est disponible sur la branche `codex/0.7.0`. Le bilan détaille les étapes exécutées, les résultats mesurés et les preuves encore ouvertes. [Bilan 0.7.0](validation-0.7.0.md)
 
-Les dates s’appliquent à la série entière. Réestimer les fenêtres dès que les mesures de prédiction, le prototype PDF, la recette audio ou la disponibilité de signature changent la prévision. Le 31 décembre constitue la réserve de distribution.
+La fenêtre du 14 au 17 décembre inclut les trois volets de la 0.9.0 et leur recette commune. Réestimer les fenêtres dès que les mesures de prédiction, le prototype PDF, la recette audio ou la disponibilité de signature changent la prévision. Le 31 décembre constitue la réserve de distribution.
 
 ## Travaux à engager avant les lots fonctionnels
 
@@ -88,16 +90,11 @@ Les dates s’appliquent à la série entière. Réestimer les fenêtres dès qu
 4. **Composer la pile.** Regrouper en marge les notes qui visent la même phrase. Donner à chaque carte repliée une première ligne lisible. Ouvrir la carte choisie au premier plan, conserver l’ordre initial au repli et permettre de rejoindre les autres au clavier. Tester trois notes, dont une dictée, en fenêtre étroite.
 5. **Sortie.** Sur Mac, écouter puis dicter, changer rapidement de scène pendant la transcription et fermer pendant l’acquisition. Vérifier le son entendu, l’arrêt du micro, la destination unique, le manuscrit intact et le retour du focus. Compléter `tests/audio-pipeline.test.ts` et `tests/voice-button.test.tsx` avec les cas de destination et de cycle de vie.
 
-## 0.8.2 · Masquer à l’écran et contrôler l’export
+## 0.9.0 · Régler la page, parcourir le classeur et reprendre sa séance
 
-**Périmètre** F10, F33. **Dépendances** blancs et essais de 0.7.1, citations et ancres de 0.8.0. **Points d’entrée** `src/export/Export.tsx`, `src/export/useExport.ts`, `src-tauri/src/export/mod.rs`, `src-tauri/src/export/footnotes.rs`.
+Les essais de réglage, de navigation et de reprise se déroulent sur le même candidat. La reprise se vérifie une fois les réglages et le classeur intégrés.
 
-1. **Matérialiser les plages.** Stocker les limites du floutage et les remapper lors des transactions, y compris édition en bordure, annulation et restauration. Ajouter les deux actions contextuelles. Conserver le comportement de copie ordinaire et le texte original dans le projet.
-2. **Transformer avant conversion.** Étendre le contrat d’export avec un choix original/masqué et une valeur compatible pour les anciens appels. Appliquer le remplacement avant génération du Markdown et conversion PDF, Word ou EPUB. Traiter aussi les références et métadonnées générées qui pourraient réintroduire le contenu masqué. Conserver l’annulation et les contrôles de conflit et de chemins de l’export existant.
-3. **Relier l’aperçu à la sortie.** Choisir dans la portée exportée un passage réellement concerné (flou, citation ou blanc) et utiliser la même transformation que le fichier. Si aucun passage ne correspond, le dire dans le dialogue. Au changement de format ou d’option, ignorer toute réponse d’aperçu périmée. Préserver la distinction entre rendu de l’extrait et pagination finale.
-4. **Sortie.** Placer un texte témoin unique près d’une citation, d’un tableau et d’un blanc privé. Produire les quatre formats dans les deux modes. Vérifier visuellement l’aperçu, extraire le texte du PDF et inspecter contenu, notes et métadonnées du DOCX et de l’EPUB. L’original est présent en sortie normale et absent des données extractibles des plages masquées. Rejouer les tests Rust d’export avec les vrais convertisseurs, puis rouvrir l’original dans ariane.
-
-## 0.9.0 · Régler la page et suivre un objectif
+### Réglages et objectifs d’écriture
 
 **Périmètre** F04, F16, F26, F35. **Points d’entrée** `src/app/Settings.tsx`, `src/app/Preferences.tsx`, `src/components/WritingCounter.tsx`, `src/editor/writingDelta.ts`, `src/profile/model.ts`, `src/editor/scrolling.ts`.
 
@@ -105,9 +102,9 @@ Les dates s’appliquent à la série entière. Réestimer les fenêtres dès qu
 2. **Calculer les objectifs.** Pour le projet, compter le texte inclus. Pour la séance, définir le début, la reprise et la clôture, puis compter les mots ajoutés nets des corrections et annulations. Partir des transactions d’écriture et inclure dictée et mot accepté. Tester le rangement d’une capture, un import, une restauration et un changement de filtre. Séparer les mesures de séance des agrégats quotidiens existants. Afficher la progression dans le compteur et permettre sa désactivation.
 3. **Prévisualiser une composition.** À l’ouverture d’Aa, retenir les valeurs initiales et la position visuelle de la ligne du curseur. Appliquer temporairement police ou interligne, puis compenser le défilement après recomposition. Entrée valide une seule écriture de préférence. Échap restaure l’état initial et la sélection.
 4. **Retrouver le réglage consulté.** En quittant les paramètres pour le texte, retenir pendant la séance le groupe, le contrôle et le défilement. Réappliquer après montage et mise en page. Si un contrôle est devenu indisponible, revenir au groupe. Vérifier la navigation clavier et les intitulés dans les trois langues.
-5. **Sortie.** Modifier puis annuler la typographie au milieu d’une longue scène, recommencer et valider, puis contrôler la hauteur de la ligne après stabilisation. Retrouver un raccourci consulté après un détour dans le manuscrit. Contrôler les objectifs sur un jeu de deltas connus. Témoins : `tests/writing-counter.test.tsx`, `tests/typewriter-settings.test.tsx`, `tests/writing-activity-editor.test.tsx`.
+5. **Vérifier les réglages.** Modifier puis annuler la typographie au milieu d’une longue scène, recommencer et valider, puis contrôler la hauteur de la ligne après stabilisation. Retrouver un raccourci consulté après un détour dans le manuscrit. Contrôler les objectifs sur un jeu de deltas connus. Témoins : `tests/writing-counter.test.tsx`, `tests/typewriter-settings.test.tsx`, `tests/writing-activity-editor.test.tsx`.
 
-## 0.9.1 · Chercher et feuilleter dans le classeur
+### Navigation dans le classeur
 
 **Périmètre** F25, F27, F28, F29. **Points d’entrée** `src/app/projectSearch.ts`, `src/app/Palette.tsx`, `src/project/binder/useBinder.ts`, `src/project/binder/BinderRow.tsx`.
 
@@ -115,17 +112,17 @@ Les dates s’appliquent à la série entière. Réestimer les fenêtres dès qu
 2. **Rendre le dépôt lisible.** Utiliser la destination que calculent déjà `allowedDrop` et `dropPlacement`. Afficher un trait avant/après ou un contour du parent pour un dépôt dedans. Les zones invalides restent refusées. Vérifier le résultat réel pour plusieurs niveaux et une sélection multiple.
 3. **Construire un aperçu unique.** Au survol maintenu du titre, charger les premières et dernières lignes, en tenant compte du brouillon courant. Monter le cadre indépendamment de la ligne virtualisée. Un survol bref reste silencieux. Après ouverture, passer aux lignes voisines actualise le même cadre sans répéter le délai initial. Calibrer ce délai au pointeur sur le prototype.
 4. **Gérer les sorties.** Annuler délai et lectures obsolètes au défilement, au début d’un glisser, à la sortie ou au démontage. Échap referme l’aperçu et le menu contextuel offre l’accès clavier. Vérifier le passage entre titre et aperçu, la dernière ligne du classeur et la fenêtre minimale.
-5. **Sortie.** Feuilleter cinq pages depuis A, tenter un dépôt interdit puis déplacer réellement une page. Vérifier le parent obtenu et que le simple survol a conservé le texte actif, le curseur, le focus et le défilement. Témoins : `tests/library-binder.test.tsx`, `tests/binder-performance.test.tsx`, `tests/project-search.test.ts`. Le survol se valide avec une souris ou un trackpad dans une vraie fenêtre.
+5. **Vérifier le classeur.** Feuilleter cinq pages depuis A, tenter un dépôt interdit puis déplacer réellement une page. Vérifier le parent obtenu et que le simple survol a conservé le texte actif, le curseur, le focus et le défilement. Témoins : `tests/library-binder.test.tsx`, `tests/binder-performance.test.tsx`, `tests/project-search.test.ts`. Le survol se valide avec une souris ou un trackpad dans une vraie fenêtre.
 
-## 0.9.2 · Reprendre la séance et qualifier les parcours croisés
+### Reprise de séance
 
-**Périmètre** F15, F17, F24. **Dépendance** les états des lots 0.7 à 0.9.1 doivent être disponibles. **Points d’entrée** `src/app/useWorkspace.ts`, `src-tauri/src/api/session.rs`, `src/editor/runtime/mount.ts`, `src/capture/draft.ts`, `src-tauri/src/app_lifecycle.rs`.
+**Périmètre** F15, F17, F24. La reprise utilise les états livrés en 0.7 et 0.8 ainsi que les réglages et objectifs de la 0.9.0. **Points d’entrée** `src/app/useWorkspace.ts`, `src-tauri/src/api/session.rs`, `src/editor/runtime/mount.ts`, `src/capture/draft.ts`, `src-tauri/src/app_lifecycle.rs`.
 
 1. **Répartir les responsabilités de reprise.** Inventorier les états déjà persistés. Enregistrer, par référence à leurs propriétaires, projet, variante, document, nœud/curseur, défilement, replis, focus, machine à écrire, PDF/image et position, recherche ou vue, objectif/séance et brouillon compact. Prévoir la lecture des anciennes sessions à champs absents. La compacte conserve sa propre file.
 2. **Restaurer dans l’ordre.** Attendre les sauvegardes et la résolution du projet, de la variante et des sources. Restaurer les panneaux, la géométrie stabilisée, puis le curseur et le focus. Si le PDF manque, retrouver la scène disponible. Un changement rapide de projet invalide la restauration précédente. Reprendre un brouillon conserve le micro arrêté et les commandes inactives.
 3. **Laisser un mot pour demain.** Saisir l’intention au curseur et la conserver dans le projet avec une ancre vérifiable. La présenter près du passage à la prochaine ouverture et permettre son effacement. Tester la sauvegarde et l’export littéraire avant et après effacement.
 4. **Revenir à la dernière frappe.** Mémoriser le point d’édition réelle du manuscrit par projet. Les lectures, mouvements de curseur, survols et ouvertures de fiches conservent ce repère. La commande rejoint la bonne scène, déplie le passage et rend le curseur. Prévoir le repli si le passage a été supprimé.
-5. **Sortie et gel.** Écrire dans A, laisser une intention, feuilleter B, consulter depuis C une source, puis revenir à la frappe dans A. Refaire après fermeture immédiate, alternance de projets et restauration d’une session ancienne. Parcourir focus/prédiction/objectif, compacte/rangement/reprise, recherche/entité/PDF/annotation/Versions. Vérifier contrastes, trois langues, animations réduites et défilement. Réunir les preuves F01–F35 avec celles du lot ChatGPT F36–F40 avant le gel.
+5. **Recette commune de la 0.9.0.** Écrire dans A, laisser une intention, feuilleter B, consulter depuis C une source, puis revenir à la frappe dans A. Refaire après fermeture immédiate, alternance de projets et restauration d’une session ancienne. Parcourir focus/prédiction/objectif, compacte/rangement/reprise, recherche/entité/PDF/annotation/Versions. Vérifier contrastes, trois langues, animations réduites et défilement. Réunir les preuves des fonctions maintenues de F01 à F35 et celles du lot ChatGPT F36–F40 avant le gel.
 
 ## 1.0.0 · Intégrer ChatGPT avant le gel
 
@@ -139,11 +136,11 @@ Les dates s’appliquent à la série entière. Réestimer les fenêtres dès qu
 
 ## 1.0.0-beta.1 · Geler les fonctions et éprouver la migration
 
-**Cible** 18 décembre. **Entrée** neuf sous-versions utilisables, F01–F40 rattachées aux recettes, sauvegardes et installation vierge déjà éprouvées. **Support** [matrice et conditions de bêta](roadmap-1.0.0.md).
+**Cible** 18 décembre. **Entrée** jalons de développement utilisables, recettes de toutes les fonctions maintenues dans la matrice, sauvegardes et installation vierge déjà éprouvées. **Support** [matrice et conditions de bêta](roadmap-1.0.0.md).
 
 1. Identifier le commit candidat, aligner les versions, construire et archiver le résultat de la vérification complète. Pour chaque exigence, consigner version, scénario, environnement et résultat. Inclure les acquis de 0.3–0.6 dans la campagne.
 2. Migrer des copies de 0.2.2, 0.6.1 et des schémas intermédiaires réellement livrés. Comparer texte, outline, versions, variantes, liens, pièces jointes, blancs et notes selon leur date d’introduction. Ouvrir deux fois pour éprouver l’idempotence, tester la récupération après arrêt et le refus d’un schéma trop récent.
-3. Exécuter les trois parcours complets sur le candidat : **romancier**, du projet vide à l’export avec focus, dictée, tags, variantes et sélection de branches ; **auteur documenté**, du PDF annoté à l’export masqué avec source modifiée ; **quotidien**, de la capture hors application jusqu’à la reprise après interruption. Tester le raccourci physique, le plein écran, le menu Annuler, un micro réel et la fermeture des deux fenêtres.
+3. Exécuter les trois parcours complets sur le candidat. Pour le **romancier**, aller du projet vide à l’export avec focus, dictée, tags, variantes et sélection de branches. Pour l’**auteur documenté**, annoter un PDF, modifier la source et exporter le manuscrit avec ses citations. Pour le parcours **quotidien**, effectuer une capture hors application et reprendre la séance après interruption. Tester le raccourci physique, le plein écran, le menu Annuler, un micro réel et la fermeture des deux fenêtres.
 4. Sur le même matériel et les mêmes corpus, relever p50/p95 de frappe, recherche, ouverture compacte et prédiction lors de séances prolongées. Suivre mémoire et activité des moteurs. Établir le registre des défauts avec reproduction, conséquence, données touchées et preuve nécessaire après correction.
 5. **Sortie.** Tout blocage d’ouverture, d’écriture, de sauvegarde, de récupération ou de confidentialité d’export est identifié et suivi jusqu’à correction. Un critère d’entrée manquant décale la bêta et appelle une réestimation.
 
@@ -179,7 +176,7 @@ Les dates s’appliquent à la série entière. Réestimer les fenêtres dès qu
 **Cible** 30 décembre. **Entrée** candidat RC qualifié, aucun blocage des fonctions obligatoires, données restaurables, ressources de distribution disponibles.
 
 1. Identifier les sources finales et la version stable dans les cinq fichiers. Si la promotion change le binaire, produire son propre paquet, vérifier les ressources, signer, notariser et calculer le SHA-256 final. Relier chaque preuve au commit et à l’artefact auxquels elle s’applique.
-2. Vérifier sur ce candidat les trois parcours complets, l’installation du téléchargement et l’ouverture d’un ancien projet. Contrôler prioritairement conservation du manuscrit, récupération et absence de texte extractible dans les plages exportées masquées.
+2. Vérifier sur ce candidat les trois parcours complets, l’installation du téléchargement et l’ouverture d’un ancien projet. Contrôler en priorité la conservation du manuscrit, sa récupération et la confidentialité des indices de blancs dans les exports.
 3. Réunir paquet, empreinte, sources correspondantes, notices, guide d’installation des modules, compatibilité, guide de récupération, notes de version et procédure de signalement. Indiquer matériel, mesures, tests ignorés et limites réellement observées.
 4. **Décider de la sortie.** Vérifier chaque condition de la roadmap sur le candidat final, y compris l’endurance et l’acceptation visuelle. Consigner prêt à distribuer si elles passent. Si une condition bloquante reste ouverte, préciser correction, preuve restante et prévision révisée. La mise à disposition publique relève de la décision de publication.
 
@@ -187,9 +184,9 @@ Les dates s’appliquent à la série entière. Réestimer les fenêtres dès qu
 
 | Engagement déjà rattaché à un jalon précédent | Où le remettre à l’épreuve |
 | --- | --- |
-| F01 focus, F02 capture, F06 machine à écrire | 0.7.0 dans les deux éditeurs, 0.9.2 à la reprise, beta.1 sur Mac |
+| F01 focus, F02 capture, F06 machine à écrire | 0.7.0 dans les deux éditeurs, 0.9.0 à la reprise, beta.1 sur Mac |
 | F07 héritage des tags, F08 entités et relations, F09 administration des tags | 0.7.2 après scission, beta.1 sur projet migré et parcours documenté |
 | F11 persistance documentaire, F12 sélection de branches | 0.8.0 après modification d’une source, beta.1 en édition et restauration |
-| F13 recherche et vues, F14 commandes et raccourcis | 0.7.2 dans la palette, 0.9.1 dans le classeur, 0.9.2 à la reprise, beta.1 au clavier physique |
+| F13 recherche et vues, F14 commandes et raccourcis | 0.7.2 dans la palette, 0.9.0 dans le classeur et à la reprise, beta.1 au clavier physique |
 
 Les autres engagements figurent dans le périmètre des sous-versions ci-dessus. Les résultats d’exécution seront à consigner par candidat lors de l’implémentation.

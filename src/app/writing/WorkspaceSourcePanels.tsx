@@ -23,6 +23,7 @@ type Props = Pick<
   | 'locatePassage'
   | 'linkDocument'
   | 'beginReaderRequest'
+  | 'recordDocumentPosition'
   | 'active'
 > & {
   project: Project;
@@ -53,6 +54,7 @@ export function WorkspaceSourcePanels({
   locatePassage,
   linkDocument,
   beginReaderRequest,
+  recordDocumentPosition,
   marginPinFor,
   record,
   onAssociated,
@@ -112,6 +114,9 @@ export function WorkspaceSourcePanels({
               reader.reveal?.rectangles,
             ])}
             source={reader}
+            resume={reader.resume}
+            onRestoreFailed={reader.restoreFailed}
+            onPosition={(position) => recordDocumentPosition(p.path, position)}
             reveal={reader.reveal}
             replacing={!!reader.replacement}
             onDocumentSelect={async (anchor) => {

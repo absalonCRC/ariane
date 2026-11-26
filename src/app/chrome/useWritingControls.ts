@@ -9,11 +9,13 @@ export function useWritingControls(
 ) {
   const [focusPreview, setFocusPreview] = useState<WritingSettings['focus'] | null>(null);
   const [fontPreview, setFontPreview] = useState<WritingSettings['font'] | null>(null);
+  const [lineHeightPreview, setLineHeightPreview] = useState<number | null>(null);
   const [scrollPreview, setScrollPreview] = useState<boolean | null>(null);
   useEffect(() => {
     if (surface !== 'settings') {
       setFocusPreview(null);
       setFontPreview(null);
+      setLineHeightPreview(null);
       setScrollPreview(null);
     }
   }, [surface]);
@@ -32,6 +34,8 @@ export function useWritingControls(
   return {
     focusPreview,
     setFocusPreview,
+    lineHeightPreview,
+    setLineHeightPreview,
     fontPreview,
     setFontPreview,
     scrollPreview,

@@ -1,5 +1,15 @@
 # Utiliser ariane
 
+## Régler la page et reprendre une séance
+
+Dans **Paramètres → Écriture**, renseignez un objectif de mots pour le projet, la séance ou les deux. Le total du projet porte sur les scènes incluses dans le manuscrit. Le total de séance suit les mots ajoutés et retirés dans l’éditeur, y compris par dictée, prédiction ou annulation. La séance reprend à la réouverture du projet. **Terminer la séance** arrête le comptage et **Nouvelle séance** le remet à zéro. Vous pouvez masquer les objectifs dans le compteur.
+
+Ouvrez **Aa** pour essayer les polices au survol ou au clavier. Sur le curseur d’interligne, les flèches donnent un aperçu. **Entrée** adopte la valeur et **Échap** annule l’essai. Les paramètres retrouvent le dernier groupe et le dernier contrôle consultés dans la fenêtre.
+
+Dans le classeur, laissez le pointeur sur un titre puis parcourez les titres voisins pour lire le début et la fin de leurs textes. Au clavier, ouvrez le menu contextuel avec **⇧ F10** et choisissez **Aperçu de la page**. **⌘ P** précise le chemin des scènes qui portent le même titre.
+
+Dans **⌘ K**, **Mot pour demain** attache une intention privée au passage courant. Rouvrez-la depuis la marge ou la palette pour la modifier ou l’effacer. **Revenir à la dernière frappe** retrouve le dernier passage modifié, même après avoir consulté une autre scène. Le projet conserve aussi la position dans le manuscrit et dans le PDF ou l’image consultée.
+
 ## Blancs, essais de formulation et répétitions
 
 Dans le manuscrit, ouvrez les **Commandes** avec **⌘ K**. **Laisser un blanc** insère `[…]` au curseur et permet d’ajouter un indice privé. **Blanc suivant** rejoint le prochain repère dans l’ordre du manuscrit, puis revient au premier. Sur un blanc, **Compléter le blanc** affiche son indice et remplace le signe par le texte saisi. **⌘ Z** rétablit le signe et son indice. Un blanc encore ouvert apparaît dans les exports.

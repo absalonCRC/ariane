@@ -88,7 +88,11 @@ export function useUnifiedSearch(
       }
       const removed = [...known.current.keys()].filter((key) => !next.has(key));
       known.current = next;
-      const labels = { untitled: t('Sans titre'), title: t('Titre du texte ou du dossier') };
+      const labels = {
+        project: project.name,
+        untitled: t('Sans titre'),
+        title: t('Titre du texte ou du dossier'),
+      };
       if (worker.current) worker.current.postMessage({ id, changes, removed, query: term, labels });
       else if (fallback.current) {
         fallback.current.sync(changes, removed);

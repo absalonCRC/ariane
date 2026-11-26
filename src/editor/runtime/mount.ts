@@ -1,5 +1,7 @@
 import type { WritingAid } from '../../contracts/writingAids';
 import { editorAids, writingAids } from '../writingAids';
+import { pointAt, positionOf } from '../sessionPoints';
+import type { Settings } from '../../contracts/settings';
 import { nearbyRepetitions } from '../nearbyRepetitions';
 import { writingWordDelta } from '../writingDelta';
 import type { OutlineEditor } from '../outline/state';
@@ -80,7 +82,8 @@ export function mountEditor({
   const pendingCounts = new Map<string, SectionDraft>();
   spans.current = data.spans;
   const mapping = sectionMapping(data.spans);
-  const outline = outlineEditor(latest.current.sections, data.spans, mapping.field);
+  const initialSettings = latest.current.settings;
+  const outline = outlineEditor(latest.current.sections, data.spans, mapping.field, initialSettings.foldedPassages);
   outlineRef.current = outline;
   const tags = smartTags(outline, {
     tags: () => latest.current.smartTags ?? [],
@@ -201,7 +204,7 @@ export function mountEditor({
   };
   const state = EditorState.create({
     doc: data.text,
-    selection: { anchor: Math.min(latest.current.settings.cursor, data.text.length) },
+    selection: { anchor: Math.max(0, Math.min(initialSettings.cursor, data.text.length)) },
     extensions: [
       speechMarks,
       history(),
@@ -312,6 +315,40 @@ export function mountEditor({
         }
         const before = u.startState.field(outline.field).nodes;
         const after = u.state.field(outline.field).nodes;
+        const session = latest.current.onSessionChange;
+        if (session) {
+          const old = u.startState.field(outline.field), next = u.state.field(outline.field);
+          const sections = u.state.field(mapping.field);
+          const saved = latest.current.sessionSettings?.() ?? latest.current.settings;
+          const patch: Partial<Settings> = {};
+          const branch = latest.current.writingBranch;
+          if (u.selectionSet || u.docChanged) {
+            const head = u.state.selection.main.head;
+            patch.cursor = head;
+            patch.writingPosition = pointAt(head, sections, after, branch);
+            if (u.docChanged) {
+              let end = head, atSelection = false;
+              u.changes.iterChangedRanges((_a, _b, from, to) => {
+                if (head >= from && head <= to) atSelection = true;
+                end = to;
+              });
+              patch.lastEdit = pointAt(atSelection ? head : end, sections, after, branch);
+              const note = saved.tomorrow;
+              if (note && (!note.point.branch || note.point.branch === branch)) {
+                const anchor = positionOf(note.point, u.startState.field(mapping.field), before, true);
+                if (anchor !== null && (!note.point.node || after.some(n => n.id === note.point.node))) {
+                  const moved = pointAt(u.changes.mapPos(anchor, 1), sections, after, branch);
+                  if (moved?.section === note.point.section) patch.tomorrow = { ...note, point: moved };
+                }
+              }
+            }
+          }
+          if (old.folded !== next.folded) {
+            const displayed = new Set(before.map(n => n.id));
+            patch.foldedPassages = [...(saved.foldedPassages ?? []).filter(id => !displayed.has(id)), ...next.folded];
+          }
+          if (Object.keys(patch).length) session(patch);
+        }
         const aidsBefore = editorAids(u.startState);
         const aidsAfter = editorAids(u.state);
         const aidSections = new Set<string>();
@@ -513,6 +550,10 @@ export function mountEditor({
           if (nextWidth === width && nextStyle === textStyle) return;
           width = nextWidth;
           textStyle = nextStyle;
+          if (v.dom.closest('.app')?.querySelector('#writing-settings[aria-hidden="false"]')) {
+            rememberLater();
+            return;
+          }
           const previous = anchor;
           if (!previous) {
             rememberLater();
@@ -533,6 +574,8 @@ export function mountEditor({
   observer?.observe(v.scrollDOM);
   const scroller = documentScroller(v);
   const scrolled = () => {
+    if (scroller.clientHeight && !latest.current.readOnly)
+      latest.current.onSessionChange?.({ manuscriptScroll: scroller.scrollTop });
     rememberLater();
     geometry();
     schedule();
@@ -550,9 +593,18 @@ export function mountEditor({
   );
   count();
   schedule();
-  v.dispatch({
-    effects: EditorView.scrollIntoView(v.state.selection.main.head, { y: 'center' }),
-  });
+  const savedPoint = initialSettings.writingPosition;
+  const restored = savedPoint && (!savedPoint.branch || !latest.current.writingBranch || savedPoint.branch === latest.current.writingBranch)
+    ? positionOf(savedPoint, data.spans, v.state.field(outline.field).nodes) : null;
+  if (restored != null && restored !== v.state.selection.main.head)
+    v.dispatch({ selection: { anchor: restored } });
+  const savedTop = initialSettings.manuscriptScroll;
+  if (typeof savedTop === 'number' && Number.isFinite(savedTop)) {
+    const selection = v.state.selection;
+    v.requestMeasure({ read: () => v.state.selection === selection, write: current => {
+      if (current && view.current === v) scroller.scrollTop = Math.max(0, savedTop);
+    } });
+  } else v.dispatch({ effects: EditorView.scrollIntoView(v.state.selection.main.head, { y: 'center' }) });
   const unregisterTags = latest.current.registerTagFlusher?.(() => tags.flush(v));
   return () => {
     unregisterTags?.();

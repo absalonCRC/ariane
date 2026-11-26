@@ -32,6 +32,10 @@ function stats(samples: number[]) {
   };
 }
 export function attach(workspace: Workspace, controller: MemoryController) {
+  if (import.meta.env.VITE_SESSION_REHEARSAL === '1') {
+    void import('./writingSession').then(m => m.attachWritingSession(workspace));
+    return;
+  }
   if (import.meta.env.VITE_MODEL_REHEARSAL === '1') {
     void import('./modelSelection').then(m => m.attachModelSelection(workspace));
     return;

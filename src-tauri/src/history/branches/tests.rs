@@ -32,6 +32,26 @@ fn variant(root: &Path) -> String {
         .id
 }
 #[test]
+fn project_goals_and_private_landmarks_survive_variant_switches() {
+    let (d, id) = setup();
+    let root = d.path();
+    create_branch(root, "Essai", None).unwrap();
+    let branch = variant(root);
+    let prefs = serde_json::json!({"sessionGoal": 20, "sessionWords": 3,
+        "tomorrow": {"text": "Reprendre ici", "point": {"section": id, "branch": branch}},
+        "lastEdit": {"section": id, "branch": branch}});
+    project::settings(root, prefs.clone()).unwrap();
+    let main = switch_branch(root, "main").unwrap();
+    assert_eq!(main.settings["sessionWords"], 3);
+    assert_eq!(main.settings["tomorrow"], prefs["tomorrow"]);
+    assert_eq!(main.settings["lastEdit"], prefs["lastEdit"]);
+    project::settings(root, serde_json::json!({"tomorrow": null, "sessionWords": 0})).unwrap();
+    let other = switch_branch(root, &branch).unwrap();
+    assert!(other.settings["tomorrow"].is_null());
+    assert_eq!(other.settings["sessionWords"], 0);
+}
+
+#[test]
 fn variants_keep_unsaved_named_steps_drafts_and_automatic_history_across_reopen() {
     let (d, id) = setup();
     write(d.path(), &id, "Début principal.");

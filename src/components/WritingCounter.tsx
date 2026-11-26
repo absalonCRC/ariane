@@ -12,6 +12,7 @@ export function WritingCounter({
   notes,
   notesStatus,
   hideNotes = false,
+  goals,
   mode,
   onChange,
 }: {
@@ -21,6 +22,7 @@ export function WritingCounter({
   notes: number;
   notesStatus: 'loading' | 'ready' | 'error';
   hideNotes?: boolean;
+  goals?: string;
   mode: Mode;
   onChange: (mode: Mode) => void;
 }) {
@@ -141,7 +143,7 @@ export function WritingCounter({
         className="counter-value"
         data-hint={t('Compteur et minuteur · survoler ou cliquer')}
         aria-description={t('Compteur et minuteur · survoler ou cliquer')}
-        aria-label={`${count.toLocaleString(localeTag())} ${unit}${hideNotes ? '' : ` · ${noteDescription}`}${started ? ` · ${phase} ${formatTime(ms)}${running ? '' : t(' en pause')}` : ''} · ${t('Ouvrir la barre')}`}
+        aria-label={`${count.toLocaleString(localeTag())} ${unit}${goals ? ` · ${goals}` : ''}${hideNotes ? '' : ` · ${noteDescription}`}${started ? ` · ${phase} ${formatTime(ms)}${running ? '' : t(' en pause')}` : ''} · ${t('Ouvrir la barre')}`}
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen(true)}
@@ -153,6 +155,7 @@ export function WritingCounter({
             · {noteCount} {noteUnit}
           </>
         )}
+        {goals && <span className="counter-goals"> · {goals}</span>}
         {started && (
           <span className="counter-timer-inline" aria-hidden="true">
             {' '}

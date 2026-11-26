@@ -70,10 +70,7 @@ export function createProjectOperations({
       await doc.checkpoint();
       await metadataQueue.current;
       await memorySessionSaver.current();
-      if (doc.ref.current)
-        await request('settings', {
-          value: { ...doc.settingsRef.current, cursor: cursor.current },
-        });
+      if (doc.ref.current) await doc.persistSettings({ cursor: cursor.current }, true);
       await beforeSwitch?.();
       const project = await request('open', { path });
       if (section)
@@ -83,10 +80,17 @@ export function createProjectOperations({
           continuous: false,
           cursor: 0,
           libraryView: 'texts',
+          writingPosition: null,
+          manuscriptScroll: undefined,
+          filterPosition: null,
+          searchText: '',
+          documentPosition: null,
         };
       activate(project);
       setSurface('none');
-      setBinder(true);
+      setBinder(
+        !project.settings.immersiveFocus && (!!section || (project.settings.binderOpen ?? true)),
+      );
     } catch (e) {
       fail(e);
     } finally {
@@ -112,6 +116,8 @@ export function createProjectOperations({
         active: operation.sourceId,
         continuous: false,
         cursor: 0,
+        writingPosition: null,
+        manuscriptScroll: undefined,
       };
       doc.activate(next);
       setSurface('none');
@@ -131,7 +137,7 @@ export function createProjectOperations({
     try {
       await doc.checkpoint();
       await metadataQueue.current;
-      await request('settings', { value: { ...doc.settingsRef.current, cursor: cursor.current } });
+      await doc.persistSettings({ cursor: cursor.current }, true);
       const message = libraryOperationMessage(doc.ref.current!, operation);
       const next = await request('libraryOperation', { operation });
       doc.activate(next);
@@ -186,7 +192,14 @@ export function createProjectOperations({
       setLibraryNotice(null);
       doc.replaceSections(sections, true, true);
       const added = sections.find((s) => !p!.sections.some((old) => old.id === s.id));
-      if (added) doc.configure({ active: added.id, continuous: false, cursor: 0 });
+      if (added)
+        doc.configure({
+          active: added.id,
+          continuous: false,
+          cursor: 0,
+          writingPosition: null,
+          manuscriptScroll: undefined,
+        });
       setNewSection(null);
       setNewTitle('');
       setBinder(true);

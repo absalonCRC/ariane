@@ -189,6 +189,22 @@
   max-width: 65ch;
   margin-bottom: var(--space-lg);
 }
+.settings-scope { color: var(--quiet); font-size: 12px; }
+.writing-goals { display: grid; gap: 8px; min-width: 0; }
+.writing-goals input[type='number'] { width: 8em; }
+.counter-goals { color: var(--ink); font-variant-numeric: tabular-nums; }
+.tomorrow-margin {
+  position: fixed; right: 12px; z-index: 5; display: flex; align-items: center;
+  gap: 7px; max-width: clamp(32px, calc((100vw - var(--column-width)) / 2 - 32px), 220px);
+  padding: 7px 9px; background: var(--theme-paper); color: var(--ink); border: 1px solid var(--line);
+}
+.tomorrow-margin svg { flex: none; }
+.tomorrow-margin span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 850px) {
+  .tomorrow-margin span { display: none; }
+  .counter-goals { display: block; font-size: 11px; }
+}
+
 .workspace-page .settings-group select,
 .workspace-page .settings-group input[type='range'] {
   width: 100%;

@@ -252,6 +252,14 @@ La lecture d’une note Markdown utilise le découpage des scènes de CodeMirror
 
 À la première ouverture d’un index de sources restauré ou antérieur au marquage de son schéma, les lecteurs du processus partagent le verrou d’initialisation de ce fichier. Les tables et le numéro de schéma de l’index sont validés dans la même transaction SQLite. Une ouverture ordinaire consulte le schéma et traite les anciens vecteurs texte encore présents. Cet index dérivé possède son propre numéro de schéma, indépendant de celui du projet. À l’ouverture du projet, la base de travail utilise le journal WAL, y compris pour une copie restaurée depuis une sauvegarde autonome en mode DELETE.
 
+## Réglages et reprise de séance · 0.9.0
+
+`useProject` regroupe les écritures du curseur, du défilement, des replis et des repères dans les préférences JSON du projet. La fermeture et le changement de projet attendent leur sauvegarde. La commande `settings` vérifie le chemin actif. Le chargement du projet fournit la variante courante avec le texte. Les anciens projets utilisent les valeurs par défaut des champs absents.
+
+CodeMirror fournit l’identifiant de scène, le nœud et les positions UTF-16. Une transaction de texte actualise la dernière frappe et le solde de séance. Le déplacement du curseur actualise la position de lecture. Le mot pour demain possède sa propre ancre. Les objectifs, le solde et ces deux repères appartiennent au projet à travers les changements de variante. Le brouillon de capture et le profil d’activité gardent leurs persistances existantes.
+
+Le lecteur rouvre la source à partir de son identifiant et de son empreinte via le transport documentaire existant. Il réapplique page, zoom et défilement après le rendu. La bibliothèque maintient un seul aperçu pour ses lignes virtualisées. La fenêtre des paramètres retient en mémoire son groupe, son contrôle et son défilement par projet.
+
 ## Sélections lues et annotées · 0.8.1
 
 La barre de sélection confie une copie du texte et ses bornes UTF-16 au lecteur. Une modification de la sélection ou de l’éditeur invalide cette session. La commande de contrôle `selectionSpeech` passe dans la file de contrôle. `selectionAudio` passe dans la file des traitements lourds et vérifie l’identité de la session avant de lancer chaque processus. Pocket TTS reçoit le texte sur son entrée standard et écrit un WAV dans un répertoire temporaire. L’aligneur whisper.cpp contraint le décodage aux tokens du même texte et renvoie leur position UTF-8 et leur temps audio. Le paquet contient les exécutables. Les poids validés sont lus dans les données de l’utilisateur.

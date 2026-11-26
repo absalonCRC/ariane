@@ -7,6 +7,7 @@ export interface Command {
   id: string;
   label: string;
   detail?: string;
+  context?: string;
   preview?: { before: string; after: string };
   action: () => void;
 }
@@ -67,7 +68,9 @@ export function Palette({
   const searchTerm = (commandSearch ? query.replace(/^\//, '') : query).trim().toLocaleLowerCase();
   const filtered =
     commandSearch || (sections && searchTerm)
-      ? commands.filter((c) => c.label.toLocaleLowerCase().includes(searchTerm))
+      ? commands.filter((c) =>
+          [c.label, c.context].some((v) => v?.toLocaleLowerCase().includes(searchTerm)),
+        )
       : [];
   const preview = open ? filtered[selected]?.preview : undefined;
   const run = (command: Command) => {
@@ -175,6 +178,9 @@ export function Palette({
                       }}
                     >
                       {command.label}
+                      {command.context && (
+                        <small className="section-search-context">{command.context}</small>
+                      )}
                     </button>
                   ))
                 ) : (
