@@ -5,6 +5,8 @@ export const commandRegistry: readonly CommandDefinition[] = [
   { id: 'prepare', label: 'Préparer cette section', scope: 'app', shortcut: null },
   { id: 'settings', label: 'Réglages d’écriture', scope: 'app', shortcut: null },
   { id: 'blank-insert', label: 'Laisser un blanc', scope: 'editor', shortcut: null },
+  { id: 'last-edit', label: 'Revenir à la dernière frappe', scope: 'app', shortcut: null },
+  { id: 'tomorrow-note', label: 'Mot pour demain', scope: 'app', shortcut: null },
   { id: 'blank-next', label: 'Blanc suivant', scope: 'app', shortcut: null },
   { id: 'blank-fill', label: 'Compléter le blanc', scope: 'editor', shortcut: null },
   { id: 'trial-start', label: 'Essayer une formulation', scope: 'editor', shortcut: null },

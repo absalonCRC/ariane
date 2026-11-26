@@ -1,3 +1,5 @@
+import type { WritingPoint, DocumentPosition, FilterPosition } from './writingSession';
+
 export interface EntityTypeDefinition {
   name: string;
   description: string;
@@ -6,6 +8,20 @@ export interface EntityTypeDefinition {
 }
 
 export interface Settings {
+  projectGoal?: number;
+  sessionGoal?: number;
+  showGoals?: boolean;
+  sessionWords?: number;
+  sessionClosed?: boolean;
+  lastEdit?: WritingPoint | null;
+  tomorrow?: { point: WritingPoint; text: string } | null;
+  documentPosition?: DocumentPosition | null;
+  filterPosition?: FilterPosition | null;
+  searchText?: string;
+  binderOpen?: boolean;
+  writingPosition?: WritingPoint | null;
+  manuscriptScroll?: number;
+  foldedPassages?: string[];
   collapsed?: string[];
   libraryView?: 'texts' | 'manuscript' | 'note' | 'sources' | 'trash';
   countMode: 'characters' | 'words' | 'lines';

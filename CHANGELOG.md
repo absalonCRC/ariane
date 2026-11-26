@@ -6,6 +6,14 @@
 - Boutons, champs de saisie et sélecteurs harmonisés en formes rondes ou en capsules, avec des contenus recentrés et des repères d’activité arrondis.
 - Adaptation des commandes de thème, de Versions et du catalogue Smart-tags à ces formes et à l’espace disponible.
 
+## 0.9.0 — candidat de développement, 26 novembre 2026
+
+- Le compteur affiche les objectifs facultatifs du projet et de la séance. Les paramètres indiquent la portée des réglages et retrouvent le dernier contrôle consulté. Dans **Aa**, la police et l’interligne se prévisualisent sur le passage courant.
+- Le classeur permet de feuilleter les pages au survol ou par le menu contextuel. La recherche de section distingue les titres identiques et le glisser-déposer indique précisément la destination.
+- La reprise conserve la position d’écriture, les replis, la recherche ou la vue filtrée et la position du lecteur PDF ou image. Les commandes **Mot pour demain** et **Revenir à la dernière frappe** retrouvent les repères du projet.
+
+[Recette de la version 0.9.0](docs/validation-0.9.0.md)
+
 ## 0.8.1 — candidat de développement, 24 novembre 2026
 
 - Recherche sémantique incluse dès l’ouverture. À la première lecture ou au premier clic sur le micro, la capsule supérieure propose le téléchargement. Le choix reste visible pendant l’écriture jusqu’à sa fermeture ou à la fin de l’installation. **Paramètres → Modèles locaux** regroupe les outils facultatifs par usage.

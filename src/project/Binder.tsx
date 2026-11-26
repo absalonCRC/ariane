@@ -1,3 +1,4 @@
+import { BinderPreview, useBinderPreview } from './binder/BinderPreview';
 import { BinderRow } from './binder/BinderRow';
 import { useBinder } from './binder/useBinder';
 import type { BinderProps } from './binder/types';
@@ -60,6 +61,7 @@ export function Binder(p: BinderProps) {
     focusRow,
   } = controller;
 
+  const preview = useBinderPreview(p.project.path, view, p.busy || !!p.historyMode);
   const footerActions = (
     <BinderActions
       historyMode={p.historyMode}
@@ -71,6 +73,8 @@ export function Binder(p: BinderProps) {
   return (
     <aside
       id="project-sidebar"
+      onDragStartCapture={preview.close}
+      onPointerDownCapture={preview.close}
       inert={p.busy}
       aria-busy={p.busy}
       className="binder"
@@ -276,7 +280,10 @@ export function Binder(p: BinderProps) {
             onDrop={(e) => {
               if (!trash) dropAtRoot(e);
             }}
-            onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+            onScroll={(event) => {
+              preview.close();
+              setScrollTop(event.currentTarget.scrollTop);
+            }}
             onBlur={(event) => {
               if (!event.currentTarget.contains(event.relatedTarget as Node | null))
                 setFocused(null);
@@ -387,6 +394,7 @@ export function Binder(p: BinderProps) {
                 .sort((a, b) => a - b)
                 .map((index) => (
                   <BinderRow
+                    preview={preview}
                     key={rows[index].section.id}
                     index={index}
                     p={p}
@@ -483,6 +491,7 @@ export function Binder(p: BinderProps) {
           </div>
         </Dialog>
       )}
+      {preview.current && <BinderPreview project={p.project} preview={preview} />}
     </aside>
   );
 }

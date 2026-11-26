@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { DocumentAnchor, Region } from '../contracts/annotations';
+import type { DocumentPosition } from '../contracts/writingSession';
 import type { Source } from '../contracts/sources';
 import { localizeMessage, t } from '../i18n';
 import { request } from '../platform/client';
@@ -26,14 +27,22 @@ export function DocumentViewer({
   reveal,
   onLink,
   replacing,
+  resume,
+  onPosition,
+  onRestoreFailed,
 }: {
   source: Source;
   reveal?: DocumentAnchor;
   onLink?: (value: DocumentAnchor) => Promise<void>;
   replacing: boolean;
+  resume?: DocumentPosition;
+  onPosition?: (position: DocumentPosition) => void;
+  onRestoreFailed?: () => void;
 }) {
-  const [page, setPage] = useState(reveal?.page ?? source.page ?? 1);
-  const [zoom, setZoom] = useState(1);
+  const [page, setPage] = useState(
+    Math.max(1, Math.floor(reveal?.page ?? resume?.page ?? source.page ?? 1)),
+  );
+  const [zoom, setZoom] = useState(Math.max(0.5, Math.min(3, resume?.zoom ?? 1)));
   const [url, setUrl] = useState('');
   const [pdf, setPdf] = useState<PDFDocumentProxy>();
   const [linkError, setLinkError] = useState(''),
@@ -47,7 +56,36 @@ export function DocumentViewer({
   const frame = useRef<HTMLDivElement>(null),
     sheet = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
+  const pendingRestore = useRef(resume);
+  const callbacks = useRef({ onPosition, onRestoreFailed });
+  callbacks.current = { onPosition, onRestoreFailed };
+  const publish = () => {
+    const el = frame.current;
+    if (!el || !ready || pendingRestore.current) return;
+    callbacks.current.onPosition?.({
+      id: source.id,
+      fingerprint: source.fingerprint,
+      page,
+      zoom,
+      top: el.scrollTop,
+      left: el.scrollLeft,
+    });
+  };
+  useEffect(() => {
+    if (!ready || !frame.current) return;
+    const saved = pendingRestore.current;
+    if (saved) {
+      frame.current.scrollTop = Math.max(0, saved.top);
+      frame.current.scrollLeft = Math.max(0, saved.left);
+      pendingRestore.current = undefined;
+    }
+    publish();
+  }, [ready, page, zoom]);
   const fail = useCallback((e: unknown) => {
+    if (pendingRestore.current) {
+      pendingRestore.current = undefined;
+      callbacks.current.onRestoreFailed?.();
+    }
     setError(String(e));
     setReady(false);
   }, []);
@@ -192,7 +230,7 @@ export function DocumentViewer({
       </div>
       {error && <p role="alert">{localizeMessage(error)}</p>}
       {!ready && !error && <p role="status">{t('Chargement…')}</p>}
-      <div ref={frame} className="document-scroll">
+      <div ref={frame} className="document-scroll" onScroll={publish}>
         <div
           ref={sheet}
           className={'document-sheet' + (area ? ' select-area' : '')}

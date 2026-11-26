@@ -25,6 +25,8 @@ type ManuscriptInput = Pick<
   | 'noteCreate'
   | 'entities'
   | 'onWritingEdit'
+  | 'writingBranch'
+  | 'lineHeightPreview'
   | 'onSelection'
   | 'onWords'
   | 'onLines'
@@ -126,6 +128,8 @@ export function ManuscriptEditor({
           onOutlineDetails(section, node);
         },
         generation: doc.generation,
+        sessionSettings: () => doc.settingsRef.current,
+        onSessionChange: doc.stageSettings,
         settings: doc.settings,
         projectPath: project.path,
         noteLookup: (query) => request('noteSuggestions', { projectPath: project.path, query }),

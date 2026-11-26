@@ -14,11 +14,13 @@ Statut : **roadmap issue des 20 réponses ; jalons de développement 0.3.0, 0.4.
 
 ## 1. Faisabilité et engagement de périmètre
 
-Les 12 idées initiales et tous les ajouts retenus font partie de la 1.0.0. Cela comprend les relations entre entités, les vues filtrées, les commandes et raccourcis personnalisables, la reprise complète et les objectifs de mots. Les versions initiales sont volontairement précises : tags avec propriétés personnalisées depuis les précisions du 5 novembre, vues filtrées en consultation, prédiction d’un mot, relations dans les fiches et lecteur PDF/image.
+Le cadrage initial de la 1.0.0 réunissait 12 idées, complétées par les révisions ci-dessous. Cela comprend les relations entre entités, les vues filtrées, les commandes et raccourcis personnalisables, la reprise complète et les objectifs de mots. Les versions initiales sont volontairement précises : tags avec propriétés personnalisées depuis les précisions du 5 novembre, vues filtrées en consultation, prédiction d’un mot, relations dans les fiches et lecteur PDF/image.
 
-**Révision du 18 novembre 2026.** Neuf gestes d’écriture, de relecture et de navigation rejoignent les séries 0.7 à 0.9 (F17 à F25). Dix améliorations d’interface retenues le même jour complètent ce périmètre (F26 à F35). Les trois séries de développement sont désormais découpées en neuf livraisons fonctionnelles avant le gel. La cible du 30 décembre est conservée. La charge supplémentaire reste à estimer lors des premières recettes, notamment pour la conservation des essais de phrase et les interruptions audio sur Mac.
+**Révision du 18 novembre 2026.** Neuf gestes d’écriture, de relecture et de navigation rejoignent les séries 0.7 à 0.9 (F17 à F25). Dix améliorations d’interface retenues le même jour complètent ce périmètre (F26 à F35). Le découpage retenu à cette date comptait neuf livraisons fonctionnelles avant le gel. La cible du 30 décembre est conservée. La charge supplémentaire reste à estimer lors des premières recettes, notamment pour la conservation des essais de phrase et les interruptions audio sur Mac.
 
 **Révision du 23 novembre 2026.** La connexion facultative « Sign in with ChatGPT » rejoint le périmètre 1.0.0 (F36 à F40). L’écriture locale reste disponible sans compte. Le lot est à intégrer avant le gel prévu le 17 décembre. Sa charge reste à estimer après les essais d’accès au forfait, de dictée et de latence.
+
+**Décisions du 26 novembre 2026.** La 0.8.2 est annulée. Le floutage des passages et leur masquage à l’export (F10), ainsi que l’aperçu d’export sur un extrait du manuscrit (F33), sortent du périmètre de la 1.0.0. La **0.9.0** succède directement à la 0.8.1. Elle réunit les réglages et objectifs d’écriture, la navigation dans le classeur initialement prévue pour la 0.9.1 et la reprise de séance initialement prévue pour la 0.9.2.
 
 Le calendrier repose sur un travail presque quotidien avec Codex et des validations régulières de l’utilisateur. Du 4 novembre au 31 décembre, il existe **58 jours calendaires et 42 jours du lundi au vendredi, avant prise en compte des jours fériés**. La période des fêtes réduit potentiellement la disponibilité des testeurs.
 
@@ -26,7 +28,7 @@ Le calendrier repose sur un travail presque quotidien avec Codex et des validati
 
 Si un jalon dépasse son enveloppe, publier immédiatement une prévision révisée, identifier le blocage et les moyens nécessaires. Ne pas maquiller une fonction incomplète en fonction terminée, ni qualifier de stable une version qui échoue aux critères. Si périmètre, moyens et date deviennent incompatibles, l’exposer explicitement : cette roadmap n’autorise ni suppression silencieuse ni glissement silencieux.
 
-## 2. Les 20 décisions conservées
+## 2. Les 20 décisions initiales et leurs révisions
 
 | N° | Décision |
 | --- | --- |
@@ -45,7 +47,7 @@ Si un jalon dépasse son enveloppe, publier immédiatement une prévision révis
 | 13 | Gestionnaire d’entités : consultation, édition des fiches Ariane, alias, types, fusion manuelle, relations ; détections et confirmations distinctes. |
 | 14 | Gestionnaire de tags limité à l’administration. Navigation, combinaisons et vues enregistrées passent par la recherche et l’éditeur. |
 | 15 | Vues filtrées en **consultation** ; cliquer ouvre le passage original pour l’éditer. |
-| 16 | Floutage mémorisé dans l’éditeur ; option d’export avec texte original ou masqué. |
+| 16 | Décision annulée le 26 novembre 2026. Elle portait sur le floutage dans l’éditeur et l’export masqué. |
 | 17 | `#` désigne les smart-tags ; `@` désigne les entités ou sujets. Les deux sont combinables. |
 | 18 | Commandes et raccourcis personnalisables dans la recherche ; reprise complète ; objectifs discrets dans le compteur, réglables dans les paramètres. Modèles de projet non retenus. |
 | 19 | Travail utilisateur + Codex presque quotidien, avec essais réguliers de l’utilisateur. |
@@ -72,7 +74,7 @@ Principaux points d’entrée du dépôt : [types](https://github.com/absalonCRC
 
 ## 4. Règles de version
 
-À partir des sources 0.6.1, livrer dans l’ordre **0.7.0 → 0.7.1 → 0.7.2 → 0.7.5 → 0.8.0 → 0.8.1 → 0.8.2 → 0.9.0 → 0.9.1 → 0.9.2**, puis les préversions de la 1.0.0 et la stable. Chaque jalon a sa propre recette. La 0.7.5 qualifie la base technique avant l’ouverture du chantier du lecteur partagé. Les fenêtres du calendrier portent sur la série entière. Les franchir suppose d’avoir validé chaque lot.
+À partir des sources 0.6.1, livrer dans l’ordre **0.7.0 → 0.7.1 → 0.7.2 → 0.7.5 → 0.8.0 → 0.8.1 → 0.9.0**, puis les préversions de la 1.0.0 et la stable. Chaque jalon a sa propre recette. La 0.7.5 qualifie la base technique avant l’ouverture du chantier du lecteur partagé. Chaque fenêtre du calendrier inclut la validation des versions indiquées.
 
 Pour cette application, documenter avant la 1.0.0 le contrat de compatibilité des projets, de leurs métadonnées, des exports et des commandes. La version du schéma SQLite est indépendante du numéro de l’application. Toute migration doit préserver une possibilité de récupération ; un ancien exécutable doit refuser un schéma trop récent avec un message clair.
 
@@ -94,8 +96,8 @@ Les plages incluent implémentation, tests du lot, intégration et recette. Le c
 | **0.6.0** | 26 novembre–1er décembre | Capture compacte, boîte de réception globale, machine à écrire affinée. | Forte : fenêtres et sauvegarde de captures. |
 | **0.7.0 à 0.7.2** | 2–7 décembre | Prédiction locale (.0), essais de rédaction (.1), comparaison et scission (.2). | Très forte pour la qualité de la prédiction et la conservation des essais. |
 | **0.7.5** | Après la 0.7.2 et avant la 0.8.0, fenêtre à recaler après mesure | Audit et corrections de sécurité, mesure et optimisation des parcours critiques, simplification ciblée des modules. | Dépend des constats de l’audit et de la reproductibilité des mesures. |
-| **0.8.0 à 0.8.2** | 8–13 décembre | Lecteur et références (.0), voix et annotations empilées (.1), floutage et export (.2). | Très forte pour les ancres, le son natif et la fidélité des exports. |
-| **0.9.0 à 0.9.2** | 14–17 décembre | Réglages et objectifs (.0), classeur et recherche (.1), reprise et intégration (.2). | Forte compte tenu des quatre jours cibles et des parcours croisés. |
+| **0.8.0 et 0.8.1** | 8–13 décembre | Lecteur et références (.0), voix et annotations empilées (.1). | Très forte pour les ancres et le son natif. |
+| **0.9.0** | 14–17 décembre | Réglages et objectifs d’écriture, navigation dans le classeur et reprise de séance. | Forte compte tenu des quatre jours cibles et des parcours croisés. |
 | **1.0.0-beta.1** | 18 décembre | Tout le périmètre disponible ; début de recette complète du candidat. | Conditionnée à la fin réelle des fonctions. |
 | **1.0.0-beta.2** | 21 décembre, si corrections | Corrections issues des premiers parcours complets. | Le numéro n’est créé que si le build change. |
 | **1.0.0-rc.1** | 23 décembre | Candidat signé/notarié, fonctionnellement gelé. | Installation vierge et données anciennes qualifiées. |
@@ -264,45 +266,40 @@ Le [plan détaillé de la 0.8.1](plan-0.8.1.md) décrit les quatre parcours, la 
 
 **Recette du lot.** Ancrer trois annotations sur une phrase, dont une dictée. Ouvrir celle du milieu en fenêtre étroite, atteindre les deux autres au clavier, puis replier et vérifier l’ordre et l’ancrage. Sur Mac, écouter un extrait puis dicter une note sur ce même extrait. Changer rapidement de scène pendant la transcription et vérifier la destination de la note, le texte du manuscrit et l’arrêt du micro. Suivre un lien dans les deux sens après déplacement et réouverture, puis supprimer une de ses extrémités et contrôler le signalement.
 
-### 0.8.2 — Masquer un passage et vérifier son export
+### 0.9.0 — Régler la page, parcourir le classeur et reprendre sa séance
 
-- [ ] Ajouter « Flouter / Déflouter » au menu contextuel d’une sélection. Conserver les plages comme métadonnées remappées avec les éditions, l’annulation et l’historique, avec un repère de plage lorsque le flou empêche de lire.
-- [ ] Proposer à l’export **texte original** ou **passages masqués**, pour Markdown, PDF, Word et EPUB. En mode masqué, remplacer le contenu des plages avant conversion : blocs opaques ou marqueur textuel compatible avec le format. Une surcouche CSS sur du texte encore présent ne suffit pas.
-- [ ] Vérifier les contenus textuels, annotations et métadonnées générés par l’export : le texte masqué ne doit pas subsister dans une couche sélectionnable ou cachée liée à ces plages. L’original demeure dans le projet. La copie normale depuis l’éditeur conserve le texte, conformément à la portée d’affichage et d’export retenue ; ce comportement doit être compréhensible.
-- [ ] **F33 · Prévisualiser l’export sur le manuscrit.** Dans le dialogue d’export, montrer un extrait concerné par les options choisies (floutage, citation ou blanc). Actualiser cet extrait selon le format et les options, avec les mêmes transformations de contenu que le fichier produit.
+Les trois volets sont implémentés sur le même candidat 0.9.0. Les parcours exercés et les vérifications ouvertes figurent dans la [recette de la version](validation-0.9.0.md).
 
-**Recette.** Flouter une phrase, éditer avant et dans la plage, annuler, redémarrer et restaurer une version. Exporter un texte témoin unique dans les quatre formats : original présent en export normal, absent des contenus extractibles des plages masquées en export masqué. Vérifier aussi les tableaux, citations et styles proches de ces plages. Comparer l’aperçu aux quatre fichiers produits, y compris pour un indice de blanc privé et une citation en bord de plage.
-
-### 0.9.0 — Régler la page et les objectifs d’écriture
+#### Réglages et objectifs d’écriture
 
 Les réglages propres à chaque fonction sont intégrés lors de son lot. Cette version assure leur cohérence visuelle et leur articulation, afin d’éviter de réserver toute l’interface des paramètres à quatre jours de décembre.
 
-- [ ] Revoir la présentation des paramètres dans la direction artistique actuelle : typographie, espacements, hiérarchie simple, navigation au clavier, contrôles contextuels. Conserver un accès léger aux réglages d’écriture courants.
-- [ ] Couvrir apparence, lecture/écriture, focus, machine à écrire et sons, prédiction, objectifs, sources/entités/tags, vocal et modules locaux, raccourcis, données/sauvegardes et reprise. Clarifier ce qui s’applique à toute l’application et au projet courant.
-- [ ] Intégrer un objectif de mots par séance et/ou par projet au compteur existant : progression discrète, objectif atteint sans alerte intrusive, désactivation possible. Configurer objectifs et affichage dans les paramètres.
-- [ ] Définir un comptage compréhensible : objectif de projet sur le texte inclus dans le manuscrit ; séance sur le solde net de mots ajoutés pendant la séance, corrections et annulations incluses. Dictée et mots acceptés participent au même texte ; le classement d’une capture ne doit pas compter deux fois une production. Une recherche filtrée ne transforme pas le total du projet en total de résultats sans indication.
-- [ ] **F26 · Essayer la typographie sur son paragraphe.** Dans Aa, parcourir polices et interlignes applique un aperçu au manuscrit en gardant la ligne du curseur à la même hauteur. Entrée adopte le réglage. Échap restaure la composition précédente.
-- [ ] **F35 · Retrouver le dernier réglage consulté.** Pendant la même séance, revenir des paramètres au manuscrit pour essayer un réglage, puis rouvrir les paramètres au même groupe, à la même position et avec le même contrôle au clavier.
+- [x] Revoir la présentation des paramètres dans la direction artistique actuelle : typographie, espacements, hiérarchie simple, navigation au clavier, contrôles contextuels. Conserver un accès léger aux réglages d’écriture courants.
+- [x] Couvrir apparence, lecture/écriture, focus, machine à écrire et sons, prédiction, objectifs, sources/entités/tags, vocal et modules locaux, raccourcis, données/sauvegardes et reprise. Clarifier ce qui s’applique à toute l’application et au projet courant.
+- [x] Intégrer un objectif de mots par séance et/ou par projet au compteur existant : progression discrète, objectif atteint sans alerte intrusive, désactivation possible. Configurer objectifs et affichage dans les paramètres.
+- [x] Définir un comptage compréhensible : objectif de projet sur le texte inclus dans le manuscrit ; séance sur le solde net de mots ajoutés pendant la séance, corrections et annulations incluses. Dictée et mots acceptés participent au même texte ; le classement d’une capture ne doit pas compter deux fois une production. Une recherche filtrée ne transforme pas le total du projet en total de résultats sans indication.
+- [x] **F26 · Essayer la typographie sur son paragraphe.** Dans Aa, parcourir polices et interlignes applique un aperçu au manuscrit en gardant la ligne du curseur à la même hauteur. Entrée adopte le réglage. Échap restaure la composition précédente.
+- [x] **F35 · Retrouver le dernier réglage consulté.** Pendant la même séance, revenir des paramètres au manuscrit pour essayer un réglage, puis rouvrir les paramètres au même groupe, à la même position et avec le même contrôle au clavier.
 
 **Recette.** Essayer deux polices et un interligne au milieu d’une scène, annuler puis valider. Vérifier la hauteur de la ligne active et la persistance du seul choix validé. Modifier un raccourci et le volume, retrouver le contrôle après un détour dans le manuscrit. Vérifier les compteurs après frappe, dictée, annulation, import et rangement de capture.
 
-### 0.9.1 — Chercher et feuilleter dans le classeur
+#### Navigation dans le classeur
 
-- [ ] **F27 · Distinguer les scènes homonymes.** Dans les résultats de recherche, ajouter le chapitre parent sous les titres en double. Si celui-ci est également ambigu, afficher le chemin utile. Les titres uniques tiennent sur une ligne.
-- [ ] **F28 · Lire la destination d’un glisser-déposer.** Pendant le déplacement d’une page, un trait aligné sur le titre matérialise une insertion avant ou après. Un contour sur le chapitre ou la section signale un dépôt à l’intérieur. Les repères suivent les destinations permises par le classeur.
-- [ ] **F25 · Feuilleter une page au survol maintenu.** Laisser le pointeur sur le titre d’une page dans le classeur pour en lire les premières et dernières lignes. Un passage rapide du pointeur, un défilement ou un glisser-déposer annule l’ouverture. Quitter la zone formée par les titres et l’aperçu ou presser Échap le referme. Offrir également « Aperçu de la page » dans le menu contextuel accessible au clavier.
-- [ ] **F29 · Feuilleter en continu.** Après le survol maintenu de la première page, passer aux titres voisins actualise les extraits dans le même cadre, sans nouveau délai d’ouverture. Quitter le classeur et son aperçu, appuyer sur Échap ou amorcer un déplacement termine le feuilletage.
+- [x] **F27 · Distinguer les scènes homonymes.** Dans les résultats de recherche, ajouter le chapitre parent sous les titres en double. Si celui-ci est également ambigu, afficher le chemin utile. Les titres uniques tiennent sur une ligne.
+- [x] **F28 · Lire la destination d’un glisser-déposer.** Pendant le déplacement d’une page, un trait aligné sur le titre matérialise une insertion avant ou après. Un contour sur le chapitre ou la section signale un dépôt à l’intérieur. Les repères suivent les destinations permises par le classeur.
+- [x] **F25 · Feuilleter une page au survol maintenu.** Laisser le pointeur sur le titre d’une page dans le classeur pour en lire les premières et dernières lignes. Un passage rapide du pointeur, un défilement ou un glisser-déposer annule l’ouverture. Quitter la zone formée par les titres et l’aperçu ou presser Échap le referme. Offrir également « Aperçu de la page » dans le menu contextuel accessible au clavier.
+- [x] **F29 · Feuilleter en continu.** Après le survol maintenu de la première page, passer aux titres voisins actualise les extraits dans le même cadre, sans nouveau délai d’ouverture. Quitter le classeur et son aperçu, appuyer sur Échap ou amorcer un déplacement termine le feuilletage.
 
 **Recette.** Chercher deux scènes homonymes et une au titre unique. Feuilleter cinq pages par un seul survol initial, puis tester un passage rapide à froid, le menu au clavier et une fenêtre étroite. Vérifier document actif, sélection, focus et défilement. Glisser une page entre deux scènes, puis dans un chapitre, et comparer le repère au rangement obtenu.
 
-### 0.9.2 — Reprendre la séance et qualifier les parcours croisés
+#### Reprise de séance
 
-- [ ] Étendre la reprise de session : projet, document, nœud/curseur, défilement, branches repliées, focus et machine à écrire, document PDF/image ouvert avec position, requête/vue enregistrée, objectif/séance et brouillon compact.
-- [ ] Restaurer seulement après résolution du projet et des sources ; si un élément manque, revenir au contexte disponible sans bloquer l’ouverture. Ne jamais réactiver le microphone ni exécuter une commande par simple restauration.
+- [x] Étendre la reprise de session : projet, document, nœud/curseur, défilement, branches repliées, focus et machine à écrire, document PDF/image ouvert avec position, requête/vue enregistrée, objectif/séance et brouillon compact.
+- [x] Restaurer seulement après résolution du projet et des sources ; si un élément manque, revenir au contexte disponible sans bloquer l’ouverture. Ne jamais réactiver le microphone ni exécuter une commande par simple restauration.
 - [ ] Vérifier les parcours combinés : focus + prédiction + objectif, compact + capture + reprise, recherche + entité + PDF + annotation, puis passage vers Versions et retour.
 - [ ] Compléter les libellés français/anglais/espagnol, les contrastes, le focus clavier et les comportements à animations réduites dans toutes les nouvelles surfaces.
-- [ ] **F17 · Laisser un mot pour demain.** Au curseur, écrire une intention de reprise. À la prochaine ouverture du projet, la retrouver dans la marge, près du passage, puis pouvoir l’effacer. Ce mot appartient au projet et reste hors du texte exporté.
-- [ ] **F24 · Revenir à ma dernière frappe.** Une commande ramène au dernier emplacement réellement édité dans le manuscrit du projet. Les consultations de sources, la recherche, les déplacements de curseur et le survol du classeur préservent ce repère.
+- [x] **F17 · Laisser un mot pour demain.** Au curseur, écrire une intention de reprise. À la prochaine ouverture du projet, la retrouver dans la marge, près du passage, puis pouvoir l’effacer. Ce mot appartient au projet et reste hors du texte exporté.
+- [x] **F24 · Revenir à ma dernière frappe.** Une commande ramène au dernier emplacement réellement édité dans le manuscrit du projet. Les consultations de sources, la recherche, les déplacements de curseur et le survol du classeur préservent ce repère.
 
 **Recette.** Écrire dans A, laisser une intention, feuilleter B, ouvrir une source depuis C puis revenir à la dernière frappe dans A. Ouvrir un PDF sur un extrait, lancer une vue filtrée puis quitter. À la reprise, vérifier l’objectif, les réglages, la position de lecture et l’intention, avec le micro arrêté. Effacer l’intention et vérifier son absence à l’export. Comparer les écrans clair/sombre et les trois langues à la taille minimale et en mouvement réduit.
 
@@ -357,7 +354,6 @@ Les décisions de l’entretien sont conservées dans la section 2. Les points c
 | Apprentissage | Profil local commun + contributions identifiables par projet. Les suggestions non acceptées ne constituent jamais des textes d’apprentissage. La remise à zéro de l’apprentissage n’efface aucun manuscrit. |
 | Relations | Relations explicites et éventuellement sourcées dans les fiches. Une relation proposée n’est pas une affirmation confirmée. Pas de fusion des homonymes sans intervention. |
 | Reprise | Restaurer l’espace de travail et les brouillons. Ne pas restaurer une opération en cours telle qu’un enregistrement audio, une exportation destructive ou une commande. |
-| Floutage | Masquage visuel réversible ; option d’export réellement expurgé des plages choisies. Le fichier de projet conserve l’original et n’est pas un document anonymisé à partager. |
 
 ## 9. Carte d’implémentation et contrats
 
@@ -375,7 +371,6 @@ Les chemins ci-dessous sont des points d’entrée **existants vérifiés**. Les
 | Capture | `src-tauri/src/lib.rs`, `platform.rs`, `src-tauri/capabilities/default.json`, `src/editor/Editor.tsx` | Fenêtre compacte et service de boîte de réception globale, avec frontière de stockage distincte du projet actif. |
 | Prédiction | `src/editor/Editor.tsx`, `src-tauri/src/voice/lexicon.rs` | Moteur local spécialisé, contributions communes/par projet, décoration de texte fantôme et commande d’acceptation. |
 | Documents et annotations | `src/sources/Reader.tsx`, `src-tauri/src/source_files.rs`, `src/project/annotations.ts`, `src-tauri/src/project/annotations.rs` | Lecteur pilotable, ancres de source et lien vers une annotation du manuscrit. |
-| Floutage/export | `src/editor/contextMenu.ts`, `src/editor/Editor.tsx`, `src/export/Export.tsx`, `src/export/useExport.ts`, `src-tauri/src/export/mod.rs` | Plages persistantes et transformation avant conversion, contrôles des sorties. |
 | Confort | `src/editor/typewriter.ts`, `typewriterSound.ts`, `src/components/WritingCounter.tsx`, `src/app/Settings.tsx`, `Preferences.tsx` | Sensation de frappe, objectifs, réglages communs et cohérence visuelle. |
 | Distribution | `scripts/setup-*.py`, `scripts/install_runtime.py`, `scripts/package-local.py`, `.github/workflows/verify.yml`, `src-tauri/tauri.conf.json` | Parcours d’installation intégré, ressources vérifiées, paquet signé/notarié et recette vierge. |
 
@@ -389,7 +384,7 @@ Les chemins ci-dessous sont des points d’entrée **existants vérifiés**. Les
 - Une ancre de PDF/image conserve identité/empreinte du fichier et position normalisée ; un texte sélectionné conserve aussi contexte et citation. Une ancre introuvable reste visible comme telle.
 - Une capture est autonome et possède un identifiant durable ; son transfert conserve un journal d’opération pour reprendre sans perte ni duplication.
 
-Ces contrats évitent les réimplémentations entre persistance, tags, annotations, floutage et reprise. Ils ne justifient pas une refonte générale de l’éditeur.
+Ces contrats évitent les réimplémentations entre persistance, tags, annotations et reprise. Ils ne justifient pas une refonte générale de l’éditeur.
 
 ## 10. Risques et décisions anticipées
 
@@ -417,13 +412,13 @@ Chaque lot livre comportement, stockage, migration éventuelle, interface, acces
 
 **Parcours romancier :** créer une scène, saisir/dicter en focus, accepter un mot, taguer des passages, suivre un personnage et ses relations, comparer une version, sélectionner des branches, exporter un manuscrit.
 
-**Parcours auteur documenté :** ouvrir une source PDF/image, annoter un fragment précis, écrire à côté, rechercher un sujet et un tag, retrouver le contexte, modifier une source puis constater l’actualisation ciblée, exporter avec citations et passages masqués.
+**Parcours auteur documenté :** ouvrir une source PDF/image, annoter un fragment précis, écrire à côté, rechercher un sujet et un tag, retrouver le contexte, modifier une source puis constater l’actualisation ciblée, exporter le manuscrit avec ses citations.
 
 **Parcours quotidien transversal :** capture depuis une autre application, rangement dans un projet, objectif de séance, fermeture immédiate, reprise, moteur absent/en erreur et récupération après arrêt forcé.
 
 ### Conditions d’entrée en bêta — 18 décembre
 
-- [ ] Toutes les fonctions F01–F40 de la matrice ci-dessous sont réellement utilisables et ont leur recette ciblée.
+- [ ] Chaque fonction maintenue dans la matrice ci-dessous est utilisable et dispose de sa propre recette.
 - [ ] Les migrations depuis les projets 0.2.2 et les jalons intermédiaires sont testées sur copies ; les versions, métadonnées, captures et liens se restaurent.
 - [ ] L’installation et les modules ont déjà été exercés sur environnement vierge.
 - [ ] Aucun blocage connu de sauvegarde ou perte de données. Les limites non bloquantes sont listées.
@@ -432,7 +427,7 @@ Chaque lot livre comportement, stockage, migration éventuelle, interface, acces
 ### Conditions de sortie 1.0.0 — 30 décembre
 
 - [ ] Toutes les recettes de versions et les trois parcours complets passent sur le candidat final.
-- [ ] Aucun défaut connu bloquant l’ouverture, la frappe, la sauvegarde, la récupération, l’export ou une fonction obligatoire ; aucun défaut connu de perte/corruption de données ou d’exposition du texte dans les plages exportées masquées.
+- [ ] Aucun défaut connu bloquant l’ouverture, la frappe, la sauvegarde, la récupération, l’export ou une fonction obligatoire. Aucun défaut connu de perte ou de corruption de données.
 - [ ] Checks du projet réussis sur le commit exact du candidat ; toute correction ultérieure relance les contrôles affectés et la qualification du nouveau paquet.
 - [ ] Installation du paquet réellement téléchargé sur un autre Mac Apple Silicon sous macOS 26+, ou au minimum un environnement vierge documenté. Un autre Mac physique reste la cible pour vérifier l’écart matériel.
 - [ ] Les parcours des moteurs absents, installés, refusés, interrompus et relancés préservent le travail et donnent des états compréhensibles.
@@ -456,30 +451,30 @@ La RC n’est pas promue en stable tant qu’une case bloquante reste ouverte. S
 | F07 | Smart-tags multiples, typés, inline et hérités à deux niveaux | 0.4.0 | Héritage, déplacement, renommage et restauration corrects. |
 | F08 | Gestionnaire d’entités avec alias, doublons et relations | 0.5.0 | Édition locale, distinction des homonymes, fusion réversible et relations retrouvables. |
 | F09 | Gestionnaire de smart-tags limité à l’administration | 0.4.0 | Créer/renommer/typer/colorer/fusionner/supprimer sans altérer le texte. |
-| F10 | Floutage contextuel réversible et export masqué optionnel | 0.8.2 | Plages persistantes et contrôle des quatre formats exportés. |
+| F10 | Floutage contextuel réversible et export masqué optionnel | Annulée le 26 novembre 2026 | — |
 | F11 | Détections/suggestions persistantes, recalcul local et sources actualisées | 0.3.0 | Modification d’un bloc ou d’une source sans effacement/recalcul inutile des autres. |
 | F12 | Shift + clic sur plusieurs points de l’outline | 0.4.0 | Sélection/copie du contenu complet des lignes et branches attendues. |
 | F13 | Recherche `#`, `@`, ET/OU, vues enregistrées dans l’éditeur en consultation | 0.5.0 | Résultats exacts, navigation à l’original et requêtes retrouvées. |
 | F14 | Commandes et raccourcis personnalisables dans la recherche existante | 0.5.0 ; global compact en 0.6.0 | Affectation, conflits, exécution et persistance après redémarrage. |
-| F15 | Reprise complète de session | Fondations par lot ; 0.9.2 | Restauration croisée du manuscrit, lecteur, vue filtrée, modes et capture. |
+| F15 | Reprise complète de session | Fondations par lot, consolidation en 0.9.0 | Restauration croisée du manuscrit, lecteur, vue filtrée, modes et capture. |
 | F16 | Objectifs de mots discrets dans le compteur, configurables | 0.9.0 | Comptage cohérent, annulation, dictée, reprise et absence de double comptage. |
-| F17 | Mot pour demain | 0.9.2 | Intention retrouvée au passage après réouverture, effaçable et absente de l’export. |
+| F17 | Mot pour demain | 0.9.0 | Intention retrouvée au passage après réouverture, effaçable et absente de l’export. |
 | F18 | Blanc à compléter | 0.7.1 | Navigation entre deux scènes, complétion et annulation après réouverture. |
 | F19 | Deux formulations en contexte | 0.7.1 | Essai repris, choix exporté et original récupérable par annulation. |
 | F20 | Écoute locale de la sélection | 0.8.1 | Sur Mac, suivi du mot lu et arrêt à la demande ou au passage à la dictée. |
 | F21 | Répétitions proches | 0.7.1 | Occurrences entières visibles entre paragraphes, puis marques effacées à la frappe. |
 | F22 | Lien entre deux passages | 0.8.1 | Aller-retour entre scènes après réouverture, extrémité disparue signalée. |
 | F23 | Annotation dictée | 0.8.1 | Note reçue à la sélection d’origine malgré la navigation, manuscrit intact. |
-| F24 | Retour à la dernière frappe | 0.9.2 | Après plusieurs consultations, retour au point édité dans le bon projet. |
-| F25 | Aperçu de page au survol maintenu | 0.9.1 | Début et fin lisibles au survol intentionnel, page active et curseur conservés. |
+| F24 | Retour à la dernière frappe | 0.9.0 | Après plusieurs consultations, retour au point édité dans le bon projet. |
+| F25 | Aperçu de page au survol maintenu | 0.9.0 | Début et fin lisibles au survol intentionnel, page active et curseur conservés. |
 | F26 | Aperçu typographique dans Aa | 0.9.0 | Essai sur le paragraphe, ligne active stable, validation et annulation. |
-| F27 | Contexte des scènes homonymes | 0.9.1 | Les doublons se distinguent par leur emplacement, les titres uniques restent compacts. |
-| F28 | Destination du glisser-déposer | 0.9.1 | Trait entre pages et contour du parent concordent avec le dépôt réel. |
-| F29 | Feuilletage continu au survol | 0.9.1 | Cinq extraits dans un cadre stable après un seul délai initial. |
+| F27 | Contexte des scènes homonymes | 0.9.0 | Les doublons se distinguent par leur emplacement, les titres uniques restent compacts. |
+| F28 | Destination du glisser-déposer | 0.9.0 | Trait entre pages et contour du parent concordent avec le dépôt réel. |
+| F29 | Feuilletage continu au survol | 0.9.0 | Cinq extraits dans un cadre stable après un seul délai initial. |
 | F30 | Alignement dans Versions | 0.7.2 | Phrase commune alignée après une réécriture de longueur différente. |
 | F31 | Référence dépliable sous la ligne | 0.8.0 | Lecture sur place puis retour clavier à l’appel de note. |
 | F32 | Pile d’annotations en marge | 0.8.1 | Trois notes superposées accessibles individuellement, ordre préservé après repli. |
-| F33 | Aperçu d’export sur extrait réel | 0.8.2 | Floutage, citation et blanc concordent entre aperçu et fichier. |
+| F33 | Aperçu d’export sur extrait réel | Annulée le 26 novembre 2026 | — |
 | F34 | Aperçu de scission dans la palette | 0.7.2 | Annulation sans modification et coupure conforme à l’aperçu après validation. |
 | F35 | Position de retour dans les paramètres | 0.9.0 | Groupe, défilement et contrôle retrouvés dans la même séance. |
 | F36 | Connexion facultative au forfait | 1.0.0 avant gel | Connexion, déconnexion et écriture locale sur Mac qualifiées. |
@@ -500,4 +495,4 @@ Pour chaque version, suivre : date cible, avancement des cases, défauts bloquan
 
 **Premier lot concret : 0.3.0.** Reproduire sur un projet de test l’effacement actuel des suggestions ; instrumenter les blocs modifiés et les requêtes ; stabiliser leurs identités et résultats ; livrer le focus avec ses contrôles de bas de page et sa continuité d’analyse. En parallèle de ce travail au sens du calendrier, préparer les vérifications de distribution et les prototypes PDF, compact et prédiction. Le lot 0.3.0 est désormais implémenté ; les autres lots et prototypes restent des travaux planifiés.
 
-**Vérification de ce document.** Les 20 réponses initiales figurent en section 2. La matrice de la section 12 couvre les 16 exigences initiales, les neuf gestes d’écriture et les dix améliorations d’interface décidés le 18 novembre et les cinq engagements ChatGPT du 23 novembre ; chaque exigence dispose d’un jalon et d’une preuve de fin. La cohérence des versions, dates et dépendances a été relue, les liens vers les sources contrôlés et la structure Markdown vérifiée. La rédaction initiale était documentaire ; la vérification de l’implémentation 0.3.0 est consignée ci-dessus. Cette version publiée de la roadmap accompagne les changements applicatifs de la 0.3.0 dans `main`.
+**Vérification de ce document.** Les 20 réponses initiales figurent en section 2. La matrice de la section 12 couvre les 16 exigences initiales, les neuf gestes d’écriture et les dix améliorations d’interface décidés le 18 novembre et les cinq engagements ChatGPT du 23 novembre. Chaque exigence maintenue dispose d’un jalon et d’une preuve de fin. La cohérence des versions, dates et dépendances a été relue, les liens vers les sources contrôlés et la structure Markdown vérifiée. La rédaction initiale était documentaire ; la vérification de l’implémentation 0.3.0 est consignée ci-dessus. Cette version publiée de la roadmap accompagne les changements applicatifs de la 0.3.0 dans `main`.

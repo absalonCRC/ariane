@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { ProgressiveMarkdown } from './ProgressiveMarkdown';
 import type { Source } from '../contracts/sources';
+import type { DocumentPosition } from '../contracts/writingSession';
 import { DocumentViewer } from './DocumentViewer';
 import type { DocumentAnchor } from '../contracts/annotations';
 import { useContextMenu } from '../components/ContextMenu';
@@ -19,6 +20,9 @@ export function Reader({
   reveal,
   onDocumentSelect,
   replacing,
+  resume,
+  onPosition,
+  onRestoreFailed,
   sections = [],
   contentVersion,
   onOccurrence,
@@ -33,6 +37,9 @@ export function Reader({
   source: Source;
   reveal?: DocumentAnchor;
   replacing?: boolean;
+  resume?: DocumentPosition;
+  onRestoreFailed?: () => void;
+  onPosition?: (position: DocumentPosition) => void;
   onDocumentSelect?: (value: DocumentAnchor) => Promise<void>;
   sections?: Section[];
   contentVersion?: string;
@@ -100,6 +107,9 @@ export function Reader({
             key={s.id + s.fingerprint}
             source={s}
             reveal={reveal}
+            resume={resume}
+            onPosition={onPosition}
+            onRestoreFailed={onRestoreFailed}
             replacing={!!replacing}
             onLink={onDocumentSelect}
           />

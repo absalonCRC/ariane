@@ -47,7 +47,7 @@ export function ShortcutSettings({
       {commandRegistry
         .filter((c) => !scope || c.scope === scope)
         .map((c) => (
-          <div key={c.id}>
+          <div key={c.id} data-command={c.id}>
             <label>
               {t(c.label)}
               <input

@@ -19,8 +19,8 @@ export function useProject(onError: (e: unknown) => void) {
   const [versionRevision, setVersionRevision] = useState(0);
   const activation = useRef(0);
   const [generation, setGeneration] = useState(0);
-  const editListeners = useRef(new Set<() => void>());
-  const subscribeEdits = useCallback((listener: () => void) => {
+  const editListeners = useRef(new Set<(ids: Iterable<string>) => void>());
+  const subscribeEdits = useCallback((listener: (ids: Iterable<string>) => void) => {
     editListeners.current.add(listener);
     return () => {
       editListeners.current.delete(listener);
@@ -43,17 +43,23 @@ export function useProject(onError: (e: unknown) => void) {
     tagWork.current.add(task);
     void task.finally(() => tagWork.current.delete(task));
   }, []);
+  const retrySettings = useRef(false);
+  const sessionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const changed = useRef(new Map<string, symbol>());
   const checkpointTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
+      if (sessionTimer.current) clearTimeout(sessionTimer.current);
       if (checkpointTimer.current) clearTimeout(checkpointTimer.current);
     },
     [],
   );
   const activate = useCallback((p: Project) => {
     activation.current++;
+    retrySettings.current = false;
+    if (sessionTimer.current) clearTimeout(sessionTimer.current);
+    sessionTimer.current = null;
     setVersionStatus('saved');
     if (timer.current) clearTimeout(timer.current);
     if (checkpointTimer.current) clearTimeout(checkpointTimer.current);
@@ -70,7 +76,47 @@ export function useProject(onError: (e: unknown) => void) {
     setStatus('saved');
     setGeneration((x) => x + 1);
   }, []);
+  const persistSettings = useCallback((patch: Partial<Settings>, sessionOnly = false) => {
+    const next = { ...settingsRef.current, ...patch };
+    retrySettings.current = false;
+    if (sessionTimer.current) clearTimeout(sessionTimer.current);
+    sessionTimer.current = null;
+    settingsRef.current = next;
+    setSettingsState(next);
+    const project = ref.current;
+    if (!project) return Promise.resolve();
+    project.settings = next;
+    const revision = activation.current;
+    const task = (settingsSaving.current ?? Promise.resolve()).catch(() => {}).then(async () => {
+      if (revision !== activation.current) return;
+      await request('settings', { value: next, projectPath: project.path, sessionOnly });
+    });
+    settingsSaving.current = task;
+    void task.then(() => {
+      if (settingsSaving.current === task) settingsSaving.current = null;
+    }, (error: unknown) => {
+      if (settingsSaving.current === task) {
+        settingsSaving.current = null;
+        if (activation.current === revision) retrySettings.current = true;
+      }
+      onError(error);
+    });
+    return task;
+  }, [onError]);
+  const configure = useCallback((patch: Partial<Settings>) => { void persistSettings(patch); }, [persistSettings]);
+  // Cursor, scroll and writing transactions share one coalesced write, also flushed on switch/close.
+  const stageSettings = useCallback((patch: Partial<Settings>) => {
+    const project = ref.current;
+    if (!project) return;
+    const next = { ...settingsRef.current, ...patch };
+    settingsRef.current = next;
+    project.settings = next;
+    if (!sessionTimer.current) sessionTimer.current = setTimeout(() => {
+      void persistSettings({}, true);
+    }, 650);
+  }, [persistSettings]);
   const flush = useCallback(async (): Promise<void> => {
+    if (sessionTimer.current || retrySettings.current) void persistSettings({}, !retrySettings.current);
     while (tagWork.current.size) await Promise.all(tagWork.current);
     while (settingsSaving.current) await settingsSaving.current;
     if (timer.current) clearTimeout(timer.current);
@@ -112,7 +158,7 @@ export function useProject(onError: (e: unknown) => void) {
     saving.current = task;
     await task;
     if (dirty.current.size) return flush();
-  }, [onError]);
+  }, [onError, persistSettings]);
   const checkpoint = useCallback(async () => {
     const path = ref.current?.path,
       session = activation.current;
@@ -166,7 +212,7 @@ export function useProject(onError: (e: unknown) => void) {
         dirty.current.set(id, () => ({ text, outline, writingAids }));
       }
       scheduleCheckpoint(changes.keys());
-      for (const listener of editListeners.current) listener();
+      for (const listener of editListeners.current) listener(changes.keys());
       setStatus('editing');
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => void flush().catch(() => {}), 650);
@@ -181,31 +227,12 @@ export function useProject(onError: (e: unknown) => void) {
         dirty.current.set(id, draft);
       }
       scheduleCheckpoint(drafts.keys());
-      for (const listener of editListeners.current) listener();
+      for (const listener of editListeners.current) listener(drafts.keys());
       setStatus('editing');
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => void flush().catch(() => {}), 650);
     },
     [flush, scheduleCheckpoint],
-  );
-  const configure = useCallback(
-    (patch: Partial<Settings>) => {
-      const next = { ...settingsRef.current, ...patch };
-      settingsRef.current = next;
-      setSettingsState(next);
-      if (ref.current) {
-        ref.current.settings = next;
-        const task = (settingsSaving.current ?? Promise.resolve())
-          .catch(() => {})
-          .then(() => request('settings', { value: next }))
-          .then(() => {});
-        settingsSaving.current = task;
-        void task.then(() => {
-          if (settingsSaving.current === task) settingsSaving.current = null;
-        }, onError);
-      }
-    },
-    [onError],
   );
   const replaceSections = useCallback(
     (sections: Section[], reset = true, canUndoStructure?: boolean) => {
@@ -362,6 +389,8 @@ export function useProject(onError: (e: unknown) => void) {
     settings,
     settingsRef,
     configure,
+    stageSettings,
+    persistSettings,
     status,
     versionStatus,
     versionRevision,

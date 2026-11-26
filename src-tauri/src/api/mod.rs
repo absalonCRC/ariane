@@ -334,7 +334,7 @@ pub fn handle(
                 Request::ResolveExternal { keep_local: false, .. });
             let prediction_refresh = prediction_invalidated || aliases_changed || matches!(&other,
                 Request::Save { .. } | Request::ImportIntoProject { .. } |
-                Request::Update { .. }) || matches!(&other, Request::Settings { value } if value.get("language").is_some());
+                Request::Update { .. }) || matches!(&other, Request::Settings { value, session_only: false, .. } if value.get("language").is_some());
             let index = project::backup::source_index(&state.data, &root);
             let result = match other {
                 request @ (Request::EntityMentions { .. }

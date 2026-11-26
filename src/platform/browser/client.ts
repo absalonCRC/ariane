@@ -49,8 +49,14 @@ function store(p: Project) {
   all[p.path] = p;
   localStorage.setItem(storageKey, JSON.stringify(all));
 }
-function project() {
+function currentProject() {
   const p = read()[current || ''];
+  if (p && !p.activeBranch)
+    p.activeBranch = JSON.parse(localStorage.getItem('ariane.preview.branches.' + p.path) || 'null')?.activeBranch ?? 'main';
+  return p;
+}
+function project() {
+  const p = currentProject();
   if (!p) throw new Error(t('Ouvrez un projet pour continuer.'));
   return p;
 }
@@ -98,7 +104,7 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
   if (type === 'appShortcuts' || type === 'appLanguage') return true;
   if (type === 'revisionStatus') return { available: false };
   if (type === 'bootstrap') {
-    const p = read()[current || ''];
+    const p = currentProject();
     if (p) remember(p);
     return p || null;
   }
@@ -470,6 +476,7 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
     return p.sections;
   }
   if (type === 'settings') {
+    if (a.projectPath && a.projectPath !== p.path) throw new Error('Le projet actif a changé.');
     p.settings = a.value as Project['settings'];
     store(p);
     return null;

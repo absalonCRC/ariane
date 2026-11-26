@@ -53,6 +53,7 @@ export function outlineEditor(
   sections: Section[],
   initialSpans: Span[],
   sectionField: StateField<Span[]>,
+  savedFolds: readonly string[] = [],
 ) {
   const sectionsById = new Map(sections.map((section) => [section.id, section]));
   const initial = initialSpans.flatMap((span) => {
@@ -80,7 +81,7 @@ export function outlineEditor(
     },
   });
   const field = StateField.define<OutlineSession>({
-    create: () => ({ nodes: initial, folded: new Set(), changedSections: new Set() }),
+    create: () => ({ nodes: initial, folded: new Set(initial.filter(n => savedFolds.includes(n.id)).map(n => n.id)), changedSections: new Set() }),
     update(value, tr) {
       let nodes = value.nodes;
       const replacement = tr.effects.find((e) => e.is(replace));

@@ -19,6 +19,8 @@ export function Settings({
   onFocusPreview,
   onFontPreview,
   onScrollPreview,
+  lineHeightPreview,
+  onLineHeightPreview,
 }: {
   value: Values;
   onChange: (v: Partial<Values>) => void;
@@ -28,6 +30,8 @@ export function Settings({
   canFormat: boolean;
   onFocusPreview?: (mode: Values['focus'] | null) => void;
   onFontPreview?: (font: Values['font'] | null) => void;
+  lineHeightPreview?: number | null;
+  onLineHeightPreview?: (height: number | null) => void;
   onScrollPreview?: (mode: boolean | null) => void;
 }) {
   useLocale();
@@ -91,7 +95,12 @@ export function Settings({
         </label>
       )}
       <EntityColorToggle value={value} onChange={onChange} compact />
-      <ReadingComfort value={value} onChange={onChange} />
+      <ReadingComfort
+        value={value}
+        onChange={onChange}
+        preview={lineHeightPreview}
+        onPreview={onLineHeightPreview}
+      />
     </section>
   );
 }

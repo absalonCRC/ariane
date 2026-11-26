@@ -154,6 +154,8 @@ export function useMemory(workspace: MemoryInput, entitiesEnabled = true) {
     setEntityError('');
     activity(true);
     if (native && p?.path) {
+      const restoreLegacyCursor =
+        !p.settings?.writingPosition && p.settings?.manuscriptScroll === undefined;
       void request('memorySession', { projectPath: p.path })
         .then((value) => {
           if (!alive) return;
@@ -162,7 +164,7 @@ export function useMemory(workspace: MemoryInput, entitiesEnabled = true) {
           if (value?.section) {
             setResume(value);
             setShowResume(epoch.current === start);
-            if (epoch.current === start) restoring.current = value;
+            if (epoch.current === start && restoreLegacyCursor) restoring.current = value;
           }
         })
         .catch(() => {

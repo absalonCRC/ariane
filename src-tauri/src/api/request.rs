@@ -225,6 +225,9 @@ pub enum Request {
         parent: Option<String>,
     },
     Settings {
+        project_path: Option<String>,
+        #[serde(default)]
+        session_only: bool,
         value: serde_json::Value,
     },
     ResolveExternal {

@@ -43,7 +43,7 @@ export function WritingSurface({
       inert={historyMode}
       style={
         {
-          '--typewriter-line-half': `${(settings.fontSize * (settings.lineHeight ?? 1.5)) / 2}px`,
+          '--typewriter-line-half': `${(settings.fontSize * (editorProps.lineHeightPreview ?? settings.lineHeight ?? 1.5)) / 2}px`,
         } as React.CSSProperties
       }
     >

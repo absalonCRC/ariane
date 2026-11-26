@@ -28,6 +28,7 @@ it('records manuscript transactions and undo/redo, without replaying on mount, r
   const host = document.createElement('div');
   document.body.append(host);
   const root = createRoot(host);
+  const session = vi.fn();
   const activity = vi.fn(),
     noop = () => {};
   const section: Section = {
@@ -55,6 +56,8 @@ it('records manuscript transactions and undo/redo, without replaying on mount, r
       onCursor={noop}
       onTyping={noop}
       onWritingEdit={activity}
+      writingBranch="main"
+      onSessionChange={session}
     />
   );
   try {
@@ -65,6 +68,15 @@ it('records manuscript transactions and undo/redo, without replaying on mount, r
       view.dispatch({ changes: { from: view.state.doc.length, insert: ' nouveau' } }),
     );
     expect(activity.mock.calls.map(([delta]) => delta)).toEqual([1]);
+    expect(session.mock.calls.at(-1)?.[0].lastEdit).toMatchObject({
+      section: 's',
+      position: 14,
+      branch: 'main',
+    });
+    session.mockClear();
+    await act(async () => view.dispatch({ selection: { anchor: 2 } }));
+    expect(session.mock.calls.at(-1)?.[0].writingPosition.position).toBe(2);
+    expect(session.mock.calls.some(([patch]) => 'lastEdit' in patch)).toBe(false);
     await act(async () => {
       undo(view);
     });

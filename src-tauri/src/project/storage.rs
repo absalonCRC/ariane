@@ -78,6 +78,7 @@ pub(crate) fn load_unlocked(root: &Path) -> Result<Project> {
         .unwrap_or("{}".into());
     let (trash, sections): (Vec<_>, Vec<_>) = all.into_iter().partition(|s| s.trashed);
     Ok(Project {
+        active_branch: Some(crate::history::active_id(&c)?),
         smart_tags: super::tags::definitions(&c)?,
         path: root.to_string_lossy().into(),
         name,

@@ -216,9 +216,17 @@ CREATE TABLE IF NOT EXISTS margin_pins(section TEXT NOT NULL,source TEXT NOT NUL
             .app()?;
         }
     }
+    let live: String = c.query_row("SELECT value FROM meta WHERE key='settings'", [], |row| row.get(0)).app()?;
+    let live: serde_json::Value = serde_json::from_str(&live).app()?;
+    let mut settings = state.settings.clone();
+    for &key in super::PROJECT_SESSION_KEYS {
+        if let Some(value) = live.get(key) {
+            settings[key] = value.clone();
+        }
+    }
     c.execute(
         "INSERT OR REPLACE INTO meta VALUES('settings',?)",
-        [state.settings.to_string()],
+        [settings.to_string()],
     )
     .app()?;
     c.execute(

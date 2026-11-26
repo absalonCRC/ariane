@@ -9,7 +9,20 @@ export function useWindowLifecycle(
   latest.current = { flush, onError };
   const [suspended, setSuspended] = useState(false);
   useEffect(() => {
-    if (!native) return;
+    if (!native) {
+      const save = () => {
+        void latest.current.flush().catch(latest.current.onError);
+      };
+      const hidden = () => {
+        if (document.visibilityState === 'hidden') save();
+      };
+      window.addEventListener('pagehide', save);
+      document.addEventListener('visibilitychange', hidden);
+      return () => {
+        window.removeEventListener('pagehide', save);
+        document.removeEventListener('visibilitychange', hidden);
+      };
+    }
     let disposed = false;
     const cleanups: (() => void)[] = [];
     let pending: string | null = null;

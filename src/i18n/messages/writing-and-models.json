@@ -1,4 +1,100 @@
 {
+  "Aperçu de la page": [
+    "Page preview",
+    "Vista previa de la página"
+  ],
+  "Page vide": [
+    "Empty page",
+    "Página vacía"
+  ],
+  "Application": [
+    "Application",
+    "Aplicación"
+  ],
+  "Application et projet": [
+    "Application and project",
+    "Aplicación y proyecto"
+  ],
+  "Ce projet": [
+    "This project",
+    "Este proyecto"
+  ],
+  "Les réglages du manuscrit suivent ce projet. La capture rapide et les préférences de prédiction sont communes à l’application.": [
+    "Manuscript settings are saved with this project. Quick capture and prediction preferences apply across the app.",
+    "Los ajustes del manuscrito se guardan con este proyecto. La captura rápida y las preferencias de predicción se comparten en toda la aplicación."
+  ],
+  "Objectifs d’écriture": [
+    "Writing goals",
+    "Objetivos de escritura"
+  ],
+  "Objectif du projet (mots)": [
+    "Project goal (words)",
+    "Objetivo del proyecto (palabras)"
+  ],
+  "Objectif de la séance (mots)": [
+    "Session goal (words)",
+    "Objetivo de la sesión (palabras)"
+  ],
+  "Afficher les objectifs dans le compteur": [
+    "Show goals in the counter",
+    "Mostrar los objetivos en el contador"
+  ],
+  "Séance · {0} mots nets": [
+    "Session · {0} net words",
+    "Sesión · {0} palabras netas"
+  ],
+  "Nouvelle séance": [
+    "New session",
+    "Nueva sesión"
+  ],
+  "Terminer la séance": [
+    "End session",
+    "Finalizar la sesión"
+  ],
+  "Projet {0} / {1}": [
+    "Project {0} / {1}",
+    "Proyecto {0} / {1}"
+  ],
+  "Séance {0} / {1}": [
+    "Session {0} / {1}",
+    "Sesión {0} / {1}"
+  ],
+  "Revenir à la dernière frappe": [
+    "Return to last edit",
+    "Volver a la última edición"
+  ],
+  "Mot pour demain": [
+    "Note for tomorrow",
+    "Nota para mañana"
+  ],
+  "À reprendre à ce passage": [
+    "What to pick up here",
+    "Qué retomar en este pasaje"
+  ],
+  "Effacer le mot": [
+    "Delete the note",
+    "Borrar la nota"
+  ],
+  "Aucune frappe enregistrée dans ce projet.": [
+    "There are no manuscript edits yet in this project.",
+    "Aún no hay ediciones del manuscrito en este proyecto."
+  ],
+  "La variante de ce passage est indisponible.": [
+    "This passage’s variant is unavailable.",
+    "La variante de este pasaje no está disponible."
+  ],
+  "Ce passage a été supprimé.": [
+    "This passage was deleted.",
+    "Este pasaje se ha eliminado."
+  ],
+  "Ce passage est indisponible.": [
+    "This passage is unavailable.",
+    "Este pasaje no está disponible."
+  ],
+  "Rattacher au curseur": [
+    "Attach at the cursor",
+    "Vincular a la posición del cursor"
+  ],
   "Restaurer une copie du projet": [
     "Restore a project copy",
     "Restaurar una copia del proyecto"

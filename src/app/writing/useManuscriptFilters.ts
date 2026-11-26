@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import type { FilterPosition } from '../../contracts/writingSession';
 import type { StructuredQuery } from '../../contracts/structuredQuery';
 import type { Project } from '../../contracts/project';
 import type { EntityBatch } from '../../contracts/entities';
@@ -27,6 +28,7 @@ interface FilterInput {
   annotationsOpen: boolean;
   manager: Pick<EntityManagerController, 'catalog' | 'batches' | 'sources'>;
   batches: EntityBatch[];
+  stageSettings: ProjectController['stageSettings'];
   removeAssignment: ProjectController['removeTagAssignment'];
   enterTagFilter: () => void;
 }
@@ -41,14 +43,36 @@ export function useManuscriptFilters({
   annotationsOpen,
   manager,
   batches,
+  stageSettings,
   removeAssignment,
   enterTagFilter,
 }: FilterInput) {
-  const [queryFilter, setQueryFilter] = useState<{
-    path: string;
-    query: StructuredQuery;
-    name?: string;
-  } | null>(null);
+  const [, rerender] = useState(0);
+  const position = project?.settings.filterPosition;
+  const tagViewMode = position?.mode ?? 'text';
+  function save(next: FilterPosition | null) {
+    if (!project) return;
+    stageSettings({ filterPosition: next });
+    rerender((n) => n + 1);
+  }
+  function setQueryFilter(next: { path: string; query: StructuredQuery; name?: string } | null) {
+    if (!project) return;
+    if (next?.path === project.path) save({ query: next.query, name: next.name, mode: 'text' });
+    else if (project.settings.filterPosition && 'query' in project.settings.filterPosition)
+      save(null);
+  }
+  function setTagFilter(next: { project: string; id: string } | null) {
+    if (!project) return;
+    if (next?.project === project.path) save({ tag: next.id, mode: 'text' });
+    else if (project.settings.filterPosition && 'tag' in project.settings.filterPosition)
+      save(null);
+  }
+  function setTagViewMode(
+    change: 'text' | 'table' | ((mode: 'text' | 'table') => 'text' | 'table'),
+  ) {
+    if (position)
+      save({ ...position, mode: typeof change === 'function' ? change(tagViewMode) : change });
+  }
   const [lineDetail, setLineDetail] = useState<{
     project: string;
     section: string;
@@ -64,14 +88,12 @@ export function useManuscriptFilters({
   useEffect(() => {
     setLineDetail(null);
   }, [project?.path, active, historyMode]);
-  const [tagFilter, setTagFilter] = useState<{ project: string; id: string } | null>(null);
-  const [tagViewMode, setTagViewMode] = useState<'text' | 'table'>('text');
-  useEffect(() => setTagViewMode('text'), [project?.path]);
-  const singleTag =
-    project?.path === tagFilter?.project
-      ? project?.smartTags?.find((tag) => tag.id === tagFilter?.id)
-      : undefined;
-  const structuredFilter = queryFilter?.path === project?.path ? queryFilter : null;
+  const tagId = position && 'tag' in position ? position.tag : null;
+  const singleTag = tagId ? project?.smartTags?.find((tag) => tag.id === tagId) : undefined;
+  const structuredFilter =
+    project && position && 'query' in position
+      ? { path: project.path, query: position.query, name: position.name }
+      : null;
   let queryLabelText = '',
     queryError = '';
   let projected = emptyPassages;
@@ -120,16 +142,14 @@ export function useManuscriptFilters({
     };
   }, [filterPassages]);
   useEffect(() => {
-    if (tagFilter && !singleTag) setTagFilter(null);
-  }, [tagFilter, singleTag]);
-  const filterSection = useRef(active);
+    if (tagId && !singleTag) setTagFilter(null);
+  }, [tagId, singleTag]);
+  const location = useRef({ path: project?.path, active });
   useEffect(() => {
-    if (filterSection.current !== active) {
-      setTagFilter(null);
-      setQueryFilter(null);
-    }
-    filterSection.current = active;
-  }, [active]);
+    if (location.current.path === project?.path && location.current.active !== active && position)
+      save(null);
+    location.current = { path: project?.path, active };
+  }, [project?.path, active]);
   useEffect(() => {
     if (palette || historyMode) {
       setTagFilter(null);

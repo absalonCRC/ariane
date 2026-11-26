@@ -3,11 +3,20 @@ import type { Settings } from '../contracts/settings';
 export function ReadingComfort({
   value,
   onChange,
+  preview,
+  onPreview,
 }: {
   value: Settings;
+  preview?: number | null;
+  onPreview?: (height: number | null) => void;
   onChange: (patch: Partial<Settings>) => void;
 }) {
   useLocale();
+  const height = preview ?? value.lineHeight ?? 1.5;
+  const commit = (next: number) => {
+    if (next !== (value.lineHeight ?? 1.5)) onChange({ lineHeight: next });
+    onPreview?.(null);
+  };
   return (
     <details className="reading-comfort" open>
       <summary>{t('Confort de lecture')}</summary>
@@ -27,7 +36,7 @@ export function ReadingComfort({
       </label>
       <label className="settings-row">
         <span className="settings-label">
-          {t('Interligne · {0}', { 0: (value.lineHeight ?? 1.5).toLocaleString(localeTag()) })}
+          {t('Interligne · {0}', { 0: height.toLocaleString(localeTag()) })}
         </span>
         <input
           aria-label={t('Interligne')}
@@ -35,8 +44,22 @@ export function ReadingComfort({
           min="1.3"
           max="1.9"
           step="0.1"
-          value={value.lineHeight ?? 1.5}
-          onChange={(event) => onChange({ lineHeight: +event.target.value })}
+          value={height}
+          onChange={(event) =>
+            onPreview ? onPreview(+event.target.value) : commit(+event.target.value)
+          }
+          onBlur={() => onPreview?.(null)}
+          onPointerUp={(event) => {
+            if (onPreview) commit(+event.currentTarget.value);
+          }}
+          onKeyDown={(event) => {
+            if (!onPreview || preview == null) return;
+            if (event.key === 'Enter') commit(height);
+            else if (event.key === 'Escape') onPreview(null);
+            else return;
+            event.preventDefault();
+            event.stopPropagation();
+          }}
         />
       </label>
       <button

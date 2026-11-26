@@ -1,5 +1,6 @@
 import { t } from '../i18n';
 import type { Section } from '../contracts/project';
+import { titleContexts } from '../project/titleContexts';
 import { ordered } from '../project/tree';
 import {
   normalizeText,
@@ -11,6 +12,7 @@ export interface ManuscriptMatch {
   key: string;
   section: string;
   title: string;
+  context?: string;
   from: number | null;
   to: number | null;
   excerpt: string;
@@ -24,6 +26,7 @@ export type SearchSection = Pick<
   'id' | 'text' | 'title' | 'parent' | 'position' | 'trashed'
 >;
 export interface SearchLabels {
+  project?: string;
   untitled: string;
   title: string;
 }
@@ -63,6 +66,7 @@ export class ManuscriptSearch {
     if (!term) return result;
     // ordered only reads the tree properties present on SearchSection.
     const sections = ordered([...this.sections.values()].filter((s) => !s.trashed) as Section[]);
+    const contexts = titleContexts(sections, messages.project ?? '', messages.untitled);
     for (const section of sections) {
       let cached = this.cache.get(section.id);
       if (!cached) {
@@ -75,6 +79,7 @@ export class ManuscriptSearch {
           key: section.id + ':' + from,
           section: section.id,
           title: section.title || messages.untitled,
+          context: contexts.get(section.id),
           from,
           to,
           excerpt:
@@ -93,6 +98,7 @@ export class ManuscriptSearch {
               key: section.id + ':title',
               section: section.id,
               title: section.title,
+              context: contexts.get(section.id),
               from: null,
               to: null,
               excerpt: messages.title,

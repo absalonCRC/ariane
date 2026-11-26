@@ -288,7 +288,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(props, ref
       style={
         {
           '--writing-size': props.settings.fontSize + 'px',
-          '--writing-leading': props.settings.lineHeight ?? 1.5,
+          '--writing-leading': props.lineHeightPreview ?? props.settings.lineHeight ?? 1.5,
           ...(props.sections.length ? {} : { height: 0 }),
         } as React.CSSProperties
       }

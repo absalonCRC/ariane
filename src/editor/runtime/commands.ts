@@ -1,3 +1,4 @@
+import { pointAt } from '../sessionPoints';
 import {captureSpeech} from '../spokenSelection';
 import { blankMarker } from '../../project/writingAids';
 import type { OutlineEditor } from '../outline/state';
@@ -8,7 +9,7 @@ import { isolateHistory } from '@codemirror/commands';
 import { focusTableCell } from '../liveTables';
 import { type Span } from '../composite';
 import { prepareTextInsertion } from '../insertion';
-import { documentBounds } from '../scrolling';
+import { documentBounds, documentScroller } from '../scrolling';
 import { findTextMatch, highlightTextMatch } from '../textSearch';
 import { formatMarkdown } from '../formatMarkdown';
 import { prepareCitationInsertion } from '../citationInsertion';
@@ -68,6 +69,26 @@ export function createEditorHandle({ view, outlineRef, spans, latest, writingAid
       )
         return false;
       return outline.setProperty(v, node, field, value);
+    },
+    writingPoint() {
+      const v = view.current, outline = outlineRef.current;
+      return v && outline ? pointAt(v.state.selection.main.head, spans.current, v.state.field(outline.field).nodes, latest.current.writingBranch) : null;
+    },
+    holdCaretHeight() {
+      const v = view.current;
+      if (!v) return () => false;
+      const head = v.state.selection.main.head;
+      const top = v.coordsAtPos(head)?.top;
+      const bounds = documentBounds(v);
+      return () => {
+        if (top === undefined || top < bounds.top || top > bounds.bottom || view.current !== v || v.state.selection.main.head !== head) return false;
+        const delta = (v.coordsAtPos(head)?.top ?? top) - top;
+        if (Math.abs(delta) < 0.75) return false;
+        const scroller = documentScroller(v);
+        const previous = scroller.scrollTop;
+        scroller.scrollTop += delta;
+        return scroller.scrollTop !== previous;
+      };
     },
     context() {
       const v = view.current,

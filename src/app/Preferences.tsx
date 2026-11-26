@@ -1,3 +1,4 @@
+import { WritingGoals } from '../components/WritingGoals';
 import { useRuntimeModels } from './runtimeModels';
 import { RuntimeModuleSettings } from './RuntimeModuleSettings';
 import { PredictionSettings } from '../prediction/PredictionSettings';
@@ -11,7 +12,7 @@ import { t, useLocale } from '../i18n';
 import { ReadingComfort } from '../components/ReadingComfort';
 import { WritingModes } from '../components/WritingModes';
 import { depthLevel } from '../components/depthLevels';
-import { useState, type ReactNode } from 'react';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
 import type { Settings as Values } from '../contracts/settings';
 import type { Project } from '../contracts/project';
 import { native, request } from '../platform/client';
@@ -26,6 +27,13 @@ const pages = [
   ['models', 'Modèles locaux'],
   ['shortcuts', 'Raccourcis'],
 ] as const;
+type PreferencePage = (typeof pages)[number][0];
+type PreferenceLocation = { page: PreferencePage; control?: string; inner: number; outer: number };
+const locations = new Map<string, PreferenceLocation>();
+const controls = 'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), summary';
+function controlKey(el: HTMLElement) {
+  return [el.closest<HTMLElement>('[data-command]')?.dataset.command, el.tagName, el.getAttribute('type'), el.getAttribute('aria-label') ?? el.closest('label')?.firstChild?.textContent?.trim() ?? el.textContent?.trim()].join('|');
+}
 export function Preferences({
   value,
   onChange,
@@ -58,9 +66,39 @@ export function Preferences({
   useLocale();
   const models = useRuntimeModels();
   const [expandedTool, setExpandedTool] = useState<string>();
-  const [page, setPage] = useState<(typeof pages)[number][0]>(() =>
-    consumeShortcutSettings() ? 'shortcuts' : 'appearance',
-  );
+  const [page, setPage] = useState<PreferencePage>(() => {
+    const saved = locations.get(project.path)?.page;
+    return consumeShortcutSettings() ? 'shortcuts' : saved === 'models' && !native ? 'appearance' : saved ?? 'appearance';
+  });
+  const detach = useRef<() => void>(undefined);
+  const rememberPage = useCallback((inner: HTMLDivElement | null) => {
+    detach.current?.();
+    detach.current = undefined;
+    if (!inner) return;
+    const outer = inner.closest<HTMLElement>('.workspace-screen');
+    const prior = locations.get(project.path);
+    const location = prior?.page === page ? prior : { page, inner: 0, outer: 0 };
+    locations.set(project.path, location);
+    const frame = requestAnimationFrame(() => {
+      if (location.control) {
+        const target = Array.from(inner.querySelectorAll<HTMLElement>(controls)).find(el => controlKey(el) === location.control);
+        (target ?? outer?.querySelector<HTMLElement>('nav [aria-current="page"]'))?.focus({ preventScroll: true });
+      }
+      inner.scrollTop = location.inner;
+      if (outer) outer.scrollTop = location.outer;
+    });
+    const scroll = () => { location.inner = inner.scrollTop; location.outer = outer?.scrollTop ?? 0; };
+    const focus = (e: FocusEvent) => {
+      if (e.target instanceof HTMLElement && e.target.matches(controls)) location.control = controlKey(e.target);
+    };
+    inner.addEventListener('focusin', focus);
+    outer?.addEventListener('scroll', scroll, true);
+    detach.current = () => {
+      cancelAnimationFrame(frame);
+      inner.removeEventListener('focusin', focus);
+      outer?.removeEventListener('scroll', scroll, true);
+    };
+  }, [project.path, page]);
   const [backupBusy, setBackupBusy] = useState(false);
   const [backupResult, setBackupResult] = useState('');
   const backup = async (restore: boolean) => {
@@ -113,7 +151,8 @@ export function Preferences({
             </button>
           ))}
         </nav>
-        <div className="settings-page" key={page}>
+        <div className="settings-page" key={page} ref={rememberPage}>
+          <small className="settings-scope">{t(page === 'models' || page === 'shortcuts' ? 'Application' : page === 'appearance' || page === 'writing' ? 'Application et projet' : 'Ce projet')}</small>
           {page === 'models' && <><h2>{t('Modèles locaux')}</h2><RuntimeModuleSettings documentLanguage={value.language} expandedTool={expandedTool} /></>}
           {page === 'appearance' && (
             <>
@@ -196,10 +235,11 @@ export function Preferences({
             <>
               <h2>{t('Écriture')}</h2>
               <p className="settings-description">
-                {t('Ces réglages sont conservés avec le projet.')}
+                {t('Les réglages du manuscrit suivent ce projet. La capture rapide et les préférences de prédiction sont communes à l’application.')}
               </p>
               <div className="settings-columns">
                 <section className="settings-group">
+                  <h3>{t('Ce projet')}</h3>
                   <WritingModes value={value} onChange={onChange} />
                   <EntityColorToggle value={value} onChange={onChange} />
                   {value.typewriter && (
@@ -229,6 +269,7 @@ export function Preferences({
                 </section>
                 <section className="settings-group">
                   <h3>{t('Document')}</h3>
+                  <WritingGoals value={value} onChange={onChange} />
                   <label>
                     {t('Compteur')}
                     <select
@@ -258,12 +299,16 @@ export function Preferences({
                       )}
                     </select>
                   </label>
-                  {native && <CapturePreferences onError={onError} />}
-                  {native && <PredictionSettings projectPath={project.path} onError={onError} />}
+
                 </section>
               </div>
             </>
           )}
+          {page === 'writing' && native && <section className="settings-group">
+            <h3>{t('Application')}</h3>
+            <CapturePreferences onError={onError} />
+            <PredictionSettings projectPath={project.path} onError={onError} />
+          </section>}
           {page === 'sources' && (
             <>
               <h2>{t('Sources et références')}</h2>
