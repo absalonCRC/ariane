@@ -25,6 +25,7 @@ export function WorkspaceScreen({
   title,
   subtitle,
   onClose,
+  onReturnToText = onClose,
   children,
   className = '',
   capsuleTrail,
@@ -34,6 +35,7 @@ export function WorkspaceScreen({
   title: string;
   subtitle?: string;
   onClose: () => void;
+  onReturnToText?: () => void;
   children: ReactNode;
   className?: string;
   capsuleTrail?: string[];
@@ -69,7 +71,7 @@ export function WorkspaceScreen({
   }, [!!host]);
   const content = (
     <>
-      <WorkspacePageHeading title={title} subtitle={subtitle} onClose={onClose} busy={busy} />
+      <WorkspacePageHeading title={title} subtitle={subtitle} onClose={onReturnToText} busy={busy} />
       {children}
     </>
   );

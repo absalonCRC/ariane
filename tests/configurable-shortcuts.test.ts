@@ -9,6 +9,7 @@ import {
 } from '../src/app/commands/shortcuts';
 it('rejects collisions and protected editing keys, saves a replacement and resets defaults', async () => {
   expect(shortcutConflict('focus', 'Mod+F')).toContain('déjà');
+  expect(shortcutConflict('focus', 'Mod+Alt+M')).toBeNull();
   expect(shortcutConflict('focus', 'Mod+Z')).toContain('réservée');
   expect(shortcutConflict('focus', 'A')).toContain('réservée');
   expect(

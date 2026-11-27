@@ -70,6 +70,7 @@ function WorkspaceApp() {
     surface: workspace.surface,
     historyMode: workspace.historyMode,
     editor: workspace.editor,
+    setBinder: workspace.setBinder,
     setSurface: workspace.setSurface,
     close: workspace.close,
     select: workspace.select,
@@ -786,6 +787,7 @@ function WorkspaceApp() {
           )}
           <WorkspaceDialogs
             onTagFilter={filters.openTagFilter}
+            onCloseManuscriptFilter={filters.closeTagFilter}
             onNotice={titleNotices.notify}
             onLoading={titleNotices.setDialogLoading}
             workspace={workspace}

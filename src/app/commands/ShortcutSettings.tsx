@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { t, localizeMessage, useLocale } from '../../i18n';
-import { commandRegistry } from './registry';
 import {
+  availableCommands,
   useShortcuts,
   effectiveBindings,
   shortcutFromEvent,
@@ -44,7 +44,7 @@ export function ShortcutSettings({
       <h2>{t('Raccourcis')}</h2>
       <p>{t('Sélectionnez un raccourci puis appuyez sur la combinaison souhaitée.')}</p>
       {error && <p role="alert">{error}</p>}
-      {commandRegistry
+      {availableCommands
         .filter((c) => !scope || c.scope === scope)
         .map((c) => (
           <div key={c.id} data-command={c.id}>
@@ -69,9 +69,15 @@ export function ShortcutSettings({
                 }}
               />
             </label>
-            <button disabled={busy} onClick={() => void run(() => setShortcut(c.id, null))}>
-              {t('Retirer')}
-            </button>
+            {bindings[c.id] && (
+              <button
+                aria-label={t('Retirer le raccourci de {0}', { 0: t(c.label) })}
+                disabled={busy}
+                onClick={() => void run(() => setShortcut(c.id, null))}
+              >
+                {t('Retirer')}
+              </button>
+            )}
           </div>
         ))}
       <button

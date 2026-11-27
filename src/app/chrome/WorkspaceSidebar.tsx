@@ -92,7 +92,20 @@ export function WorkspaceSidebar({
               if (!['history', 'preferences', 'profile', 'tags', 'entities'].includes(s))
                 setBinder(false);
             }}
-            onClose={() => setBinder(false)}
+            onClose={() => {
+              const edge = document.activeElement;
+              setBinder(false);
+              if (edge instanceof HTMLElement && edge.matches('.binder-edge-trigger')) {
+                edge.blur();
+                requestAnimationFrame(() =>
+                  document
+                    .querySelector<HTMLButtonElement>(
+                      '.edge-trigger[aria-controls="project-sidebar"]',
+                    )
+                    ?.focus({ preventScroll: true }),
+                );
+              }
+            }}
             onRename={async (id, title) => {
               try {
                 await doc.flush();

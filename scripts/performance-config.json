@@ -4,6 +4,7 @@
     "security": {
       "capabilities": [
         "default",
+        "capture",
         {
           "identifier": "isolated-performance",
           "windows": ["main"],

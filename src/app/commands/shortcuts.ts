@@ -8,6 +8,11 @@ import { useSyncExternalStore } from 'react';
 import { request, native } from '../../platform/client';
 import type { ShortcutBindings } from '../../contracts/commands';
 import { commandRegistry } from './registry';
+
+export const availableCommands = native
+  ? commandRegistry
+  : commandRegistry.filter((c) => c.scope !== 'global' && !c.desktopOnly);
+
 const storageName = 'ariane.shortcuts.v1',
   listeners = new Set<() => void>();
 function load(): ShortcutBindings {
@@ -101,17 +106,17 @@ export function shortcutConflict(
       !/^F\d+$/.test(value))
   )
     return 'Cette combinaison est réservée à la saisie ou au système.';
-  const conflict = commandRegistry.find(
-    (c) => c.id !== id && effectiveBindings(overrides)[c.id] === value,
-  );
+  const effective = effectiveBindings(overrides);
+  const conflict = availableCommands.find((c) => c.id !== id && effective[c.id] === value);
   return conflict ? t('Ce raccourci est déjà utilisé : {0}', { 0: t(conflict.label) }) : null;
 }
 export function nativeBindings(overrides = bindings) {
+  const effective = effectiveBindings(overrides);
   return Object.fromEntries(
     commandRegistry
       .filter((c) => c.native)
       .map((c) => {
-        const v = effectiveBindings(overrides)[c.id];
+        const v = effective[c.id];
         return [
           c.id,
           v

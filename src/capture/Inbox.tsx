@@ -236,26 +236,28 @@ export function Inbox({
       className="inbox-screen"
     >
       <div className="inbox-body">
-        <div className="inbox-toolbar">
-          <input
-            aria-label={t('Rechercher une capture')}
-            placeholder={t('Rechercher une capture')}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <button aria-pressed={!filed} onClick={() => setFiled(false)}>
-            {t('À ranger')}
-          </button>
-          <button aria-pressed={filed} onClick={() => setFiled(true)}>
-            {t('Rangées')}
-          </button>
-          <button
-            disabled={!native || busy}
-            onClick={() => void request('captureWindow', { action: 'toggle' }).catch(fail)}
-          >
-            {t('Nouvelle capture')}
-          </button>
-        </div>
+        {native && (
+          <div className="inbox-toolbar">
+            <input
+              aria-label={t('Rechercher une capture')}
+              placeholder={t('Rechercher une capture')}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <button aria-pressed={!filed} onClick={() => setFiled(false)}>
+              {t('À ranger')}
+            </button>
+            <button aria-pressed={filed} onClick={() => setFiled(true)}>
+              {t('Rangées')}
+            </button>
+            <button
+              disabled={busy}
+              onClick={() => void request('captureWindow', { action: 'toggle' }).catch(fail)}
+            >
+              {t('Nouvelle capture')}
+            </button>
+          </div>
+        )}
         {!native ? (
           <p>{t('La capture globale est disponible dans l’application macOS.')}</p>
         ) : (

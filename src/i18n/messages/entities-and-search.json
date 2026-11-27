@@ -247,6 +247,10 @@
     "Select a shortcut and press the desired key combination.",
     "Selecciona un atajo y pulsa la combinación deseada."
   ],
+  "Retirer le raccourci de {0}": [
+    "Remove shortcut for {0}",
+    "Quitar el atajo de {0}"
+  ],
   "Rétablir les raccourcis par défaut": [
     "Restore default shortcuts",
     "Restablecer los atajos predeterminados"

@@ -1,7 +1,7 @@
 import { useTheme } from '../app/useTheme';
 import type { InboxChange } from '../contracts/inbox';
 import { useCallback, useEffect, useState } from 'react';
-import { request } from '../platform/client';
+import { native, request } from '../platform/client';
 import { useWindowLifecycle } from '../platform/useWindowLifecycle';
 import { WindowDragRegion } from '../components/WindowDragRegion';
 import { t, localizeMessage, useLocale, setLocale, savedLocale } from '../i18n';
@@ -11,6 +11,21 @@ import { CaptureEditor } from './CaptureEditor';
 export function CaptureApp() {
   useTheme();
   useLocale();
+  if (native) return <NativeCapture />;
+  return (
+    <main className="welcome">
+      <div className="welcome-intro">
+        <h1>{t('Capture rapide')}</h1>
+        <p>{t('La capture globale est disponible dans l’application macOS.')}</p>
+        <div className="welcome-actions">
+          <a href="./">{t('Accueil')}</a>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function NativeCapture() {
   const [error, setError] = useState(''),
     [visible, setVisible] = useState(false);
   const fail = useCallback((e: unknown) => setError(localizeMessage(e)), []);

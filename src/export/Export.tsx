@@ -1,5 +1,6 @@
 import { localizeMessage, t, useLocale } from '../i18n';
 import { Dialog } from '../components/Dialog';
+import { native } from '../platform/client';
 import type { Project } from '../contracts/project';
 import type { ExportJob } from './useExport';
 export function Export({
@@ -31,22 +32,29 @@ export function Export({
       <div className="state-content" key={state}>
         {state === 'ready' ? (
           <>
-            <div className="segmented formats">
-              {[
-                ['md', 'Markdown'],
-                ['pdf', 'PDF'],
-                ['docx', 'Word'],
-                ['epub', 'EPUB'],
-              ].map(([v, label]) => (
-                <button
-                  key={v}
-                  className={format === v ? 'active' : ''}
-                  onClick={() => setFormat(v)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            {native ? (
+              <div className="segmented formats">
+                {[
+                  ['md', 'Markdown'],
+                  ['pdf', 'PDF'],
+                  ['docx', 'Word'],
+                  ['epub', 'EPUB'],
+                ].map(([v, label]) => (
+                  <button
+                    key={v}
+                    className={format === v ? 'active' : ''}
+                    aria-pressed={format === v}
+                    onClick={() => setFormat(v)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p>
+                Markdown <small>(.md)</small>
+              </p>
+            )}
             <label>
               {t('Contenu')}
               <select value={scope} onChange={(e) => setScope(e.target.value)}>

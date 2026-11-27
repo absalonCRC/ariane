@@ -110,9 +110,6 @@ export function useWorkspace(beforeLeave?: () => Promise<void>) {
     } else setSurface(value);
   }, []);
   useEffect(() => setHistoryMode(false), [doc.project?.path]);
-  useEffect(() => {
-    if (surface === 'preferences' && window.innerWidth <= 760) setBinder(false);
-  }, [surface]);
   const [searchQuery, setSearchQuery] = useState('');
   const [initialSearch, setInitialSearch] = useState('');
   const searching = palette === 'text' && !!searchQuery.trim();

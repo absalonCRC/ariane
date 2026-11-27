@@ -49,14 +49,14 @@ function store(p: Project) {
   all[p.path] = p;
   localStorage.setItem(storageKey, JSON.stringify(all));
 }
-function currentProject() {
-  const p = read()[current || ''];
+function currentProject(path = current) {
+  const p = read()[path || ''];
   if (p && !p.activeBranch)
     p.activeBranch = JSON.parse(localStorage.getItem('ariane.preview.branches.' + p.path) || 'null')?.activeBranch ?? 'main';
   return p;
 }
-function project() {
-  const p = currentProject();
+function project(path = current) {
+  const p = currentProject(path);
   if (!p) throw new Error(t('Ouvrez un projet pour continuer.'));
   return p;
 }
@@ -122,6 +122,7 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
   if (type === 'engineStatus')
     return { available: false, model: t('Disponible dans l’application macOS'), local: true };
   if (type === 'create') {
+    if (read()[String(a.path)]) throw new Error(t('Ce dossier contient déjà un projet.'));
     const p: Project = {
       path: String(a.path),
       name: String(a.name),
@@ -137,10 +138,10 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
     return p;
   }
   if (type === 'open') {
-    current = String(a.path);
-    localStorage.setItem('ariane.preview.current', current);
-    const p = project();
+    const p = project(String(a.path));
     remember(p);
+    localStorage.setItem('ariane.preview.current', p.path);
+    current = p.path;
     return p;
   }
   const p = project();
@@ -462,13 +463,21 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
     return p.sections;
   }
   if (type === 'reorder') {
+    const ids = a.ids as string[];
+    const sections = new Map(p.sections.map((s) => [s.id, s]));
+    if (
+      ids.length !== sections.size ||
+      new Set(ids).size !== ids.length ||
+      ids.some((id) => !sections.has(id))
+    )
+      throw new Error(t('Ordre de sections invalide.'));
     applyLibraryOperation(p, {
       action: 'move',
       ids: [String(a.id)],
       target: a.parent as string | null,
     });
-    p.sections = (a.ids as string[]).map((id, i) => ({
-      ...p.sections.find((s) => s.id === id)!,
+    p.sections = ids.map((id, i) => ({
+      ...sections.get(id)!,
       position: i,
     }));
     p.sections.find((s) => s.id === a.id)!.parent = a.parent as string | null;
@@ -570,7 +579,4 @@ export function browserRequest(type: string, a: Record<string, unknown>): unknow
   throw new Error(
     t('Cette fonction utilise le moteur Rust et les fichiers locaux. Ouvrez l’application macOS.'),
   );
-}
-export function browserProjects() {
-  return Object.values(read());
 }

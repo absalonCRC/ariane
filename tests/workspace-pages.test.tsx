@@ -105,6 +105,24 @@ it('uses the same app chrome across pages and preserves the mounted manuscript, 
     expect(host.querySelector('.history-editor h1')?.textContent).toBe('Versions');
     expect(host.querySelector('.cm-editor')).toBe(manuscript);
     await click('Revenir au texte');
+    expect(host.querySelector('.history-editor')).toBeNull();
+    await click('Versions');
+    await click('Profil');
+    await act(async () =>
+      host.querySelector('.profile-screen')!.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+      ),
+    );
+    expect(host.querySelector('.profile-screen')).toBeNull();
+    expect(host.querySelector('.history-editor')).not.toBeNull();
+    await click('Profil');
+    await act(async () => host.querySelector<HTMLButtonElement>('.profile-resume button')!.click());
+    await act(async () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+    expect(host.querySelector('.profile-screen')).toBeNull();
+    expect(host.querySelector('.history-editor')).toBeNull();
+    expect(document.activeElement).toBe(view.contentDOM);
+    expect(view.state.selection.main.head).toBe(7);
+    expect(column.scrollTop).toBe(180);
     await act(async () => {
       undo(view);
     });

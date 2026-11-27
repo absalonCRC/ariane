@@ -5,6 +5,7 @@ import { expect, it, vi } from 'vitest';
 import type { Section } from '../src/contracts/project';
 import { manuscriptSummary, readIdentity, identityKey } from '../src/profile/model';
 import { WriterProfile } from '../src/profile/WriterProfile';
+import { WritingActivityStore } from '../src/profile/writingActivity';
 
 const scene = (id: string, text: string, patch: Partial<Section> = {}): Section => ({
   id,
@@ -40,6 +41,7 @@ it('handles malformed local identity and persists an edited pen name independent
   document.body.append(host);
   const root = createRoot(host),
     close = vi.fn(),
+    resumeWriting = vi.fn(),
     navigate = vi.fn(),
     fail = vi.fn();
   try {
@@ -53,12 +55,21 @@ it('handles malformed local identity and persists an edited pen name independent
             settings: {},
             recovered: false,
           }}
+          activity={new WritingActivityStore(localStorage, fail)}
           onClose={close}
+          onResume={resumeWriting}
           onError={fail}
           onNavigate={navigate}
         />,
       ),
     );
+    const projectName = host.querySelector('.profile-project-name')!;
+    const resume = host.querySelector<HTMLButtonElement>('.profile-resume button')!;
+    const calendar = host.querySelector('#writing-calendar-title')!;
+    expect(projectName.compareDocumentPosition(resume)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(resume.compareDocumentPosition(calendar)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    await act(async () => resume.click());
+    expect(resumeWriting).toHaveBeenCalledOnce();
     const edit = [...host.querySelectorAll('button')].find(
       (b) => b.textContent === 'Modifier le profil',
     )!;

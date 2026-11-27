@@ -8,7 +8,7 @@ import { manuscriptSections, scenesFor } from '../project/tree';
 // The job outlives its dialog, so writing can continue without losing its result.
 export function useExport() {
   useLocale();
-  const [format, setFormat] = useState('pdf');
+  const [format, setFormat] = useState(native ? 'pdf' : 'md');
   const [scope, setScope] = useState('project');
   const [state, setState] = useState<'ready' | 'working' | 'done' | 'error'>('ready');
   const [result, setResult] = useState('');

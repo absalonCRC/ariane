@@ -27,23 +27,25 @@ export function WritingGoals({
           />
         </label>
       ))}
-      <label>
+      <label className="preference-toggle">
+        <span>{t('Afficher les objectifs dans le compteur')}</span>
         <input
           type="checkbox"
           checked={value.showGoals !== false}
           onChange={(e) => onChange({ showGoals: e.target.checked })}
-        />{' '}
-        {t('Afficher les objectifs dans le compteur')}
+        />
       </label>
       <p>{t('Séance · {0} mots nets', { 0: value.sessionWords ?? 0 })}</p>
-      <button type="button" onClick={() => onChange({ sessionWords: 0, sessionClosed: false })}>
-        {t('Nouvelle séance')}
-      </button>
-      {!value.sessionClosed && (
-        <button type="button" onClick={() => onChange({ sessionClosed: true })}>
-          {t('Terminer la séance')}
+      <div className="settings-actions">
+        <button type="button" onClick={() => onChange({ sessionWords: 0, sessionClosed: false })}>
+          {t('Nouvelle séance')}
         </button>
-      )}
+        {!value.sessionClosed && (
+          <button type="button" onClick={() => onChange({ sessionClosed: true })}>
+            {t('Terminer la séance')}
+          </button>
+        )}
+      </div>
     </fieldset>
   );
 }

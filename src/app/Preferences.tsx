@@ -152,7 +152,7 @@ export function Preferences({
           ))}
         </nav>
         <div className="settings-page" key={page} ref={rememberPage}>
-          <small className="settings-scope">{t(page === 'models' || page === 'shortcuts' ? 'Application' : page === 'appearance' || page === 'writing' ? 'Application et projet' : 'Ce projet')}</small>
+          <small className="settings-scope">{t(page === 'models' || page === 'shortcuts' ? 'Application' : page === 'appearance' || (page === 'writing' && native) ? 'Application et projet' : 'Ce projet')}</small>
           {page === 'models' && <><h2>{t('Modèles locaux')}</h2><RuntimeModuleSettings documentLanguage={value.language} expandedTool={expandedTool} /></>}
           {page === 'appearance' && (
             <>
@@ -234,9 +234,9 @@ export function Preferences({
           {page === 'writing' && (
             <>
               <h2>{t('Écriture')}</h2>
-              <p className="settings-description">
+              {native && <p className="settings-description">
                 {t('Les réglages du manuscrit suivent ce projet. La capture rapide et les préférences de prédiction sont communes à l’application.')}
-              </p>
+              </p>}
               <div className="settings-columns">
                 <section className="settings-group">
                   <h3>{t('Ce projet')}</h3>

@@ -68,14 +68,14 @@ afterEach(async () => {
   toolsHost.remove();
   setLocale('fr');
 });
-async function render() {
+async function render(currentProject = project, active = 'a') {
   await act(async () =>
     root.render(
       <History
         toolsHost={toolsHost}
         toolsOpen
-        project={project}
-        active="a"
+        project={currentProject}
+        active={active}
         flush={async () => {}}
         onApply={apply}
         onRestore={restore}
@@ -135,6 +135,68 @@ it('compares snapshots read-only and requires confirmation for full restoration'
   expect(restore).toHaveBeenCalledWith(project);
   expect(close).toHaveBeenCalledOnce();
 });
+
+it('reveals identical texts on demand and collapses them for the next comparison', async () => {
+  const snapshot = { ...version, sections: [scene] };
+  request.mockImplementation(async (cmd: string) =>
+    cmd === 'versions' ? [snapshot] : cmd === 'version' ? snapshot : undefined,
+  );
+  await render();
+  const toggle = button('Voir les textes côte à côte');
+  expect(host.querySelector('.history-identical [role="status"]')?.textContent).toBe(
+    'Aucune différence',
+  );
+  expect(toggle.getAttribute('aria-expanded')).toBe('false');
+  expect(host.querySelector('.history-diff-scroll')).toBeNull();
+  expect(host.querySelector('[aria-label="Modification suivante"]')).toBeNull();
+  toggle.focus();
+  await act(async () => toggle.click());
+  expect(document.activeElement).toBe(toggle);
+  expect(toggle.getAttribute('aria-expanded')).toBe('true');
+  expect([...host.querySelectorAll('.diff-prose')].map((cell) => cell.textContent)).toEqual([
+    scene.text,
+    scene.text,
+  ]);
+  await act(async () => button('Masquer les deux textes').click());
+  expect(host.querySelector('.history-diff-scroll')).toBeNull();
+  await act(async () => toggle.click());
+  const select = host.querySelector<HTMLSelectElement>('[aria-label="Version comparée"]')!;
+  await act(async () => {
+    select.value = snapshot.id;
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  expect(button('Voir les textes côte à côte').getAttribute('aria-expanded')).toBe('false');
+});
+
+it('keeps a title change visible when the manuscript text matches', async () => {
+  const snapshot = { ...version, sections: [{ ...scene, title: 'Ancien titre' }] };
+  request.mockImplementation(async (cmd: string) =>
+    cmd === 'versions' ? [snapshot] : cmd === 'version' ? snapshot : undefined,
+  );
+  await render();
+  expect(host.querySelector('.history-metadata')?.textContent).toBe('Titre modifié');
+  expect(host.querySelector('.history-identical')?.textContent).toContain(
+    'Aucune différence dans le texte',
+  );
+  expect(host.querySelector('.history-diff-scroll')).toBeNull();
+});
+
+it('identifies a newly added empty scene', async () => {
+  const added = { ...scene, id: 'new', title: 'Page blanche', text: '' };
+  await render({ ...project, sections: [scene, added] }, added.id);
+  expect(host.querySelector('.history-metadata')?.textContent).toBe('Élément ajouté');
+  expect(host.querySelector('.history-identical')).toBeNull();
+  expect(host.textContent).not.toContain('vide dans les deux versions');
+});
+
+it.each(['Élise attend au quai !', 'Élise  attend au quai.'])(
+  'shows punctuation and spacing edits in %s',
+  async (text) => {
+    await render({ ...project, sections: [{ ...scene, text }] });
+    expect(host.querySelector('.history-identical')).toBeNull();
+    expect(host.querySelector('.history-diff-row.is-changed')).not.toBeNull();
+  },
+);
 
 it('offers first-version creation inline instead of comparing two identical copies', async () => {
   request.mockImplementation(async (cmd: string) => (cmd === 'versions' ? [] : undefined));

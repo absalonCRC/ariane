@@ -21,9 +21,17 @@ export function Presence({
   kind?: 'panel' | 'sidebar' | 'anchored' | 'notice' | 'content';
 }) {
   const { value, exiting } = usePresenceValue(children ? children : null);
+  const container = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const focused = document.activeElement;
+    if (exiting && focused instanceof HTMLElement && container.current?.contains(focused)) {
+      focused.blur();
+    }
+  }, [exiting]);
   if (!value) return null;
   return (
     <div
+      ref={container}
       className="motion-presence"
       data-motion={kind}
       data-phase={exiting ? 'exit' : 'open'}

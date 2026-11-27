@@ -99,7 +99,7 @@ export function ProjectCatalog({
               (index === 0 || values[index - 1].pinned !== entry.pinned) && (
                 <p className="catalog-group-label">{entry.pinned ? t('Épinglés') : t('Récents')}</p>
               )}
-            <div className="catalog-entry" key={entry.path}>
+            <div className="catalog-entry">
               <button
                 className="catalog-open"
                 aria-current={entry.path === currentPath ? 'page' : undefined}
@@ -132,7 +132,7 @@ export function ProjectCatalog({
                 className="icon-button"
                 disabled={busy}
                 aria-label={(entry.archived ? t('Désarchiver ') : t('Archiver ')) + entry.name}
-                data-tooltip={entry.archived ? t('Désarchiver') : 'Archiver'}
+                data-tooltip={(entry.archived ? t('Désarchiver ') : t('Archiver ')).trimEnd()}
                 onClick={() => void change(entry, { archived: !entry.archived })}
               >
                 <Archive size={13} />
@@ -147,7 +147,11 @@ export function ProjectCatalog({
           {t('Boîte de réception')}
         </button>
       )}
-      {archived && <p className="hint">{t('Les projets archivés restent sur ce Mac.')}</p>}
+      {archived && (
+        <p className="hint">
+          {t('Vous pouvez désarchiver un projet pour le retrouver dans les récents.')}
+        </p>
+      )}
     </div>
   );
 }

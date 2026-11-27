@@ -126,8 +126,6 @@ export function Library({
     selection.current = true;
     setChoosing(true);
     try {
-      if (!native)
-        throw new Error(t('Connectez vos dossiers de sources depuis l’application macOS.'));
       const path = await choosePath('vault', {
         title: vault
           ? t('Autoriser le dossier de sources {0}', { 0: vault.name })
@@ -167,7 +165,12 @@ export function Library({
       setEntityDescription('');
       onNoteActivity?.({ kind: 'created', title: entityName.trim() });
       setAdding(false);
-      void index();
+      if (native) void index();
+      else {
+        setVaults(await request('vaults'));
+        onRefresh();
+        setBusy(false);
+      }
     } catch (e) {
       onError(e);
       setBusy(false);
@@ -200,10 +203,12 @@ export function Library({
         </button>
       )}
       <div className="library-toolbar">
-        <button disabled={busy || choosing} onClick={() => void connect()}>
-          <Plus size={14} />
-          {t('Ajouter un dossier de sources')}
-        </button>
+        {native && (
+          <button disabled={busy || choosing} onClick={() => void connect()}>
+            <Plus size={14} />
+            {t('Ajouter un dossier de sources')}
+          </button>
+        )}
         {!owned && (
           <button disabled={busy} onClick={() => void createVault()}>
             <Plus size={14} /> {t('Créer mon dossier de sources')}
@@ -214,14 +219,16 @@ export function Library({
             <Plus size={14} /> {t('Nouvelle fiche')}
           </button>
         )}
-        <button
-          disabled={busy || choosing || !vaults.some((vault) => vault.available)}
-          onClick={() => void index()}
-        >
-          <RefreshCw size={13} />
-          {t('Actualiser l’index')}
-        </button>
-        {busy && (
+        {native && (
+          <button
+            disabled={busy || choosing || !vaults.some((vault) => vault.available)}
+            onClick={() => void index()}
+          >
+            <RefreshCw size={13} />
+            {t('Actualiser l’index')}
+          </button>
+        )}
+        {native && busy && (
           <button onClick={() => void request('cancelIndex')}>
             <Pause size={13} />
             {t('Suspendre')}
@@ -319,34 +326,38 @@ export function Library({
                 {t('Autoriser {0}…', { 0: v.name })}
               </button>
             )}
-            <AnimatedDetails
-              className="source-details"
-              summary={<>{t('Emplacement du dossier')}</>}
-            >
-              <p className="source-path">{v.path}</p>
-            </AnimatedDetails>
-            <label>
-              {t('Dossiers inclus')}
-              <small>{t('— dossiers ou fichiers, un par ligne')}</small>
-              <textarea
-                rows={2}
-                value={scopes[v.id] ?? v.scope.join('\n')}
-                aria-label={t('Dossiers inclus dans ') + v.name}
-                placeholder={t('Tous les dossiers')}
-                onChange={(e) => setScopes({ ...scopes, [v.id]: e.target.value })}
-                onBlur={(e) => {
-                  void request('vaultScope', {
-                    id: v.id,
-                    scope: e.target.value
-                      .split('\n')
-                      .map((s) => s.trim())
-                      .filter(Boolean),
-                  })
-                    .then(onRefresh)
-                    .catch(onError);
-                }}
-              />
-            </label>
+            {native && (
+              <>
+                <AnimatedDetails
+                  className="source-details"
+                  summary={<>{t('Emplacement du dossier')}</>}
+                >
+                  <p className="source-path">{v.path}</p>
+                </AnimatedDetails>
+                <label>
+                  {t('Dossiers inclus')}
+                  <small>{t('— dossiers ou fichiers, un par ligne')}</small>
+                  <textarea
+                    rows={2}
+                    value={scopes[v.id] ?? v.scope.join('\n')}
+                    aria-label={t('Dossiers inclus dans ') + v.name}
+                    placeholder={t('Tous les dossiers')}
+                    onChange={(e) => setScopes({ ...scopes, [v.id]: e.target.value })}
+                    onBlur={(e) => {
+                      void request('vaultScope', {
+                        id: v.id,
+                        scope: e.target.value
+                          .split('\n')
+                          .map((s) => s.trim())
+                          .filter(Boolean),
+                      })
+                        .then(onRefresh)
+                        .catch(onError);
+                    }}
+                  />
+                </label>
+              </>
+            )}
           </div>
         ))
       ) : (
@@ -356,11 +367,13 @@ export function Library({
           )}
         </Empty>
       )}
-      <p className="hint">
-        {t(
-          'Markdown et PDF textuels. Les images restent consultables sans reconnaissance du texte.',
-        )}
-      </p>
+      {native && (
+        <p className="hint">
+          {t(
+            'Markdown et PDF textuels. Les images restent consultables sans reconnaissance du texte.',
+          )}
+        </p>
+      )}
       <AnimatedDetails
         className="source-details"
         summary={<>{t('Détails de la recherche locale')}</>}

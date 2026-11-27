@@ -92,6 +92,25 @@
   padding: 10px 4px;
 }
 
+.history-identical {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-sm) var(--space-lg);
+  padding: var(--space-lg) 4px;
+}
+
+.history-identical p {
+  margin: 0;
+  font: 22px/1.3 var(--literary);
+}
+
+.history-identical button {
+  font: 12px var(--ui);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .history-editor .history-diff-scroll {
   padding-top: 10px;
 }
@@ -578,11 +597,13 @@
 }
 
 @container writing-history (max-width: 650px) {
-  .history-editor .history-diff-row[data-phrase-aligned] {
+  .history-editor .history-diff-row[data-phrase-aligned],
+  .history-editor [data-identical] .history-diff-row {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  .history-editor .history-diff-row[data-phrase-aligned] .history-diff-cell + .history-diff-cell {
+  .history-editor .history-diff-row[data-phrase-aligned] .history-diff-cell + .history-diff-cell,
+  .history-editor [data-identical] .history-diff-cell + .history-diff-cell {
     border-top: 0;
     border-left: 1px solid var(--line);
     padding-left: 12px;

@@ -40,7 +40,11 @@ it('keeps exiting content inert, cancels stale removal when reopened, then remov
   await act(async () => root.render(<Toggle />));
   const trigger = host.querySelector('button')!,
     panel = host.querySelector('aside')!;
+  panel.tabIndex = -1;
+  panel.focus();
+  expect(document.activeElement).toBe(panel);
   await act(async () => trigger.click());
+  expect(panel.contains(document.activeElement)).toBe(false);
   expect(panel.parentElement?.hasAttribute('inert')).toBe(true);
   expect(panel.parentElement?.getAttribute('aria-hidden')).toBe('true');
   await act(async () => {

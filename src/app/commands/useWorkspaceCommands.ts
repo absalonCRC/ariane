@@ -1,6 +1,6 @@
 import type { WritingAidCommand } from '../../editor/WritingAidDialog';
-import { commandRegistry } from './registry';
 import {
+  availableCommands,
   useShortcuts,
   effectiveBindings,
   shortcutFromEvent,
@@ -341,7 +341,7 @@ export function useWorkspaceCommands({
       const value = shortcutFromEvent(e);
       if (!value) return;
       const inEditor = !!(e.target as HTMLElement)?.closest?.('.cm-editor');
-      const match = commandRegistry.find(
+      const match = availableCommands.find(
         (c) => c.scope !== 'global' && bindings[c.id] === value && (c.scope === 'app' || inEditor),
       );
       if (match) {
@@ -378,7 +378,7 @@ export function useWorkspaceCommands({
         e.stopPropagation();
       } else if (
         inEditor &&
-        commandRegistry.some(
+        availableCommands.some(
           (c) =>
             c.id !== 'prediction-accept' &&
             c.scope === 'editor' &&

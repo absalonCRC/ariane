@@ -12,6 +12,7 @@ interface PagesInput {
   surface: Surface;
   historyMode: boolean;
   editor: RefObject<EditorHandle | null>;
+  setBinder: (open: boolean) => void;
   setSurface: (next: Surface) => void;
   close: () => void;
   select: (id: string) => Promise<boolean>;
@@ -23,6 +24,7 @@ export function useWorkspacePages({
   surface,
   historyMode,
   editor,
+  setBinder,
   setSurface,
   close,
   select,
@@ -39,6 +41,16 @@ export function useWorkspacePages({
       ? surface
       : null;
   const pageActive = !!project && !newProject && (!!pageSurface || inboxOpen);
+  useLayoutEffect(() => {
+    if (!pageActive && !historyMode) return;
+    const narrow = window.matchMedia('(max-width: 760px)');
+    const revealPage = () => {
+      if (narrow.matches) setBinder(false);
+    };
+    revealPage();
+    narrow.addEventListener('change', revealPage);
+    return () => narrow.removeEventListener('change', revealPage);
+  }, [pageActive, pageSurface, inboxOpen, historyMode, setBinder]);
   const [pageHost, setPageHost] = useState<HTMLElement | null>(null);
   const pageReturnFocus = useRef<HTMLElement | null>(null);
   const [pageBusy, setPageBusy] = useState(false);

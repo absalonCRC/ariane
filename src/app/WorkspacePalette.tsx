@@ -1,4 +1,5 @@
 import type { RefObject, ComponentProps } from 'react';
+import { native } from '../platform/client';
 import type { Project } from '../contracts/project';
 import type { EditorHandle } from '../editor/types';
 import type { EntityManagerController } from '../entities/useEntityManager';
@@ -123,7 +124,10 @@ export function WorkspacePalette({
                 label: t('Fiches du manuscrit'),
                 action: () => onMemory({ kind: 'list' }),
               },
-            ].filter((command) => command.id !== 'sources')
+            ].filter(
+              (command) =>
+                command.id !== 'sources' && (native || command.id !== 'manuscript-entities'),
+            )
       }
     />
   );

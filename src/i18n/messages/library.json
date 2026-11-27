@@ -419,13 +419,17 @@
     "Archive ",
     "Archivar "
   ],
-  "Les projets archivés restent sur ce Mac.": [
-    "Archived projects stay on this Mac.",
-    "Los proyectos archivados permanecen en este Mac."
+  "Vous pouvez désarchiver un projet pour le retrouver dans les récents.": [
+    "Unarchive a project to show it in Recents again.",
+    "Desarchiva un proyecto para que vuelva a aparecer en Recientes."
   ],
   "Aucune opération à annuler.": [
     "No operation to undo.",
     "No hay ninguna operación que deshacer."
+  ],
+  "Ordre de sections invalide.": [
+    "Invalid section order.",
+    "Orden de secciones no válido."
   ],
   "Sélection introuvable.": [
     "Selection not found.",

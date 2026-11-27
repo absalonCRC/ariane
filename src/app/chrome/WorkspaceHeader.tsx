@@ -1,5 +1,5 @@
 import type { Command } from '../Palette';
-import type { Dispatch, SetStateAction } from 'react';
+import { useRef, type Dispatch, type SetStateAction } from 'react';
 import { t } from '../../i18n';
 import { MoreHorizontal, Focus, Minimize2 } from 'lucide-react';
 import { ArianeWordmark } from '../../components/ArianeWordmark';
@@ -25,6 +25,11 @@ export function WorkspaceHeader({
   setMenu,
   commands,
 }: Props) {
+  const menuTrigger = useRef<HTMLButtonElement>(null);
+  function closeMenu() {
+    menuTrigger.current?.focus({ preventScroll: true });
+    setMenu(false);
+  }
   return (
     <header className="app-header" inert={libraryBusy}>
       <ArianeWordmark compact={!binder} hideCompact />
@@ -44,8 +49,19 @@ export function WorkspaceHeader({
             )}
           </button>
         )}
-        <div className="menu-control" data-open={menu}>
+        <div
+          className="menu-control"
+          data-open={menu}
+          onKeyDown={(event) => {
+            if (menu && event.key === 'Escape') {
+              event.preventDefault();
+              event.stopPropagation();
+              closeMenu();
+            }
+          }}
+        >
           <button
+            ref={menuTrigger}
             className="icon-button menu-trigger"
             aria-label={t('Menu du projet')}
             aria-expanded={menu}
@@ -69,9 +85,9 @@ export function WorkspaceHeader({
               )
               .map((c) => (
                 <button
-                  key={c.label}
+                  key={c.id}
                   onClick={() => {
-                    setMenu(false);
+                    closeMenu();
                     c.action();
                   }}
                 >

@@ -30,12 +30,14 @@ export function WorkspaceDialogs({
   onLoading,
   onNotice,
   onTagFilter,
+  onCloseManuscriptFilter,
 }: {
   workspace: Workspace;
   onLoading?: (loading: boolean) => void;
   onNotice?: (message: string, tone?: 'info' | 'success' | 'error') => void;
   onMemory?: () => void;
   onTagFilter?: (id: string) => void;
+  onCloseManuscriptFilter: () => void;
 }) {
   useLocale();
   const {
@@ -60,6 +62,11 @@ export function WorkspaceDialogs({
           project={p}
           selected={selected}
           onClose={close}
+          onResume={() => {
+            close();
+            workspace.setHistoryMode(false);
+            onCloseManuscriptFilter();
+          }}
           onError={fail}
           onNavigate={workspace.setSurface}
         />

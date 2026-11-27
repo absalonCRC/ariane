@@ -20,6 +20,7 @@ export function WriterProfile({
   activity,
   selected,
   onClose,
+  onResume,
   onError,
   onNavigate,
 }: {
@@ -27,6 +28,7 @@ export function WriterProfile({
   activity?: WritingActivityStore;
   selected?: Section;
   onClose: () => void;
+  onResume: () => void;
   onError: (error: unknown) => void;
   onNavigate: (surface: 'preferences' | 'history' | 'projects') => void;
 }) {
@@ -46,8 +48,8 @@ export function WriterProfile({
   return (
     <WorkspaceScreen
       title={t('Profil')}
-      subtitle={t('Votre espace d’écriture')}
       onClose={onClose}
+      onReturnToText={onResume}
       onError={onError}
       className="profile-screen"
     >
@@ -59,10 +61,7 @@ export function WriterProfile({
             </div>
             <div className="writer-introduction">
               <h2>{identity.name || t('Votre espace d’écriture')}</h2>
-              <p>
-                {identity.intention ||
-                  t('Un endroit pour prendre du recul et retrouver le fil de vos textes.')}
-              </p>
+              {identity.intention && <p>{identity.intention}</p>}
               <span className="writer-local">{t('Profil local · sur cet appareil')}</span>
             </div>
             <button
@@ -117,7 +116,6 @@ export function WriterProfile({
               </div>
             </form>
           )}
-          {activity && <ActivityCalendar activity={activity} />}
           <div className="profile-columns">
             <div className="profile-manuscript">
               <section aria-labelledby="profile-manuscript-title">
@@ -126,9 +124,14 @@ export function WriterProfile({
                   <Feather size={18} aria-hidden="true" />
                 </div>
                 <h3 className="profile-project-name">{project.name}</h3>
-                <p className="profile-description">
-                  {t('Un aperçu du manuscrit de ce projet, tel qu’il est aujourd’hui.')}
-                </p>
+                <section className="profile-resume">
+                  <span>{t('Reprendre le fil')}</span>
+                  <h3>{selected?.title || project.name}</h3>
+                  <button onClick={onResume}>
+                    {t('Revenir au texte')}
+                    <ArrowUpRight size={16} aria-hidden="true" />
+                  </button>
+                </section>
                 <dl className="profile-statistics">
                   <div>
                     <dt>{t('Mots du manuscrit')}</dt>
@@ -173,14 +176,6 @@ export function WriterProfile({
                   )}
                 </div>
               </section>
-              <section className="profile-resume">
-                <span>{t('Reprendre le fil')}</span>
-                <h3>{selected?.title || project.name}</h3>
-                <button onClick={onClose}>
-                  {t('Revenir au texte')}
-                  <ArrowUpRight size={16} aria-hidden="true" />
-                </button>
-              </section>
             </div>
             <aside className="profile-shortcuts" aria-label={t('Votre atelier')}>
               <h2>{t('Votre atelier')}</h2>
@@ -207,6 +202,7 @@ export function WriterProfile({
               </p>
             </aside>
           </div>
+          {activity && <ActivityCalendar activity={activity} />}
         </div>
       </div>
     </WorkspaceScreen>

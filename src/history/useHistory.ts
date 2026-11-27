@@ -45,6 +45,7 @@ export function useHistory(p: HistoryProps) {
   }, [p.active, p.project.sections]);
   const [onlyChanged, setOnlyChanged] = useState(false);
   const [view, setView] = useState<'source' | 'reading'>('reading');
+  const [showIdentical, setShowIdentical] = useState(false);
   const [confirm, setConfirm] = useState<Version | null>(null);
   const [changeIndex, setChangeIndex] = useState(-1);
   const diffRef = useRef<HTMLDivElement>(null);
@@ -172,9 +173,13 @@ export function useHistory(p: HistoryProps) {
   const visible = entries.filter((e) => !onlyChanged || e.changed);
   const selected = visible.find((e) => e.id === scene) ?? visible[0];
   const metadata = sectionChanges(selected?.left, selected?.right);
+  const identicalText =
+    !!selected?.left && !!selected.right && selected.left.text === selected.right.text;
+  const showComparison = !identicalText || showIdentical;
   const rows = useMemo(
-    () => comparePassages(selected?.left?.text ?? '', selected?.right?.text ?? ''),
-    [selected?.left?.text, selected?.right?.text],
+    () =>
+      showComparison ? comparePassages(selected?.left?.text ?? '', selected?.right?.text ?? '') : [],
+    [showComparison, selected?.left?.text, selected?.right?.text],
   );
   const changes = rows.flatMap((r, i) => (r.changed ? [i] : []));
   const added = rows.reduce(
@@ -195,8 +200,9 @@ export function useHistory(p: HistoryProps) {
   );
   useEffect(() => {
     setChangeIndex(-1);
+    setShowIdentical(false);
     if (diffRef.current) diffRef.current.scrollTop = 0;
-  }, [selected?.id, leftId, rightId]);
+  }, [p.project.path, selected?.id, leftId, rightId]);
   async function capture() {
     if (!name.trim() || busy) return;
     setBusy(true);
@@ -337,6 +343,9 @@ export function useHistory(p: HistoryProps) {
     visible,
     selected,
     metadata,
+    identicalText,
+    showComparison,
+    setShowIdentical,
     rows,
     changes,
     added,

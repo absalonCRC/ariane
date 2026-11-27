@@ -227,6 +227,22 @@
     "No saved versions",
     "No hay versiones guardadas"
   ],
+  "Aucune différence": [
+    "No differences",
+    "Sin diferencias"
+  ],
+  "Aucune différence dans le texte": [
+    "No differences in the text",
+    "Sin diferencias en el texto"
+  ],
+  "Voir les textes côte à côte": [
+    "View texts side by side",
+    "Ver los textos en paralelo"
+  ],
+  "Masquer les deux textes": [
+    "Hide both texts",
+    "Ocultar ambos textos"
+  ],
   "Conservez un état du texte pour comparer vos révisions côte à côte et reprendre les passages de votre choix.": [
     "Save a snapshot to compare revisions side by side and recover the passages you choose.",
     "Conserva un estado del texto para comparar tus revisiones en paralelo y recuperar los pasajes que elijas."
@@ -298,10 +314,6 @@
   "Ces versions concernent des sections différentes. Comparez chacune avec le texte actuel.": [
     "These versions cover different sections. Compare each one with the current text.",
     "Estas versiones corresponden a secciones diferentes. Compara cada una con el texto actual."
-  ],
-  "Le texte est identique ; les changements de structure figurent ci-dessus.": [
-    "The text is identical; structural changes are shown above.",
-    "El texto es idéntico; los cambios de estructura se muestran arriba."
   ],
   "Ce texte est vide dans les deux versions.": [
     "This text is empty in both versions.",

@@ -73,6 +73,9 @@ export function History(p: HistoryProps) {
     visible,
     selected,
     metadata,
+    identicalText,
+    showComparison,
+    setShowIdentical,
     rows,
     changes,
     added,
@@ -89,6 +92,7 @@ export function History(p: HistoryProps) {
     [p.project.path, leftId, rightId, selected?.id, rows, view, tab],
   );
   const canAlign =
+    showComparison &&
     !!selected?.left && !!selected.right && !loading && !error && !incompatible && !busy;
   const alignment = usePhraseAlignment(diffRef, alignmentContext, canAlign);
   return (
@@ -367,76 +371,86 @@ export function History(p: HistoryProps) {
                       </option>
                     ))}
                   </select>
-                  <span className="diff-stat-add">{t('+{0} mots', { 0: added })}</span>
-                  <span className="diff-stat-remove">{t('−{0} mots', { 0: removed })}</span>
+                  {!identicalText && (
+                    <>
+                      <span className="diff-stat-add">{t('+{0} mots', { 0: added })}</span>
+                      <span className="diff-stat-remove">{t('−{0} mots', { 0: removed })}</span>
+                    </>
+                  )}
                 </div>
-                <div className="history-diff-tools">
-                  <div
-                    className="history-view-switch"
-                    role="group"
-                    aria-label={t('Affichage de la comparaison')}
-                  >
-                    <button
-                      type="button"
-                      aria-pressed={view === 'source'}
-                      onClick={() => setView('source')}
+                {showComparison && (
+                  <div className="history-diff-tools">
+                    <div
+                      className="history-view-switch"
+                      role="group"
+                      aria-label={t('Affichage de la comparaison')}
                     >
-                      {t('Source')}
-                    </button>
-                    <button
-                      type="button"
-                      aria-pressed={view === 'reading'}
-                      onClick={() => setView('reading')}
-                    >
-                      {t('Lecture')}
-                    </button>
+                      <button
+                        type="button"
+                        aria-pressed={view === 'source'}
+                        onClick={() => setView('source')}
+                      >
+                        {t('Source')}
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed={view === 'reading'}
+                        onClick={() => setView('reading')}
+                      >
+                        {t('Lecture')}
+                      </button>
+                    </div>
+                    <div className="history-align-tool">
+                      <button
+                        type="button"
+                        className="history-align"
+                        disabled={!canAlign}
+                        onPointerDown={(event) => event.preventDefault()}
+                        onClick={alignment.align}
+                      >
+                        {t('Aligner ici')}
+                      </button>
+                      <span className="history-align-feedback" role="status">
+                        {alignment.notice}
+                      </span>
+                    </div>
+                    {!identicalText && (
+                      <div
+                        className="history-inline-navigation"
+                        role="group"
+                        aria-label={t('Parcourir les modifications')}
+                      >
+                        <span className="history-change-count" aria-live="polite">
+                          {loading
+                            ? t('Chargement…')
+                            : changeIndex < 0
+                              ? t('{0} passage{1} modifié{2}', {
+                                  0: changes.length,
+                                  1: changes.length > 1 ? 's' : '',
+                                  2: changes.length > 1 ? 's' : '',
+                                })
+                              : `${changeIndex + 1} / ${changes.length}`}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={loading || !!error || !!incompatible || !changes.length}
+                          aria-label={t('Modification précédente')}
+                          onClick={() => nextChange(-1)}
+                        >
+                          <ArrowUp size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={loading || !!error || !!incompatible || !changes.length}
+                          aria-label={t('Modification suivante')}
+                          onClick={() => nextChange(1)}
+                        >
+                          <ArrowDown size={14} />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <div className="history-align-tool">
-                    <button
-                      type="button"
-                      className="history-align"
-                      disabled={!canAlign}
-                      onPointerDown={(event) => event.preventDefault()}
-                      onClick={alignment.align}
-                    >
-                      {t('Aligner ici')}
-                    </button>
-                    <span className="history-align-feedback" role="status">{alignment.notice}</span>
-                  </div>
-                  <div
-                    className="history-inline-navigation"
-                    role="group"
-                    aria-label={t('Parcourir les modifications')}
-                  >
-                    <span className="history-change-count" aria-live="polite">
-                      {loading
-                        ? t('Chargement…')
-                        : changeIndex < 0
-                          ? t('{0} passage{1} modifié{2}', {
-                              0: changes.length,
-                              1: changes.length > 1 ? 's' : '',
-                              2: changes.length > 1 ? 's' : '',
-                            })
-                          : `${changeIndex + 1} / ${changes.length}`}
-                    </span>
-                    <button
-                      type="button"
-                      disabled={loading || !!error || !!incompatible || !changes.length}
-                      aria-label={t('Modification précédente')}
-                      onClick={() => nextChange(-1)}
-                    >
-                      <ArrowUp size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      disabled={loading || !!error || !!incompatible || !changes.length}
-                      aria-label={t('Modification suivante')}
-                      onClick={() => nextChange(1)}
-                    >
-                      <ArrowDown size={14} />
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
               {confirm && (
                 <div className="history-confirm" role="alert">
@@ -469,43 +483,62 @@ export function History(p: HistoryProps) {
                   {selected && metadata.length > 0 && (
                     <p className="history-metadata">{metadata.join(' · ')}</p>
                   )}
-                  <div
-                    className="history-diff-scroll"
-                    ref={diffRef}
-                    tabIndex={0}
-                    aria-label={t('Passages comparés')}
-                  >
-                    {!rows.length && (
-                      <p className="history-empty">
-                        {selected
-                          ? metadata.length
-                            ? t(
-                                'Le texte est identique ; les changements de structure figurent ci-dessus.',
-                              )
-                            : t('Ce texte est vide dans les deux versions.')
-                          : t('Aucun texte dans cette sélection.')}
+                  {identicalText && (
+                    <div className="history-identical">
+                      <p role="status">
+                        {metadata.length
+                          ? t('Aucune différence dans le texte')
+                          : t('Aucune différence')}
                       </p>
-                    )}
-                    <ComparisonRows
-                      rows={rows}
-                      reading={view === 'reading'}
-                      currentChange={changes[changeIndex]}
-                      canApply={rightId === 'current' && !!selected?.right}
-                      busy={busy}
-                      apply={apply}
-                      group={alignment.group}
-                      alignedRow={alignment.alignedRow}
-                    />
-                  </div>
-                  <footer className="history-legend">
-                    {rightId === 'current'
-                      ? t(
-                          'Les reprises de passages modifient le texte actuel. Une version est conservée avant chaque reprise.',
-                        )
-                      : t(
-                          'Comparaison de deux instantanés. Choisissez « Texte actuel » à droite pour reprendre un passage.',
-                        )}
-                  </footer>
+                      <button
+                        type="button"
+                        aria-expanded={showComparison}
+                        onClick={() => setShowIdentical(!showComparison)}
+                      >
+                        {showComparison
+                          ? t('Masquer les deux textes')
+                          : t('Voir les textes côte à côte')}
+                      </button>
+                    </div>
+                  )}
+                  {showComparison && (
+                    <div
+                      className="history-diff-scroll"
+                      data-identical={identicalText || undefined}
+                      ref={diffRef}
+                      tabIndex={0}
+                      aria-label={t('Passages comparés')}
+                    >
+                      {!rows.length && (!selected || identicalText) && (
+                        <p className="history-empty">
+                          {selected
+                            ? t('Ce texte est vide dans les deux versions.')
+                            : t('Aucun texte dans cette sélection.')}
+                        </p>
+                      )}
+                      <ComparisonRows
+                        rows={rows}
+                        reading={view === 'reading'}
+                        currentChange={changes[changeIndex]}
+                        canApply={rightId === 'current' && !!selected?.right}
+                        busy={busy}
+                        apply={apply}
+                        group={alignment.group}
+                        alignedRow={alignment.alignedRow}
+                      />
+                    </div>
+                  )}
+                  {!identicalText && (
+                    <footer className="history-legend">
+                      {rightId === 'current'
+                        ? t(
+                            'Les reprises de passages modifient le texte actuel. Une version est conservée avant chaque reprise.',
+                          )
+                        : t(
+                            'Comparaison de deux instantanés. Choisissez « Texte actuel » à droite pour reprendre un passage.',
+                          )}
+                    </footer>
+                  )}
                 </>
               )}
             </>

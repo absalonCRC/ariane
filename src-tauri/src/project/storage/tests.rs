@@ -521,3 +521,22 @@ fn rejects_cycle() {
     let id = &p.sections[0].id;
     assert!(reorder(d.path(), std::slice::from_ref(id), id, Some(id.clone())).is_err());
 }
+
+#[test]
+fn reorder_requires_every_live_section_and_an_existing_moved_section() {
+    let d = tempfile::tempdir().unwrap();
+    let p = create(d.path(), "Test").unwrap();
+    let first = p.sections[0].id.clone();
+    let second = add(d.path(), None, "Deux", "scene").unwrap();
+    let second = second.last().unwrap().id.clone();
+    let order = vec![second.clone(), first.clone()];
+    for invalid in [vec![first.clone()], vec![first.clone(), first.clone()]] {
+        assert!(reorder(d.path(), &invalid, &first, None).is_err());
+    }
+    assert!(reorder(d.path(), &order, "absent", None).is_err());
+    assert_eq!(load(d.path()).unwrap().sections[0].id, first);
+    assert_eq!(
+        reorder(d.path(), &order, &second, None).unwrap()[0].id,
+        second
+    );
+}

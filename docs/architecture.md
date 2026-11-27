@@ -53,6 +53,8 @@ La saisie reste gérée par les transactions CodeMirror. React ne contrôle pas 
 
 Les commandes, événements, formats persistés, valeurs par défaut et ressources ne changent pas avec ce découpage. Le JSON `tests/fixtures/ipc-save.json` est consommé par les tests TypeScript et Rust pour vérifier notamment révisions, caractères accentués, emoji et offsets UTF-16.
 
+L’aperçu exporte directement le manuscrit en Markdown. La capture globale et le choix d’un dossier de sources utilisent l’application macOS. Un échec d’ouverture ou une création à un emplacement déjà occupé conservent le projet actif dans le navigateur. Les deux plateformes vérifient que le réordonnancement contient chaque section active exactement une fois.
+
 Les traductions sont réparties par domaine dans `src/i18n/messages/`. Le catalogue TypeScript conserve l’ordre de correspondance des messages à paramètres. À la compilation, `src-tauri/build.rs` assemble les mêmes fichiers pour les menus natifs et signale les clés présentes dans plusieurs fichiers.
 
 ## Backend : contexte, transactions et moteurs
@@ -190,6 +192,8 @@ Les archives globales sont exportées en mode journal DELETE après checkpoint :
 
 ### Calendrier d’activité d’écriture
 
+Le profil présente le projet actif et l’action « Revenir au texte » avant les statistiques du manuscrit et le calendrier annuel. Cette action redonne le focus à la scène en cours, y compris depuis Versions ou une vue filtrée. Échap referme le profil et retrouve la vue précédente.
+
 `profile/ActivityCalendar` affiche une année de jours locaux, en semaines du lundi au dimanche, avec sélection au clic et navigation par flèches. Le suivi commence à la première ouverture de cette version ; les dates précédentes sont inconnues et les dates futures distinctes des jours suivis sans écriture. Il agrège l’écriture de tous les projets de la fenêtre principale, y compris les textes hors manuscrit. Les captures rapides sont hors de ce périmètre.
 
 Le listener CodeMirror de `editor/runtime/mount` émet `onWritingEdit` uniquement pour un changement de document. `editor/writingDelta` compte les mots des lignes touchées avant/après, selon la règle `\S+` du compteur existant ; les plages communes sont fusionnées. Les changements de sélection, d’outline et de géométrie ne créent pas d’activité. Le montage depuis un projet, un import ou une restauration ne rejoue pas d’édition. Collage, dictée et commandes explicites d’insertion dans l’éditeur contribuent au même total. Annuler/rétablir appliquent leur delta ; une réécriture sans variation reste un jour actif. Le total affiché par jour est `max(0, somme des deltas du jour)` : ce sont des ajouts nets, pas un nombre brut de mots tapés. Les suppressions d’un jour ultérieur ne réécrivent pas les jours passés.
@@ -197,6 +201,10 @@ Le listener CodeMirror de `editor/runtime/mount` émet `onWritingEdit` uniquemen
 `useWorkspace` possède un seul `WritingActivityStore` via `useWritingActivity`. Ce journal de profil, indépendant des bases projet, conserve seulement la date de début, les dates locales, deltas nets et nombres d’éditions sous `ariane.writing-activity.v1` dans le stockage local de la webview principale. Il ne conserve aucun texte ou chemin de projet. Un délai fixe de 500 ms persiste aussi pendant une frappe continue ; masquage, fermeture navigateur, démontage et le registre de flush natif vident ce tampon. Une panne avant cette écriture peut perdre au plus les dernières éditions non persistées ; ce journal ne constitue pas la sauvegarde transactionnelle du manuscrit et n’est pas inclus dans les archives SQLite. Une erreur conserve les comptes en mémoire ; un réessai écrit le même total et ne le double pas. Une lecture invalide bloque l’écrasement du journal et remonte une erreur dans la capsule globale. Le calendrier n’offre ni synchronisation multi-appareils ni fusion de plusieurs onglets navigateur concurrents.
 
 ## Pages intégrées et rythme d’interface
+
+À 760 px de large et en dessous, l’ouverture d’une page intégrée ou de Versions replie le classeur. Réduire une fenêtre ouverte sur l’une de ces pages applique la même règle. Le chevron permet toujours de rouvrir le classeur.
+
+La recherche structurée agrandit le panneau au-dessus du champ de recherche pour montrer les suggestions, les vues enregistrées et leur formulaire. Les réglages, les conflits et le déclenchement des raccourcis tiennent compte des commandes disponibles sur la plateforme.
 
 `App` rend la zone centrale `workspace-page-layout`, masquée en écriture. Son hook `useWorkspacePages` conserve la cible du portail, le point de retour du focus et le signal d’occupation transmis par `WorkspaceScreenHost`. `WorkspaceScreen` y rend une section nommée pour Profil, Paramètres, réception, Smart-tags et entités. Ces pages partagent le logo, la sidebar, les accès et la capsule du titre. Les états de page sont exclusifs avec la réception. En dehors d’un projet, la réception garde une présentation autonome avec les contrôles natifs existants.
 
@@ -253,6 +261,8 @@ La lecture d’une note Markdown utilise le découpage des scènes de CodeMirror
 À la première ouverture d’un index de sources restauré ou antérieur au marquage de son schéma, les lecteurs du processus partagent le verrou d’initialisation de ce fichier. Les tables et le numéro de schéma de l’index sont validés dans la même transaction SQLite. Une ouverture ordinaire consulte le schéma et traite les anciens vecteurs texte encore présents. Cet index dérivé possède son propre numéro de schéma, indépendant de celui du projet. À l’ouverture du projet, la base de travail utilise le journal WAL, y compris pour une copie restaurée depuis une sauvegarde autonome en mode DELETE.
 
 ## Réglages et reprise de séance · 0.9.0
+
+Dans Versions, deux textes strictement identiques affichent « Aucune différence ». Un bouton ouvre leur comparaison côte à côte. Les changements de titre, de plan ou d’autres métadonnées restent visibles dès l’ouverture. Chaque nouvelle paire de versions ou sélection de scène commence avec les textes identiques repliés.
 
 `useProject` regroupe les écritures du curseur, du défilement, des replis et des repères dans les préférences JSON du projet. La fermeture et le changement de projet attendent leur sauvegarde. La commande `settings` vérifie le chemin actif. Le chargement du projet fournit la variante courante avec le texte. Les anciens projets utilisent les valeurs par défaut des champs absents.
 

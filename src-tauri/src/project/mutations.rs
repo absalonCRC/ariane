@@ -5,7 +5,7 @@ use crate::{
     model::*,
 };
 use rusqlite::params;
-use std::{fs, path::Path};
+use std::{collections::HashSet, fs, path::Path};
 pub fn create(root: &Path, name: &str) -> Result<Project> {
     if name.trim().is_empty() {
         return Err("Le projet doit avoir un nom.".into());
@@ -83,31 +83,35 @@ pub fn reorder(
 ) -> Result<Vec<Section>> {
     crate::project::with_lock(root, || {
         let mut c = database(root)?;
-        let all = sections(&c)?;
-        if ids.len() != all.len()
-            || all
-                .iter()
-                .any(|s| ids.iter().filter(|v| **v == s.id).count() != 1)
+        let all = all_sections(&c)?;
+        let mut expected: HashSet<&str> = all
+            .iter()
+            .filter(|section| !section.trashed)
+            .map(|section| section.id.as_str())
+            .collect();
+        if !expected.contains(id)
+            || ids.len() != expected.len()
+            || ids.iter().any(|id| !expected.remove(id.as_str()))
         {
             return Err("Ordre de sections invalide.".into());
         }
         let mut cursor = parent.clone();
-        let mut seen = std::collections::HashSet::new();
+        let mut seen = HashSet::new();
         while let Some(p) = cursor {
             if p == id || !seen.insert(p.clone()) {
                 return Err("Un dossier ne peut pas être placé dans lui-même.".into());
             }
             cursor = all
                 .iter()
-                .find(|s| s.id == p)
+                .find(|s| !s.trashed && s.id == p)
                 .ok_or("Parent introuvable")?
                 .parent
                 .clone()
         }
         super::library::validate_parent(
-            &all_sections(&c)?,
+            &all,
             parent.as_deref(),
-            &std::collections::HashSet::from([id.to_owned()]),
+            &HashSet::from([id.to_owned()]),
             None,
         )?;
         let tx = c.transaction().app()?;
